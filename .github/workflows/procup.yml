@@ -1,0 +1,34 @@
+name: Uppdatera ProCup-data
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Var 6:e timme; tätare uppdatering behövs bara under cuphelgen
+    # (kör manuellt via workflow_dispatch eller sänk intervallet då).
+    - cron: "23 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Skrapa ProCup
+        run: python3 scripts/fetch_procup.py
+      - name: Committa om datan ändrats
+        # Skrapan skriver bara om filen när innehållet faktiskt ändrats.
+        run: |
+          git config user.name "procup-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Ingen ändring — hoppar över commit."
+          else
+            git commit -m "Uppdatera ProCup-data"
+            git push
+          fi
