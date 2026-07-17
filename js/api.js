@@ -219,8 +219,8 @@ window.HB = window.HB || {};
     }
   }
 
-  function writeCache(cup, matches) {
-    const payload = JSON.stringify({ ts: Date.now(), matches });
+  function writeCache(cup, matches, ts) {
+    const payload = JSON.stringify({ ts: ts || Date.now(), matches });
     try {
       localStorage.setItem(cacheKey(cup), payload);
     } catch {

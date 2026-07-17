@@ -1,10 +1,10 @@
-name: Uppdatera ProCup-data
+name: Uppdatera cupdata
 
 on:
   workflow_dispatch:
   schedule:
-    # Var 6:e timme; tätare uppdatering behövs bara under cuphelgen
-    # (kör manuellt via workflow_dispatch eller sänk intervallet då).
+    # Var 6:e timme; tätare uppdatering behövs bara under cuphelger
+    # (kör manuellt via workflow_dispatch/admin-sidan eller sänk intervallet då).
     - cron: "23 */6 * * *"
 
 permissions:
@@ -20,6 +20,8 @@ jobs:
           python-version: "3.12"
       - name: Skrapa ProCup
         run: python3 scripts/fetch_procup.py
+      - name: Snapshotta Cup Manager-cuperna
+        run: python3 scripts/fetch_cupmanager.py
       - name: Committa om datan ändrats
         # Skrapan skriver bara om filen när innehållet faktiskt ändrats.
         run: |

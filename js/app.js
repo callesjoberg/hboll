@@ -157,6 +157,19 @@ window.HB = window.HB || {};
 
   // --- datainläsning --------------------------------------------------------
 
+  function refreshTtl(matches) {
+    // Hur gammal data vi accepterar utan omhämtning:
+    // avslutad cup ändras aldrig; framtida cuper justeras sällan;
+    // pågående cuper live-uppdateras.
+    if (!matches.length) return 0;
+    const now = nowWall();
+    const first = matches[0].start;
+    const last = matches[matches.length - 1].start;
+    if (now > last + 24 * 3600000) return Infinity;   // färdigspelad
+    if (now < first - 24 * 3600000) return 6 * 3600000; // framtida
+    return 60000;                                      // pågår
+  }
+
   async function loadCup(force) {
     const c = cup();
     if (!c) return;
@@ -165,8 +178,24 @@ window.HB = window.HB || {};
     if (cached && cached.matches) {
       state.matches = cached.matches;
       state.loadedAt = cached.ts;
+    } else if (!c.dataUrl) {
+      // Ingen lokal cache: starta från CI-byggd snapshot i repot,
+      // så att förstabesöket slipper vänta på cupmanager-API:t.
+      try {
+        const r = await fetch("data/snapshot-" + c.id + ".json?_=" +
+          Date.now().toString(36));
+        if (r.ok) {
+          const j = await r.json();
+          if (Array.isArray(j.matches) && j.matches.length) {
+            state.matches = j.matches;
+            state.loadedAt = j.ts || 0;
+            HB.api.writeCache(c, j.matches, j.ts);
+          }
+        }
+      } catch { /* ingen snapshot — hämta från API:t nedan */ }
     }
-    const fresh = cached && Date.now() - cached.ts < 60000;
+    const fresh = state.matches.length &&
+      Date.now() - state.loadedAt < refreshTtl(state.matches);
     if (fresh && !force) { render(); return; }
 
     state.loading = true;
@@ -769,13 +798,14 @@ window.HB = window.HB || {};
     loadUi();
     loadCup();
 
-    // Auto-uppdatera var tredje minut när fliken är synlig.
+    // Auto-uppdatera var tredje minut — men bara cuper som faktiskt pågår.
+    const isLiveCup = () => refreshTtl(state.matches) <= 180000;
     setInterval(() => {
-      if (document.visibilityState === "visible" &&
+      if (document.visibilityState === "visible" && isLiveCup() &&
           Date.now() - state.loadedAt > 170000) loadCup(true);
     }, 180000);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" &&
+      if (document.visibilityState === "visible" && isLiveCup() &&
           Date.now() - state.loadedAt > 300000) loadCup(true);
     });
     // Nedräkningen i heron tickar utan full omrendering.
