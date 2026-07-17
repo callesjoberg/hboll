@@ -474,6 +474,17 @@ window.HB = window.HB || {};
           }))),
     ));
 
+    // Aktivt lagfilter satt via matchdialogens snabblänkar. I klubbläge sköts
+    // val/rensning av lagväljaren nedan — den här raden syns bara i
+    // "Hela cupen"-läge där lagväljaren inte visas.
+    if (state.scope === "all" && state.teams.size) {
+      bar.append(h("div", { class: "row" },
+        [...state.teams].map((id) =>
+          chip((teamNameById(id) || "Okänt lag") + "  ✕", true, () => {
+            state.teams.delete(id); saveUi(); render();
+          }))));
+    }
+
     // Dagar
     const days = [...new Set(scoped().map((m) => dayKey(m.start)))].sort();
     if (days.length > 1) {
@@ -618,9 +629,12 @@ window.HB = window.HB || {};
   }
 
   function gotoTeamMatches(team, mode) {
+    // Filtrera på exakt lag-id, inte namnsökning — flera lag delar ofta
+    // prefix ("Alingsås HK" är ett substräng-delnamn av "Alingsås HK Blå"
+    // m.fl.), så en textsökning skulle dra in alla syskonlagens matcher.
     state.scope = "all";
-    state.q = team.name;
-    state.teams = new Set();
+    state.q = "";
+    state.teams = new Set([team.id]);
     state.cats = new Set();
     state.day = "all";
     state.arena = "";
@@ -629,6 +643,12 @@ window.HB = window.HB || {};
     saveUi();
     closeMatchDialog();
     render();
+  }
+
+  function teamNameById(id) {
+    const m = state.matches.find((mm) => mm.home.id === id || mm.away.id === id);
+    if (!m) return null;
+    return m.home.id === id ? m.home.name : m.away.name;
   }
 
   function closeMatchDialog() {
