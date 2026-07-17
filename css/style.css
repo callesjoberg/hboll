@@ -307,6 +307,10 @@ header.top {
 
 .team-picker-item:hover { background: var(--paper); }
 
+/* author-CSS:ens display:flex ovan slår annars alltid webbläsarens
+   inbyggda [hidden]{display:none} — sökfiltret syntes inte utan denna. */
+.team-picker-item[hidden] { display: none; }
+
 .team-picker-item input { flex-shrink: 0; }
 
 .seg { display: flex; gap: 0; }
