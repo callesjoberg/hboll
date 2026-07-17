@@ -719,11 +719,13 @@ window.HB = window.HB || {};
     const map = new Map();
     for (const m of scoped()) {
       if (state.cats.size && !state.cats.has(m.catId)) continue;
+      if (state.teams.size &&
+          !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) continue;
       if (!m.divId) continue;
       if (!map.has(m.divId)) {
         map.set(m.divId, {
           id: m.divId, name: m.divName, catId: m.catId, catName: m.catName,
-          ours: false, teams: new Set(),
+          ours: false,
         });
       }
       const d = map.get(m.divId);
