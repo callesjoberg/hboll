@@ -40,7 +40,12 @@ window.HB = window.HB || {};
 
   function refId(node) {
     if (node && typeof node === "object") {
-      const m = /id:(\d+)/.exec(node.href || "");
+      // \w*[Ii]d: fångar inte bara "id:" utan även t.ex. "categoryId:" —
+      // Category-referenser saknar ett rent "id"-fält (parametern heter
+      // categoryId), så den strikta varianten missade dem helt (gav alltid
+      // null). Första träffen är alltid entitetens primära id i den här
+      // API:ts href-mönster.
+      const m = /\w*[Ii]d:(\d+)/.exec(node.href || "");
       if (m) return +m[1];
     }
     return null;
@@ -203,6 +208,100 @@ window.HB = window.HB || {};
     }));
   }
 
+  // --- slutspel (A/B/C) och inbördes möten ---------------------------------
+
+  function playoffQuery(categoryId, tournamentId) {
+    return (
+      "Category({categoryId:" + categoryId + ",tournamentId:" + tournamentId + "})" +
+      "{stages:[{... on Stage:{divisions:[{... on Division:{name:{}," +
+      "matches:[{... on Match:{start:{},arena:{},round:{},roundRank:{}," +
+      "nextMatchWinner:{},nextMatchLoser:{},home:{team:{}},away:{team:{}},result:{}}}]}}]}}]}"
+    );
+  }
+
+  function normPlayoffMatch(e, store) {
+    const home = storeGet(store, e.home) || {};
+    const away = storeGet(store, e.away) || {};
+    const round = storeGet(store, e.round) || {};
+    const rr = storeGet(store, e.roundRank) || {};
+    const nextW = storeGet(store, e.nextMatchWinner) || {};
+    const nextL = storeGet(store, e.nextMatchLoser) || {};
+    return {
+      id: e.id,
+      start: e.start || 0,
+      arena: (storeGet(store, e.arena) || {}).completeName || "",
+      home: { id: home.id || refId(home.team), name: nameOf(home) },
+      away: { id: away.id || refId(away.team), name: nameOf(away) },
+      res: normalizeResult(storeGet(store, e.result)),
+      roundRank: round.rank ?? 99,      // 0 = final, högre = tidigare omgång
+      roundName: nameOf(round),
+      matchRank: rr.rank ?? 0,          // position inom omgången
+      nextWinnerId: refId(nextW.match),
+      nextLoserId: refId(nextL.match),
+    };
+  }
+
+  // Alla slutspelsträd (Playoff-divisioner, t.ex. A-/B-/C-Slutspel) för en
+  // kategori, i ett enda anrop. Tomt om kategorin saknar slutspel än.
+  async function fetchPlayoffs(cup, categoryId) {
+    if (cup.dataUrl) return []; // ProCup: slutspelsdata stöds inte ännu
+    const resp = (await call(cup, playoffQuery(categoryId, cup.tournamentId))).responses || {};
+    const flatStore = {};
+    for (const [k, v] of Object.entries(resp)) {
+      if (v && typeof v === "object" && v.entity && typeof v.entity === "object") {
+        flatStore[k] = v.entity;
+      }
+    }
+    const divisions = Object.values(flatStore)
+      .filter((e) => e.__typename === "Playoff");
+    return divisions.map((div) => {
+      const divName = nameOf(div);
+      // div.matches är en referens till en egen topnyckel ("$matches"),
+      // inte en direkt inline-array — samma platta store-mönster som
+      // MatchActor$originalName, Team$statistics osv.
+      const matches = (storeGet(flatStore, div.matches) || [])
+        .map((ref) => storeGet(flatStore, ref))
+        .filter(Boolean)
+        .map((m) => {
+          const nm = normPlayoffMatch(m, flatStore);
+          nm.divId = div.id ?? null;
+          nm.divName = divName;
+          nm.catId = categoryId;
+          return nm;
+        });
+      return { id: div.id ?? null, name: divName, matches };
+    }).filter((d) => d.matches.length);
+  }
+
+  // Historiska möten mellan lagen i en given match (samma kategori/cup).
+  async function fetchPreviousMeetings(cup, matchId) {
+    if (cup.dataUrl) return [];
+    const q = "Match({id:" + matchId + "})" +
+      "{previousMeetings:[{... on Match:{start:{},home:{team:{}},away:{team:{}},result:{}}}]}";
+    const resp = (await call(cup, q)).responses || {};
+    const store = {};
+    for (const [k, v] of Object.entries(resp)) {
+      if (v && typeof v === "object" && v.entity && typeof v.entity === "object") {
+        store[k] = v.entity;
+      }
+    }
+    const outer = store["Match({id:" + matchId + "})"];
+    // Samma platta store-mönster som i fetchPlayoffs: previousMeetings är
+    // en referens till en egen topnyckel, inte en inline-array.
+    const refs = (outer && storeGet(store, outer.previousMeetings)) || [];
+    return refs.map((ref) => storeGet(store, ref)).filter(Boolean).map((m) => {
+      const home = storeGet(store, m.home) || {};
+      const away = storeGet(store, m.away) || {};
+      return {
+        id: m.id,
+        start: m.start || 0,
+        home: { id: home.id || refId(home.team), name: nameOf(home) },
+        away: { id: away.id || refId(away.team), name: nameOf(away) },
+        res: normalizeResult(storeGet(store, m.result)),
+      };
+    }).sort((a, b) => b.start - a.start);
+  }
+
   // --- cache i localStorage ----------------------------------------------
 
   function cacheKey(cup) {
@@ -237,5 +336,5 @@ window.HB = window.HB || {};
   }
 
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchTable,
-             readCache, writeCache, localDataTs };
+             fetchPlayoffs, fetchPreviousMeetings, readCache, writeCache, localDataTs };
 })();

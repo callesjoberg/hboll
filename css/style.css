@@ -547,6 +547,9 @@ header.top {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .match-body {
@@ -583,6 +586,13 @@ header.top {
   font-family: "Barlow", sans-serif;
   font-weight: 400;
   font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.score.pending {
+  font-family: "Barlow", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
   color: var(--ink-soft);
 }
 
@@ -812,6 +822,109 @@ dialog.match-dialog {
 .team-stat-actions { display: flex; gap: 8px; margin-top: 6px; }
 
 .team-stat-actions .btn[disabled] { opacity: 0.4; cursor: default; }
+
+.prev-meetings:empty { display: none; }
+
+.prev-meetings h4 {
+  margin: 0 0 6px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.prev-meetings-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+/* slutspelsträd */
+
+.bracket-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.bracket-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+
+.bracket-box h3 {
+  margin: 0 0 10px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.bracket {
+  display: flex;
+  align-items: stretch;
+  gap: 22px;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 10px;
+  min-width: 168px;
+}
+
+.bracket-round-label {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.bracket-match {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.bracket-match:hover { border-color: var(--blue); }
+.bracket-match.ours { border-left: 3px solid var(--blue); }
+
+.bracket-teams { display: grid; gap: 2px; margin-bottom: 4px; }
+
+.bracket-team {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bracket-team.us { font-weight: 600; color: var(--blue-deep); }
+.bracket-team.won { font-weight: 600; }
+.bracket-team.won::after { content: " ✓"; color: var(--won); font-size: 11px; }
+
+.bracket-score {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
 
 .custom-cup {
   display: flex;

@@ -157,6 +157,7 @@ window.HB = window.HB || {};
     loading: false,
     error: null,
     tables: {},              // divId -> {status, rows}
+    playoffs: {},            // catId -> {status, divisions}
   };
 
   function cup() {
@@ -260,6 +261,7 @@ window.HB = window.HB || {};
     if (id === state.cupId) return;
     state.cupId = id;
     state.tables = {};
+    state.playoffs = {};
     dialogTableCache = {};
     state.matches = [];
     state.loadedAt = 0;
@@ -379,6 +381,7 @@ window.HB = window.HB || {};
       return;
     }
     if (state.view === "schema") renderSchema(main);
+    else if (state.view === "slutspel") renderPlayoffs(main);
     else renderTables(main);
   }
 
@@ -396,7 +399,12 @@ window.HB = window.HB || {};
   }
 
   function renderTabs() {
+    // Slutspelsdata finns bara för Cup Manager-cuper (inte ProCup/dataUrl).
+    const playoffsSupported = !cup().dataUrl;
+    if (!playoffsSupported && state.view === "slutspel") state.view = "schema";
     $$("#viewTabs .tab").forEach((b) => {
+      const isPlayoffTab = b.dataset.view === "slutspel";
+      b.hidden = isPlayoffTab && !playoffsSupported;
       b.classList.toggle("on", b.dataset.view === state.view);
       b.setAttribute("aria-selected", String(b.dataset.view === state.view));
     });
@@ -499,6 +507,7 @@ window.HB = window.HB || {};
     const bar = $("#toolbar");
     bar.replaceChildren();
     if (!state.matches.length) return;
+    const clubTeamsList = clubTeams();
 
     // Klubb / hela cupen
     bar.append(h("div", { class: "row scope-row" },
@@ -516,12 +525,14 @@ window.HB = window.HB || {};
           }))),
     ));
 
-    // Aktivt lagfilter satt via matchdialogens snabblänkar. I klubbläge sköts
-    // val/rensning av lagväljaren nedan — den här raden syns bara i
-    // "Hela cupen"-läge där lagväljaren inte visas.
-    if (state.scope === "all" && state.teams.size) {
+    // Aktivt filter på ett motståndarlag (satt via matchdialogens
+    // snabblänkar) — klubbens egna lag hanteras redan synligt av
+    // lagväljaren nedan, så den här raden visar bara lag som INTE är våra.
+    const clubTeamIds = new Set(clubTeamsList.map((t) => t.id));
+    const foreignTeamIds = [...state.teams].filter((id) => !clubTeamIds.has(id));
+    if (foreignTeamIds.length) {
       bar.append(h("div", { class: "row" },
-        [...state.teams].map((id) =>
+        foreignTeamIds.map((id) =>
           chip((teamNameById(id) || "Okänt lag") + "  ✕", true, () => {
             state.teams.delete(id); saveUi(); render();
           }))));
@@ -564,25 +575,33 @@ window.HB = window.HB || {};
             }))));
     }
 
-    // Egna lag (bara i klubbläge)
-    if (state.scope === "club") {
-      const teams = clubTeams();
-      if (teams.length > 1) {
-        bar.append(h("div", { class: "row" }, buildTeamPicker(teams)));
-      }
+    // Egna lag — alltid tillgänglig, oavsett klubb- eller helcupsläge.
+    if (clubTeamsList.length > 1) {
+      bar.append(h("div", { class: "row" }, buildTeamPicker(clubTeamsList)));
     }
 
     // Sök · plan · sortering · export
     const arenas = [...new Set(scoped().map((m) => m.arena).filter(Boolean))]
       .sort((a, b) => a.localeCompare(b, "sv", { numeric: true }));
+    // Autocomplete-förslag: lagnamn, planer och klasser ur den synliga listan.
+    const suggestSet = new Set();
+    for (const m of scoped()) {
+      if (m.home.name) suggestSet.add(m.home.name);
+      if (m.away.name) suggestSet.add(m.away.name);
+      if (m.arena) suggestSet.add(m.arena);
+      if (m.catName) suggestSet.add(m.catName);
+    }
+    const suggestions = [...suggestSet].sort((a, b) => a.localeCompare(b, "sv"));
     bar.append(h("div", { class: "row tools-row" },
       h("input", {
         class: "search", type: "search", placeholder: "Sök lag, plan, grupp …",
-        value: state.q,
+        value: state.q, list: "search-suggestions",
         // renderContent() (inte render()) — annars byggs sökfältet om vid
         // varje tangenttryckning och tappar fokus/mobiltangentbordet.
         oninput: (e) => { state.q = e.target.value; renderContent(); },
       }),
+      h("datalist", { id: "search-suggestions" },
+        suggestions.map((s) => h("option", { value: s }))),
       arenas.length > 1 ? h("select", {
         class: "select", "aria-label": "Plan",
         onchange: (e) => { state.arena = e.target.value; saveUi(); render(); },
@@ -770,6 +789,20 @@ window.HB = window.HB || {};
     return dialogTableCache[divId];
   }
 
+  function previousMeetingsBlock(m) {
+    const box = h("div", { class: "prev-meetings" });
+    HB.api.fetchPreviousMeetings(cup(), m.id).then((meetings) => {
+      if (!meetings.length) { box.remove(); return; }
+      box.append(
+        h("h4", null, "Tidigare möten"),
+        h("ul", { class: "prev-meetings-list" },
+          meetings.map((pm) => h("li", null,
+            fmtDay.format(new Date(pm.start)) + ": " + pm.home.name + " " +
+            (scoreText(pm.res) || "–") + " " + pm.away.name))));
+    }).catch(() => box.remove());
+    return box;
+  }
+
   function openMatchDialog(m) {
     const sc = scoreText(m.res);
     const dlg = h("dialog", { class: "match-dialog" },
@@ -785,7 +818,8 @@ window.HB = window.HB || {};
         m.arena ? h("span", null, m.arena) : null,
         sc ? h("span", { class: "match-dialog-score" }, sc) : null),
       teamStatBlock(m, m.home, "home"),
-      teamStatBlock(m, m.away, "away"));
+      teamStatBlock(m, m.away, "away"),
+      previousMeetingsBlock(m));
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
     dlg.addEventListener("close", () => dlg.remove());
     document.body.append(dlg);
@@ -823,11 +857,13 @@ window.HB = window.HB || {};
       h("div", { class: "match-body" },
         h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
         h("div", {
+          // Tiden visas redan en gång ovanför/till vänster (räls i tid-läge,
+          // "when"-prefix i övriga sorteringar) — upprepa den inte på kortet.
           class: "score" + (live ? " live" : "") +
-            (sc === "spelad" ? " played" : ""),
+            (sc === "spelad" ? " played" : "") + (!sc && !live ? " pending" : ""),
         },
           live ? h("span", { class: "live-tag" }, h("span", { class: "live-dot" }), "LIVE") : null,
-          sc || fmtTime.format(new Date(m.start)))));
+          sc || (live ? "" : "–"))));
   }
 
   function timeGroups(list, multiDay) {
@@ -1010,6 +1046,116 @@ window.HB = window.HB || {};
               h("td", { class: "pts" }, String(r.points)))))));
       }
       main.append(box);
+    }
+  }
+
+  // --- render: slutspel --------------------------------------------------------
+
+  function categoriesToShow() {
+    // Kategorier ur de filtrerade matcherna, med klubbens först — samma
+    // urvalslogik som divisionsToShow(), fast per kategori (en kategori kan
+    // ha flera slutspelsträd: A-/B-/C-Slutspel).
+    const map = new Map();
+    for (const m of scoped()) {
+      if (state.cats.size && !state.cats.has(m.catId)) continue;
+      if (state.teams.size &&
+          !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) continue;
+      if (!m.catId) continue;
+      if (!map.has(m.catId)) {
+        map.set(m.catId, { catId: m.catId, catName: m.catName, ours: false });
+      }
+      if (isClubMatch(m)) map.get(m.catId).ours = true;
+    }
+    let cats = [...map.values()];
+    if (state.scope === "club") cats = cats.filter((c) => c.ours);
+    cats.sort((a, b) => catSortKey(a.catName) - catSortKey(b.catName) ||
+      a.catName.localeCompare(b.catName, "sv"));
+    return cats;
+  }
+
+  let playoffQueue = Promise.resolve();
+
+  function ensurePlayoffs(catId) {
+    if (state.playoffs[catId]) return;
+    state.playoffs[catId] = { status: "loading", divisions: [] };
+    playoffQueue = playoffQueue.then(async () => {
+      try {
+        const divisions = await HB.api.fetchPlayoffs(cup(), catId);
+        state.playoffs[catId] = { status: "done", divisions };
+      } catch {
+        state.playoffs[catId] = { status: "error", divisions: [] };
+      }
+      if (state.view === "slutspel") renderContent();
+    });
+  }
+
+  function bracketMatchBox(m) {
+    const sc = scoreText(m.res);
+    const teamRow = (side) => h("div", {
+      class: "bracket-team" + (isClubName(side.name) ? " us" : "") +
+        (m.res && m.res.fin && m.res.winner &&
+          ((m.res.winner === "home") === (side === m.home)) ? " won" : ""),
+    }, side.name || "TBD");
+    return h("div", {
+      class: "bracket-match" + (isClubMatch(m) ? " ours" : ""),
+      role: "button", tabindex: "0",
+      onclick: () => openMatchDialog(m),
+      onkeydown: (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchDialog(m); }
+      },
+    },
+      h("div", { class: "bracket-teams" }, teamRow(m.home), teamRow(m.away)),
+      h("div", { class: "bracket-score" }, sc || fmtTime.format(new Date(m.start))));
+  }
+
+  function bracketBlock(div) {
+    const byRound = new Map();
+    for (const m of div.matches) {
+      if (!byRound.has(m.roundRank)) byRound.set(m.roundRank, []);
+      byRound.get(m.roundRank).push(m);
+    }
+    // Högre rank = tidigare omgång; sorterat så finalen (rank 0) hamnar sist/till höger.
+    const rounds = [...byRound.entries()].sort((a, b) => b[0] - a[0]);
+    for (const [, ms] of rounds) ms.sort((a, b) => a.matchRank - b.matchRank);
+
+    return h("section", { class: "bracket-box" },
+      h("h3", null, div.name),
+      h("div", { class: "bracket" },
+        rounds.map(([, ms]) =>
+          h("div", { class: "bracket-round" },
+            h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
+            ms.map(bracketMatchBox)))));
+  }
+
+  function renderPlayoffs(main) {
+    const cats = categoriesToShow();
+    if (state.scope === "all" && !state.cats.size) {
+      main.append(h("div", { class: "banner" },
+        "Välj minst en klass ovan för att visa slutspel för hela cupen."));
+      return;
+    }
+    if (!cats.length) {
+      main.append(h("div", { class: "banner" }, "Inga klasser att visa."));
+      return;
+    }
+    let any = false, anyLoading = false;
+    for (const c of cats) {
+      ensurePlayoffs(c.catId);
+      const p = state.playoffs[c.catId];
+      if (!p || p.status === "loading") {
+        anyLoading = true;
+        main.append(h("h2", { class: "day-h" }, c.catName),
+          h("p", { class: "muted" }, "Hämtar slutspel …"));
+        continue;
+      }
+      if (p.status === "error" || !p.divisions.length) continue; // inget slutspel ännu — hoppa tyst
+      any = true;
+      main.append(h("h2", { class: "day-h" }, c.catName),
+        h("div", { class: "bracket-row" }, p.divisions.map(bracketBlock)));
+    }
+    if (!any && !anyLoading) {
+      main.append(h("div", { class: "banner" },
+        "Inget slutspel publicerat för de valda klasserna ännu."));
     }
   }
 

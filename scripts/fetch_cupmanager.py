@@ -48,7 +48,10 @@ def match_query(tid, limit, offset):
 
 def ref_id(node):
     if isinstance(node, dict):
-        m = re.search(r"id:(\d+)", node.get("href", ""))
+        # \w*[Ii]d: fångar även t.ex. "categoryId:" — Category-referenser
+        # saknar ett rent "id"-fält, så den strikta varianten gav alltid
+        # None för dem. Första träffen är entitetens primära id.
+        m = re.search(r"\w*[Ii]d:(\d+)", node.get("href", ""))
         if m:
             return int(m.group(1))
     return None
