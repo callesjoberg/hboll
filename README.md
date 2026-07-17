@@ -18,6 +18,9 @@ allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
 - **Filter**: dag, klass, eget lag, plan, fritextsök, dölj spelade matcher.
 - **Sortering**: tid, klass eller plan.
 - **Tabeller** per grupp med klubbens lag markerade.
+- **Klicka på ett matchkort** för lagstatistik (tabellplacering, antal
+  spelade/kommande matcher) och snabblänkar till en filtrerad schemavy för
+  respektive lag.
 - **Kalenderexport** (.ics) av det filtrerade urvalet — funkar i iPhone/Android/Outlook.
 - **Live-uppdatering** av pågående cuper, utan att i onödan hämta om
   avslutade eller ännu inte startade cuper (se nedan).
