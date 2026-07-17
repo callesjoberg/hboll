@@ -112,7 +112,7 @@ window.HB = window.HB || {};
     arena: "",
     q: "",
     sort: "tid",             // tid | klass | plan
-    played: true,
+    matchFilter: "all",      // all | upcoming | played
     matches: [],
     loadedAt: 0,
     loading: false,
@@ -131,14 +131,14 @@ window.HB = window.HB || {};
     localStorage.setItem(uiKey(), JSON.stringify({
       view: state.view, scope: state.scope, day: state.day,
       cats: [...state.cats], teams: [...state.teams],
-      arena: state.arena, sort: state.sort, played: state.played,
+      arena: state.arena, sort: state.sort, matchFilter: state.matchFilter,
     }));
   }
 
   function loadUi() {
     state.view = "schema"; state.scope = "club"; state.day = "all";
     state.cats = new Set(); state.teams = new Set();
-    state.arena = ""; state.q = ""; state.sort = "tid"; state.played = true;
+    state.arena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
@@ -148,7 +148,8 @@ window.HB = window.HB || {};
       if (Array.isArray(s.teams)) state.teams = new Set(s.teams);
       if (s.arena) state.arena = s.arena;
       if (s.sort) state.sort = s.sort;
-      if (typeof s.played === "boolean") state.played = s.played;
+      if (["all", "upcoming", "played"].includes(s.matchFilter)) state.matchFilter = s.matchFilter;
+      else if (s.played === false) state.matchFilter = "upcoming"; // migrera gammal boolean
     } catch { /* trasig state: kör default */ }
   }
 
@@ -219,6 +220,7 @@ window.HB = window.HB || {};
     if (id === state.cupId) return;
     state.cupId = id;
     state.tables = {};
+    dialogTableCache = {};
     state.matches = [];
     state.loadedAt = 0;
     loadUi();
@@ -257,7 +259,8 @@ window.HB = window.HB || {};
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) return false;
       if (state.arena && m.arena !== state.arena) return false;
-      if (!state.played && m.res && m.res.fin) return false;
+      if (state.matchFilter === "upcoming" && m.res && m.res.fin) return false;
+      if (state.matchFilter === "played" && !(m.res && m.res.fin)) return false;
       if (q) {
         const hay = (m.home.name + " " + m.away.name + " " + m.arena + " " +
           m.catName + " " + m.divName + " " + m.roundName).toLowerCase();
@@ -464,12 +467,11 @@ window.HB = window.HB || {};
         chip("Hela cupen", state.scope === "all", () => {
           state.scope = "all"; saveUi(); render();
         })),
-      h("label", { class: "toggle" },
-        h("input", {
-          type: "checkbox", ...(state.played ? { checked: "" } : {}),
-          onchange: (e) => { state.played = e.target.checked; saveUi(); render(); },
-        }),
-        "Visa spelade"),
+      h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
+        [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
+          chip(l, state.matchFilter === v, () => {
+            state.matchFilter = v; saveUi(); render();
+          }))),
     ));
 
     // Dagar
@@ -599,6 +601,115 @@ window.HB = window.HB || {};
         HB.shortCat(m.catName) + (m.divName ? " " + m.divName : ""))));
   }
 
+  // --- matchdialog: lagstatistik + snabblänkar --------------------------------
+
+  function teamMatchCounts(teamId) {
+    let played = 0, upcoming = 0;
+    for (const m of state.matches) {
+      if (m.home.id !== teamId && m.away.id !== teamId) continue;
+      if (m.res && m.res.fin) played++; else upcoming++;
+    }
+    return { total: played + upcoming, played, upcoming };
+  }
+
+  function findTableRow(rows, team) {
+    return rows.find((r) => r.teamId === team.id) ||
+      rows.find((r) => r.name === team.name);
+  }
+
+  function gotoTeamMatches(team, mode) {
+    state.scope = "all";
+    state.q = team.name;
+    state.teams = new Set();
+    state.cats = new Set();
+    state.day = "all";
+    state.arena = "";
+    state.matchFilter = mode;
+    state.view = "schema";
+    saveUi();
+    closeMatchDialog();
+    render();
+  }
+
+  function closeMatchDialog() {
+    const dlg = $(".match-dialog");
+    if (dlg) dlg.close();
+  }
+
+  function teamStatBlock(m, team, side) {
+    const counts = teamMatchCounts(team.id);
+    const statLine = h("p", { class: "muted team-stat-line" }, "Hämtar tabellplacering …");
+    const box = h("div", { class: "team-stat-block" },
+      h("h3", { class: isClubName(team.name) ? "us" : "" }, team.name),
+      statLine,
+      h("p", { class: "muted" },
+        counts.total + " matcher totalt · " + counts.played + " spelade · " +
+        counts.upcoming + " kommande"),
+      h("div", { class: "team-stat-actions" },
+        h("button", {
+          class: "btn small", type: "button",
+          disabled: counts.upcoming === 0 ? "" : null,
+          onclick: () => gotoTeamMatches(team, "upcoming"),
+        }, "Kommande matcher"),
+        h("button", {
+          class: "btn small", type: "button",
+          disabled: counts.played === 0 ? "" : null,
+          onclick: () => gotoTeamMatches(team, "played"),
+        }, "Spelade matcher")));
+
+    if (!m.divId) {
+      statLine.textContent = "Ingen tabell tillgänglig för den här klassen.";
+      return box;
+    }
+    ensureDialogTable(m.divId).then((rows) => {
+      if (!rows.length) {
+        statLine.textContent = "Ingen tabell tillgänglig för den här gruppen.";
+        return;
+      }
+      const idx = rows.findIndex((r) => r === findTableRow(rows, team));
+      if (idx < 0) {
+        statLine.textContent = "Laget hittades inte i gruppens tabell.";
+        return;
+      }
+      const r = rows[idx];
+      statLine.textContent = "#" + (idx + 1) + " i " + m.divName + " · " +
+        r.played + " S, " + r.won + "V–" + r.tied + "O–" + r.lost + "F · " +
+        r.gf + "–" + r.ga + " · " + r.points + " p";
+    });
+    return box;
+  }
+
+  let dialogTableCache = {};
+
+  function ensureDialogTable(divId) {
+    if (!dialogTableCache[divId]) {
+      dialogTableCache[divId] = HB.api.fetchTable(cup(), divId).catch(() => []);
+    }
+    return dialogTableCache[divId];
+  }
+
+  function openMatchDialog(m) {
+    const sc = scoreText(m.res);
+    const dlg = h("dialog", { class: "match-dialog" },
+      h("button", {
+        class: "dialog-x", type: "button", "aria-label": "Stäng",
+        onclick: () => dlg.close(),
+      }, "×"),
+      h("div", { class: "match-dialog-head" },
+        h("span", { class: "cat" }, HB.shortCat(m.catName)),
+        m.divName ? h("span", { class: "div" }, m.divName) : null,
+        h("span", null,
+          fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start))),
+        m.arena ? h("span", null, m.arena) : null,
+        sc ? h("span", { class: "match-dialog-score" }, sc) : null),
+      teamStatBlock(m, m.home, "home"),
+      teamStatBlock(m, m.away, "away"));
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => dlg.remove());
+    document.body.append(dlg);
+    dlg.showModal();
+  }
+
   // --- render: schema --------------------------------------------------------
 
   function matchCard(m) {
@@ -609,7 +720,15 @@ window.HB = window.HB || {};
         (m.res && m.res.fin && m.res.winner &&
           ((m.res.winner === "home") === (side === m.home)) ? " won" : ""),
     }, side.name || "–");
-    return h("article", { class: "match" + (isClubMatch(m) ? " ours" : "") },
+    return h("article", {
+      class: "match" + (isClubMatch(m) ? " ours" : ""),
+      role: "button", tabindex: "0",
+      "aria-label": "Visa lagstatistik för " + m.home.name + " mot " + m.away.name,
+      onclick: () => openMatchDialog(m),
+      onkeydown: (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchDialog(m); }
+      },
+    },
       h("div", { class: "match-head" },
         h("span", { class: "cat" }, HB.shortCat(m.catName)),
         m.divName ? h("span", { class: "div" }, m.divName) : null,
