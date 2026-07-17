@@ -645,6 +645,89 @@ dialog input {
   padding: 4px 0;
 }
 
+/* admin-sidan */
+
+.admin-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  max-width: 480px;
+  margin: 18px auto;
+}
+
+.admin-card h2,
+.admin-toolbar h2 {
+  margin: 0 0 8px;
+  font-family: "Barlow Condensed", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 20px;
+}
+
+.admin form { display: grid; gap: 8px; }
+
+.admin input {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font: inherit;
+  color: var(--ink);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-msg { font-size: 13px; margin-top: 10px; }
+.admin-msg.ok { color: var(--won); }
+.admin-msg.err { color: var(--live); }
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.admin-toolbar .spacer { flex: 1; }
+
+.admin-cup {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+.admin-cup-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.admin-cup-head strong { font-size: 15px; }
+.admin-cup-head .muted { flex: 1; font-size: 12px; }
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.admin-field {
+  display: grid;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-field input { font-size: 14px; text-transform: none; letter-spacing: 0; }
+
 @media (max-width: 480px) {
   .brand h1 { font-size: 20px; }
   .slot { grid-template-columns: 44px 1fr; }

@@ -744,7 +744,17 @@ window.HB = window.HB || {};
 
   // --- uppstart ------------------------------------------------------------------
 
-  function init() {
+  async function init() {
+    // Skarp cuplista från data/cups.json (redigeras via admin.html);
+    // HB.CUPS i config.js är reserv om filen saknas eller är trasig.
+    try {
+      const r = await fetch("data/cups.json?_=" + Date.now().toString(36));
+      if (r.ok) {
+        const j = await r.json();
+        if (Array.isArray(j.cups) && j.cups.length) HB.CUPS = j.cups;
+      }
+    } catch { /* kör på reservlistan */ }
+
     // Djuplänk: ?cup=potatis öppnar en viss cup direkt (delbar länk).
     const urlCup = new URLSearchParams(location.search).get("cup");
     if (urlCup && HB.allCups().some((c) => c.id === urlCup)) {

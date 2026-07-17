@@ -1,0 +1,58 @@
+{
+  "cups": [
+    {
+      "id": "ahus",
+      "name": "Åhus Beach",
+      "place": "Åhus",
+      "edition": "2026",
+      "host": "ahusbeachhandboll.cupmanager.net",
+      "tournamentId": 70944382,
+      "beach": true
+    },
+    {
+      "id": "potatis",
+      "name": "Potatiscupen",
+      "place": "Alingsås",
+      "edition": "2026",
+      "host": "potatiscupen.cupmanager.net",
+      "tournamentId": 67026461,
+      "beach": false
+    },
+    {
+      "id": "hallby",
+      "name": "Hallbybollen",
+      "place": "Jönköping",
+      "edition": "2026",
+      "host": "hallbybollen.cupmanager.net",
+      "tournamentId": 63611315,
+      "beach": false
+    },
+    {
+      "id": "bua",
+      "name": "Bua Beach",
+      "place": "Bua/Varberg",
+      "edition": "2026",
+      "host": "hkvarbergbeachhandboll.cupmanager.net",
+      "tournamentId": 69938110,
+      "beach": true
+    },
+    {
+      "id": "bohus",
+      "name": "Bohus Cup",
+      "place": "Kungälv",
+      "edition": "2026",
+      "host": "bohuscup.cupmanager.net",
+      "tournamentId": 69150040,
+      "beach": false
+    },
+    {
+      "id": "jarnvagen",
+      "name": "Järnvägen Cup",
+      "place": "Hallsberg",
+      "edition": "2026",
+      "host": "procup.se",
+      "dataUrl": "data/jarnvagen-2026.json",
+      "beach": false
+    }
+  ]
+}

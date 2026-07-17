@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title>Admin · Cupschema</title>
+  <link rel="icon" href="assets/ahk-logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="top">
+    <div class="top-inner" style="padding-bottom:12px">
+      <div class="brand">
+        <img src="assets/ahk-logo.svg" alt="" width="34" height="38">
+        <h1>Admin<small>Cupschema · Alingsås HK</small></h1>
+        <span class="spacer"></span>
+        <a class="btn" href="index.html" style="text-decoration:none">← Till schemat</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="content" class="admin">
+
+    <!-- Steg 1: lås upp / första gången -->
+    <section id="gate" class="admin-card">
+      <h2>Lås upp</h2>
+      <div id="gateUnlock" hidden>
+        <p class="muted">Ange ditt lösenord för att låsa upp admin-läget
+           på den här enheten.</p>
+        <form id="unlockForm">
+          <input type="password" name="pw" placeholder="Lösenord" autocomplete="current-password" required>
+          <div class="dialog-actions">
+            <button type="button" class="btn" id="forgetBtn">Glöm token</button>
+            <button type="submit" class="btn primary">Lås upp</button>
+          </div>
+        </form>
+      </div>
+      <div id="gateSetup" hidden>
+        <p class="muted">Första gången: klistra in en GitHub-token och välj ett
+           lösenord. Tokenen krypteras med lösenordet och sparas bara i den
+           här webbläsaren — ändringar skyddas på riktigt av GitHubs
+           behörigheter, inte av lösenordet i sig.</p>
+        <details class="muted" style="margin-bottom:10px">
+          <summary>Så skapar du tokenen (en gång)</summary>
+          <ol style="padding-left:18px">
+            <li>Gå till <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → Settings → Fine-grained tokens</a></li>
+            <li>Repository access: <strong>Only select repositories → hboll</strong></li>
+            <li>Permissions: <strong>Contents: Read and write</strong> samt
+                <strong>Actions: Read and write</strong></li>
+            <li>Skapa och klistra in här.</li>
+          </ol>
+        </details>
+        <form id="setupForm">
+          <input type="password" name="token" placeholder="GitHub-token (github_pat_…)" autocomplete="off" required>
+          <input type="password" name="pw" placeholder="Välj lösenord" autocomplete="new-password" required minlength="6">
+          <div class="dialog-actions">
+            <button type="submit" class="btn primary">Spara och lås upp</button>
+          </div>
+        </form>
+      </div>
+      <p id="gateMsg" class="admin-msg" hidden></p>
+    </section>
+
+    <!-- Steg 2: redigera cuper -->
+    <section id="editor" hidden>
+      <div class="admin-toolbar">
+        <h2>Cuper</h2>
+        <span class="spacer"></span>
+        <button class="btn" id="runProcupBtn" type="button"
+                title="Startar GitHub-jobbet som skrapar ProCup-cuperna">
+          ⟳ Uppdatera ProCup-data</button>
+        <button class="btn" id="addBtn" type="button">+ Ny cup</button>
+        <button class="btn primary" id="saveBtn" type="button">Publicera ändringar</button>
+      </div>
+      <p class="muted">Ändringar committas till GitHub och syns på sajten inom
+         någon minut. Turnerings-ID hittas i källkoden på cupens resultatsida
+         (”tournamentId: …”). ProCup-cuper anger <code>dataUrl</code> i stället
+         för ID.</p>
+      <div id="cupList"></div>
+      <p id="editorMsg" class="admin-msg" hidden></p>
+      <p class="muted" style="margin-top:20px">
+        <button class="btn small" id="lockBtn" type="button">Lås</button>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

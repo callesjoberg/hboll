@@ -32,13 +32,24 @@ python3 -m http.server 8437
 
 ## Lägg till en cup
 
-De flesta svenska handbollscuper kör Cup Manager. Så här hittar du uppgifterna:
+Enklast via **admin-sidan** (`admin.html`, länkad i sidfoten): lås upp med ditt
+lösenord, redigera cuplistan och tryck Publicera — ändringen committas till
+`data/cups.json` via GitHubs API och syns på sajten inom någon minut.
+
+Första gången behöver du en fine-grained GitHub-token (Settings → Developer
+settings → Fine-grained tokens; endast repot `hboll`; behörigheter *Contents:
+Read and write* och *Actions: Read and write*). Tokenen krypteras med ditt
+lösenord och sparas bara i webbläsaren. Notera: admin-sidan är publik — det
+som skyddar mot skrivningar är GitHub-tokenen, inte lösenordet.
+
+De flesta svenska handbollscuper kör Cup Manager. Så hittar du uppgifterna:
 
 1. Gå till cupens sida, t.ex. `https://potatiscupen.cupmanager.net/`, och klicka
    dig till **resultat/spelschema**.
 2. Visa sidans källkod och sök på `tournamentId` — ett 8-siffrigt tal.
-3. Antingen: lägg till cupen i `js/config.js` (permanent, för alla besökare),
-   eller använd **"+ Lägg till cup"** i sidfoten (sparas bara i din webbläsare).
+3. Lägg in värd + ID i admin-sidan (för alla besökare), redigera
+   `data/cups.json` för hand, eller använd **"+ Lägg till cup"** i sidfoten
+   (sparas bara i din webbläsare).
 
 **ProCup-cuper** (t.ex. Järnvägen Cup) saknar öppet API och CORS. De förhämtas
 i stället av `scripts/fetch_procup.py` till `data/`-katalogen — GitHub Actions

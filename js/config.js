@@ -1,6 +1,8 @@
-/* config.js — cuper och klubb. Lägg till en cup: hitta turnerings-ID genom att
-   öppna cupens resultatsida på cupmanager.net och läsa "tournamentId: NNNN"
-   i sidans källkod (eller använd "+ Lägg till cup" i sidfoten). */
+/* config.js — klubb + reservlista med cuper.
+   Den skarpa cuplistan bor i data/cups.json och redigeras enklast via
+   admin.html (kräver GitHub-token). Listan här används bara som reserv om
+   cups.json inte går att läsa. Turnerings-ID hittas i källkoden på cupens
+   resultatsida på cupmanager.net ("tournamentId: NNNN"). */
 
 window.HB = window.HB || {};
 
