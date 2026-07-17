@@ -100,13 +100,52 @@ window.HB = window.HB || {};
     return res.fin ? "spelad" : null;
   }
 
+  // Vilket lag som är "vårt" perspektiv för resultatmärke/sortering: det
+  // filtrerade laget om exakt ett är valt, annars klubben, annars hemmalaget.
+  function referenceSide(m) {
+    if (state.teams.size === 1) {
+      const [id] = state.teams;
+      if (m.home.id === id) return "home";
+      if (m.away.id === id) return "away";
+    }
+    if (isClubName(m.home.name)) return "home";
+    if (isClubName(m.away.name)) return "away";
+    return "home";
+  }
+
+  function hasReference(m) {
+    return state.teams.size === 1
+      ? (m.home.id === [...state.teams][0] || m.away.id === [...state.teams][0])
+      : isClubMatch(m);
+  }
+
+  // "V"/"O"/"F" (vunnet/oavgjort/förlorat) ur referenslagets perspektiv, eller
+  // null om matchen inte är avgjord eller inte rör referenslaget.
+  function outcomeLetter(m) {
+    if (!hasReference(m) || !(m.res && m.res.fin) || m.res.wo) return null;
+    if (!m.res.winner) return "O";
+    return m.res.winner === referenceSide(m) ? "V" : "F";
+  }
+
+  // 0=vunnet, 1=oavgjort, 2=förlorat, 3=ospelat/ej relevant — för "Sortera: resultat".
+  function outcomeRank(m) {
+    if (!(m.res && m.res.fin)) return 3;
+    const o = outcomeLetter(m);
+    return o === "V" ? 0 : o === "O" ? 1 : o === "F" ? 2 : 3;
+  }
+
+  function totalGoals(m) {
+    if (!(m.res && m.res.fin) || m.res.wo) return -1; // ospelade/WO sist
+    return (m.res.hg || 0) + (m.res.ag || 0);
+  }
+
   // --- state ---------------------------------------------------------------
 
   const state = {
     cupId: localStorage.getItem("hb:cup") || (HB.allCups()[0] || {}).id,
     view: "schema",          // schema | tabeller
     scope: "club",           // club | all
-    day: "all",
+    days: new Set(),         // tom = alla dagar
     cats: new Set(),
     teams: new Set(),
     arena: "",
@@ -129,21 +168,22 @@ window.HB = window.HB || {};
   function saveUi() {
     localStorage.setItem("hb:cup", state.cupId);
     localStorage.setItem(uiKey(), JSON.stringify({
-      view: state.view, scope: state.scope, day: state.day,
+      view: state.view, scope: state.scope, days: [...state.days],
       cats: [...state.cats], teams: [...state.teams],
       arena: state.arena, sort: state.sort, matchFilter: state.matchFilter,
     }));
   }
 
   function loadUi() {
-    state.view = "schema"; state.scope = "club"; state.day = "all";
+    state.view = "schema"; state.scope = "club"; state.days = new Set();
     state.cats = new Set(); state.teams = new Set();
     state.arena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
       if (s.scope) state.scope = s.scope;
-      if (s.day) state.day = s.day;
+      if (Array.isArray(s.days)) state.days = new Set(s.days);
+      else if (typeof s.day === "string" && s.day !== "all") state.days = new Set([s.day]); // migrera gammalt format
       if (Array.isArray(s.cats)) state.cats = new Set(s.cats);
       if (Array.isArray(s.teams)) state.teams = new Set(s.teams);
       if (s.arena) state.arena = s.arena;
@@ -254,7 +294,7 @@ window.HB = window.HB || {};
   function filtered() {
     const q = state.q.trim().toLowerCase();
     return scoped().filter((m) => {
-      if (state.day !== "all" && dayKey(m.start) !== state.day) return false;
+      if (state.days.size && !state.days.has(dayKey(m.start))) return false;
       if (state.cats.size && !state.cats.has(m.catId)) return false;
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) return false;
@@ -278,6 +318,8 @@ window.HB = window.HB || {};
         a.divName.localeCompare(b.divName, "sv") || a.start - b.start,
       plan: (a, b) => a.arena.localeCompare(b.arena, "sv", { numeric: true }) ||
         a.start - b.start,
+      resultat: (a, b) => outcomeRank(a) - outcomeRank(b) || a.start - b.start,
+      mal: (a, b) => totalGoals(b) - totalGoals(a) || a.start - b.start,
     };
     return [...list].sort(bySort[state.sort] || bySort.tid);
   }
@@ -485,16 +527,17 @@ window.HB = window.HB || {};
           }))));
     }
 
-    // Dagar
+    // Dagar (flerval — flera dagar kan vara aktiva samtidigt)
     const days = [...new Set(scoped().map((m) => dayKey(m.start)))].sort();
     if (days.length > 1) {
       bar.append(h("div", { class: "row day-row" },
-        chip("Alla dagar", state.day === "all", () => {
-          state.day = "all"; saveUi(); render();
+        chip("Alla dagar", state.days.size === 0, () => {
+          state.days = new Set(); saveUi(); render();
         }, "day"),
         days.map((d) =>
-          chip(fmtDay.format(new Date(d + "T00:00:00Z")), state.day === d, () => {
-            state.day = state.day === d ? "all" : d; saveUi(); render();
+          chip(fmtDay.format(new Date(d + "T00:00:00Z")), state.days.has(d), () => {
+            state.days.has(d) ? state.days.delete(d) : state.days.add(d);
+            saveUi(); render();
           }, "day"))));
     }
 
@@ -551,22 +594,41 @@ window.HB = window.HB || {};
         class: "select", "aria-label": "Sortering",
         onchange: (e) => { state.sort = e.target.value; saveUi(); render(); },
       },
-        [["tid", "Sortera: tid"], ["klass", "Sortera: klass"], ["plan", "Sortera: plan"]]
+        [["tid", "Sortera: tid"], ["klass", "Sortera: klass"], ["plan", "Sortera: plan"],
+         ["resultat", "Sortera: resultat"], ["mal", "Sortera: mål"]]
           .map(([v, l]) => h("option",
             { value: v, ...(state.sort === v ? { selected: "" } : {}) }, l))),
-      h("button", {
-        class: "btn", type: "button",
-        onclick: exportIcs, title: "Ladda ner filtrerade matcher som kalenderfil",
-      }, "📅 .ics"),
+      buildExportPicker(),
     ));
   }
 
-  function exportIcs() {
-    const list = sorted(filtered()).filter((m) => !(m.res && m.res.fin));
-    const all = list.length ? list : sorted(filtered());
-    if (!all.length) return;
-    HB.ics.download(cup(), all, cup().id + "-" +
-      (state.scope === "club" ? "ahk" : "alla") + ".ics");
+  // Exporterar exakt den synliga, filtrerade och sorterade listan — samma
+  // urval i alla tre format, inga dolda undantag.
+  function exportBaseName() {
+    return cup().id + "-" + (state.scope === "club" ? "ahk" : "alla");
+  }
+
+  function buildExportPicker() {
+    const dd = h("details", { class: "team-picker-dd export-dd" });
+    const summary = h("summary", { class: "chip team-picker-summary" }, "Exportera");
+    const item = (label, onClick) => h("button", {
+      class: "export-item", type: "button",
+      onclick: () => { onClick(); dd.open = false; },
+    }, label);
+    dd.append(summary, h("div", { class: "team-picker-panel export-panel" },
+      item("📅 Kalender (.ics)", () => {
+        const list = sorted(filtered());
+        if (list.length) HB.ics.download(cup(), list, exportBaseName() + ".ics");
+      }),
+      item("📊 Kalkylark (.xlsx)", () => {
+        const list = sorted(filtered());
+        if (list.length) HB.xlsx.download(cup(), list, exportBaseName() + ".xlsx");
+      }),
+      item("CSV (.csv)", () => {
+        const list = sorted(filtered());
+        if (list.length) HB.csv.download(cup(), list, exportBaseName() + ".csv");
+      })));
+    return dd;
   }
 
   // --- render: hero (nästa match) ------------------------------------------
@@ -636,7 +698,7 @@ window.HB = window.HB || {};
     state.q = "";
     state.teams = new Set([team.id]);
     state.cats = new Set();
-    state.day = "all";
+    state.days = new Set();
     state.arena = "";
     state.matchFilter = mode;
     state.view = "schema";
@@ -754,6 +816,9 @@ window.HB = window.HB || {};
         m.divName ? h("span", { class: "div" }, m.divName) : null,
         m.roundName && m.roundName !== m.divName
           ? h("span", { class: "div" }, m.roundName) : null,
+        outcomeLetter(m)
+          ? h("span", { class: "outcome-badge outcome-" + outcomeLetter(m).toLowerCase() },
+              outcomeLetter(m)) : null,
         h("span", { class: "arena" }, m.arena)),
       h("div", { class: "match-body" },
         h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
@@ -765,10 +830,10 @@ window.HB = window.HB || {};
           sc || fmtTime.format(new Date(m.start)))));
   }
 
-  function timeGroups(list) {
+  function timeGroups(list, multiDay) {
     const groups = [];
     for (const m of list) {
-      const key = state.day === "all"
+      const key = multiDay
         ? dayKey(m.start) + " " + fmtTime.format(new Date(m.start))
         : fmtTime.format(new Date(m.start));
       const last = groups[groups.length - 1];
@@ -798,14 +863,18 @@ window.HB = window.HB || {};
     }
 
     if (state.sort === "tid") {
+      // Dagshuvuden/veckodagsetiketter visas när listan faktiskt spänner
+      // över mer än en kalenderdag — oavsett om det beror på att inget
+      // dagfilter är satt eller att flera dagar valts samtidigt.
+      const multiDay = new Set(list.map((m) => dayKey(m.start))).size > 1;
       const now = Date.now();
       const today = dayKey(now);
       let nowPlaced = false;
       let lastDay = "";
       const wrap = h("div", { class: "timeline" });
-      for (const g of timeGroups(list)) {
+      for (const g of timeGroups(list, multiDay)) {
         const gDay = dayKey(g.start);
-        if (state.day === "all" && gDay !== lastDay) {
+        if (multiDay && gDay !== lastDay) {
           lastDay = gDay;
           nowPlaced = nowPlaced || gDay > today;
           wrap.append(h("h2", { class: "day-h" },
@@ -819,7 +888,7 @@ window.HB = window.HB || {};
         wrap.append(h("div", { class: "slot" },
           h("div", { class: "rail" },
             fmtTime.format(new Date(g.start)),
-            state.day === "all"
+            multiDay
               ? h("small", null, fmtDay.format(new Date(g.start))) : null),
           h("div", { class: "slot-matches" }, g.items.map(matchCard))));
       }
@@ -829,18 +898,21 @@ window.HB = window.HB || {};
         setTimeout(() => nl.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
       }
     } else {
-      const keyOf = state.sort === "klass"
-        ? (m) => m.catName + (m.divName ? " · " + m.divName : "")
-        : (m) => m.arena || "Plan ej satt";
-      let lastKey = null;
+      const outcomeLabels = ["Vunnet", "Oavgjort", "Förlorat", "Ospelat"];
+      const keyOf = {
+        klass: (m) => m.catName + (m.divName ? " · " + m.divName : ""),
+        plan: (m) => m.arena || "Plan ej satt",
+        resultat: (m) => outcomeLabels[outcomeRank(m)],
+      }[state.sort] || (() => null); // "mal": ingen gruppering, bara löpande lista
+      let lastKey; // undefined ≠ null: tvingar fram en första sektion
       const wrap = h("div", { class: "grouped" });
       let sect = null;
       for (const m of list) {
         const k = keyOf(m);
-        if (k !== lastKey) {
+        if (k !== lastKey || !sect) {
           lastKey = k;
           sect = h("div", { class: "slot-matches" });
-          wrap.append(h("h2", { class: "day-h" }, k), sect);
+          wrap.append(k !== null ? h("h2", { class: "day-h" }, k) : null, sect);
         }
         const card = matchCard(m);
         card.prepend(h("div", { class: "when" },

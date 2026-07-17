@@ -313,6 +313,23 @@ header.top {
 
 .team-picker-item input { flex-shrink: 0; }
 
+.export-dd .export-panel { width: 200px; padding: 6px; gap: 2px; }
+
+.export-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.export-item:hover { background: var(--paper); }
+
 .seg { display: flex; gap: 0; }
 
 .seg .chip { border-radius: 0; }
@@ -505,6 +522,24 @@ header.top {
   color: var(--blue);
   letter-spacing: 0.04em;
 }
+
+.outcome-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.outcome-v { background: var(--won); }
+.outcome-o { background: #8a94a3; }
+.outcome-f { background: var(--live); }
 
 .match-head .arena {
   margin-left: auto;
