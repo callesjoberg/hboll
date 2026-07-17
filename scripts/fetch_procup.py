@@ -17,7 +17,9 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 BASE = "https://procup.se/cup/"
 
@@ -57,11 +59,12 @@ def rows_of(table):
 
 
 def wall_ms(date_iso, hhmm):
-    """'2026-05-30' + '07:30' → svensk väggtid kodad som UTC-epoch-ms
-    (samma kodning som Cup Manager använder)."""
-    t = time.strptime(date_iso + " " + hhmm, "%Y-%m-%d %H:%M")
-    import calendar
-    return calendar.timegm(t) * 1000
+    """'2026-05-30' + '07:30' (svensk lokaltid, som ProCup visar) →
+    äkta UTC-epoch-ms — samma kodning som Cup Manager-API:t använder,
+    så att js/app.js kan formatera bägge datakällorna likadant."""
+    dt = datetime.strptime(date_iso + " " + hhmm, "%Y-%m-%d %H:%M")
+    dt = dt.replace(tzinfo=ZoneInfo("Europe/Stockholm"))
+    return int(dt.timestamp() * 1000)
 
 
 def split_teams(teams_c):

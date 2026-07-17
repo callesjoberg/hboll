@@ -32,5 +32,7 @@ jobs:
             echo "Ingen ändring — hoppar över commit."
           else
             git commit -m "Uppdatera ProCup-data"
+            # Skydd mot kapplöpning med manuella pushar under körningen.
+            git pull --rebase origin main
             git push
           fi

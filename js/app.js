@@ -6,33 +6,30 @@ window.HB = window.HB || {};
   const $ = (sel, el) => (el || document).querySelector(sel);
   const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
 
-  // --- tid: matchstart är svensk väggtid kodad som UTC ------------------
+  // --- tid: matchstart är en äkta UTC-epok — visa i Europe/Stockholm -----
+
+  const TZ = "Europe/Stockholm";
 
   const fmtTime = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "UTC", hour: "2-digit", minute: "2-digit",
+    timeZone: TZ, hour: "2-digit", minute: "2-digit",
   });
   const fmtDay = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "UTC", weekday: "short", day: "numeric", month: "short",
+    timeZone: TZ, weekday: "short", day: "numeric", month: "short",
   });
   const fmtDayLong = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "UTC", weekday: "long", day: "numeric", month: "long",
+    timeZone: TZ, weekday: "long", day: "numeric", month: "long",
   });
   const fmtClock = new Intl.DateTimeFormat("sv-SE", {
-    hour: "2-digit", minute: "2-digit",
+    timeZone: TZ, hour: "2-digit", minute: "2-digit",
+  });
+  const dayKeyFmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
   });
 
-  function nowWall() {
-    // Nu i svensk väggtid, som pseudo-UTC-epoch (samma kodning som matchstart).
-    const s = new Intl.DateTimeFormat("sv-SE", {
-      timeZone: "Europe/Stockholm", year: "numeric", month: "2-digit",
-      day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit",
-      hour12: false,
-    }).format(new Date());
-    return Date.parse(s.replace(" ", "T") + "Z");
-  }
-
   function dayKey(ms) {
-    return new Date(ms).toISOString().slice(0, 10);
+    // Svensk kalenderdag (en-CA ger yyyy-mm-dd), inte UTC-datumet — en match
+    // strax efter midnatt svensk tid kan annars hamna på fel dag.
+    return dayKeyFmt.format(new Date(ms));
   }
 
   // --- kategori-hjälpare -------------------------------------------------
@@ -88,7 +85,7 @@ window.HB = window.HB || {};
     // Yngre klasser rapporterar inga resultat: deras matcher blir stående
     // "live" med nollor. Räkna bara pågående, ej färdiga, nutida matcher.
     return !!(m.res && m.res.live && !m.res.fin &&
-      Math.abs(m.start - nowWall()) < 6 * 3600000);
+      Math.abs(m.start - Date.now()) < 6 * 3600000);
   }
 
   function scoreText(res) {
@@ -162,7 +159,7 @@ window.HB = window.HB || {};
     // avslutad cup ändras aldrig; framtida cuper justeras sällan;
     // pågående cuper live-uppdateras.
     if (!matches.length) return 0;
-    const now = nowWall();
+    const now = Date.now();
     const first = matches[0].start;
     const last = matches[matches.length - 1].start;
     if (now > last + 24 * 3600000) return Infinity;   // färdigspelad
@@ -312,6 +309,13 @@ window.HB = window.HB || {};
     renderTabs();
     renderMeta();
     renderToolbar();
+    renderContent();
+  }
+
+  // Ritar bara matchlistan/tabellerna. Används av allt som inte ska rubba
+  // verktygsraden — fritextsökning och bakgrundsuppdateringar — så att
+  // fokus i sökfältet (och en öppen lag-dropdown) inte går förlorat.
+  function renderContent() {
     const main = $("#content");
     main.replaceChildren();
     if (state.error) {
@@ -364,6 +368,84 @@ window.HB = window.HB || {};
         }).format(new Date(dataTs))
       : "Uppdaterad " + fmtClock.format(new Date(state.loadedAt))) +
       " · " + n + " matcher" + (state.loading ? " · hämtar nytt …" : "");
+  }
+
+  // --- lagväljare: sök-, filter- och sorterbar dropdown -----------------------
+
+  function buildTeamPicker(teams) {
+    // Egen, självstyrande komponent: sökning/sortering/bockning inuti den
+    // sköts med direkt DOM-manipulation i stället för renderToolbar(), så
+    // att den kan hållas öppen genom flera val utan att byggas om.
+    const dd = h("details", { class: "team-picker-dd" });
+    const summary = h("summary", { class: "chip team-picker-summary" });
+    const setSummary = () => {
+      summary.textContent = state.teams.size
+        ? "Lag (" + state.teams.size + ")" : "Alla lag";
+    };
+    setSummary();
+
+    const search = h("input", {
+      class: "team-picker-search", type: "search", placeholder: "Sök lag …",
+    });
+    const clearBtn = h("button", {
+      class: "btn small", type: "button",
+      onclick: () => {
+        state.teams.clear();
+        saveUi(); setSummary(); renderContent();
+        list.querySelectorAll("input").forEach((cb) => { cb.checked = false; });
+      },
+    }, "Rensa");
+
+    let sortMode = "klass";
+    const sortBtns = {};
+    const applySort = () => {
+      const cmp = sortMode === "namn"
+        ? (a, b) => a.dataset.name.localeCompare(b.dataset.name, "sv")
+        : (a, b) => (+a.dataset.catkey - +b.dataset.catkey) ||
+            a.dataset.name.localeCompare(b.dataset.name, "sv");
+      [...list.children].sort(cmp).forEach((el) => list.append(el));
+    };
+    const sortRow = h("div", { class: "team-picker-sort-row" },
+      ["klass", "namn"].map((key) => {
+        const b = h("button", {
+          class: "chip small" + (key === sortMode ? " on" : ""),
+          type: "button",
+          onclick: () => {
+            sortMode = key;
+            Object.entries(sortBtns).forEach(([k, el]) => el.classList.toggle("on", k === key));
+            applySort();
+          },
+        }, "Sortera: " + (key === "namn" ? "namn" : "klass"));
+        sortBtns[key] = b;
+        return b;
+      }));
+
+    const list = h("div", { class: "team-picker-list" },
+      teams.map((t) => {
+        const label = HB.shortCat(t.catName) + " " + t.suffix;
+        const cb = h("input", {
+          type: "checkbox", ...(state.teams.has(t.id) ? { checked: "" } : {}),
+          onchange: (e) => {
+            e.target.checked ? state.teams.add(t.id) : state.teams.delete(t.id);
+            saveUi(); setSummary(); renderContent();
+          },
+        });
+        const row = h("label", { class: "team-picker-item" }, cb, label);
+        row.dataset.name = t.suffix;
+        row.dataset.catkey = String(catSortKey(t.catName));
+        row.dataset.search = label.toLowerCase();
+        return row;
+      }));
+
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      for (const item of list.children) item.hidden = !!q && !item.dataset.search.includes(q);
+    });
+
+    dd.append(summary, h("div", { class: "team-picker-panel" },
+      h("div", { class: "team-picker-search-row" }, search, clearBtn),
+      sortRow, list));
+    return dd;
   }
 
   // --- render: verktygsrad ----------------------------------------------------
@@ -430,12 +512,7 @@ window.HB = window.HB || {};
     if (state.scope === "club") {
       const teams = clubTeams();
       if (teams.length > 1) {
-        bar.append(h("div", { class: "row" },
-          teams.map((t) =>
-            chip(HB.shortCat(t.catName) + " " + t.suffix, state.teams.has(t.id), () => {
-              state.teams.has(t.id) ? state.teams.delete(t.id) : state.teams.add(t.id);
-              saveUi(); render();
-            }, "team"))));
+        bar.append(h("div", { class: "row" }, buildTeamPicker(teams)));
       }
     }
 
@@ -446,7 +523,9 @@ window.HB = window.HB || {};
       h("input", {
         class: "search", type: "search", placeholder: "Sök lag, plan, grupp …",
         value: state.q,
-        oninput: (e) => { state.q = e.target.value; render(); },
+        // renderContent() (inte render()) — annars byggs sökfältet om vid
+        // varje tangenttryckning och tappar fokus/mobiltangentbordet.
+        oninput: (e) => { state.q = e.target.value; renderContent(); },
       }),
       arenas.length > 1 ? h("select", {
         class: "select", "aria-label": "Plan",
@@ -480,7 +559,7 @@ window.HB = window.HB || {};
   // --- render: hero (nästa match) ------------------------------------------
 
   function nextClubMatch() {
-    const now = nowWall();
+    const now = Date.now();
     const pool = state.matches.filter(isClubMatch).filter((m) => {
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) return false;
@@ -491,7 +570,7 @@ window.HB = window.HB || {};
   }
 
   function countdownText(ms) {
-    const diff = ms - nowWall();
+    const diff = ms - Date.now();
     if (diff <= 0) return "nu";
     const min = Math.round(diff / 60000);
     if (min < 60) return "om " + min + " min";
@@ -580,7 +659,7 @@ window.HB = window.HB || {};
     }
 
     if (state.sort === "tid") {
-      const now = nowWall();
+      const now = Date.now();
       const today = dayKey(now);
       let nowPlaced = false;
       let lastDay = "";
@@ -670,7 +749,7 @@ window.HB = window.HB || {};
       } catch {
         state.tables[divId] = { status: "error", rows: [] };
       }
-      if (state.view === "tabeller") render();
+      if (state.view === "tabeller") renderContent();
     });
   }
 
@@ -795,6 +874,14 @@ window.HB = window.HB || {};
       }));
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
     setupAddCup();
+
+    // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
+    // lyssnare (i stället för en per renderToolbar-anrop) hittar alltid
+    // den dropdown som råkar vara monterad just nu.
+    document.addEventListener("click", (e) => {
+      const dd = document.querySelector(".team-picker-dd[open]");
+      if (dd && !dd.contains(e.target)) dd.open = false;
+    });
     loadUi();
     loadCup();
 

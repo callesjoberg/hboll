@@ -1,19 +1,22 @@
 /* ics.js — export av matcher till kalenderfil (.ics).
-   Matchstart lagras som svensk väggtid kodad i UTC-epoch; vi skriver
-   DTSTART med TZID=Europe/Stockholm och väggtiden rakt av. */
+   Matchstart är en äkta UTC-epok; vi läser ut svensk lokaltid ur den och
+   skriver DTSTART med TZID=Europe/Stockholm + den lokala väggtiden. */
 
 window.HB = window.HB || {};
 
 (function () {
   const MATCH_MINUTES = 30; // schemarutan är oftast 15–30 min; 30 ger marginal
 
+  const wallParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Stockholm", hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+  });
+
   function wallStamp(ms) {
-    const d = new Date(ms);
-    const p = (n) => String(n).padStart(2, "0");
-    return (
-      d.getUTCFullYear() + p(d.getUTCMonth() + 1) + p(d.getUTCDate()) +
-      "T" + p(d.getUTCHours()) + p(d.getUTCMinutes()) + "00"
-    );
+    const p = {};
+    for (const part of wallParts.formatToParts(new Date(ms))) p[part.type] = part.value;
+    return p.year + p.month + p.day + "T" + p.hour + p.minute + "00";
   }
 
   function esc(s) {
