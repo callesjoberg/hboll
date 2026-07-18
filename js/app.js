@@ -60,12 +60,6 @@ window.HB = window.HB || {};
     return p.age * 10 + (gOrder[p.g] ?? 5);
   }
 
-  function catRule(catName) {
-    // Särskiljande ord ur kategorinamnet ("Classic", "Beach+", "Mini" …).
-    const m = /(Classic|Beach\w*\+?|Mini|Motion|Elit|Utveckling)/i.exec(catName || "");
-    return m ? m[1] : "";
-  }
-
   function teamSuffix(name) {
     const stripped = name.replace(HB.CLUB.pattern, "").trim();
     return stripped || name;
@@ -423,28 +417,29 @@ window.HB = window.HB || {};
       " · " + n + " matcher" + (state.loading ? " · hämtar nytt …" : "");
   }
 
-  // --- lagväljare: sök-, filter- och sorterbar dropdown -----------------------
+  // --- generisk sök-, filter- och sorterbar flervalsdropdown ------------------
 
-  function buildTeamPicker(teams) {
-    // Egen, självstyrande komponent: sökning/sortering/bockning inuti den
-    // sköts med direkt DOM-manipulation i stället för renderToolbar(), så
-    // att den kan hållas öppen genom flera val utan att byggas om.
+  // Egen, självstyrande komponent: sökning/sortering/bockning inuti den sköts
+  // med direkt DOM-manipulation i stället för renderToolbar(), så att den kan
+  // hållas öppen genom flera val utan att byggas om. items: [{id, label,
+  // sortKey (numeriskt), sortName (för alfabetisk sortering)}].
+  function buildPicker(opts) {
     const dd = h("details", { class: "team-picker-dd" });
     const summary = h("summary", { class: "chip team-picker-summary" });
     const setSummary = () => {
-      summary.textContent = state.teams.size
-        ? "Lag (" + state.teams.size + ")" : "Alla lag";
+      summary.textContent = opts.selected.size
+        ? opts.countLabel(opts.selected.size) : opts.emptyLabel;
     };
     setSummary();
 
     const search = h("input", {
-      class: "team-picker-search", type: "search", placeholder: "Sök lag …",
+      class: "team-picker-search", type: "search", placeholder: opts.searchPlaceholder,
     });
     const clearBtn = h("button", {
       class: "btn small", type: "button",
       onclick: () => {
-        state.teams.clear();
-        saveUi(); setSummary(); renderContent();
+        opts.selected.clear();
+        saveUi(); setSummary(); opts.onChange();
         list.querySelectorAll("input").forEach((cb) => { cb.checked = false; });
       },
     }, "Rensa");
@@ -474,19 +469,18 @@ window.HB = window.HB || {};
       }));
 
     const list = h("div", { class: "team-picker-list" },
-      teams.map((t) => {
-        const label = HB.shortCat(t.catName) + " " + t.suffix;
+      opts.items.map((it) => {
         const cb = h("input", {
-          type: "checkbox", ...(state.teams.has(t.id) ? { checked: "" } : {}),
+          type: "checkbox", ...(opts.selected.has(it.id) ? { checked: "" } : {}),
           onchange: (e) => {
-            e.target.checked ? state.teams.add(t.id) : state.teams.delete(t.id);
-            saveUi(); setSummary(); renderContent();
+            e.target.checked ? opts.selected.add(it.id) : opts.selected.delete(it.id);
+            saveUi(); setSummary(); opts.onChange();
           },
         });
-        const row = h("label", { class: "team-picker-item" }, cb, label);
-        row.dataset.name = t.suffix;
-        row.dataset.catkey = String(catSortKey(t.catName));
-        row.dataset.search = label.toLowerCase();
+        const row = h("label", { class: "team-picker-item" }, cb, it.label);
+        row.dataset.name = it.sortName;
+        row.dataset.catkey = String(it.sortKey);
+        row.dataset.search = it.label.toLowerCase();
         return row;
       }));
 
@@ -499,6 +493,33 @@ window.HB = window.HB || {};
       h("div", { class: "team-picker-search-row" }, search, clearBtn),
       sortRow, list));
     return dd;
+  }
+
+  function buildTeamPicker(teams) {
+    return buildPicker({
+      items: teams.map((t) => ({
+        id: t.id, label: HB.shortCat(t.catName) + " " + t.suffix,
+        sortKey: catSortKey(t.catName), sortName: t.suffix,
+      })),
+      selected: state.teams,
+      emptyLabel: "Alla lag",
+      countLabel: (n) => "Lag (" + n + ")",
+      searchPlaceholder: "Sök lag …",
+      onChange: renderContent,
+    });
+  }
+
+  function buildCatPicker(catEntries) {
+    return buildPicker({
+      items: catEntries.map(([id, name]) => ({
+        id, label: name, sortKey: catSortKey(name), sortName: name,
+      })),
+      selected: state.cats,
+      emptyLabel: "Alla klasser",
+      countLabel: (n) => "Klasser (" + n + ")",
+      searchPlaceholder: "Sök klass …",
+      onChange: renderContent,
+    });
   }
 
   // --- render: verktygsrad ----------------------------------------------------
@@ -552,32 +573,18 @@ window.HB = window.HB || {};
           }, "day"))));
     }
 
-    // Klasser
+    // Klasser och egna lag — dropdown-väljare (sök-, filter- och sorterbara)
+    // i stället för en rad med en knapp per klass/lag, som blir orimligt
+    // rörig när en cup har många klasser. Lagväljaren är alltid tillgänglig
+    // oavsett klubb- eller helcupsläge.
     const cats = new Map();
     for (const m of scoped()) if (m.catId) cats.set(m.catId, m.catName);
-    if (cats.size > 1) {
-      const entries = [...cats.entries()].sort((a, b) =>
-        catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
-      // Vid krock på förkortning (t.ex. F12 Classic + F12 Mini) läggs regeln till.
-      const shorts = entries.map(([, name]) => HB.shortCat(name));
-      const dups = new Set(shorts.filter((s, i) => shorts.indexOf(s) !== i));
-      const label = (name) => {
-        const s = HB.shortCat(name);
-        if (state.scope !== "club") return name;
-        return dups.has(s) ? (s + " " + (catRule(name) || name)).trim() : s;
-      };
+    const catEntries = [...cats.entries()].sort((a, b) =>
+      catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
+    if (catEntries.length > 1 || clubTeamsList.length > 1) {
       bar.append(h("div", { class: "row" },
-        entries.map(([id, name]) =>
-          chip(label(name),
-            state.cats.has(id), () => {
-              state.cats.has(id) ? state.cats.delete(id) : state.cats.add(id);
-              saveUi(); render();
-            }))));
-    }
-
-    // Egna lag — alltid tillgänglig, oavsett klubb- eller helcupsläge.
-    if (clubTeamsList.length > 1) {
-      bar.append(h("div", { class: "row" }, buildTeamPicker(clubTeamsList)));
+        catEntries.length > 1 ? buildCatPicker(catEntries) : null,
+        clubTeamsList.length > 1 ? buildTeamPicker(clubTeamsList) : null));
     }
 
     // Sök · plan · sortering · export
