@@ -344,6 +344,11 @@ window.HB = window.HB || {};
     });
   }
 
+  // Antal matcher hämtade hittills av den pågående fetchMatches()-anropet
+  // — visas i verktygsradens metatext så en flerasekunders hämtning för en
+  // stor cup känns aktiv i stället för att se ut som att sidan hängt sig.
+  let loadProgress = 0;
+
   async function loadCup(force) {
     const c = cup();
     if (!c) return;
@@ -375,11 +380,19 @@ window.HB = window.HB || {};
 
     state.loading = true;
     state.error = null;
+    loadProgress = 0;
     render();
     try {
       const matches = await HB.api.fetchMatches(c, (n) => {
+        loadProgress = n;
         const el = $("#loadNote");
         if (el) el.textContent = "Hämtar schema … " + n + "+ matcher";
+        // Live-uppdatera "hämtar nytt …"-texten även vid en
+        // bakgrundsuppdatering (befintlig data ligger redan kvar på
+        // skärmen, #loadNote finns då inte) — annars ser en flera
+        // sekunder lång hämtning av en stor cup ut som att sidan hängt
+        // sig i stället för att faktiskt jobba.
+        renderMeta();
       });
       state.matches = matches;
       state.loadedAt = Date.now();
@@ -576,6 +589,15 @@ window.HB = window.HB || {};
   }
 
   function renderMeta() {
+    // Uppdatera-knappen ger tydlig feedback direkt vid klick — annars
+    // syns en pågående bakgrundsuppdatering (kan ta 20-30 s för en stor
+    // cup) bara som en liten textändring längst upp, vilket lätt ser ut
+    // som att sidan hängt sig i stället för att faktiskt jobba.
+    const btn = $("#refreshBtn");
+    if (btn) {
+      btn.disabled = state.loading;
+      btn.textContent = state.loading ? "↻ Uppdaterar …" : "↻ Uppdatera";
+    }
     const el = $("#meta");
     if (!state.loadedAt) { el.textContent = ""; return; }
     const n = scoped().length;
@@ -585,7 +607,8 @@ window.HB = window.HB || {};
           day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
         }).format(new Date(dataTs))
       : "Uppdaterad " + fmtClock.format(new Date(state.loadedAt))) +
-      " · " + n + " matcher" + (state.loading ? " · hämtar nytt …" : "");
+      " · " + n + " matcher" + (state.loading
+        ? " · hämtar nytt … (" + (loadProgress || "0") + "+)" : "");
   }
 
   // --- generisk sök-, filter- och sorterbar flervalsdropdown ------------------
