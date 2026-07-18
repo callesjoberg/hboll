@@ -13,15 +13,24 @@ allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
 
 - **Flera cuper**: Åhus Beach, Potatiscupen, Hallbybollen, Bua Beach (HK Varberg),
   Bohus Cup och Järnvägen Cup — och fler kan läggas till på en minut.
-- **Nästa match-tavla** med nedräkning, plan och klass.
+- **Nästa match-tavla** med nedräkning, plan, klass och väder.
 - **Tidslinje** med NU-linje som visar var i dagen man är, auto-scroll dit.
-- **Filter**: dag, klass, eget lag, plan, fritextsök, dölj spelade matcher.
-- **Sortering**: tid, klass eller plan.
-- **Tabeller** per grupp med klubbens lag markerade.
+- **Filter**: dag (flerval), klass och eget lag (sök-/sorterbara dropdowns),
+  plan, fritextsök med autocomplete, matchstatus (alla/kommande/spelade).
+- **Sortering**: tid, klass, plan, resultat (vunnet/oavgjort/förlorat) eller mål.
+- **V/O/F-märke** på klubbens matchkort för snabb överblick i listan.
+- **Väderikon** (☀️/☁️/🌧️ m.fl.) på kommande matcher, via Open-Meteo.
+- **Tabeller** per grupp med klubbens lag markerade — klicka ett lagnamn
+  för att se laget schema (spelade och kommande matcher).
+- **Slutspelsträd** (A-/B-/C-Slutspel) med omgångar och koppling till nästa
+  match, för cuper som kör Cup Manager.
 - **Klicka på ett matchkort** för lagstatistik (tabellplacering, antal
-  spelade/kommande matcher) och snabblänkar till en filtrerad schemavy för
-  respektive lag.
-- **Kalenderexport** (.ics) av det filtrerade urvalet — funkar i iPhone/Android/Outlook.
+  spelade/kommande matcher, tidigare möten) och snabblänkar till en
+  filtrerad schemavy för respektive lag.
+- **Export** av det filtrerade/sorterade urvalet som Kalender (.ics),
+  Kalkylark (.xlsx) eller CSV.
+- **Delbara länkar**: adressfältet speglar alltid aktuellt filter och
+  sortering — kopiera länken och mottagaren får exakt samma vy.
 - **Live-uppdatering** av pågående cuper, utan att i onödan hämta om
   avslutade eller ännu inte startade cuper (se nedan).
 - Klubb- eller helcupsläge, mörkt läge, mobilanpassad.
