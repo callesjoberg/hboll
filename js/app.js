@@ -754,6 +754,24 @@ window.HB = window.HB || {};
       rows.find((r) => r.name === team.name);
   }
 
+  // Navigerar till schemavyn med båda lagen i en specifik match filtrerade
+  // fram (klubb- eller motståndarlag, oavsett) — så en slutspelsmatch går
+  // att se i sitt naturliga sammanhang bland lagens övriga matcher, i
+  // stället för bara i en isolerad dialogruta.
+  function gotoMatch(m) {
+    state.scope = "all";
+    state.q = "";
+    state.teams = new Set([m.home.id, m.away.id].filter((id) => id != null));
+    state.cats = new Set();
+    state.days = new Set();
+    state.arena = "";
+    state.matchFilter = "all";
+    state.sort = "tid";
+    state.view = "schema";
+    saveUi();
+    render();
+  }
+
   function gotoTeamMatches(team, mode) {
     // Filtrera på exakt lag-id, inte namnsökning — flera lag delar ofta
     // prefix ("Alingsås HK" är ett substräng-delnamn av "Alingsås HK Blå"
@@ -1157,9 +1175,11 @@ window.HB = window.HB || {};
     return h("div", {
       class: "bracket-match" + (isClubMatch(m) ? " ours" : ""),
       role: "button", tabindex: "0",
-      onclick: () => openMatchDialog(m),
+      title: "Visa i schemat",
+      "aria-label": "Visa " + (m.home.name || "TBD") + " mot " + (m.away.name || "TBD") + " i schemat",
+      onclick: () => gotoMatch(m),
       onkeydown: (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchDialog(m); }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoMatch(m); }
       },
     },
       h("div", { class: "bracket-teams" }, teamRow(m.home), teamRow(m.away)),
