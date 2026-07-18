@@ -201,6 +201,7 @@ window.HB = window.HB || {};
     cats: new Set(),
     teams: new Set(),
     arena: "",
+    viewArena: "",           // vald bana i Bana-fliken (separat från arena-filtret ovan)
     q: "",
     sort: "tid",             // tid | klass | plan
     matchFilter: "all",      // all | upcoming | played
@@ -278,7 +279,8 @@ window.HB = window.HB || {};
     localStorage.setItem(uiKey(), JSON.stringify({
       view: state.view, scope: state.scope, days: [...state.days],
       cats: [...state.cats], teams: [...state.teams],
-      arena: state.arena, sort: state.sort, matchFilter: state.matchFilter,
+      arena: state.arena, viewArena: state.viewArena,
+      sort: state.sort, matchFilter: state.matchFilter,
     }));
     syncUrl();
   }
@@ -297,6 +299,7 @@ window.HB = window.HB || {};
     if (state.cats.size) p.set("cats", [...state.cats].join(","));
     if (state.teams.size) p.set("teams", [...state.teams].join(","));
     if (state.arena) p.set("arena", state.arena);
+    if (state.viewArena) p.set("viewArena", state.viewArena);
     if (state.sort !== "tid") p.set("sort", state.sort);
     if (state.matchFilter !== "all") p.set("mf", state.matchFilter);
     if (state.q) p.set("q", state.q);
@@ -307,7 +310,7 @@ window.HB = window.HB || {};
   function loadUi() {
     state.view = "schema"; state.scope = "club"; state.days = new Set();
     state.cats = new Set(); state.teams = new Set();
-    state.arena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
+    state.arena = ""; state.viewArena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
@@ -317,6 +320,7 @@ window.HB = window.HB || {};
       if (Array.isArray(s.cats)) state.cats = new Set(s.cats);
       if (Array.isArray(s.teams)) state.teams = new Set(s.teams);
       if (s.arena) state.arena = s.arena;
+      if (s.viewArena) state.viewArena = s.viewArena;
       if (s.sort) state.sort = s.sort;
       if (["all", "upcoming", "played"].includes(s.matchFilter)) state.matchFilter = s.matchFilter;
       else if (s.played === false) state.matchFilter = "upcoming"; // migrera gammal boolean
@@ -556,6 +560,7 @@ window.HB = window.HB || {};
     }
     if (state.view === "schema") renderSchema(main);
     else if (state.view === "slutspel") renderPlayoffs(main);
+    else if (state.view === "bana") renderArenaView(main);
     else renderTables(main);
   }
 
@@ -1377,6 +1382,75 @@ window.HB = window.HB || {};
     return groups;
   }
 
+  // Tidslinje (dagshuvuden, NU-linje, vätskepaus-indikator) — bruten ut ur
+  // renderSchema() så den kan återanvändas rakt av för Bana-vyn (alltid
+  // tidssorterad, oavsett state.sort som annars styr schemat).
+  function renderTimeline(main, list) {
+    // Dagshuvuden/veckodagsetiketter visas när listan faktiskt spänner
+    // över mer än en kalenderdag — oavsett om det beror på att inget
+    // dagfilter är satt eller att flera dagar valts samtidigt.
+    const multiDay = new Set(list.map((m) => dayKey(m.start))).size > 1;
+    const now = Date.now();
+    const today = dayKey(now);
+    let nowPlaced = false;
+    let lastDay = "";
+    let prevGroupStart = null; // för vätskepaus-indikatorn
+    const wrap = h("div", { class: "timeline" });
+    for (const g of timeGroups(list, multiDay)) {
+      const gDay = dayKey(g.start);
+      if (multiDay && gDay !== lastDay) {
+        lastDay = gDay;
+        nowPlaced = nowPlaced || gDay > today;
+        wrap.append(h("h2", { class: "day-h" },
+          fmtDayLong.format(new Date(g.start))));
+        prevGroupStart = null; // ny dag: räkna inte paus över dagsgränsen
+      }
+      if (state.breakMinutes > 0 && prevGroupStart != null) {
+        // Ledig tid = tid till nästa match minus föregåendes speltid,
+        // inte bara mellanrummet mellan två starttider.
+        const rawGapMin = Math.round((g.start - prevGroupStart) / 60000);
+        const gapMin = rawGapMin - state.matchMinutes;
+        if (gapMin >= state.breakMinutes) {
+          wrap.append(h("div", { class: "break-line" },
+            h("span", null,
+              "🥤 " + gapMin + " min till nästa match — dags för mat/vätska")));
+        }
+      }
+      prevGroupStart = g.start;
+      if (!nowPlaced && gDay === today && g.start > now) {
+        nowPlaced = true;
+        wrap.append(h("div", { class: "nowline", id: "nowline" },
+          h("span", null,
+            "NU " + fmtTime.format(new Date(now)) +
+            " · nästa match " + countdownText(g.start))));
+      }
+      wrap.append(h("div", { class: "slot" },
+        h("div", { class: "rail" },
+          fmtTime.format(new Date(g.start)),
+          multiDay
+            ? h("small", null, fmtDay.format(new Date(g.start))) : null),
+        h("div", { class: "slot-matches" }, g.items.map(matchCard))));
+    }
+    main.append(wrap);
+    // Flaggan sätts INNE i timeouten (inte här) och #nowline slås upp på
+    // nytt då — under den första sidladdningen hinner flera
+    // renderContent()-anrop rulla in i rad (laddningsläge → data → väder),
+    // som var och en byter ut #content. Om flaggan sattes redan här och
+    // just DEN HÄR renderingens nl-referens hann bli en losskopplad nod
+    // innan timeouten körde, skulle scrollIntoView() tyst misslyckas och
+    // aldrig försöka igen.
+    if (!autoScrolledToNow && $("#nowline") &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTimeout(() => {
+        if (autoScrolledToNow) return;
+        const freshNl = $("#nowline");
+        if (!freshNl) return;
+        autoScrolledToNow = true;
+        freshNl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 150);
+    }
+  }
+
   function renderSchema(main) {
     renderHero(main);
     const list = sorted(filtered());
@@ -1397,69 +1471,7 @@ window.HB = window.HB || {};
     }
 
     if (state.sort === "tid") {
-      // Dagshuvuden/veckodagsetiketter visas när listan faktiskt spänner
-      // över mer än en kalenderdag — oavsett om det beror på att inget
-      // dagfilter är satt eller att flera dagar valts samtidigt.
-      const multiDay = new Set(list.map((m) => dayKey(m.start))).size > 1;
-      const now = Date.now();
-      const today = dayKey(now);
-      let nowPlaced = false;
-      let lastDay = "";
-      let prevGroupStart = null; // för vätskepaus-indikatorn
-      const wrap = h("div", { class: "timeline" });
-      for (const g of timeGroups(list, multiDay)) {
-        const gDay = dayKey(g.start);
-        if (multiDay && gDay !== lastDay) {
-          lastDay = gDay;
-          nowPlaced = nowPlaced || gDay > today;
-          wrap.append(h("h2", { class: "day-h" },
-            fmtDayLong.format(new Date(g.start))));
-          prevGroupStart = null; // ny dag: räkna inte paus över dagsgränsen
-        }
-        if (state.breakMinutes > 0 && prevGroupStart != null) {
-          // Ledig tid = tid till nästa match minus föregåendes speltid,
-          // inte bara mellanrummet mellan två starttider.
-          const rawGapMin = Math.round((g.start - prevGroupStart) / 60000);
-          const gapMin = rawGapMin - state.matchMinutes;
-          if (gapMin >= state.breakMinutes) {
-            wrap.append(h("div", { class: "break-line" },
-              h("span", null,
-                "🥤 " + gapMin + " min till nästa match — dags för mat/vätska")));
-          }
-        }
-        prevGroupStart = g.start;
-        if (!nowPlaced && gDay === today && g.start > now) {
-          nowPlaced = true;
-          wrap.append(h("div", { class: "nowline", id: "nowline" },
-            h("span", null,
-              "NU " + fmtTime.format(new Date(now)) +
-              " · nästa match " + countdownText(g.start))));
-        }
-        wrap.append(h("div", { class: "slot" },
-          h("div", { class: "rail" },
-            fmtTime.format(new Date(g.start)),
-            multiDay
-              ? h("small", null, fmtDay.format(new Date(g.start))) : null),
-          h("div", { class: "slot-matches" }, g.items.map(matchCard))));
-      }
-      main.append(wrap);
-      // Flaggan sätts INNE i timeouten (inte här) och #nowline slås upp på
-      // nytt då — under den första sidladdningen hinner flera
-      // renderContent()-anrop rulla in i rad (laddningsläge → data → väder),
-      // som var och en byter ut #content. Om flaggan sattes redan här och
-      // just DEN HÄR renderingens nl-referens hann bli en losskopplad nod
-      // innan timeouten körde, skulle scrollIntoView() tyst misslyckas och
-      // aldrig försöka igen.
-      if (!autoScrolledToNow && $("#nowline") &&
-          !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setTimeout(() => {
-          if (autoScrolledToNow) return;
-          const freshNl = $("#nowline");
-          if (!freshNl) return;
-          autoScrolledToNow = true;
-          freshNl.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 150);
-      }
+      renderTimeline(main, list);
     } else {
       const outcomeLabels = ["Vunnet", "Oavgjort", "Förlorat", "Ospelat"];
       const keyOf = {
@@ -1484,6 +1496,49 @@ window.HB = window.HB || {};
       }
       main.append(wrap);
     }
+  }
+
+  // --- render: bana -----------------------------------------------------------
+
+  // Egen flik för att snabbt välja en bana och se dess kommande/spelade
+  // matcher — till skillnad från openArenaQuickView() (en tillfällig
+  // dialog som inte rör filtret) är det här en riktig vy man kan stanna
+  // kvar i, med samma alla/kommande/spelade-växlare som schemat.
+  function renderArenaView(main) {
+    const arenas = [...new Set(state.matches.map((m) => m.arena).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "sv", { numeric: true }));
+    if (!arenas.length) {
+      main.append(h("div", { class: "banner" }, "Inga planer hittades för den här cupen."));
+      return;
+    }
+    if (state.viewArena && !arenas.includes(state.viewArena)) state.viewArena = "";
+    main.append(h("div", { class: "row" },
+      h("select", {
+        class: "select", "aria-label": "Välj bana",
+        onchange: (e) => { state.viewArena = e.target.value; saveUi(); renderContent(); },
+      },
+        h("option", { value: "" }, "Välj bana …"),
+        arenas.map((a) => h("option",
+          { value: a, ...(state.viewArena === a ? { selected: "" } : {}) }, a))),
+      state.viewArena ? h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
+        [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
+          chip(l, state.matchFilter === v, () => {
+            state.matchFilter = v; saveUi(); renderContent();
+          }))) : null));
+
+    if (!state.viewArena) {
+      main.append(h("div", { class: "banner" }, "Välj en bana ovan för att se dess matcher."));
+      return;
+    }
+    let list = state.matches.filter((m) => m.arena === state.viewArena);
+    if (state.matchFilter === "upcoming") list = list.filter((m) => !(m.res && m.res.fin));
+    else if (state.matchFilter === "played") list = list.filter((m) => m.res && m.res.fin);
+    if (!list.length) {
+      main.append(h("div", { class: "banner" },
+        "Inga matcher matchar filtret på " + state.viewArena + "."));
+      return;
+    }
+    renderTimeline(main, list);
   }
 
   // --- render: tabeller -------------------------------------------------------
@@ -2307,7 +2362,7 @@ window.HB = window.HB || {};
     // bevara rätt typ så Set.has()-jämförelser mot matchdatan funkar.
     const toId = (s) => (/^\d+$/.test(s) ? +s : s);
     const hasUrlFilters = ["view", "scope", "days", "cats", "teams", "arena",
-      "sort", "mf", "q"].some((k) => params.has(k));
+      "viewArena", "sort", "mf", "q"].some((k) => params.has(k));
     $$("#viewTabs .tab").forEach((b) =>
       b.addEventListener("click", () => {
         state.view = b.dataset.view; saveUi(); render();
@@ -2332,6 +2387,7 @@ window.HB = window.HB || {};
       if (params.get("cats")) state.cats = new Set(params.get("cats").split(",").map(toId));
       if (params.get("teams")) state.teams = new Set(params.get("teams").split(",").map(toId));
       if (params.get("arena")) state.arena = params.get("arena");
+      if (params.get("viewArena")) state.viewArena = params.get("viewArena");
       if (params.get("sort")) state.sort = params.get("sort");
       if (["all", "upcoming", "played"].includes(params.get("mf"))) {
         state.matchFilter = params.get("mf");
