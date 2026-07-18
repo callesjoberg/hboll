@@ -1763,8 +1763,9 @@ window.HB = window.HB || {};
       },
     },
       h("div", { class: "bracket-teams" }, teamRow(m.home, true), teamRow(m.away, false)),
-      h("div", { class: "bracket-score" },
-        proj ? "Prognos" : (sc || fmtTime.format(new Date(m.start)))));
+      h("div", { class: "bracket-score" }, proj ? "Prognos" : (sc || "–")),
+      h("div", { class: "bracket-meta" },
+        fmtTime.format(new Date(m.start)) + (m.arena ? " · " + m.arena : "")));
   }
 
   function groupPlayoffRounds(div) {
@@ -1839,6 +1840,16 @@ window.HB = window.HB || {};
       main.append(h("div", { class: "banner" }, "Inga klasser att visa."));
       return;
     }
+    // Snabbväxling träd/tabell direkt i vyn — samma state.advancedPlayoffTable
+    // som inställningens kryssruta, så de två alltid är i synk.
+    main.append(h("div", { class: "row" },
+      h("div", { class: "seg", role: "group", "aria-label": "Slutspelsvy" },
+        chip("Träd", !state.advancedPlayoffTable, () => {
+          state.advancedPlayoffTable = false; saveSettings(); renderContent();
+        }),
+        chip("Tabell", state.advancedPlayoffTable, () => {
+          state.advancedPlayoffTable = true; saveSettings(); renderContent();
+        }))));
     let any = false, anyLoading = false;
     for (const c of cats) {
       ensurePlayoffs(c.catId);
@@ -2057,8 +2068,15 @@ window.HB = window.HB || {};
       renderContent();
     });
 
-    $("#settingsBtn").addEventListener("click", () => dlg.showModal());
-    $("#currentCupBtn").addEventListener("click", () => dlg.showModal());
+    // advancedPlayoffTable kan numera ändras utanför dialogen (snabbväxlingen
+    // i slutspelsvyn) — synka kryssrutan mot state igen varje gång dialogen
+    // öppnas, annars kan den visa fel läge efter en sådan ändring.
+    const openSettings = () => {
+      advTableBox.checked = state.advancedPlayoffTable;
+      dlg.showModal();
+    };
+    $("#settingsBtn").addEventListener("click", openSettings);
+    $("#currentCupBtn").addEventListener("click", openSettings);
     $("#settingsClose").addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   }

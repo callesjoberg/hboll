@@ -1362,6 +1362,15 @@ dialog.match-dialog {
 
 .predicted-match .bracket-score { font-style: italic; font-weight: 500; color: var(--ink-soft); }
 
+.bracket-meta {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .custom-cup {
   display: flex;
   align-items: center;
