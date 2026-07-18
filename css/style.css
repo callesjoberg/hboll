@@ -491,7 +491,7 @@ header.top {
 
 /* karusell: visas när flera av klubbens lag har match samtidigt (samma
    närmsta starttid, t.ex. olika planer) i stället för bara ett kort */
-.hero-carousel { padding-left: 40px; padding-right: 40px; }
+.hero-carousel { padding-left: 40px; padding-right: 40px; touch-action: pan-y; }
 
 .hero-nav {
   position: absolute;

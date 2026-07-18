@@ -888,7 +888,14 @@ window.HB = window.HB || {};
   // den överlever renderContent()-omritningar men glöms bort vid cupbyte.
   let heroIndex = 0;
 
+  // Auto-rotationens timer måste rensas vid VARJE renderHero()-anrop
+  // (inte bara när karusellen försvinner) — annars pekar en gammal
+  // timer-closure på en förlegad matches-array från en tidigare omritning.
+  let heroAutoTimer = null;
+  const HERO_AUTO_MS = 6000;
+
   function renderHero(main) {
+    clearInterval(heroAutoTimer);
     const matches = nextClubMatches();
     if (!matches.length) return;
     if (heroIndex >= matches.length) heroIndex = 0;
@@ -899,7 +906,7 @@ window.HB = window.HB || {};
       heroIndex = (heroIndex + dir + matches.length) % matches.length;
       renderContent();
     };
-    main.append(h("section", { class: "hero" + (carousel ? " hero-carousel" : ""), id: "hero" },
+    const heroEl = h("section", { class: "hero" + (carousel ? " hero-carousel" : ""), id: "hero" },
       carousel ? h("button", {
         class: "hero-nav hero-prev", type: "button", "aria-label": "Föregående match",
         onclick: () => step(-1),
@@ -932,7 +939,38 @@ window.HB = window.HB || {};
           class: "hero-dot" + (i === heroIndex ? " on" : ""), type: "button",
           "aria-label": "Match " + (i + 1) + " av " + matches.length,
           onclick: () => { heroIndex = i; renderContent(); },
-        }))) : null));
+        }))) : null);
+    main.append(heroEl);
+    if (!carousel) return;
+
+    // Auto-rotation — pausar när fliken inte är synlig (ingen anledning
+    // att bläddra i bakgrunden) och nollställs vid varje omritning, så en
+    // manuell swipe/klick/prick skjuter naturligt upp nästa auto-steg.
+    // Självstädande: om man byter bort från schemavyn slutar heron
+    // renderas (och renderHero() slutar därmed rensa timern), så den
+    // kollar själv och stänger av sig i stället för att tugga i bakgrunden.
+    heroAutoTimer = setInterval(() => {
+      if (state.view !== "schema") { clearInterval(heroAutoTimer); return; }
+      if (document.visibilityState === "visible") step(1);
+    }, HERO_AUTO_MS);
+
+    // Swipe (touch) — vänster/höger byter kort. Kräver en tydligt
+    // horisontell rörelse (annars tolkas det som vanlig vertikal
+    // sidskrollning, inte ett byte).
+    let touchX = null, touchY = null;
+    heroEl.addEventListener("touchstart", (e) => {
+      touchX = e.touches[0].clientX;
+      touchY = e.touches[0].clientY;
+    }, { passive: true });
+    heroEl.addEventListener("touchend", (e) => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      const dy = e.changedTouches[0].clientY - touchY;
+      touchX = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        step(dx < 0 ? 1 : -1);
+      }
+    });
   }
 
   // --- matchdialog: lagstatistik + snabblänkar --------------------------------
