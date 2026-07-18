@@ -7,6 +7,12 @@
   <title>Cupschema · Alingsås HK</title>
   <meta name="description" content="Spelschema, resultat och tabeller för Alingsås HK:s cuper — Åhus Beach, Potatiscupen, Hallbybollen med flera.">
   <link rel="icon" href="assets/ahk-logo.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <meta name="theme-color" content="#16283f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cupschema">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
@@ -70,9 +76,14 @@
 
     <div class="settings-group">
       <label class="settings-label" for="favoriteClubInput">Favoritklubb</label>
-      <input type="text" id="favoriteClubInput" placeholder="t.ex. Alingsås HK">
+      <input type="text" id="favoriteClubInput" placeholder="t.ex. Alingsås HK"
+             list="favoriteClubSuggestions">
+      <datalist id="favoriteClubSuggestions"></datalist>
       <p class="muted">Styr vilka lag som räknas som &quot;dina&quot; — fliken
-         med klubbnamnet, nästa match, och markeringen på matchkort.</p>
+         med klubbnamnet, nästa match, och markeringen på matchkort. Namnet
+         skrivs olika i olika cuper (t.ex. &quot;AHK&quot; eller
+         &quot;Alingsås HK&quot;) — förslagen nedan är hämtade från laget
+         som just nu är öppet.</p>
     </div>
 
     <div class="settings-group">

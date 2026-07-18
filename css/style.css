@@ -896,6 +896,23 @@ dialog.match-dialog {
   padding: 20px 18px 14px;
 }
 
+/* Fullskärm på mobil — mer plats för lagstatistik/inbördes möten, och
+   enklare att träffa "Stäng" med tummen än en liten centrerad kortmodal. */
+@media (max-width: 480px) {
+  dialog.match-dialog {
+    margin: 0;
+    inset: 0;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    padding: max(20px, env(safe-area-inset-top)) 18px
+             max(14px, env(safe-area-inset-bottom)) 18px;
+    overflow-y: auto;
+  }
+}
+
 .dialog-x {
   position: absolute;
   top: 10px;

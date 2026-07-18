@@ -376,6 +376,24 @@ window.HB = window.HB || {};
       a.suffix.localeCompare(b.suffix, "sv"));
   }
 
+  // Kandidater för favoritklubb-autocomplete: lagnamn utan sista ordet
+  // (som oftast är en färg/siffra), plus hela namnet — klubbar skrivs olika
+  // i olika cuper ("AHK" vs "Alingsås HK"), så förslagen hämtas ur den
+  // cup som just nu är öppen i stället för att gissas generellt.
+  function clubPrefixCandidates() {
+    const set = new Set();
+    for (const m of state.matches) {
+      for (const side of [m.home, m.away]) {
+        const name = (side.name || "").trim();
+        if (!name) continue;
+        set.add(name);
+        const words = name.split(/\s+/);
+        if (words.length > 1) set.add(words.slice(0, -1).join(" "));
+      }
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, "sv"));
+  }
+
   function filtered() {
     const q = state.q.trim().toLowerCase();
     return scoped().filter((m) => {
@@ -1389,7 +1407,11 @@ window.HB = window.HB || {};
       renderContent();
     });
 
-    $("#settingsBtn").addEventListener("click", () => dlg.showModal());
+    $("#settingsBtn").addEventListener("click", () => {
+      const dl = $("#favoriteClubSuggestions");
+      dl.replaceChildren(...clubPrefixCandidates().map((n) => h("option", { value: n })));
+      dlg.showModal();
+    });
     $("#settingsClose").addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   }
@@ -1414,6 +1436,12 @@ window.HB = window.HB || {};
   // --- uppstart ------------------------------------------------------------------
 
   async function init() {
+    // PWA: relativ sökväg (inte "/sw.js") så det funkar under en undermapp,
+    // t.ex. GitHub Pages-projektsidor (callesjoberg.github.io/hboll/).
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+
     // Skarp cuplista från data/cups.json (redigeras via admin.html);
     // HB.CUPS i config.js är reserv om filen saknas eller är trasig.
     try {
