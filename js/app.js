@@ -901,16 +901,34 @@ window.HB = window.HB || {};
   let heroAutoTimer = null;
   const HERO_AUTO_MS = 6000;
 
+  // Riktningen på det senaste bytet (1 = framåt/nästa, -1 = bakåt/förra) —
+  // styr vilket håll det nya kortet glider in ifrån. En fristående modul-
+  // variabel (som heroIndex) eftersom den ska överleva renderContent().
+  let heroDir = 1;
+
+  // Vilket index som senast fick glid-in-animationen — så en omritning
+  // som INTE beror på ett karusellbyte (t.ex. ett filterval någon
+  // annanstans på sidan) inte råkar spela upp animationen i onödan.
+  let heroLastAnimatedIdx = null;
+
   function renderHero(main) {
     clearInterval(heroAutoTimer);
     const matches = nextClubMatches();
     if (!matches.length) return;
     if (heroIndex >= matches.length) heroIndex = 0;
+    const isNewCard = heroLastAnimatedIdx !== heroIndex;
+    heroLastAnimatedIdx = heroIndex;
     const m = matches[heroIndex];
     const live = isLive(m);
     const carousel = matches.length > 1;
     const step = (dir) => {
+      heroDir = dir;
       heroIndex = (heroIndex + dir + matches.length) % matches.length;
+      renderContent();
+    };
+    const goTo = (i) => {
+      heroDir = i > heroIndex ? 1 : -1;
+      heroIndex = i;
       renderContent();
     };
     const heroEl = h("section", { class: "hero" + (carousel ? " hero-carousel" : ""), id: "hero" },
@@ -922,30 +940,34 @@ window.HB = window.HB || {};
         class: "hero-nav hero-next", type: "button", "aria-label": "Nästa match",
         onclick: () => step(1),
       }, "›") : null,
-      h("div", { class: "hero-eyebrow" },
-        live ? h("span", { class: "live-dot" }) : null,
-        live ? "Pågår nu" : (heroIndex === 0 ? "Nästa match" : "Kommande match"),
-        h("span", { class: "hero-count" }, live ? "" : countdownText(m.start))),
-      h("div", { class: "hero-teams" },
-        h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name,
-          isFavoriteTeamName(m.home.name) ? h("span", { class: "fav-team-star" }, "⭐") : null),
-        h("span", { class: "vs" }, live && scoreText(m.res) ? scoreText(m.res) : "mot"),
-        h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name,
-          isFavoriteTeamName(m.away.name) ? h("span", { class: "fav-team-star" }, "⭐") : null)),
-      h("div", { class: "hero-info" },
-        fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
-        h("span", { class: "dot" }, "·"), m.arena || "plan ej satt",
-        h("span", { class: "dot" }, "·"),
-        HB.shortCat(m.catName) + (m.divName ? " " + m.divName : ""),
-        (() => {
-          const w = HB.weather.at(HB.weather.cached(cup()), m.start);
-          return w ? [h("span", { class: "dot" }, "·"), w.icon + " " + w.temp + "°"] : null;
-        })()),
+      h("div", {
+        class: "hero-card" +
+          (isNewCard ? (heroDir < 0 ? " hero-card-prev" : " hero-card-next") : ""),
+      },
+        h("div", { class: "hero-eyebrow" },
+          live ? h("span", { class: "live-dot" }) : null,
+          live ? "Pågår nu" : (heroIndex === 0 ? "Nästa match" : "Kommande match"),
+          h("span", { class: "hero-count" }, live ? "" : countdownText(m.start))),
+        h("div", { class: "hero-teams" },
+          h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name,
+            isFavoriteTeamName(m.home.name) ? h("span", { class: "fav-team-star" }, "⭐") : null),
+          h("span", { class: "vs" }, live && scoreText(m.res) ? scoreText(m.res) : "mot"),
+          h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name,
+            isFavoriteTeamName(m.away.name) ? h("span", { class: "fav-team-star" }, "⭐") : null)),
+        h("div", { class: "hero-info" },
+          fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
+          h("span", { class: "dot" }, "·"), m.arena || "plan ej satt",
+          h("span", { class: "dot" }, "·"),
+          HB.shortCat(m.catName) + (m.divName ? " " + m.divName : ""),
+          (() => {
+            const w = HB.weather.at(HB.weather.cached(cup()), m.start);
+            return w ? [h("span", { class: "dot" }, "·"), w.icon + " " + w.temp + "°"] : null;
+          })())),
       carousel ? h("div", { class: "hero-dots" },
         matches.map((_, i) => h("button", {
           class: "hero-dot" + (i === heroIndex ? " on" : ""), type: "button",
           "aria-label": "Match " + (i + 1) + " av " + matches.length,
-          onclick: () => { heroIndex = i; renderContent(); },
+          onclick: () => goTo(i),
         }))) : null);
     main.append(heroEl);
     if (!carousel) return;

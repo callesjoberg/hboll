@@ -511,6 +511,8 @@ header.top {
 }
 
 .hero-nav:hover { background: rgba(255, 255, 255, 0.24); }
+.hero-nav:active { transform: translateY(-50%) scale(0.85); }
+.hero-nav { transition: background 0.15s ease, transform 0.1s ease; }
 .hero-prev { left: 8px; }
 .hero-next { right: 8px; }
 
@@ -528,9 +530,28 @@ header.top {
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.hero-dot.on { background: var(--yellow); }
+.hero-dot.on { background: var(--yellow); transform: scale(1.35); }
+
+/* korten i karusellen glider in från det håll man bläddrade */
+.hero-card { animation: heroSlideNext 0.32s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.hero-card-prev { animation-name: heroSlidePrev; }
+
+@keyframes heroSlideNext {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes heroSlidePrev {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-card { animation: none; }
+}
 
 .hero-eyebrow {
   display: flex;
