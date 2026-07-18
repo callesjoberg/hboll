@@ -850,10 +850,12 @@ window.HB = window.HB || {};
 
   // --- render: hero (nästa match) ------------------------------------------
 
-  // Klubbens kommande matcher, tidigast först. Flera lag i klubben spelar
-  // ofta samtidigt (samma starttid, olika planer) — nextClubMatches() ger
-  // ALLA matcher som delar den allra närmsta starttiden, så heron kan visa
-  // dem som en karusell i stället för att godtyckligt bara plocka en.
+  const HERO_MAX = 5;
+
+  // Klubbens närmast kommande matcher (upp till HERO_MAX stycken), tidigast
+  // först — inte bara EN godtyckligt plockad match, så heron kan visa dem
+  // som en karusell att bläddra igenom (t.ex. flera lag som spelar samma
+  // dag, eller flera som råkar starta exakt samtidigt på olika planer).
   function nextClubMatches() {
     const now = Date.now();
     const pool = state.matches.filter(isClubMatch).filter((m) => {
@@ -862,10 +864,10 @@ window.HB = window.HB || {};
       if (state.cats.size && !state.cats.has(m.catId)) return false;
       return !(m.res && m.res.fin) && m.start >= now - 30 * 60000;
     });
-    if (!pool.length) return [];
-    const earliest = Math.min(...pool.map((m) => m.start));
-    return pool.filter((m) => m.start === earliest)
-      .sort((a, b) => (a.arena || "").localeCompare(b.arena || "", "sv", { numeric: true }));
+    return pool
+      .sort((a, b) => a.start - b.start ||
+        (a.arena || "").localeCompare(b.arena || "", "sv", { numeric: true }))
+      .slice(0, HERO_MAX);
   }
 
   function nextClubMatch() {
@@ -908,7 +910,7 @@ window.HB = window.HB || {};
       }, "›") : null,
       h("div", { class: "hero-eyebrow" },
         live ? h("span", { class: "live-dot" }) : null,
-        live ? "Pågår nu" : "Nästa match",
+        live ? "Pågår nu" : (heroIndex === 0 ? "Nästa match" : "Kommande match"),
         h("span", { class: "hero-count" }, live ? "" : countdownText(m.start))),
       h("div", { class: "hero-teams" },
         h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name,
