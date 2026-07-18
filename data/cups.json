@@ -7,7 +7,9 @@
       "edition": "2026",
       "host": "ahusbeachhandboll.cupmanager.net",
       "tournamentId": 70944382,
-      "beach": true
+      "beach": true,
+      "lat": 55.9167,
+      "lon": 14.2833
     },
     {
       "id": "potatis",
@@ -16,7 +18,9 @@
       "edition": "2026",
       "host": "potatiscupen.cupmanager.net",
       "tournamentId": 67026461,
-      "beach": false
+      "beach": false,
+      "lat": 57.9303,
+      "lon": 12.5334
     },
     {
       "id": "hallby",
@@ -25,7 +29,9 @@
       "edition": "2026",
       "host": "hallbybollen.cupmanager.net",
       "tournamentId": 63611315,
-      "beach": false
+      "beach": false,
+      "lat": 57.7815,
+      "lon": 14.1562
     },
     {
       "id": "bua",
@@ -34,7 +40,9 @@
       "edition": "2026",
       "host": "hkvarbergbeachhandboll.cupmanager.net",
       "tournamentId": 69938110,
-      "beach": true
+      "beach": true,
+      "lat": 57.2378,
+      "lon": 12.1219
     },
     {
       "id": "bohus",
@@ -43,7 +51,9 @@
       "edition": "2026",
       "host": "bohuscup.cupmanager.net",
       "tournamentId": 69150040,
-      "beach": false
+      "beach": false,
+      "lat": 57.8710,
+      "lon": 11.9805
     },
     {
       "id": "jarnvagen",
@@ -52,7 +62,9 @@
       "edition": "2026",
       "host": "procup.se",
       "dataUrl": "data/jarnvagen-2026.json",
-      "beach": false
+      "beach": false,
+      "lat": 59.0646,
+      "lon": 15.1099
     }
   ]
 }

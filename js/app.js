@@ -203,9 +203,17 @@ window.HB = window.HB || {};
     return 60000;                                      // pågår
   }
 
+  function loadWeather() {
+    const c = cup();
+    HB.weather.fetchForecast(c).then(() => {
+      if (state.cupId === c.id) renderContent();
+    });
+  }
+
   async function loadCup(force) {
     const c = cup();
     if (!c) return;
+    loadWeather(); // oberoende av matchdata — hämtas parallellt
     // Förhämtade cuper (dataUrl) läses alltid färskt — filen ligger lokalt.
     const cached = c.dataUrl ? null : HB.api.readCache(c);
     if (cached && cached.matches) {
@@ -697,7 +705,11 @@ window.HB = window.HB || {};
         fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
         h("span", { class: "dot" }, "·"), m.arena || "plan ej satt",
         h("span", { class: "dot" }, "·"),
-        HB.shortCat(m.catName) + (m.divName ? " " + m.divName : ""))));
+        HB.shortCat(m.catName) + (m.divName ? " " + m.divName : ""),
+        (() => {
+          const w = HB.weather.at(HB.weather.cached(cup()), m.start);
+          return w ? [h("span", { class: "dot" }, "·"), w.icon + " " + w.temp + "°"] : null;
+        })())));
   }
 
   // --- matchdialog: lagstatistik + snabblänkar --------------------------------
@@ -838,6 +850,9 @@ window.HB = window.HB || {};
   function matchCard(m) {
     const sc = scoreText(m.res);
     const live = isLive(m);
+    // Väder bara meningsfullt för matcher som inte redan är spelade.
+    const weather = (!m.res || !m.res.fin)
+      ? HB.weather.at(HB.weather.cached(cup()), m.start) : null;
     const teamEl = (side, other) => h("div", {
       class: "team" + (isClubName(side.name) ? " us" : "") +
         (m.res && m.res.fin && m.res.winner &&
@@ -860,7 +875,10 @@ window.HB = window.HB || {};
         outcomeLetter(m)
           ? h("span", { class: "outcome-badge outcome-" + outcomeLetter(m).toLowerCase() },
               outcomeLetter(m)) : null,
-        h("span", { class: "arena" }, m.arena)),
+        h("span", { class: "match-head-right" },
+          weather ? h("span", { class: "weather", title: weather.temp + "°C" },
+            weather.icon, weather.temp + "°") : null,
+          h("span", { class: "arena" }, m.arena))),
       h("div", { class: "match-body" },
         h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
         h("div", {

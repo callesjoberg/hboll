@@ -541,8 +541,21 @@ header.top {
 .outcome-o { background: #8a94a3; }
 .outcome-f { background: var(--live); }
 
-.match-head .arena {
+.match-head-right {
   margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.weather {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-head .arena {
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;

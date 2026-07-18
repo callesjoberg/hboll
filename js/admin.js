@@ -148,8 +148,11 @@
       inp.value = cup[key] == null ? "" : cup[key];
       inp.addEventListener("input", () => {
         const v = inp.value.trim();
-        if (key === "tournamentId") cup[key] = v ? +v : undefined;
-        else cup[key] = v || undefined;
+        if (key === "tournamentId" || key === "lat" || key === "lon") {
+          cup[key] = v ? +v : undefined;
+        } else {
+          cup[key] = v || undefined;
+        }
         if (key === "name" && !cup._existing) cup.id = slugify(v);
       });
       wrap.append(inp);
@@ -188,7 +191,9 @@
       field("År", "edition", "2026"),
       field("Värd", "host", "…cupmanager.net"),
       field("Turnerings-ID", "tournamentId", "8 siffror (Cup Manager)"),
-      field("Datafil (ProCup)", "dataUrl", "data/….json"));
+      field("Datafil (ProCup)", "dataUrl", "data/….json"),
+      field("Breddgrad (lat)", "lat", "t.ex. 55.9167", "number"),
+      field("Längdgrad (lon)", "lon", "t.ex. 14.2833", "number"));
     row.append(head, grid);
     return row;
   }

@@ -22,6 +22,7 @@ HB.CUPS = [
     host: "ahusbeachhandboll.cupmanager.net",
     tournamentId: 70944382,
     beach: true,
+    lat: 55.9167, lon: 14.2833,
   },
   {
     id: "potatis",
@@ -31,6 +32,7 @@ HB.CUPS = [
     host: "potatiscupen.cupmanager.net",
     tournamentId: 67026461,
     beach: false,
+    lat: 57.9303, lon: 12.5334,
   },
   {
     id: "hallby",
@@ -40,6 +42,7 @@ HB.CUPS = [
     host: "hallbybollen.cupmanager.net",
     tournamentId: 63611315,
     beach: false,
+    lat: 57.7815, lon: 14.1562,
   },
   {
     id: "bua",
@@ -49,6 +52,7 @@ HB.CUPS = [
     host: "hkvarbergbeachhandboll.cupmanager.net",
     tournamentId: 69938110,
     beach: true,
+    lat: 57.2378, lon: 12.1219,
   },
   {
     id: "bohus",
@@ -58,6 +62,7 @@ HB.CUPS = [
     host: "bohuscup.cupmanager.net",
     tournamentId: 69150040,
     beach: false,
+    lat: 57.8710, lon: 11.9805,
   },
   {
     // Kör ProCup (utan CORS/JSON-API): datan förhämtas av
@@ -69,6 +74,7 @@ HB.CUPS = [
     host: "procup.se",
     dataUrl: "data/jarnvagen-2026.json",
     beach: false,
+    lat: 59.0646, lon: 15.1099,
   },
 ];
 
