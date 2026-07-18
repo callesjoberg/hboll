@@ -26,10 +26,10 @@
         <img src="assets/ahk-logo.svg" alt="" width="34" height="38">
         <h1>Cupschema<small>Alingsås HK</small></h1>
         <span class="spacer"></span>
+        <button id="currentCupBtn" type="button" class="current-cup-btn" title="Byt cup"></button>
         <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
         <button id="refreshBtn" type="button" title="Hämta senaste schemat">↻ Uppdatera</button>
       </div>
-      <nav id="cupRow" aria-label="Välj cup"></nav>
     </div>
   </header>
 
@@ -75,6 +75,11 @@
   <dialog id="settingsDialog">
     <button class="dialog-x" type="button" id="settingsClose" aria-label="Stäng">×</button>
     <h2>Inställningar</h2>
+
+    <div class="settings-group">
+      <span class="settings-label">Cup</span>
+      <nav id="cupRow" aria-label="Välj cup"></nav>
+    </div>
 
     <div class="settings-group">
       <label class="settings-label" for="favoriteClubInput">Favoritklubb</label>

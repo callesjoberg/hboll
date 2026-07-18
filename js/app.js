@@ -196,6 +196,7 @@ window.HB = window.HB || {};
     q: "",
     sort: "tid",             // tid | klass | plan
     matchFilter: "all",      // all | upcoming | played
+    toolbarOpen: true,       // filter-/sorteringsmenyn expanderad? (session, sparas ej)
     matches: [],
     loadedAt: 0,
     loading: false,
@@ -390,6 +391,8 @@ window.HB = window.HB || {};
     loadUi();
     saveUi();
     loadCup();
+    const dlg = $("#settingsDialog");
+    if (dlg && dlg.open) dlg.close();
   }
 
   // --- härledningar ------------------------------------------------------
@@ -536,6 +539,11 @@ window.HB = window.HB || {};
           h("span", { class: "cup-name" }, c.name),
           h("span", { class: "cup-place" }, c.place + " " + c.edition))
       ));
+    // Cupväljaren själv bor i inställningarna (för att inte ta plats högst
+    // upp på sidan) — den här knappen i headern visar bara vilken cup som
+    // är vald just nu och öppnar samma dialog för att byta.
+    const btn = $("#currentCupBtn");
+    if (btn) btn.textContent = cup().name;
   }
 
   function renderTabs() {
@@ -690,12 +698,27 @@ window.HB = window.HB || {};
     if (!state.matches.length) return;
     const clubTeamsList = clubTeams();
 
+    // Hela verktygsraden går i en expanderbar meny — så att den kan
+    // minimeras när man valt filter/sortering klart, i stället för att
+    // permanent ta plats högst upp i schemat. state.toolbarOpen styr
+    // öppet/stängt över omritningar (annars skulle varje filterbyte,
+    // som anropar render(), öppna den igen).
+    const dd = h("details", {
+      class: "toolbar-collapse",
+      ...(state.toolbarOpen ? { open: "" } : {}),
+    });
+    dd.addEventListener("toggle", () => { state.toolbarOpen = dd.open; });
+    const bodyEl = h("div", { class: "toolbar-body" });
+    dd.append(h("summary", { class: "toolbar-summary" }, "Filter och sortering"), bodyEl);
+    bar.append(dd);
+    const body = bodyEl;
+
     // Klubb / hela cupen
-    bar.append(h("div", { class: "row scope-row" },
+    body.append(h("div", { class: "row scope-row" },
       h("div", { class: "seg", role: "group", "aria-label": "Omfattning" },
         chip(state.favoriteClub, state.scope === "club", () => {
           state.scope = "club"; saveUi(); render();
-        }, "club-chip"),
+        }),
         chip("Hela cupen", state.scope === "all", () => {
           state.scope = "all"; saveUi(); render();
         })),
@@ -712,7 +735,7 @@ window.HB = window.HB || {};
     const clubTeamIds = new Set(clubTeamsList.map((t) => t.id));
     const foreignTeamIds = [...state.teams].filter((id) => !clubTeamIds.has(id));
     if (foreignTeamIds.length) {
-      bar.append(h("div", { class: "row" },
+      body.append(h("div", { class: "row" },
         foreignTeamIds.map((id) =>
           chip((teamNameById(id) || "Okänt lag") + "  ✕", true, () => {
             state.teams.delete(id); saveUi(); render();
@@ -729,7 +752,7 @@ window.HB = window.HB || {};
     const catEntries = [...cats.entries()].sort((a, b) =>
       catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
     if (days.length > 1 || catEntries.length > 1 || clubTeamsList.length > 1) {
-      bar.append(h("div", { class: "row" },
+      body.append(h("div", { class: "row" },
         days.length > 1 ? buildDayPicker(days) : null,
         catEntries.length > 1 ? buildCatPicker(catEntries) : null,
         clubTeamsList.length > 1 ? buildTeamPicker(clubTeamsList) : null));
@@ -747,7 +770,7 @@ window.HB = window.HB || {};
       if (m.catName) suggestSet.add(m.catName);
     }
     const suggestions = [...suggestSet].sort((a, b) => a.localeCompare(b, "sv"));
-    bar.append(h("div", { class: "row tools-row" },
+    body.append(h("div", { class: "row tools-row" },
       h("input", {
         class: "search", type: "search", placeholder: "Sök lag, plan, grupp …",
         value: state.q, list: "search-suggestions",
@@ -1578,6 +1601,7 @@ window.HB = window.HB || {};
     });
 
     $("#settingsBtn").addEventListener("click", () => dlg.showModal());
+    $("#currentCupBtn").addEventListener("click", () => dlg.showModal());
     $("#settingsClose").addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   }

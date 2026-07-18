@@ -124,24 +124,41 @@ header.top {
 
 #refreshBtn:hover { border-color: var(--yellow); }
 
-/* cupväljare */
+/* aktuell cup (header) — själva väljaren bor i inställningarna */
+
+.current-cup-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: #eef2f8;
+  padding: 5px 10px;
+  font-size: 13px;
+  max-width: 30vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.current-cup-btn:hover { border-color: var(--yellow); }
+
+/* cupväljare (i inställningar) */
 
 #cupRow {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 10px 0 12px;
-  scrollbar-width: none;
+  padding: 4px 0;
+  scrollbar-width: thin;
 }
 
-#cupRow::-webkit-scrollbar { display: none; }
+#cupRow::-webkit-scrollbar { height: 6px; }
 
 .cup {
   flex: 0 0 auto;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  color: #eef2f8;
+  color: var(--ink);
   padding: 6px 12px;
   text-align: left;
   display: grid;
@@ -156,15 +173,15 @@ header.top {
   text-transform: uppercase;
 }
 
-.cup-place { font-size: 11px; color: #b9c6d8; }
+.cup-place { font-size: 11px; color: var(--ink-soft); }
 
 .cup.on {
-  background: var(--yellow);
-  border-color: var(--yellow);
-  color: #16283f;
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
 }
 
-.cup.on .cup-place { color: #5a5230; }
+.cup.on .cup-place { color: rgba(255, 255, 255, 0.85); }
 
 /* flikar + meta */
 
@@ -213,6 +230,45 @@ header.top {
   padding: 8px 14px 4px;
   display: grid;
   gap: 8px;
+}
+
+/* Filter/sortering ligger i en expanderbar meny så den kan minimeras när
+   man valt klart, i stället för att permanent ta plats i schemat. */
+.toolbar-collapse { display: grid; }
+
+.toolbar-summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  width: fit-content;
+}
+
+.toolbar-summary::-webkit-details-marker { display: none; }
+.toolbar-summary::marker { content: ""; }
+
+.toolbar-summary::after {
+  content: "▾";
+  font-size: 10px;
+  color: var(--ink-soft);
+  transition: transform 0.15s ease;
+}
+
+.toolbar-collapse[open] .toolbar-summary::after { transform: rotate(180deg); }
+
+.toolbar-body {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .row {
@@ -345,21 +401,25 @@ header.top {
 
 .export-item:hover { background: var(--paper); }
 
-.seg { display: flex; gap: 0; }
+.seg { display: flex; gap: 0; flex: none; }
 
 .seg .chip { border-radius: 0; }
 .seg .chip:first-child { border-radius: 999px 0 0 999px; }
 .seg .chip:last-child { border-radius: 0 999px 999px 0; border-left: none; }
 
-.scope-row .seg + .seg { margin-left: auto; }
-
-/* Ett långt favoritklubbnamn (fritext i inställningarna) ska trunkeras
-   i stället för att tvinga hela raden att radbryta. */
-.club-chip {
-  max-width: 40vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Klubbnamn kan vara långa och variera i längd — i stället för att
+   radbryta verktygsraden till två rader låser vi den till en rad som
+   scrollar i sidled när innehållet inte får plats. */
+.scope-row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
 }
+
+.scope-row .seg + .seg { margin-left: auto; }
 
 .tools-row { gap: 8px; }
 
