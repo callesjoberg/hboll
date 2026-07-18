@@ -362,6 +362,18 @@ window.HB = window.HB || {};
   // stor cup känns aktiv i stället för att se ut som att sidan hängt sig.
   let loadProgress = 0;
 
+  // Sidan visar alltid den sparade cachen direkt (kan vara flera timmar
+  // gammal) och synkar sedan i bakgrunden — men NU-linjens auto-skroll
+  // (autoScrolledToNow) får bara köra EN gång per sidladdning, annars
+  // skulle en periodisk bakgrundssync rycka undan mattan för användaren
+  // varje gång. Problemet: om den FÖRSTA synken (rätt efter cachen visats)
+  // faktiskt ändrar layouten (nya matcher, ändrade tider) hamnar den redan
+  // gjorda skrollningen fel utan att rättas till. Lösning: tillåt EN extra
+  // auto-skroll specifikt efter den allra första lyckade bakgrundssynken —
+  // därefter (periodiska uppdateringar, manuell "Uppdatera") rör vi inte
+  // scrollpositionen igen.
+  let hasSyncedFreshData = false;
+
   async function loadCup(force) {
     const c = cup();
     if (!c) return;
@@ -425,6 +437,10 @@ window.HB = window.HB || {};
       state.matches = matches;
       state.loadedAt = Date.now();
       if (!c.dataUrl) HB.api.writeCache(c, matches);
+      if (!hasSyncedFreshData) {
+        hasSyncedFreshData = true;
+        autoScrolledToNow = false; // en chans att rätta till en skroll som blev fel mot cachens gamla data
+      }
     } catch (e) {
       state.error = "Kunde inte hämta schemat från " + c.host +
         ". Kontrollera nätet och försök igen.";
@@ -446,6 +462,7 @@ window.HB = window.HB || {};
     heroIndex = 0;
     stashedFilter = null;
     autoScrolledToNow = false;
+    hasSyncedFreshData = false;
     loadUi();
     saveUi();
     loadCup();
