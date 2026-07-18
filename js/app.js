@@ -211,6 +211,7 @@ window.HB = window.HB || {};
     error: null,
     tables: {},              // divId -> {status, rows}
     playoffs: {},            // catId -> {status, divisions}
+    groupTables: {},         // catId -> {status, byGroupNum, teamStrength} (för slutspelsprognos)
     // Globala inställningar (gäller alla cuper, sparas separat från
     // per-cup-filtren i saveUi()/loadUi()).
     theme: localStorage.getItem("hb:theme") || "auto",       // light | dark | auto
@@ -218,6 +219,7 @@ window.HB = window.HB || {};
     breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
     matchMinutes: +(localStorage.getItem("hb:matchMinutes") || 30), // schemarutans längd
     advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
+    showPlayoffProjection: localStorage.getItem("hb:showPlayoffProjection") === "on",
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
     favoriteTeam: localStorage.getItem("hb:favoriteTeam") || "", // tomt = ingen stjärna
     fullCardColors: localStorage.getItem("hb:fullCardColors") === "on",
@@ -254,6 +256,7 @@ window.HB = window.HB || {};
     localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
     localStorage.setItem("hb:matchMinutes", String(state.matchMinutes));
     localStorage.setItem("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
+    localStorage.setItem("hb:showPlayoffProjection", state.showPlayoffProjection ? "on" : "off");
     localStorage.setItem("hb:fullCardColors", state.fullCardColors ? "on" : "off");
     localStorage.setItem("hb:teamColorOverrides", JSON.stringify(state.teamColorOverrides));
     applyTheme();
@@ -395,6 +398,7 @@ window.HB = window.HB || {};
     state.cupId = id;
     state.tables = {};
     state.playoffs = {};
+    state.groupTables = {};
     dialogTableCache = {};
     state.matches = [];
     state.loadedAt = 0;
@@ -742,6 +746,20 @@ window.HB = window.HB || {};
           }))),
     ));
 
+    // Tillbaka-knapp: syns så snart man hoppat till en tillfällig
+    // filtrering — ett lags kommande/spelade matcher (matchdialogens
+    // snabblänkar, ett klickbart lagnamn i tabellerna eller på ett
+    // matchkort) eller en specifik plan — oavsett vad som utlöste hoppet.
+    // Ett enda tydligt sätt att komma tillbaka till sin egen vy, i stället
+    // för att behöva pilla ihop filtren för hand.
+    if (stashedFilter) {
+      body.append(h("div", { class: "row" },
+        h("button", {
+          class: "chip back-chip", type: "button",
+          onclick: () => restoreStashedFilter(),
+        }, "← Tillbaka till din vy")));
+    }
+
     // Aktivt filter på ett motståndarlag (satt via matchdialogens
     // snabblänkar) — klubbens egna lag hanteras redan synligt av
     // lagväljaren nedan, så den här raden visar bara lag som INTE är våra.
@@ -751,10 +769,6 @@ window.HB = window.HB || {};
       body.append(h("div", { class: "row" },
         foreignTeamIds.map((id) =>
           chip((teamNameById(id) || "Okänt lag") + "  ✕", true, () => {
-            // Om det här är resultatet av ett hopp via gotoMatch()/
-            // gotoTeamMatches() (matchdialogens snabblänkar, klickbara
-            // lagnamn i tabellerna) återställs grundinställningen som
-            // gällde innan hoppet — annars tas bara laget bort ur filtret.
             if (!restoreStashedFilter()) { state.teams.delete(id); saveUi(); render(); }
           }))));
     }
@@ -1185,6 +1199,7 @@ window.HB = window.HB || {};
   // state.arena som plan-dropdownen i verktygsraden, så "Alla planer"
   // där är den naturliga vägen tillbaka.
   function filterByArena(arena) {
+    stashFilterIfNeeded();
     state.arena = arena;
     saveUi();
     render();
@@ -1545,15 +1560,177 @@ window.HB = window.HB || {};
     });
   }
 
-  function bracketMatchBox(m) {
+  // --- slutspelsprognos: fyller i platshållarplatser ("N:an i Grupp M",
+  // "Bästa N:an", "Vinn. X") med nuvarande tabellplacering, och förutspår
+  // vinnare av ospelade möten (bäst placerade laget — poäng, sen
+  // målskillnad, sen gjorda mål — antas gå vidare). Rör aldrig
+  // originaldatan i state.playoffs; bygger en separat projektionskarta som
+  // bracketMatchBox/bracketTableBlock läser om inställningen är på.
+  //
+  // OBS: siffran i "Vinn. 18072137" är INTE samma id-rymd som Match.id —
+  // det är en Cup Manager-intern etikett vi inte kan slå upp direkt
+  // (verifierat: en semifinals "Vinn. 18072137" refererar till en
+  // kvartsfinal vars riktiga id är 82143330). Vi använder i stället
+  // matchens EGNA nextWinnerId-fält (redan i datan) för att koppla ihop
+  // matcher framåt i trädet, positionerat via matchRank när en match har
+  // två olösta sidor (t.ex. finalen).
+
+  const PLACEHOLDER_WINNER_OF = /^vinn/i;
+  const PLACEHOLDER_NTH_BEST_OF_RANK = /^(\d+)\s*:\s*\w+\s+b[äa]sta\s+(\d+)\s*:\s*\w+$/i;
+  const PLACEHOLDER_BEST_OF_RANK = /^b[äa]sta\s+(\d+)\s*:\s*\w+$/i;
+  const PLACEHOLDER_RANK_IN_GROUP = /^(\d+)\s*:\s*\w+\s+i\s+grupp\s+(\d+)$/i;
+
+  let groupTablesQueue = Promise.resolve();
+
+  function ensureGroupTables(catId) {
+    if (state.groupTables[catId]) return;
+    state.groupTables[catId] = { status: "loading" };
+    groupTablesQueue = groupTablesQueue.then(async () => {
+      try {
+        const groups = await HB.api.fetchGroupDivisions(cup(), catId);
+        const byGroupNum = {};
+        const teamStrength = {};
+        await Promise.all(groups.map(async (g) => {
+          const gm = /grupp\s*(\d+)/i.exec(g.name || "");
+          if (!gm) return;
+          const rows = await HB.api.fetchTable(cup(), g.id);
+          byGroupNum[+gm[1]] = rows;
+          for (const r of rows) {
+            if (r.teamId) teamStrength[r.teamId] = { points: r.points, gf: r.gf, ga: r.ga, name: r.name };
+          }
+        }));
+        state.groupTables[catId] = { status: "done", byGroupNum, teamStrength };
+      } catch {
+        state.groupTables[catId] = { status: "error" };
+      }
+      if (state.view === "slutspel") renderContent();
+    });
+  }
+
+  // Wildcard-poolen för en given tabellposition (t.ex. alla 5:or, en per
+  // grupp) — sorterad efter samma kriterier som en vanlig tabell, så
+  // "Bästa 5:an"/"2:a bästa 5:an" kan plockas ur rätt position. Cachad per
+  // anrop av buildPlayoffProjection (wcCache), inte globalt.
+  function wildcardPool(byGroupNum, rank, wcCache) {
+    if (wcCache.has(rank)) return wcCache.get(rank);
+    const pool = Object.values(byGroupNum)
+      .map((rows) => rows[rank - 1])
+      .filter(Boolean)
+      .sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf);
+    wcCache.set(rank, pool);
+    return pool;
+  }
+
+  // Löser upp ETT gruppbaserat platshållarnamn ("N:an i Grupp M"/"Bästa
+  // N:an") mot aktuell tabellplacering. Returnerar null om strängen inte
+  // känns igen — antingen redan ett riktigt lagnamn, eller en "Vinn. X"-
+  // platshållare (hanteras separat i buildPlayoffProjection via
+  // nextWinnerId, se kommentaren ovanför regexarna).
+  function resolvePlaceholderTeam(name, gd, wcCache) {
+    const s = (name || "").trim();
+    let m;
+    if ((m = PLACEHOLDER_NTH_BEST_OF_RANK.exec(s))) {
+      const pool = wildcardPool(gd.byGroupNum, +m[2], wcCache);
+      const row = pool[+m[1] - 1];
+      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga } : null;
+    }
+    if ((m = PLACEHOLDER_BEST_OF_RANK.exec(s))) {
+      const pool = wildcardPool(gd.byGroupNum, +m[1], wcCache);
+      const row = pool[0];
+      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga } : null;
+    }
+    if ((m = PLACEHOLDER_RANK_IN_GROUP.exec(s))) {
+      const row = (gd.byGroupNum[+m[2]] || [])[+m[1] - 1];
+      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga } : null;
+    }
+    return null;
+  }
+
+  // Bäst placerade laget (poäng, sen målskillnad, sen gjorda mål) — en
+  // enkel, öppet deklarerad "formen håller i sig"-prognos, inte en
+  // matchspecifik gissning.
+  function betterTeam(a, b) {
+    if (a.points !== b.points) return a.points > b.points ? a : b;
+    const ad = a.gf - a.ga, bd = b.gf - b.ga;
+    if (ad !== bd) return ad > bd ? a : b;
+    return a.gf >= b.gf ? a : b;
+  }
+
+  // Bygger en prognoskarta (matchId -> {home, away, winnerSide}) för EN
+  // slutspelsdivision. Går igenom omgångarna tidigast→senast (samma
+  // ordning som groupPlayoffRounds ger) och matar vinnare framåt via
+  // nextWinnerId — så en "Vinn. X"-platshållare i en senare omgång alltid
+  // redan har sin matarmatch upplöst när den behövs. Redan spelade matcher
+  // projiceras inte (deras VERKLIGA vinnare används rakt av som grund för
+  // senare omgångar) — bara ospelade matcher hamnar i kartan.
+  function buildPlayoffProjection(div, gd) {
+    const wcCache = new Map();
+    // targetMatchId -> [{matchRank, winner}], i ankomstordning (tidigast
+    // omgång först); sorteras på matchRank innan den konsumeras nedan så
+    // matcher med TVÅ olösta sidor (t.ex. finalen) får en stabil
+    // hemma/borta-tilldelning.
+    const feederQueue = new Map();
+    const proj = new Map();
+    for (const [, ms] of groupPlayoffRounds(div)) {
+      for (const m of ms) {
+        const feeders = (feederQueue.get(m.id) || []).sort((a, b) => a.matchRank - b.matchRank);
+        let feederIdx = 0;
+        const resolveSide = (side) => {
+          const r = resolvePlaceholderTeam(side.name, gd, wcCache);
+          if (r) return r;
+          if (PLACEHOLDER_WINNER_OF.test((side.name || "").trim())) {
+            const f = feeders[feederIdx++];
+            return f ? f.winner : null;
+          }
+          if (side.id == null || !side.name) return null;
+          const strength = gd.teamStrength[side.id];
+          return {
+            teamId: side.id, name: side.name,
+            points: strength ? strength.points : -1,
+            gf: strength ? strength.gf : 0, ga: strength ? strength.ga : 0,
+          };
+        };
+        const home = resolveSide(m.home);
+        const away = resolveSide(m.away);
+        let winner = null;
+        if (m.res && m.res.fin) {
+          winner = m.res.winner === "home"
+            ? (home || { teamId: m.home.id, name: m.home.name, points: -1, gf: 0, ga: 0 })
+            : (away || { teamId: m.away.id, name: m.away.name, points: -1, gf: 0, ga: 0 });
+        } else if (home && away) {
+          winner = betterTeam(home, away);
+          proj.set(m.id, { home, away, winnerSide: winner === home ? "home" : "away" });
+        }
+        if (winner && m.nextWinnerId != null) {
+          if (!feederQueue.has(m.nextWinnerId)) feederQueue.set(m.nextWinnerId, []);
+          feederQueue.get(m.nextWinnerId).push({ matchRank: m.matchRank, winner });
+        }
+      }
+    }
+    return proj;
+  }
+
+  // projMap: matchId -> {home, away, winnerSide} från buildPlayoffProjection()
+  // — ospelade matcher som kunnat lösas upp visar ett prognosticerat lagnamn
+  // (tydligt markerat, class "predicted") i stället för det råa
+  // platshållarnamnet ("N:an i Grupp M" osv).
+  function bracketMatchBox(m, projMap) {
     const sc = scoreText(m.res);
-    const teamRow = (side) => h("div", {
-      class: "bracket-team" + (isClubName(side.name) ? " us" : "") +
-        (m.res && m.res.fin && m.res.winner &&
-          ((m.res.winner === "home") === (side === m.home)) ? " won" : ""),
-    }, side.name || "TBD");
+    const proj = projMap ? projMap.get(m.id) : null;
+    const teamRow = (side, isHome) => {
+      const projSide = proj ? (isHome ? proj.home : proj.away) : null;
+      const name = projSide ? projSide.name : (side.name || "TBD");
+      const won = proj
+        ? proj.winnerSide === (isHome ? "home" : "away")
+        : (m.res && m.res.fin && m.res.winner &&
+            ((m.res.winner === "home") === isHome));
+      return h("div", {
+        class: "bracket-team" + (isClubName(name) ? " us" : "") +
+          (won ? " won" : "") + (projSide ? " predicted" : ""),
+      }, name);
+    };
     return h("div", {
-      class: "bracket-match" + (isClubMatch(m) ? " ours" : ""),
+      class: "bracket-match" + (isClubMatch(m) ? " ours" : "") + (proj ? " predicted-match" : ""),
       role: "button", tabindex: "0",
       title: "Visa i schemat",
       "aria-label": "Visa " + (m.home.name || "TBD") + " mot " + (m.away.name || "TBD") + " i schemat",
@@ -1562,8 +1739,9 @@ window.HB = window.HB || {};
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoMatch(m); }
       },
     },
-      h("div", { class: "bracket-teams" }, teamRow(m.home), teamRow(m.away)),
-      h("div", { class: "bracket-score" }, sc || fmtTime.format(new Date(m.start))));
+      h("div", { class: "bracket-teams" }, teamRow(m.home, true), teamRow(m.away, false)),
+      h("div", { class: "bracket-score" },
+        proj ? "Prognos" : (sc || fmtTime.format(new Date(m.start)))));
   }
 
   function groupPlayoffRounds(div) {
@@ -1578,20 +1756,20 @@ window.HB = window.HB || {};
     return rounds;
   }
 
-  function bracketBlock(div) {
+  function bracketBlock(div, projMap) {
     return h("section", { class: "bracket-box" },
       h("h3", null, div.name),
       h("div", { class: "bracket" },
         groupPlayoffRounds(div).map(([, ms]) =>
           h("div", { class: "bracket-round" },
             h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
-            ms.map(bracketMatchBox)))));
+            ms.map((m) => bracketMatchBox(m, projMap))))));
   }
 
   // "Avancerad tabell": samma slutspelsmatcher som bracketBlock, men som en
   // radbaserad tabell med tid/plan — mer detaljer och lättare att scrolla
   // på smala skärmar än trädets sidledes kolumner.
-  function bracketTableBlock(div) {
+  function bracketTableBlock(div, projMap) {
     const rows = groupPlayoffRounds(div).flatMap(([, ms]) => ms);
     return h("section", { class: "table-box" },
       h("h3", null, div.name),
@@ -1601,8 +1779,11 @@ window.HB = window.HB || {};
             h("th", { class: i < 2 ? "l" : "" }, c)))),
         h("tbody", null, rows.map((m) => {
           const sc = scoreText(m.res);
+          const proj = projMap ? projMap.get(m.id) : null;
+          const homeName = proj ? proj.home.name : (m.home.name || "TBD");
+          const awayName = proj ? proj.away.name : (m.away.name || "TBD");
           return h("tr", {
-            class: "bracket-table-row" + (isClubMatch(m) ? " us" : ""),
+            class: "bracket-table-row" + (isClubMatch(m) ? " us" : "") + (proj ? " predicted-match" : ""),
             role: "button", tabindex: "0",
             onclick: () => gotoMatch(m),
             onkeydown: (e) => {
@@ -1611,10 +1792,14 @@ window.HB = window.HB || {};
           },
             h("td", { class: "l" }, m.roundName || ""),
             h("td", { class: "l" },
-              h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name || "TBD"),
+              h("span", {
+                class: (isClubName(homeName) ? "us " : "") + (proj ? "predicted" : ""),
+              }, homeName),
               " – ",
-              h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name || "TBD")),
-            h("td", { class: "pts" }, sc || "–"),
+              h("span", {
+                class: (isClubName(awayName) ? "us " : "") + (proj ? "predicted" : ""),
+              }, awayName)),
+            h("td", { class: "pts" }, proj ? "Prognos" : (sc || "–")),
             h("td", null, fmtTime.format(new Date(m.start))),
             h("td", null, m.arena || ""));
         }))));
@@ -1644,10 +1829,22 @@ window.HB = window.HB || {};
       if (p.status === "error" || !p.divisions.length) continue; // inget slutspel ännu — hoppa tyst
       any = true;
       main.append(h("h2", { class: "day-h" }, c.catName));
+      let gd = null;
+      if (state.showPlayoffProjection) {
+        ensureGroupTables(c.catId);
+        const gt = state.groupTables[c.catId];
+        if (gt && gt.status === "done") gd = gt;
+      }
+      const projMaps = p.divisions.map((d) => (gd ? buildPlayoffProjection(d, gd) : null));
+      if (state.showPlayoffProjection && state.groupTables[c.catId] &&
+          state.groupTables[c.catId].status === "loading") {
+        main.append(h("p", { class: "muted" }, "Hämtar tabeller för prognosen …"));
+      }
       if (state.advancedPlayoffTable) {
-        main.append(...p.divisions.map(bracketTableBlock));
+        main.append(...p.divisions.map((d, i) => bracketTableBlock(d, projMaps[i])));
       } else {
-        main.append(h("div", { class: "bracket-row" }, p.divisions.map(bracketBlock)));
+        main.append(h("div", { class: "bracket-row" },
+          p.divisions.map((d, i) => bracketBlock(d, projMaps[i]))));
       }
     }
     if (!any && !anyLoading) {
@@ -1773,6 +1970,14 @@ window.HB = window.HB || {};
     advTableBox.checked = state.advancedPlayoffTable;
     advTableBox.addEventListener("change", () => {
       state.advancedPlayoffTable = advTableBox.checked;
+      saveSettings();
+      renderContent();
+    });
+
+    const projBox = $("#playoffProjectionToggle");
+    projBox.checked = state.showPlayoffProjection;
+    projBox.addEventListener("change", () => {
+      state.showPlayoffProjection = projBox.checked;
       saveSettings();
       renderContent();
     });

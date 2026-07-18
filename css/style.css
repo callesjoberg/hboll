@@ -301,6 +301,15 @@ header.top {
 
 .chip.small { padding: 3px 9px; font-size: 12px; }
 
+.back-chip {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: #16283f;
+  font-weight: 600;
+}
+
+.back-chip:hover { filter: brightness(0.95); }
+
 /* lagväljare: sök-, filter- och sorterbar dropdown */
 
 .team-picker-dd { position: relative; }
@@ -1323,6 +1332,12 @@ dialog.match-dialog {
 .bracket-match:hover { border-color: var(--blue); }
 .bracket-match.ours { border-left: 3px solid var(--blue); }
 
+/* slutspelsprognos: tydligt urskiljbar från riktiga, spelade matcher —
+   streckad kant + kursiv, ingen bock, egen "Prognos"-etikett i stället
+   för klockslag/resultat. */
+.bracket-match.predicted-match { border-style: dashed; background: none; }
+.bracket-table-row.predicted-match { opacity: 0.85; }
+
 .bracket-teams { display: grid; gap: 2px; margin-bottom: 4px; }
 
 .bracket-team {
@@ -1335,6 +1350,8 @@ dialog.match-dialog {
 .bracket-team.us { font-weight: 600; color: var(--blue-deep); }
 .bracket-team.won { font-weight: 600; }
 .bracket-team.won::after { content: " ✓"; color: var(--won); font-size: 11px; }
+.bracket-team.predicted, span.predicted { font-style: italic; color: var(--ink-soft); }
+.bracket-team.predicted.won { color: var(--ink); }
 
 .bracket-score {
   font-family: "Barlow Condensed", sans-serif;
@@ -1342,6 +1359,8 @@ dialog.match-dialog {
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
+
+.predicted-match .bracket-score { font-style: italic; font-weight: 500; color: var(--ink-soft); }
 
 .custom-cup {
   display: flex;

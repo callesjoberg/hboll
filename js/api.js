@@ -208,6 +208,33 @@ window.HB = window.HB || {};
     }));
   }
 
+  // --- gruppdivisioner (för slutspelsprognos) ------------------------------
+
+  function groupDivisionsQuery(categoryId, tournamentId) {
+    return (
+      "Category({categoryId:" + categoryId + ",tournamentId:" + tournamentId + "})" +
+      "{stages:[{... on Stage:{divisions:[{... on Division:{name:{}}}]}}]}"
+    );
+  }
+
+  // Gruppspels-divisionerna ("Grupp 1", "Grupp 2" osv, typ Conference) för
+  // en kategori — id+namn, används för att slå upp respektive grupps
+  // tabell via fetchTable() och därigenom lösa upp slutspelets
+  // platshållarnamn ("N:an i Grupp M") mot nuvarande tabellplacering.
+  async function fetchGroupDivisions(cup, categoryId) {
+    if (cup.dataUrl) return [];
+    const resp = (await call(cup, groupDivisionsQuery(categoryId, cup.tournamentId))).responses || {};
+    const flatStore = {};
+    for (const [k, v] of Object.entries(resp)) {
+      if (v && typeof v === "object" && v.entity && typeof v.entity === "object") {
+        flatStore[k] = v.entity;
+      }
+    }
+    return Object.values(flatStore)
+      .filter((e) => e.__typename === "Conference" && e.id != null)
+      .map((d) => ({ id: d.id, name: nameOf(d) }));
+  }
+
   // --- slutspel (A/B/C) och inbördes möten ---------------------------------
 
   function playoffQuery(categoryId, tournamentId) {
@@ -336,5 +363,6 @@ window.HB = window.HB || {};
   }
 
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchTable,
-             fetchPlayoffs, fetchPreviousMeetings, readCache, writeCache, localDataTs };
+             fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings,
+             readCache, writeCache, localDataTs };
 })();
