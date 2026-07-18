@@ -204,9 +204,14 @@ window.HB = window.HB || {};
     viewArena: "",           // vald bana i Bana-fliken (separat från arena-filtret ovan)
     q: "",
     sort: "tid",             // tid | klass | plan
+    timeOrder: "asc",        // asc (äldst→nyast) | desc (nyast/kommande överst)
     matchFilter: "all",      // all | upcoming | played
     toolbarOpen: true,       // filter-/sorteringsmenyn expanderad? (session, sparas ej)
     heroMinimized: false,    // nästa match-karusellen minimerad? (session, sparas ej)
+    bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
+    showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
+    showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
+    schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
     matches: [],
     loadedAt: 0,
     loading: false,
@@ -280,7 +285,7 @@ window.HB = window.HB || {};
       view: state.view, scope: state.scope, days: [...state.days],
       cats: [...state.cats], teams: [...state.teams],
       arena: state.arena, viewArena: state.viewArena,
-      sort: state.sort, matchFilter: state.matchFilter,
+      sort: state.sort, timeOrder: state.timeOrder, matchFilter: state.matchFilter,
     }));
     syncUrl();
   }
@@ -301,6 +306,7 @@ window.HB = window.HB || {};
     if (state.arena) p.set("arena", state.arena);
     if (state.viewArena) p.set("viewArena", state.viewArena);
     if (state.sort !== "tid") p.set("sort", state.sort);
+    if (state.timeOrder !== "asc") p.set("order", state.timeOrder);
     if (state.matchFilter !== "all") p.set("mf", state.matchFilter);
     if (state.q) p.set("q", state.q);
     const qs = p.toString();
@@ -311,6 +317,7 @@ window.HB = window.HB || {};
     state.view = "schema"; state.scope = "club"; state.days = new Set();
     state.cats = new Set(); state.teams = new Set();
     state.arena = ""; state.viewArena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
+    state.timeOrder = "asc"; state.schemaOlderRevealCount = 0;
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
@@ -322,6 +329,7 @@ window.HB = window.HB || {};
       if (s.arena) state.arena = s.arena;
       if (s.viewArena) state.viewArena = s.viewArena;
       if (s.sort) state.sort = s.sort;
+      if (s.timeOrder === "desc") state.timeOrder = "desc";
       if (["all", "upcoming", "played"].includes(s.matchFilter)) state.matchFilter = s.matchFilter;
       else if (s.played === false) state.matchFilter = "upcoming"; // migrera gammal boolean
     } catch { /* trasig state: kör default */ }
@@ -874,6 +882,21 @@ window.HB = window.HB || {};
          ["resultat", "Sortera: resultat"], ["mal", "Sortera: mål"]]
           .map(([v, l]) => h("option",
             { value: v, ...(state.sort === v ? { selected: "" } : {}) }, l))),
+      // Bara meningsfull för tidssortering — klass/plan/resultat-grupperingen
+      // har ingen enskild kronologisk riktning att vända på.
+      state.sort === "tid" ? h("button", {
+        class: "chip", type: "button",
+        title: state.timeOrder === "desc"
+          ? "Nyast/kommande överst — klicka för äldst överst"
+          : "Äldst överst — klicka för nyast/kommande överst",
+        onclick: () => {
+          state.timeOrder = state.timeOrder === "desc" ? "asc" : "desc";
+          state.schemaOlderRevealCount = 0; // ny riktning: börja om med "visa fler tidigare"
+          // render() (inte renderContent()) — knappens egen etikett/state
+          // ligger i verktygsraden, som bara render() bygger om.
+          saveUi(); render();
+        },
+      }, state.timeOrder === "desc" ? "↓ Nyast överst" : "↑ Äldst överst") : null,
       buildExportPicker(),
     ));
   }
@@ -1447,6 +1470,13 @@ window.HB = window.HB || {};
         h("div", { class: "slot-matches" }, g.items.map(matchCard))));
     }
     main.append(wrap);
+    // Nyast/kommande överst: bygg allt i den vanliga (äldst→nyast) ordningen
+    // ovan helt oförändrat (dagshuvuden/NU-linje/vätskepaus räknas rätt då)
+    // och vänd bara den FÄRDIGA DOM-ordningen på barnen efteråt — enklare
+    // och säkrare än att skriva om hela den temporala logiken två gånger.
+    if (state.timeOrder === "desc") {
+      [...wrap.children].reverse().forEach((c) => wrap.appendChild(c));
+    }
     // Flaggan sätts INNE i timeouten (inte här) och #nowline slås upp på
     // nytt då — under den första sidladdningen hinner flera
     // renderContent()-anrop rulla in i rad (laddningsläge → data → väder),
@@ -1486,7 +1516,17 @@ window.HB = window.HB || {};
     }
 
     if (state.sort === "tid") {
-      renderTimeline(main, list);
+      const { visible, hiddenCount } = splitRecentPlayed(
+        list, SCHEMA_RECENT_HOURS, state.schemaOlderRevealCount);
+      const loadMoreBtn = loadMorePlayedButton(hiddenCount, SCHEMA_REVEAL_BATCH,
+        state.timeOrder === "desc" ? "↓" : "↑", () => {
+          state.schemaOlderRevealCount += SCHEMA_REVEAL_BATCH; renderContent();
+        });
+      // Äldre matcher hamnar överst i asc-ordning (äldst→nyast) och underst
+      // i desc-ordning (nyast/kommande överst) — knappen placeras därefter.
+      if (loadMoreBtn && state.timeOrder === "asc") main.append(loadMoreBtn);
+      renderTimeline(main, visible);
+      if (loadMoreBtn && state.timeOrder === "desc") main.append(loadMoreBtn);
     } else {
       const outcomeLabels = ["Vunnet", "Oavgjort", "Förlorat", "Ospelat"];
       const keyOf = {
@@ -1513,6 +1553,53 @@ window.HB = window.HB || {};
     }
   }
 
+  // Döljer gamla spelade matcher bakom en knapp, så en lång lista (en bana
+  // med hundratals matcher, ett fullt schema, en slutspelstabell med
+  // många klasser) blir överskådlig — behåller alltid ALLA kommande/
+  // pågående matcher plus spelade matcher från de senaste cutoffHours
+  // timmarna. revealExtra öppnar upp DE NÄRMAST cutoff (dvs de senast
+  // spelade av de gömda) — antingen ett fast antal i taget ("visa fler
+  // tidigare", schemat) eller Infinity ("visa alla", bana/slutspel).
+  const ARENA_RECENT_HOURS = 2; // bana/slutspelstabell: hur långt bakåt spelade matcher visas som standard
+
+  function splitRecentPlayed(list, cutoffHours, revealExtra) {
+    const cutoff = Date.now() - cutoffHours * 3600000;
+    const always = [];
+    const older = []; // äldre spelade, i samma stigande tidsordning som list
+    for (const m of list) {
+      if (m.res && m.res.fin && m.start < cutoff) older.push(m);
+      else always.push(m);
+    }
+    const revealed = revealExtra > 0 ? older.slice(Math.max(0, older.length - revealExtra)) : [];
+    const hiddenCount = older.length - revealed.length;
+    const visible = [...revealed, ...always].sort((a, b) => a.start - b.start);
+    return { visible, hiddenCount };
+  }
+
+  function showAllPlayedButton(hiddenCount, cutoffHours, onClick) {
+    if (!hiddenCount) return null;
+    return h("button", {
+      class: "btn small show-all-played", type: "button",
+      onclick: onClick,
+    }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
+      cutoffHours + " tim visas alltid)");
+  }
+
+  // Samma idé men laddar bara BATCH matcher i taget (klicka flera gånger
+  // för att gå längre bakåt) — bättre för schemats ofta mycket längre
+  // historik än bana/slutspelets "visa allt på en gång".
+  function loadMorePlayedButton(hiddenCount, batchSize, arrow, onClick) {
+    if (!hiddenCount) return null;
+    return h("button", {
+      class: "btn small show-all-played", type: "button",
+      onclick: onClick,
+    }, arrow + " Visa " + Math.min(batchSize, hiddenCount) + " tidigare matcher (" +
+      hiddenCount + " till)");
+  }
+
+  const SCHEMA_RECENT_HOURS = 1; // schemat: hur långt bakåt spelade matcher visas som standard
+  const SCHEMA_REVEAL_BATCH = 4; // ... och hur många fler "visa fler tidigare" öppnar upp per klick
+
   // --- render: bana -----------------------------------------------------------
 
   // Egen flik för att snabbt välja en bana och se dess kommande/spelade
@@ -1530,7 +1617,10 @@ window.HB = window.HB || {};
     main.append(h("div", { class: "row" },
       h("select", {
         class: "select", "aria-label": "Välj bana",
-        onchange: (e) => { state.viewArena = e.target.value; saveUi(); renderContent(); },
+        onchange: (e) => {
+          state.viewArena = e.target.value; state.showAllPlayedArena = false;
+          saveUi(); renderContent();
+        },
       },
         h("option", { value: "" }, "Välj bana …"),
         arenas.map((a) => h("option",
@@ -1553,7 +1643,13 @@ window.HB = window.HB || {};
         "Inga matcher matchar filtret på " + state.viewArena + "."));
       return;
     }
-    renderTimeline(main, list);
+    const { visible, hiddenCount } = splitRecentPlayed(
+      list, ARENA_RECENT_HOURS, state.showAllPlayedArena ? Infinity : 0);
+    renderTimeline(main, visible);
+    const btn = showAllPlayedButton(hiddenCount, ARENA_RECENT_HOURS, () => {
+      state.showAllPlayedArena = true; renderContent();
+    });
+    if (btn) main.append(btn);
   }
 
   // --- render: tabeller -------------------------------------------------------
@@ -1930,6 +2026,24 @@ window.HB = window.HB || {};
   // matar match 0 i nästa). Måste köras EFTER att .bracket-box:en är
   // inklistrad i det levande DOM-trädet, annars ger getBoundingClientRect()
   // meningslösa mått — anropas via requestAnimationFrame från renderPlayoffs.
+  // Mjukt rundade hörn i stället för raka 90°-vinklar — samma tre-segments-
+  // elbow som förut (rakt ut, rakt över, rakt in) men med en liten kurva i
+  // svängarna, som i välgjorda bracket-visualiseringar. Om käll- och
+  // målmatchen råkar ligga i exakt samma höjd blir det bara en rak linje.
+  function roundedElbowPath(x1, y1, midX, y2, x2, r) {
+    if (Math.abs(y2 - y1) < 1) return "M" + x1 + "," + y1 + " L" + x2 + "," + y2;
+    const dir = y2 > y1 ? 1 : -1;
+    const rr = Math.max(0, Math.min(r, Math.abs(y2 - y1) / 2, Math.abs(midX - x1), Math.abs(x2 - midX)));
+    return [
+      "M" + x1 + "," + y1,
+      "L" + (midX - rr) + "," + y1,
+      "Q" + midX + "," + y1 + " " + midX + "," + (y1 + rr * dir),
+      "L" + midX + "," + (y2 - rr * dir),
+      "Q" + midX + "," + y2 + " " + (midX + rr) + "," + y2,
+      "L" + x2 + "," + y2,
+    ].join(" ");
+  }
+
   function drawBracketConnectors(boxEl, div) {
     const bracketEl = boxEl.querySelector(".bracket");
     if (!bracketEl) return;
@@ -1951,7 +2065,7 @@ window.HB = window.HB || {};
       const midX = (x1 + x2) / 2;
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("class", "bracket-connector-line" + (isClubMatch(m) ? " ours" : ""));
-      path.setAttribute("d", "M" + x1 + "," + y1 + " H" + midX + " V" + y2 + " H" + x2);
+      path.setAttribute("d", roundedElbowPath(x1, y1, midX, y2, x2, 10));
       svg.appendChild(path);
     }
     bracketEl.prepend(svg);
@@ -1997,7 +2111,9 @@ window.HB = window.HB || {};
   // klickbara och sorterar (klick igen växlar riktning; "Omgång" återgår
   // till trädets naturliga ordning).
   function bracketTableBlock(div, projMap) {
-    const rows = sortBracketRows(groupPlayoffRounds(div).flatMap(([, ms]) => ms));
+    const allRows = sortBracketRows(groupPlayoffRounds(div).flatMap(([, ms]) => ms));
+    const { visible: rows, hiddenCount } = splitRecentPlayed(
+      allRows, ARENA_RECENT_HOURS, state.showAllPlayedBracket ? Infinity : 0);
     const headerCell = (label, col, wide) => {
       const active = col ? bracketSort && bracketSort.col === col : !bracketSort;
       return h("th", {
@@ -2052,7 +2168,10 @@ window.HB = window.HB || {};
             h("td", { class: "pts" }, proj ? "Prognos" : (sc || "–")),
             h("td", null, fmtTime.format(new Date(m.start))),
             h("td", null, m.arena || ""));
-        }))));
+        }))),
+      showAllPlayedButton(hiddenCount, ARENA_RECENT_HOURS, () => {
+        state.showAllPlayedBracket = true; renderContent();
+      }));
   }
 
   function renderPlayoffs(main) {
@@ -2075,7 +2194,24 @@ window.HB = window.HB || {};
         }),
         chip("Tabell", state.advancedPlayoffTable, () => {
           state.advancedPlayoffTable = true; saveSettings(); renderContent();
-        }))));
+        })),
+      // Zoom är bara meningsfull i trädvyn — tabellen radbryter/scrollar
+      // redan naturligt och behöver ingen skalning.
+      !state.advancedPlayoffTable ? h("div", { class: "seg bracket-zoom", role: "group", "aria-label": "Zoom" },
+        h("button", {
+          class: "chip", type: "button", "aria-label": "Zooma ut",
+          disabled: state.bracketZoom <= 0.6 ? "" : null,
+          onclick: () => { state.bracketZoom = Math.max(0.6, +(state.bracketZoom - 0.15).toFixed(2)); renderContent(); },
+        }, "−"),
+        h("button", {
+          class: "chip", type: "button", title: "Återställ zoom",
+          onclick: () => { state.bracketZoom = 1; renderContent(); },
+        }, Math.round(state.bracketZoom * 100) + "%"),
+        h("button", {
+          class: "chip", type: "button", "aria-label": "Zooma in",
+          disabled: state.bracketZoom >= 1.5 ? "" : null,
+          onclick: () => { state.bracketZoom = Math.min(1.5, +(state.bracketZoom + 0.15).toFixed(2)); renderContent(); },
+        }, "+")) : null));
     let any = false, anyLoading = false;
     const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
     for (const c of cats) {
@@ -2105,7 +2241,7 @@ window.HB = window.HB || {};
         main.append(...p.divisions.map((d, i) => bracketTableBlock(d, projMaps[i])));
       } else {
         const boxes = p.divisions.map((d, i) => bracketBlock(d, projMaps[i]));
-        main.append(h("div", { class: "bracket-row" }, boxes));
+        main.append(h("div", { class: "bracket-row", style: "zoom:" + state.bracketZoom }, boxes));
         p.divisions.forEach((d, i) => pendingConnectors.push({ el: boxes[i], div: d }));
       }
     }
@@ -2377,7 +2513,7 @@ window.HB = window.HB || {};
     // bevara rätt typ så Set.has()-jämförelser mot matchdatan funkar.
     const toId = (s) => (/^\d+$/.test(s) ? +s : s);
     const hasUrlFilters = ["view", "scope", "days", "cats", "teams", "arena",
-      "viewArena", "sort", "mf", "q"].some((k) => params.has(k));
+      "viewArena", "sort", "order", "mf", "q"].some((k) => params.has(k));
     $$("#viewTabs .tab").forEach((b) =>
       b.addEventListener("click", () => {
         state.view = b.dataset.view; saveUi(); render();
@@ -2404,6 +2540,7 @@ window.HB = window.HB || {};
       if (params.get("arena")) state.arena = params.get("arena");
       if (params.get("viewArena")) state.viewArena = params.get("viewArena");
       if (params.get("sort")) state.sort = params.get("sort");
+      if (params.get("order") === "desc") state.timeOrder = "desc";
       if (["all", "upcoming", "played"].includes(params.get("mf"))) {
         state.matchFilter = params.get("mf");
       }
