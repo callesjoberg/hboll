@@ -1326,6 +1326,145 @@ window.HB = window.HB || {};
     dlg.showModal();
   }
 
+  // --- historik: jämför resultat mellan cupens år -------------------------
+
+  // Räknar M/V/O/F/mål för lag vars namn innehåller `query` (case-
+  // insensitive delsträng — så "Alingsås HK" fångar alla klubbens lag,
+  // medan ett mer specifikt namn ger ett enskilt lag). Ingen teamId att
+  // matcha mot: id:n är inte stabila mellan cupens år.
+  function summarizeArchiveMatches(matches, query) {
+    const q = query.trim().toLowerCase();
+    const rows = [];
+    let played = 0, won = 0, tied = 0, lost = 0, gf = 0, ga = 0;
+    if (!q) return { rows, played, won, tied, lost, gf, ga };
+    for (const m of matches) {
+      const homeIsUs = m.home.name.toLowerCase().includes(q);
+      const awayIsUs = m.away.name.toLowerCase().includes(q);
+      if (!homeIsUs && !awayIsUs) continue;
+      rows.push(m);
+      if (!m.res || !m.res.fin) continue;
+      played++;
+      gf += (homeIsUs ? m.res.hg : m.res.ag) || 0;
+      ga += (homeIsUs ? m.res.ag : m.res.hg) || 0;
+      if (m.res.winner) {
+        if ((m.res.winner === "home") === homeIsUs) won++; else lost++;
+      } else {
+        tied++;
+      }
+    }
+    rows.sort((a, b) => b.start - a.start);
+    return { rows, played, won, tied, lost, gf, ga };
+  }
+
+  function archiveMatchRow(m) {
+    const sc = scoreText(m.res);
+    return h("div", { class: "arch-row" },
+      h("span", { class: "arch-date" },
+        fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start))),
+      h("span", { class: "arch-teams" },
+        h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name),
+        " – ",
+        h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name)),
+      h("span", { class: "arch-score" }, sc || "–"),
+      m.catName ? h("span", { class: "arch-cat" }, HB.shortCat(m.catName)) : null);
+  }
+
+  async function openHistoryDialog() {
+    const idx = await HB.api.fetchArchiveIndex();
+    const cupIds = Object.keys(idx).filter((id) => (idx[id].editions || []).length)
+      .sort((a, b) => idx[a].cupName.localeCompare(idx[b].cupName, "sv"));
+
+    const dlg = h("dialog", { class: "match-dialog history-dialog" },
+      h("button", {
+        class: "dialog-x", type: "button", "aria-label": "Stäng",
+        onclick: () => dlg.close(),
+      }, "×"),
+      h("div", { class: "match-dialog-head" },
+        h("span", { class: "cat" }, "Historik — jämför år")));
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => dlg.remove());
+    document.body.append(dlg);
+
+    if (!cupIds.length) {
+      dlg.append(h("p", { class: "muted" },
+        "Ingen historik arkiverad än — byggs upp automatiskt allteftersom cuperna spelas."));
+      dlg.showModal();
+      return;
+    }
+
+    let selCup = cupIds.includes(state.cupId) ? state.cupId : cupIds[0];
+    let query = state.favoriteClub || "";
+    let allTeamNames = [];
+
+    const cupSel = h("select", { "aria-label": "Välj cup" },
+      ...cupIds.map((id) => h("option", { value: id }, idx[id].cupName)));
+    cupSel.value = selCup;
+
+    const teamInput = h("input", {
+      type: "text", placeholder: "Lag/klubb, t.ex. Alingsås HK",
+    });
+    teamInput.value = query;
+    const teamOptions = h("div", { class: "autocomplete-list" });
+    teamOptions.hidden = true;
+    const teamWrap = h("div", { class: "autocomplete-wrap" }, teamInput, teamOptions);
+
+    const body = h("div", { class: "history-body" });
+    dlg.append(h("div", { class: "history-controls" }, cupSel, teamWrap), body);
+
+    async function renderBody() {
+      body.replaceChildren(h("p", { class: "muted" }, "Hämtar …"));
+      const editions = idx[selCup].editions.slice()
+        .sort((a, b) => b.edition.localeCompare(a.edition));
+      const loaded = await Promise.all(
+        editions.map((e) => HB.api.fetchArchiveEdition(selCup, e.edition)));
+      const names = new Set();
+      loaded.forEach((d) => ((d && d.matches) || []).forEach((m) => {
+        names.add(m.home.name); names.add(m.away.name);
+      }));
+      allTeamNames = [...names].sort((a, b) => a.localeCompare(b, "sv"));
+
+      if (!query.trim()) {
+        body.replaceChildren(h("p", { class: "muted" },
+          "Skriv ett lag- eller klubbnamn ovan för att se resultat år för år."));
+        return;
+      }
+      const summaries = editions.map((e, i) => ({
+        edition: e.edition,
+        ...summarizeArchiveMatches((loaded[i] && loaded[i].matches) || [], query),
+      })).filter((s) => s.rows.length);
+
+      if (!summaries.length) {
+        body.replaceChildren(h("p", { class: "muted" },
+          'Inga matcher hittades för "' + query + '" i ' + idx[selCup].cupName + "."));
+        return;
+      }
+      body.replaceChildren(...summaries.map((s, i) =>
+        h("details", { class: "history-year", open: i === 0 ? "" : null },
+          h("summary", null,
+            h("span", { class: "history-year-label" }, s.edition),
+            h("span", { class: "history-year-stats" },
+              s.played + " sp · " + s.won + "V " + s.tied + "O " + s.lost +
+              "F · mål " + s.gf + "–" + s.ga)),
+          h("div", { class: "arena-quick-list" }, s.rows.map(archiveMatchRow)))));
+    }
+
+    attachAutocomplete(teamInput, teamOptions, () => allTeamNames, (name) => {
+      query = name; renderBody();
+    });
+    teamInput.addEventListener("change", () => { query = teamInput.value; renderBody(); });
+    teamInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); query = teamInput.value; renderBody(); }
+    });
+    cupSel.addEventListener("change", () => { selCup = cupSel.value; renderBody(); });
+
+    dlg.showModal();
+    renderBody();
+  }
+
+  function setupHistory() {
+    $("#historyBtn").addEventListener("click", () => openHistoryDialog());
+  }
+
   function openMatchDialog(m) {
     const sc = scoreText(m.res);
     const dlg = h("dialog", { class: "match-dialog" },
@@ -2066,11 +2205,17 @@ window.HB = window.HB || {};
     if (!bracketEl) return;
     const old = bracketEl.querySelector(".bracket-connectors");
     if (old) old.remove();
+    // width/height/viewBox måste komma från SAMMA mätning (getBoundingClientRect)
+    // som matchboxarnas positioner nedan — annars stämmer inte SVG:ns egna
+    // koordinatsystem mot resten av layouten så fort en förälder har
+    // CSS zoom≠1 (scrollWidth/scrollHeight följer INTE zoom-skalningen på
+    // samma sätt som getBoundingClientRect, vilket dubbel-skalade linjerna).
+    const base = bracketEl.getBoundingClientRect();
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "bracket-connectors");
-    svg.setAttribute("width", String(bracketEl.scrollWidth));
-    svg.setAttribute("height", String(bracketEl.scrollHeight));
-    const base = bracketEl.getBoundingClientRect();
+    svg.setAttribute("width", String(base.width));
+    svg.setAttribute("height", String(base.height));
+    svg.setAttribute("viewBox", "0 0 " + base.width + " " + base.height);
     for (const m of div.matches) {
       if (m.nextWinnerId == null) continue;
       const src = bracketEl.querySelector('[data-match-id="' + m.id + '"]');
@@ -2538,6 +2683,7 @@ window.HB = window.HB || {};
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
     setupAddCup();
     setupSettings();
+    setupHistory();
 
     // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
     // lyssnare (i stället för en per renderToolbar-anrop) hittar alltid

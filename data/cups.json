@@ -65,6 +65,50 @@
       "beach": false,
       "lat": 59.0646,
       "lon": 15.1099
+    },
+    {
+      "id": "skadevi",
+      "name": "Skadevi Handbollscup",
+      "place": "Skövde",
+      "edition": "2026",
+      "host": "skadevihandboll.cupmanager.net",
+      "tournamentId": 73513085,
+      "beach": false,
+      "lat": 58.3910,
+      "lon": 13.8454
+    },
+    {
+      "id": "hellton",
+      "name": "Hellton Cup",
+      "place": "Karlstad",
+      "edition": "2026",
+      "host": "helltoncup.cupmanager.net",
+      "tournamentId": 75678071,
+      "beach": false,
+      "lat": 59.3793,
+      "lon": 13.5036
+    },
+    {
+      "id": "lundaspelen",
+      "name": "Lundaspelen",
+      "place": "Lund",
+      "edition": "2026",
+      "host": "lundaspelen.cupmanager.net",
+      "tournamentId": 76285495,
+      "beach": false,
+      "lat": 55.7047,
+      "lon": 13.1910
+    },
+    {
+      "id": "norden",
+      "name": "Norden Cup",
+      "place": "Göteborg",
+      "edition": "2026",
+      "host": "nordencup.cupmanager.net",
+      "tournamentId": 76037575,
+      "beach": false,
+      "lat": 57.7089,
+      "lon": 11.9746
     }
   ]
 }

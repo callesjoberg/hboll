@@ -1270,6 +1270,78 @@ dialog.match-dialog {
   gap: 8px;
 }
 
+/* historik: jämför resultat mellan cupens år ------------------------------ */
+
+dialog.history-dialog { max-width: 620px; }
+
+.history-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.history-controls select { flex: 0 0 auto; }
+.history-controls .autocomplete-wrap { flex: 1 1 200px; min-width: 160px; }
+.history-controls input { width: 100%; }
+
+.history-body { max-height: 65vh; overflow-y: auto; }
+
+.history-year {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.history-year summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.history-year summary::-webkit-details-marker { display: none; }
+
+.history-year-label {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 16px;
+}
+
+.history-year-stats {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.history-year .arena-quick-list {
+  max-height: none;
+  margin: 0;
+  padding: 0 12px 12px;
+}
+
+.arch-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 12.5px;
+}
+
+.arch-date { color: var(--ink-soft); flex: 0 0 auto; }
+.arch-teams { flex: 1 1 auto; min-width: 140px; }
+.arch-teams .us { font-weight: 600; color: var(--blue-deep); }
+.arch-score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.arch-cat { color: var(--ink-soft); font-size: 11px; }
+
 .team-stat-block {
   border-top: 1px solid var(--line);
   padding: 12px 0;

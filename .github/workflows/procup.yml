@@ -22,6 +22,8 @@ jobs:
         run: python3 scripts/fetch_procup.py
       - name: Snapshotta Cup Manager-cuperna
         run: python3 scripts/fetch_cupmanager.py
+      - name: Arkivera årets resultat (för jämförelse mellan år)
+        run: python3 scripts/archive_results.py
       - name: Committa om datan ändrats
         # Skrapan skriver bara om filen när innehållet faktiskt ändrats.
         run: |

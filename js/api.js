@@ -407,7 +407,37 @@ window.HB = window.HB || {};
     }
   }
 
+  // --- historik: arkiverade resultat från tidigare cupupplagor -------------
+  // data/archive/index.json + data/archive/<cupId>-<edition>.json byggs av
+  // scripts/archive_results.py vid varje CI-körning. Ren statisk JSON, ingen
+  // egen cache behövs (webbläsaren HTTP-cachar filerna som allt annat).
+
+  let archiveIndexPromise = null;
+
+  function fetchArchiveIndex() {
+    if (!archiveIndexPromise) {
+      archiveIndexPromise = fetch("data/archive/index.json", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}));
+    }
+    return archiveIndexPromise;
+  }
+
+  async function fetchArchiveEdition(cupId, edition) {
+    const idx = await fetchArchiveIndex();
+    const entry = (idx[cupId] && idx[cupId].editions || [])
+      .find((e) => e.edition === edition);
+    if (!entry) return null;
+    try {
+      const r = await fetch(entry.file, { cache: "no-store" });
+      return r.ok ? r.json() : null;
+    } catch {
+      return null;
+    }
+  }
+
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings,
-             readCache, writeCache, localDataTs };
+             readCache, writeCache, localDataTs,
+             fetchArchiveIndex, fetchArchiveEdition };
 })();
