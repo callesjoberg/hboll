@@ -20,6 +20,7 @@
         <img src="assets/ahk-logo.svg" alt="" width="34" height="38">
         <h1>Cupschema<small>Alingsås HK</small></h1>
         <span class="spacer"></span>
+        <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
         <button id="refreshBtn" type="button" title="Hämta senaste schemat">↻ Uppdatera</button>
       </div>
       <nav id="cupRow" aria-label="Välj cup"></nav>
@@ -61,6 +62,40 @@
       </div>
     </form>
     <div id="customCupList"></div>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <button class="dialog-x" type="button" id="settingsClose" aria-label="Stäng">×</button>
+    <h2>Inställningar</h2>
+
+    <div class="settings-group">
+      <span class="settings-label">Utseende</span>
+      <div class="seg" id="themeSeg" role="group" aria-label="Tema">
+        <button class="chip" type="button" data-theme-opt="light">Ljust</button>
+        <button class="chip" type="button" data-theme-opt="dark">Mörkt</button>
+        <button class="chip" type="button" data-theme-opt="auto">Auto</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label class="settings-check">
+        <input type="checkbox" id="teamColorsToggle">
+        Färgkoda lag som heter t.ex. Blå, Vit, Röd eller Gul med en liten
+        prick bredvid lagnamnet
+      </label>
+    </div>
+
+    <div class="settings-group">
+      <label class="settings-label" for="breakMinutesInput">
+        Visa pausmarkering i schemat (mat/vätska) vid minst
+      </label>
+      <div class="settings-inline">
+        <input type="number" id="breakMinutesInput" min="0" step="5" style="width:70px">
+        <span>minuter mellan matcher (0 = av)</span>
+      </div>
+      <p class="muted">Räknas på den lista som just nu visas, sorterad på tid
+         — filtrera t.ex. till ett eget lag för att se dess luckor.</p>
+    </div>
   </dialog>
 
   <script src="js/config.js"></script>

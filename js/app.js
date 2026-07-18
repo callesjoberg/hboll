@@ -69,6 +69,28 @@ window.HB = window.HB || {};
     return HB.CLUB.pattern.test(name || "");
   }
 
+  // Färgord i lagnamnet (t.ex. "Alingsås HK Blå", "Lödde Vikings HK Svart/Röd")
+  // → en representativ hex-färg, för en liten prick bredvid lagnamnet.
+  const TEAM_COLOR_WORDS = {
+    bla: "#1f5fbf", vit: "#c9c2b4", svart: "#23303a", orange: "#e8730c",
+    gul: "#f2bd0c", rod: "#d22f27", gron: "#2f9e44", rosa: "#e864a4",
+    lila: "#8b5cf6", brun: "#6b4423", silver: "#9aa5b1", turkos: "#0e9aa7",
+  };
+
+  function slugifySv(s) {
+    return (s || "").toLowerCase()
+      .replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/é/g, "e")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function teamColor(name) {
+    if (!state.teamColors) return null;
+    for (const t of slugifySv(name).split("-")) {
+      if (TEAM_COLOR_WORDS[t]) return TEAM_COLOR_WORDS[t];
+    }
+    return null;
+  }
+
   function isClubMatch(m) {
     return isClubName(m.home.name) || isClubName(m.away.name);
   }
@@ -152,7 +174,27 @@ window.HB = window.HB || {};
     error: null,
     tables: {},              // divId -> {status, rows}
     playoffs: {},            // catId -> {status, divisions}
+    // Globala inställningar (gäller alla cuper, sparas separat från
+    // per-cup-filtren i saveUi()/loadUi()).
+    theme: localStorage.getItem("hb:theme") || "auto",       // light | dark | auto
+    teamColors: localStorage.getItem("hb:teamColors") !== "off",
+    breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
   };
+
+  function applyTheme() {
+    document.documentElement.dataset.theme = state.theme === "auto" ? "" : state.theme;
+  }
+
+  function saveSettings() {
+    localStorage.setItem("hb:theme", state.theme);
+    localStorage.setItem("hb:teamColors", state.teamColors ? "on" : "off");
+    localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
+    applyTheme();
+  }
+
+  // Sätts direkt vid skriptkörning (inte i async init()) så temat är rätt
+  // redan vid första målningen — annars hinner sidan flimra i fel tema.
+  applyTheme();
 
   function cup() {
     return HB.allCups().find((c) => c.id === state.cupId) || HB.allCups()[0];
@@ -897,11 +939,16 @@ window.HB = window.HB || {};
     // Väder bara meningsfullt för matcher som inte redan är spelade.
     const weather = (!m.res || !m.res.fin)
       ? HB.weather.at(HB.weather.cached(cup()), m.start) : null;
-    const teamEl = (side, other) => h("div", {
-      class: "team" + (isClubName(side.name) ? " us" : "") +
-        (m.res && m.res.fin && m.res.winner &&
-          ((m.res.winner === "home") === (side === m.home)) ? " won" : ""),
-    }, side.name || "–");
+    const teamEl = (side, other) => {
+      const color = teamColor(side.name);
+      return h("div", {
+        class: "team" + (isClubName(side.name) ? " us" : "") +
+          (m.res && m.res.fin && m.res.winner &&
+            ((m.res.winner === "home") === (side === m.home)) ? " won" : ""),
+      },
+        color ? h("span", { class: "team-color-dot", style: "background:" + color }) : null,
+        side.name || "–");
+    };
     return h("article", {
       class: "match" + (isClubMatch(m) ? " ours" : ""),
       role: "button", tabindex: "0",
@@ -976,6 +1023,7 @@ window.HB = window.HB || {};
       const today = dayKey(now);
       let nowPlaced = false;
       let lastDay = "";
+      let prevGroupStart = null; // för vätskepaus-indikatorn
       const wrap = h("div", { class: "timeline" });
       for (const g of timeGroups(list, multiDay)) {
         const gDay = dayKey(g.start);
@@ -984,7 +1032,17 @@ window.HB = window.HB || {};
           nowPlaced = nowPlaced || gDay > today;
           wrap.append(h("h2", { class: "day-h" },
             fmtDayLong.format(new Date(g.start))));
+          prevGroupStart = null; // ny dag: räkna inte paus över dagsgränsen
         }
+        if (state.breakMinutes > 0 && prevGroupStart != null) {
+          const gapMin = Math.round((g.start - prevGroupStart) / 60000);
+          if (gapMin >= state.breakMinutes) {
+            wrap.append(h("div", { class: "break-line" },
+              h("span", null,
+                "🥤 " + gapMin + " min till nästa match — dags för mat/vätska")));
+          }
+        }
+        prevGroupStart = g.start;
         if (!nowPlaced && gDay === today && g.start > now) {
           nowPlaced = true;
           wrap.append(h("div", { class: "nowline", id: "nowline" },
@@ -1270,6 +1328,42 @@ window.HB = window.HB || {};
     $("#addCupClose").addEventListener("click", () => dlg.close());
   }
 
+  function setupSettings() {
+    const dlg = $("#settingsDialog");
+    const themeBtns = $$("#themeSeg [data-theme-opt]");
+    const syncThemeBtns = () => {
+      themeBtns.forEach((b) =>
+        b.classList.toggle("on", b.dataset.themeOpt === state.theme));
+    };
+    syncThemeBtns();
+    themeBtns.forEach((b) => b.addEventListener("click", () => {
+      state.theme = b.dataset.themeOpt;
+      saveSettings();
+      syncThemeBtns();
+    }));
+
+    const colorsBox = $("#teamColorsToggle");
+    colorsBox.checked = state.teamColors;
+    colorsBox.addEventListener("change", () => {
+      state.teamColors = colorsBox.checked;
+      saveSettings();
+      render();
+    });
+
+    const breakInput = $("#breakMinutesInput");
+    breakInput.value = state.breakMinutes || "";
+    breakInput.addEventListener("change", () => {
+      state.breakMinutes = Math.max(0, +breakInput.value || 0);
+      breakInput.value = state.breakMinutes || "";
+      saveSettings();
+      renderContent();
+    });
+
+    $("#settingsBtn").addEventListener("click", () => dlg.showModal());
+    $("#settingsClose").addEventListener("click", () => dlg.close());
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  }
+
   function renderCustomCupList() {
     const box = $("#customCupList");
     const list = HB.customCups();
@@ -1318,6 +1412,7 @@ window.HB = window.HB || {};
       }));
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
     setupAddCup();
+    setupSettings();
 
     // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
     // lyssnare (i stället för en per renderToolbar-anrop) hittar alltid

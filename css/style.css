@@ -29,6 +29,30 @@
   }
 }
 
+/* Manuellt valt tema (inställningsmenyn) vinner alltid över OS-inställningen
+   ovan — attributselektorn ger högre specificitet oavsett källordning. */
+:root[data-theme="dark"] {
+  --ink: #e8edf4;
+  --ink-soft: #9fadbf;
+  --blue: #6ba3ee;
+  --blue-deep: #a8c6f0;
+  --paper: #0f1723;
+  --card: #16202e;
+  --line: #26313f;
+  --shadow: none;
+}
+
+:root[data-theme="light"] {
+  --ink: #16283f;
+  --ink-soft: #4a5a70;
+  --blue: #1f5fbf;
+  --blue-deep: #17417e;
+  --paper: #f5f7fa;
+  --card: #ffffff;
+  --line: #dfe5ec;
+  --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -227,6 +251,8 @@ header.top {
 @media (prefers-color-scheme: dark) {
   .chip.on { color: #0f1723; }
 }
+:root[data-theme="dark"] .chip.on { color: #0f1723; }
+:root[data-theme="light"] .chip.on { color: #fff; }
 
 .chip.small { padding: 3px 9px; font-size: 12px; }
 
@@ -786,6 +812,91 @@ dialog input {
   background: var(--blue);
   color: #fff;
   border-color: var(--blue);
+}
+
+/* inställningar */
+
+#settingsBtn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: #eef2f8;
+  padding: 5px 10px;
+  font-size: 15px;
+  margin-right: 8px;
+}
+
+#settingsBtn:hover { border-color: var(--yellow); }
+
+dialog#settingsDialog { position: relative; max-width: 380px; }
+
+.settings-group {
+  margin: 14px 0;
+  display: grid;
+  gap: 6px;
+}
+
+.settings-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.settings-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.settings-check input { margin-top: 3px; flex-shrink: 0; }
+
+.settings-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.settings-inline input {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+  color: var(--ink);
+}
+
+/* lagfärgprick på matchkort */
+
+.team-color-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+
+/* vätskepaus-indikator i tidslinjen */
+
+.break-line {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.break-line span {
+  background: color-mix(in srgb, var(--won) 16%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--won) 40%, var(--line));
+  color: var(--won);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* matchdialog: lagstatistik + snabblänkar */
