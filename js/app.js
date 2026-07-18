@@ -1228,12 +1228,42 @@ window.HB = window.HB || {};
 
   // Filtrerar schemat till en specifik plan — återanvänder samma
   // state.arena som plan-dropdownen i verktygsraden, så "Alla planer"
-  // där är den naturliga vägen tillbaka.
+  // där är den naturliga vägen tillbaka. Anropas numera bara explicit
+  // (knappen i openArenaQuickView), inte direkt vid klick på en bana —
+  // se den funktionen för varför.
   function filterByArena(arena) {
     stashFilterIfNeeded();
     state.arena = arena;
     saveUi();
     render();
+  }
+
+  // Snabbtitt på en specifik plan — UTAN att röra det aktuella filtret.
+  // Tänkt för att stå vid en bana och snabbt se vad som spelas där, sedan
+  // stänga och vara kvar exakt där man var — till skillnad från
+  // filterByArena() (som byter hela schemavyn och kräver "Tillbaka" för
+  // att ångra). Listar ALLA matcher på banan, oavsett aktuellt filter.
+  function openArenaQuickView(arena) {
+    const matches = state.matches
+      .filter((m) => m.arena === arena)
+      .sort((a, b) => a.start - b.start);
+    const dlg = h("dialog", { class: "match-dialog" },
+      h("button", {
+        class: "dialog-x", type: "button", "aria-label": "Stäng",
+        onclick: () => dlg.close(),
+      }, "×"),
+      h("div", { class: "match-dialog-head" },
+        h("span", { class: "cat" }, arena),
+        h("span", null, matches.length + " matcher")),
+      h("button", {
+        class: "btn small", type: "button",
+        onclick: () => { dlg.close(); filterByArena(arena); },
+      }, "Filtrera schemat till " + arena),
+      h("div", { class: "arena-quick-list" }, matches.map(matchCard)));
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => dlg.remove());
+    document.body.append(dlg);
+    dlg.showModal();
   }
 
   function openMatchDialog(m) {
@@ -1315,10 +1345,10 @@ window.HB = window.HB || {};
           m.arena ? h("span", {
             class: "arena arena-link", role: "button", tabindex: "0",
             title: "Visa alla matcher på " + m.arena,
-            onclick: (e) => { e.stopPropagation(); filterByArena(m.arena); },
+            onclick: (e) => { e.stopPropagation(); openArenaQuickView(m.arena); },
             onkeydown: (e) => {
               if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault(); e.stopPropagation(); filterByArena(m.arena);
+                e.preventDefault(); e.stopPropagation(); openArenaQuickView(m.arena);
               }
             },
           }, m.arena) : h("span", { class: "arena" }, m.arena))),
