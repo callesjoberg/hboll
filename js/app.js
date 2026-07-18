@@ -1807,6 +1807,7 @@ window.HB = window.HB || {};
       h("div", { class: "bracket-teams" }, teamRow(m.home, true), teamRow(m.away, false)),
       h("div", { class: "bracket-score" }, proj ? "Prognos" : (sc || "–")),
       h("div", { class: "bracket-meta" },
+        (m.matchNr ? "Match " + m.matchNr + " · " : "") +
         fmtTime.format(new Date(m.start)) + (m.arena ? " · " + m.arena : "")));
   }
 
@@ -1872,6 +1873,7 @@ window.HB = window.HB || {};
   let bracketSort = null;
 
   const BRACKET_SORT_COLS = {
+    nr: (m) => m.matchNr || "",
     lag: (m) => (m.home.name || "").toLowerCase(),
     resultat: (m) => (m.res && m.res.fin && !m.res.wo) ? (m.res.hg || 0) + (m.res.ag || 0) : -1,
     tid: (m) => m.start,
@@ -1917,6 +1919,7 @@ window.HB = window.HB || {};
       h("table", { class: "standings bracket-table" },
         h("thead", null, h("tr", null,
           headerCell("Omgång", null, true),
+          headerCell("Nr", "nr"),
           headerCell("Lag", "lag", true),
           headerCell("Resultat", "resultat"),
           headerCell("Tid", "tid"),
@@ -1935,6 +1938,7 @@ window.HB = window.HB || {};
             },
           },
             h("td", { class: "l" }, m.roundName || ""),
+            h("td", null, m.matchNr || "–"),
             h("td", { class: "l" },
               h("span", {
                 class: (isClubName(homeName) ? "us " : "") +

@@ -265,6 +265,8 @@ window.HB = window.HB || {};
       matchRank: rr.rank ?? 0,          // position inom omgången
       nextWinnerId: refId(nextW.match),
       nextLoserId: refId(nextL.match),
+      matchNr: e.matchNr || null,       // Cup Managers eget matchnummer (t.ex. "18072146"),
+                                         // ingår redan i grundentiteten utan extra queryfält
     };
   }
 
