@@ -400,6 +400,7 @@ window.HB = window.HB || {};
     state.loadedAt = 0;
     heroIndex = 0;
     stashedFilter = null;
+    autoScrolledToNow = false;
     loadUi();
     saveUi();
     loadCup();
@@ -888,6 +889,12 @@ window.HB = window.HB || {};
   // den överlever renderContent()-omritningar men glöms bort vid cupbyte.
   let heroIndex = 0;
 
+  // Auto-skrollet till NU-linjen ska bara ske en gång per sidladdning/
+  // cupbyte — inte vid VARJE renderContent() (annars rycker sidan iväg
+  // varje gång man t.ex. swipear i nästa match-karusellen, söker, eller
+  // byter filter). Nollställs i switchCup().
+  let autoScrolledToNow = false;
+
   // Auto-rotationens timer måste rensas vid VARJE renderHero()-anrop
   // (inte bara när karusellen försvinner) — annars pekar en gammal
   // timer-closure på en förlegad matches-array från en tidigare omritning.
@@ -1336,9 +1343,22 @@ window.HB = window.HB || {};
           h("div", { class: "slot-matches" }, g.items.map(matchCard))));
       }
       main.append(wrap);
-      const nl = $("#nowline");
-      if (nl && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setTimeout(() => nl.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
+      // Flaggan sätts INNE i timeouten (inte här) och #nowline slås upp på
+      // nytt då — under den första sidladdningen hinner flera
+      // renderContent()-anrop rulla in i rad (laddningsläge → data → väder),
+      // som var och en byter ut #content. Om flaggan sattes redan här och
+      // just DEN HÄR renderingens nl-referens hann bli en losskopplad nod
+      // innan timeouten körde, skulle scrollIntoView() tyst misslyckas och
+      // aldrig försöka igen.
+      if (!autoScrolledToNow && $("#nowline") &&
+          !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setTimeout(() => {
+          if (autoScrolledToNow) return;
+          const freshNl = $("#nowline");
+          if (!freshNl) return;
+          autoScrolledToNow = true;
+          freshNl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 150);
       }
     } else {
       const outcomeLabels = ["Vunnet", "Oavgjort", "Förlorat", "Ospelat"];
