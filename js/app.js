@@ -1790,17 +1790,61 @@ window.HB = window.HB || {};
             ms.map((m) => bracketMatchBox(m, projMap))))));
   }
 
+  // Sortering av den avancerade slutspelstabellen — delad mellan alla
+  // synliga A-/B-/C-tabeller (session, sparas ej). null = trädets naturliga
+  // omgångsordning (tidigast→final); annars {col, dir}.
+  let bracketSort = null;
+
+  const BRACKET_SORT_COLS = {
+    lag: (m) => (m.home.name || "").toLowerCase(),
+    resultat: (m) => (m.res && m.res.fin && !m.res.wo) ? (m.res.hg || 0) + (m.res.ag || 0) : -1,
+    tid: (m) => m.start,
+    bana: (m) => m.arena || "",
+  };
+
+  function sortBracketRows(rows) {
+    if (!bracketSort) return rows;
+    const key = BRACKET_SORT_COLS[bracketSort.col];
+    if (!key) return rows;
+    return [...rows].sort((a, b) => {
+      const ka = key(a), kb = key(b);
+      const cmp = typeof ka === "string" ? ka.localeCompare(kb, "sv", { numeric: true }) : ka - kb;
+      return bracketSort.dir * cmp;
+    });
+  }
+
   // "Avancerad tabell": samma slutspelsmatcher som bracketBlock, men som en
   // radbaserad tabell med tid/plan — mer detaljer och lättare att scrolla
-  // på smala skärmar än trädets sidledes kolumner.
+  // på smala skärmar än trädets sidledes kolumner. Kolumnrubrikerna är
+  // klickbara och sorterar (klick igen växlar riktning; "Omgång" återgår
+  // till trädets naturliga ordning).
   function bracketTableBlock(div, projMap) {
-    const rows = groupPlayoffRounds(div).flatMap(([, ms]) => ms);
+    const rows = sortBracketRows(groupPlayoffRounds(div).flatMap(([, ms]) => ms));
+    const headerCell = (label, col, wide) => {
+      const active = col ? bracketSort && bracketSort.col === col : !bracketSort;
+      return h("th", {
+        class: (wide ? "l " : "") + "bracket-th-sort" + (active ? " on" : ""),
+        role: "button", tabindex: "0",
+        onclick: () => {
+          if (!col) { bracketSort = null; }
+          else if (bracketSort && bracketSort.col === col) { bracketSort.dir *= -1; }
+          else { bracketSort = { col, dir: 1 }; }
+          renderContent();
+        },
+        onkeydown: (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); }
+        },
+      }, label, active ? h("span", { class: "sort-arrow" }, bracketSort ? (bracketSort.dir > 0 ? " ▲" : " ▼") : "") : null);
+    };
     return h("section", { class: "table-box" },
       h("h3", null, div.name),
       h("table", { class: "standings bracket-table" },
         h("thead", null, h("tr", null,
-          ["Omgång", "Lag", "Resultat", "Tid", "Bana"].map((c, i) =>
-            h("th", { class: i < 2 ? "l" : "" }, c)))),
+          headerCell("Omgång", null, true),
+          headerCell("Lag", "lag", true),
+          headerCell("Resultat", "resultat"),
+          headerCell("Tid", "tid"),
+          headerCell("Bana", "bana"))),
         h("tbody", null, rows.map((m) => {
           const sc = scoreText(m.res);
           const proj = projMap ? projMap.get(m.id) : null;

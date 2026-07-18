@@ -881,6 +881,16 @@ header.top {
 
 .standings .l { text-align: left; }
 
+.bracket-th-sort {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.bracket-th-sort:hover { color: var(--ink); }
+.bracket-th-sort.on { color: var(--blue); }
+.sort-arrow { font-size: 9px; }
+
 .team-link {
   background: none;
   border: none;
