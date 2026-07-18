@@ -167,6 +167,28 @@ window.HB = window.HB || {};
       cats: [...state.cats], teams: [...state.teams],
       arena: state.arena, sort: state.sort, matchFilter: state.matchFilter,
     }));
+    syncUrl();
+  }
+
+  // Speglar aktuellt filter/sortering i adressfältet (utan att lägga till
+  // historik-poster) så att en delad/bokmärkt länk återskapar exakt samma
+  // vy. Bara icke-default värden tas med, för korta URL:er. q (fritextsök)
+  // sparas INTE i localStorage (den är avsiktligt tillfällig mellan besök)
+  // men tas med här eftersom en delad länk ska återge sökningen också.
+  function syncUrl() {
+    const p = new URLSearchParams();
+    p.set("cup", state.cupId);
+    if (state.view !== "schema") p.set("view", state.view);
+    if (state.scope !== "club") p.set("scope", state.scope);
+    if (state.days.size) p.set("days", [...state.days].join(","));
+    if (state.cats.size) p.set("cats", [...state.cats].join(","));
+    if (state.teams.size) p.set("teams", [...state.teams].join(","));
+    if (state.arena) p.set("arena", state.arena);
+    if (state.sort !== "tid") p.set("sort", state.sort);
+    if (state.matchFilter !== "all") p.set("mf", state.matchFilter);
+    if (state.q) p.set("q", state.q);
+    const qs = p.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
   }
 
   function loadUi() {
@@ -613,7 +635,11 @@ window.HB = window.HB || {};
         value: state.q, list: "search-suggestions",
         // renderContent() (inte render()) — annars byggs sökfältet om vid
         // varje tangenttryckning och tappar fokus/mobiltangentbordet.
-        oninput: (e) => { state.q = e.target.value; renderContent(); },
+        oninput: (e) => {
+          state.q = e.target.value;
+          syncUrl(); // inte saveUi() — q ska inte fastna i localStorage mellan besök
+          renderContent();
+        },
       }),
       h("datalist", { id: "search-suggestions" },
         suggestions.map((s) => h("option", { value: s }))),
@@ -1062,7 +1088,14 @@ window.HB = window.HB || {};
           h("tbody", null, t.rows.map((r, i) =>
             h("tr", { class: isClubName(r.name) ? "us" : "" },
               h("td", null, String(i + 1)),
-              h("td", { class: "l" }, r.name),
+              h("td", { class: "l" },
+                r.teamId != null
+                  ? h("button", {
+                      class: "team-link", type: "button",
+                      title: "Visa " + r.name + "s matcher",
+                      onclick: () => gotoTeamMatches({ id: r.teamId }, "all"),
+                    }, r.name)
+                  : r.name),
               h("td", null, String(r.played)),
               h("td", null, String(r.won)),
               h("td", null, String(r.tied)),
@@ -1247,11 +1280,18 @@ window.HB = window.HB || {};
       }
     } catch { /* kör på reservlistan */ }
 
-    // Djuplänk: ?cup=potatis öppnar en viss cup direkt (delbar länk).
-    const urlCup = new URLSearchParams(location.search).get("cup");
+    // Djuplänk: ?cup=potatis&view=...&scope=...&days=...&cats=...&teams=...
+    // &arena=...&sort=...&mf=...&q=... — hela filtret/sorteringen kan delas.
+    const params = new URLSearchParams(location.search);
+    const urlCup = params.get("cup");
     if (urlCup && HB.allCups().some((c) => c.id === urlCup)) {
       state.cupId = urlCup;
     }
+    // Cup Manager-id:n är numeriska, ProCup-id:n är textsträngar (lagnamn) —
+    // bevara rätt typ så Set.has()-jämförelser mot matchdatan funkar.
+    const toId = (s) => (/^\d+$/.test(s) ? +s : s);
+    const hasUrlFilters = ["view", "scope", "days", "cats", "teams", "arena",
+      "sort", "mf", "q"].some((k) => params.has(k));
     $$("#viewTabs .tab").forEach((b) =>
       b.addEventListener("click", () => {
         state.view = b.dataset.view; saveUi(); render();
@@ -1267,6 +1307,21 @@ window.HB = window.HB || {};
       if (dd && !dd.contains(e.target)) dd.open = false;
     });
     loadUi();
+    if (hasUrlFilters) {
+      // En delad länk vinner över det som råkar ligga sparat i webbläsaren.
+      if (params.get("view")) state.view = params.get("view");
+      if (params.get("scope")) state.scope = params.get("scope");
+      if (params.get("days")) state.days = new Set(params.get("days").split(","));
+      if (params.get("cats")) state.cats = new Set(params.get("cats").split(",").map(toId));
+      if (params.get("teams")) state.teams = new Set(params.get("teams").split(",").map(toId));
+      if (params.get("arena")) state.arena = params.get("arena");
+      if (params.get("sort")) state.sort = params.get("sort");
+      if (["all", "upcoming", "played"].includes(params.get("mf"))) {
+        state.matchFilter = params.get("mf");
+      }
+      if (params.get("q")) state.q = params.get("q");
+      saveUi(); // spara den delade vyn som din egen, och normalisera URL:en
+    }
     loadCup();
 
     // Auto-uppdatera var tredje minut — men bara cuper som faktiskt pågår.
