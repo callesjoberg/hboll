@@ -5,7 +5,7 @@
 window.HB = window.HB || {};
 
 (function () {
-  const MATCH_MINUTES = 30; // schemarutan är oftast 15–30 min; 30 ger marginal
+  const DEFAULT_MATCH_MINUTES = 30; // används om inget annat anges
 
   const wallParts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Stockholm", hourCycle: "h23",
@@ -24,7 +24,8 @@ window.HB = window.HB || {};
       .replace(/,/g, "\\,").replace(/\n/g, "\\n");
   }
 
-  function buildIcs(cup, matches) {
+  function buildIcs(cup, matches, minutes) {
+    const dur = (minutes || DEFAULT_MATCH_MINUTES) * 60000;
     const lines = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
@@ -40,7 +41,7 @@ window.HB = window.HB || {};
         "BEGIN:VEVENT",
         "UID:match-" + m.id + "@" + cup.host,
         "DTSTART;TZID=Europe/Stockholm:" + wallStamp(m.start),
-        "DTEND;TZID=Europe/Stockholm:" + wallStamp(m.start + MATCH_MINUTES * 60000),
+        "DTEND;TZID=Europe/Stockholm:" + wallStamp(m.start + dur),
         "SUMMARY:" + esc(m.home.name + " – " + m.away.name + " (" + klass + grp + ")"),
         "LOCATION:" + esc((m.arena ? m.arena + ", " : "") + cup.place),
         "DESCRIPTION:" + esc(cup.name + " " + cup.edition + " · " + m.catName +
@@ -52,8 +53,8 @@ window.HB = window.HB || {};
     return lines.join("\r\n") + "\r\n";
   }
 
-  function download(cup, matches, filename) {
-    const blob = new Blob([buildIcs(cup, matches)], {
+  function download(cup, matches, filename, minutes) {
+    const blob = new Blob([buildIcs(cup, matches, minutes)], {
       type: "text/calendar;charset=utf-8",
     });
     const a = document.createElement("a");

@@ -33,7 +33,17 @@ allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
   sortering — kopiera länken och mottagaren får exakt samma vy.
 - **Live-uppdatering** av pågående cuper, utan att i onödan hämta om
   avslutade eller ännu inte startade cuper (se nedan).
-- Klubb- eller helcupsläge, mörkt läge, mobilanpassad.
+- **Installningar**: valfri favoritklubb (med autocomplete från cupens egna
+  lagnamn — samma klubb heter ofta olika saker i olika cuper), ljust/mörkt/
+  auto-tema, färgkodning av lag som heter t.ex. Blå/Vit/Röd/Gul (liten prick,
+  eller hela matchkortet i klubbens egen färg), egna manuella lagfärger per
+  lagnamn, matchlängd (styr både kalenderexport och pausmarkering), valfri
+  pausmarkering (mat/vätska) i tidslinjen, samt en avancerad radbaserad
+  tabell som alternativ till trädvyn för slutspel.
+- **Installationsbar (PWA)**: kan läggas till på hemskärmen, fungerar med
+  offline-cache av appskalet.
+- **Matchdialog i helskärm** på mobil, med lagstatistik och tidigare möten.
+- Klubb- eller helcupsläge, mobilanpassad, scrolla-till-toppen-knapp.
 
 ## Kör lokalt
 
@@ -119,8 +129,9 @@ Tryck **↻ Uppdatera** för att alltid tvinga fram en färsk hämtning.
 
 - API:t är GraphQL-likt: `https://<cup>.cupmanager.net/rest/results_api/call`
   med en `MatchWindow`-query; svaret är en platt entitets-store.
-- Matchtider levereras som **svensk väggtid kodad som UTC-epoch** — sidan
-  formaterar dem i UTC och exporterar .ics med `TZID=Europe/Stockholm`.
+- Matchtider levereras som **genuin UTC-epoch** — sidan formaterar dem med
+  `timeZone: "Europe/Stockholm"` och exporterar .ics med samma TZID.
 - Varje anrop cache-bustas med en `&_`-parameter: cupmanagers proxycache
   saknar `Vary: Origin` och skulle annars ge fel CORS-huvud på cacheträffar.
-- Byt klubb i `js/config.js` (`HB.CLUB`) — allt annat följer med.
+- Standardklubb sätts i `js/config.js` (`HB.CLUB`), men kan bytas av
+  besökaren själv i Inställningar → Favoritklubb utan kodändring.

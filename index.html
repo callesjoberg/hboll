@@ -46,6 +46,8 @@
 
   <main id="content"></main>
 
+  <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
+
   <footer>
     <span>Data hämtas live från cupmanager.net · tider kan ändras av arrangören.</span>
     <button id="addCupBtn" class="btn small" type="button">+ Lägg till cup</button>
@@ -76,9 +78,11 @@
 
     <div class="settings-group">
       <label class="settings-label" for="favoriteClubInput">Favoritklubb</label>
-      <input type="text" id="favoriteClubInput" placeholder="t.ex. Alingsås HK"
-             list="favoriteClubSuggestions">
-      <datalist id="favoriteClubSuggestions"></datalist>
+      <div class="autocomplete-wrap">
+        <input type="text" id="favoriteClubInput" placeholder="t.ex. Alingsås HK"
+               autocomplete="off">
+        <div id="favoriteClubOptions" class="autocomplete-list" hidden></div>
+      </div>
       <p class="muted">Styr vilka lag som räknas som &quot;dina&quot; — fliken
          med klubbnamnet, nästa match, och markeringen på matchkort. Namnet
          skrivs olika i olika cuper (t.ex. &quot;AHK&quot; eller
@@ -101,18 +105,54 @@
         Färgkoda lag som heter t.ex. Blå, Vit, Röd eller Gul med en liten
         prick bredvid lagnamnet
       </label>
+      <label class="settings-check">
+        <input type="checkbox" id="fullCardColorsToggle">
+        Färglägg hela matchkortet när favoritklubbens eget lag har ett
+        färgnamn (t.ex. en match för &quot;Alingsås HK Gul&quot; blir gul)
+      </label>
+      <label class="settings-check">
+        <input type="checkbox" id="advancedPlayoffTableToggle">
+        Visa slutspel (A-/B-/C-Slutspel) som en radbaserad tabell med
+        tid och plan, i stället för det visuella trädet
+      </label>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Egna lagfärger</span>
+      <p class="muted">Ge ett specifikt lag en egen kortfärg, oavsett namn —
+         t.ex. &quot;Lugi HF 3&quot; alltid röd. Vinner över inställningen ovan.</p>
+      <div class="settings-inline">
+        <div class="autocomplete-wrap" style="flex:1">
+          <input type="text" id="teamColorNameInput" placeholder="Lagnamn, t.ex. Lugi HF 3"
+                 autocomplete="off">
+          <div id="teamColorOptions" class="autocomplete-list" hidden></div>
+        </div>
+        <input type="color" id="teamColorPickerInput" value="#1f5fbf">
+        <button class="btn small" type="button" id="teamColorAddBtn">Lägg till</button>
+      </div>
+      <div id="teamColorList" class="team-color-list"></div>
+    </div>
+
+    <div class="settings-group">
+      <label class="settings-label" for="matchMinutesInput">Matchlängd</label>
+      <div class="settings-inline">
+        <input type="number" id="matchMinutesInput" min="5" step="5" style="width:70px">
+        <span>minuter (olika i olika cuper — styr både kalenderexporten och
+          pausmarkeringen nedan)</span>
+      </div>
     </div>
 
     <div class="settings-group">
       <label class="settings-label" for="breakMinutesInput">
-        Visa pausmarkering i schemat (mat/vätska) vid minst
+        Visa pausmarkering i schemat (mat/vätska) när det är minst
       </label>
       <div class="settings-inline">
         <input type="number" id="breakMinutesInput" min="0" step="5" style="width:70px">
-        <span>minuter mellan matcher (0 = av)</span>
+        <span>ledig minuter efter en match innan nästa (0 = av)</span>
       </div>
-      <p class="muted">Räknas på den lista som just nu visas, sorterad på tid
-         — filtrera t.ex. till ett eget lag för att se dess luckor.</p>
+      <p class="muted">Räknas på den lista som just nu visas, sorterad på tid,
+         minus matchlängden ovan — filtrera t.ex. till ett eget lag för att
+         se dess luckor.</p>
     </div>
   </dialog>
 

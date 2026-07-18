@@ -353,6 +353,14 @@ header.top {
 
 .scope-row .seg + .seg { margin-left: auto; }
 
+/* Ett långt favoritklubbnamn (fritext i inställningarna) ska trunkeras
+   i stället för att tvinga hela raden att radbryta. */
+.club-chip {
+  max-width: 40vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .tools-row { gap: 8px; }
 
 .search {
@@ -522,6 +530,15 @@ header.top {
 .match:hover { border-color: var(--blue); }
 
 .match.ours { border-left: 4px solid var(--blue); }
+
+/* Helkorts-färgläggning: manuell lagfärg eller ett upptäckt färgord i
+   favoritklubbens eget lag (inställningarna). --card-tint sätts inline
+   per kort. Ligger efter .ours i källordningen så den vinner över den
+   blå kantlinjen när båda skulle gälla (samma specificitet). */
+.match.tinted {
+  background: color-mix(in srgb, var(--card-tint) 12%, var(--card));
+  border-left-color: var(--card-tint);
+}
 
 .match-head {
   display: flex;
@@ -744,7 +761,43 @@ header.top {
   font-weight: 600;
 }
 
+.bracket-table-row { cursor: pointer; }
+.bracket-table-row:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
+.bracket-table .l .us { font-weight: 600; color: var(--blue-deep); }
+
 .muted { color: var(--ink-soft); font-size: 13px; }
+
+/* scrolla till toppen */
+
+#scrollTopBtn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(10, 18, 30, 0.35);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+}
+
+#scrollTopBtn.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #scrollTopBtn { transition: none; }
+}
 
 /* sidfot + dialog */
 
@@ -817,7 +870,22 @@ dialog input {
 
 #settingsBtn:hover { border-color: var(--yellow); }
 
-dialog#settingsDialog { position: relative; max-width: 380px; }
+dialog#settingsDialog { max-width: 380px; }
+
+@media (max-width: 480px) {
+  dialog#settingsDialog {
+    margin: 0;
+    inset: 0;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    padding: max(18px, env(safe-area-inset-top)) 18px
+             max(14px, env(safe-area-inset-bottom)) 18px;
+    overflow-y: auto;
+  }
+}
 
 .settings-group {
   margin: 14px 0;
@@ -858,6 +926,65 @@ dialog#settingsDialog { position: relative; max-width: 380px; }
   color: var(--ink);
 }
 
+.settings-inline input[type="color"] {
+  padding: 2px;
+  width: 40px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.team-color-list { display: grid; gap: 4px; margin-top: 6px; }
+
+.team-color-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.team-color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+
+.team-color-item span.name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* egen autocomplete (native <datalist> stöds inte tillförlitligt på
+   Safari/iOS) */
+
+.autocomplete-wrap { position: relative; }
+
+.autocomplete-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(10, 18, 30, 0.25);
+}
+
+.autocomplete-item {
+  padding: 7px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autocomplete-item:hover { background: var(--paper); }
+
 /* lagfärgprick på matchkort */
 
 .team-color-dot {
@@ -892,8 +1019,12 @@ dialog#settingsDialog { position: relative; max-width: 380px; }
 
 dialog.match-dialog {
   max-width: 440px;
-  position: relative;
   padding: 20px 18px 14px;
+  /* Ingen egen "position" här — <dialog> är redan position:fixed när den
+     visas som modal (showModal()), vilket också ger .dialog-x en korrekt
+     positioneringskontext. Att sätta position:relative här bröt fixed-
+     positioneringen och gjorde att helskärmsläget nedan hamnade uppe i
+     DOKUMENTET (måste scrollas till) i stället för fast i VIEWPORTEN. */
 }
 
 /* Fullskärm på mobil — mer plats för lagstatistik/inbördes möten, och

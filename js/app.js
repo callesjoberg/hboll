@@ -83,10 +83,38 @@ window.HB = window.HB || {};
       .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
 
-  function teamColor(name) {
-    if (!state.teamColors) return null;
+  function detectTeamColor(name) {
     for (const t of slugifySv(name).split("-")) {
       if (TEAM_COLOR_WORDS[t]) return TEAM_COLOR_WORDS[t];
+    }
+    return null;
+  }
+
+  // Prick bredvid lagnamnet — styrs av inställningen "Färgkoda lag".
+  function teamColor(name) {
+    return state.teamColors ? detectTeamColor(name) : null;
+  }
+
+  // Manuellt tilldelad färg för ett specifikt lag (exakt namn, slugifierat
+  // så stavning/skiftläge inte spelar roll), oavsett cup — sparas i
+  // state.teamColorOverrides som {slugifieratNamn: hexfärg}.
+  function manualTeamColor(name) {
+    return state.teamColorOverrides[slugifySv(name)] || null;
+  }
+
+  // Färg för HELA matchkortet: manuell lagfärg vinner alltid; annars, om
+  // inställningen är på, ett upptäckt färgord i favoritklubbens eget lag.
+  function cardTintColor(m) {
+    const manual = manualTeamColor(m.home.name) || manualTeamColor(m.away.name);
+    if (manual) return manual;
+    if (!state.fullCardColors) return null;
+    if (isClubName(m.home.name)) {
+      const c = detectTeamColor(m.home.name);
+      if (c) return c;
+    }
+    if (isClubName(m.away.name)) {
+      const c = detectTeamColor(m.away.name);
+      if (c) return c;
     }
     return null;
   }
@@ -179,7 +207,14 @@ window.HB = window.HB || {};
     theme: localStorage.getItem("hb:theme") || "auto",       // light | dark | auto
     teamColors: localStorage.getItem("hb:teamColors") !== "off",
     breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
+    matchMinutes: +(localStorage.getItem("hb:matchMinutes") || 30), // schemarutans längd
+    advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
+    fullCardColors: localStorage.getItem("hb:fullCardColors") === "on",
+    teamColorOverrides: (() => {
+      try { return JSON.parse(localStorage.getItem("hb:teamColorOverrides") || "{}"); }
+      catch { return {}; }
+    })(),
   };
 
   function applyTheme() {
@@ -206,6 +241,10 @@ window.HB = window.HB || {};
     rebuildClubPattern();
     localStorage.setItem("hb:teamColors", state.teamColors ? "on" : "off");
     localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
+    localStorage.setItem("hb:matchMinutes", String(state.matchMinutes));
+    localStorage.setItem("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
+    localStorage.setItem("hb:fullCardColors", state.fullCardColors ? "on" : "off");
+    localStorage.setItem("hb:teamColorOverrides", JSON.stringify(state.teamColorOverrides));
     applyTheme();
   }
 
@@ -656,7 +695,7 @@ window.HB = window.HB || {};
       h("div", { class: "seg", role: "group", "aria-label": "Omfattning" },
         chip(state.favoriteClub, state.scope === "club", () => {
           state.scope = "club"; saveUi(); render();
-        }),
+        }, "club-chip"),
         chip("Hela cupen", state.scope === "all", () => {
           state.scope = "all"; saveUi(); render();
         })),
@@ -757,7 +796,7 @@ window.HB = window.HB || {};
     dd.append(summary, h("div", { class: "team-picker-panel export-panel" },
       item("📅 Kalender (.ics)", () => {
         const list = sorted(filtered());
-        if (list.length) HB.ics.download(cup(), list, exportBaseName() + ".ics");
+        if (list.length) HB.ics.download(cup(), list, exportBaseName() + ".ics", state.matchMinutes);
       }),
       item("📊 Kalkylark (.xlsx)", () => {
         const list = sorted(filtered());
@@ -986,8 +1025,10 @@ window.HB = window.HB || {};
         color ? h("span", { class: "team-color-dot", style: "background:" + color }) : null,
         side.name || "–");
     };
+    const tint = cardTintColor(m);
     return h("article", {
-      class: "match" + (isClubMatch(m) ? " ours" : ""),
+      class: "match" + (isClubMatch(m) ? " ours" : "") + (tint ? " tinted" : ""),
+      style: tint ? ("--card-tint:" + tint) : null,
       role: "button", tabindex: "0",
       "aria-label": "Visa lagstatistik för " + m.home.name + " mot " + m.away.name,
       onclick: () => openMatchDialog(m),
@@ -1072,7 +1113,10 @@ window.HB = window.HB || {};
           prevGroupStart = null; // ny dag: räkna inte paus över dagsgränsen
         }
         if (state.breakMinutes > 0 && prevGroupStart != null) {
-          const gapMin = Math.round((g.start - prevGroupStart) / 60000);
+          // Ledig tid = tid till nästa match minus föregåendes speltid,
+          // inte bara mellanrummet mellan två starttider.
+          const rawGapMin = Math.round((g.start - prevGroupStart) / 60000);
+          const gapMin = rawGapMin - state.matchMinutes;
           if (gapMin >= state.breakMinutes) {
             wrap.append(h("div", { class: "break-line" },
               h("span", null,
@@ -1281,7 +1325,7 @@ window.HB = window.HB || {};
       h("div", { class: "bracket-score" }, sc || fmtTime.format(new Date(m.start))));
   }
 
-  function bracketBlock(div) {
+  function groupPlayoffRounds(div) {
     const byRound = new Map();
     for (const m of div.matches) {
       if (!byRound.has(m.roundRank)) byRound.set(m.roundRank, []);
@@ -1290,14 +1334,49 @@ window.HB = window.HB || {};
     // Högre rank = tidigare omgång; sorterat så finalen (rank 0) hamnar sist/till höger.
     const rounds = [...byRound.entries()].sort((a, b) => b[0] - a[0]);
     for (const [, ms] of rounds) ms.sort((a, b) => a.matchRank - b.matchRank);
+    return rounds;
+  }
 
+  function bracketBlock(div) {
     return h("section", { class: "bracket-box" },
       h("h3", null, div.name),
       h("div", { class: "bracket" },
-        rounds.map(([, ms]) =>
+        groupPlayoffRounds(div).map(([, ms]) =>
           h("div", { class: "bracket-round" },
             h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
             ms.map(bracketMatchBox)))));
+  }
+
+  // "Avancerad tabell": samma slutspelsmatcher som bracketBlock, men som en
+  // radbaserad tabell med tid/plan — mer detaljer och lättare att scrolla
+  // på smala skärmar än trädets sidledes kolumner.
+  function bracketTableBlock(div) {
+    const rows = groupPlayoffRounds(div).flatMap(([, ms]) => ms);
+    return h("section", { class: "table-box" },
+      h("h3", null, div.name),
+      h("table", { class: "standings bracket-table" },
+        h("thead", null, h("tr", null,
+          ["Omgång", "Lag", "Resultat", "Tid", "Bana"].map((c, i) =>
+            h("th", { class: i < 2 ? "l" : "" }, c)))),
+        h("tbody", null, rows.map((m) => {
+          const sc = scoreText(m.res);
+          return h("tr", {
+            class: "bracket-table-row" + (isClubMatch(m) ? " us" : ""),
+            role: "button", tabindex: "0",
+            onclick: () => gotoMatch(m),
+            onkeydown: (e) => {
+              if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoMatch(m); }
+            },
+          },
+            h("td", { class: "l" }, m.roundName || ""),
+            h("td", { class: "l" },
+              h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name || "TBD"),
+              " – ",
+              h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name || "TBD")),
+            h("td", { class: "pts" }, sc || "–"),
+            h("td", null, fmtTime.format(new Date(m.start))),
+            h("td", null, m.arena || ""));
+        }))));
   }
 
   function renderPlayoffs(main) {
@@ -1323,8 +1402,12 @@ window.HB = window.HB || {};
       }
       if (p.status === "error" || !p.divisions.length) continue; // inget slutspel ännu — hoppa tyst
       any = true;
-      main.append(h("h2", { class: "day-h" }, c.catName),
-        h("div", { class: "bracket-row" }, p.divisions.map(bracketBlock)));
+      main.append(h("h2", { class: "day-h" }, c.catName));
+      if (state.advancedPlayoffTable) {
+        main.append(...p.divisions.map(bracketTableBlock));
+      } else {
+        main.append(h("div", { class: "bracket-row" }, p.divisions.map(bracketBlock)));
+      }
     }
     if (!any && !anyLoading) {
       main.append(h("div", { class: "banner" },
@@ -1365,18 +1448,46 @@ window.HB = window.HB || {};
     $("#addCupClose").addEventListener("click", () => dlg.close());
   }
 
+  // Egen, webbläsaroberoende autocomplete — native <datalist> stöds inte
+  // tillförlitligt för textfält på Safari/iOS (visar ofta inga förslag
+  // alls), så inställningarnas fält bygger sin egen minimala dropdown.
+  // getCandidates: () => string[], anropas vid varje input för att alltid
+  // spegla den cup som råkar vara laddad just då.
+  function attachAutocomplete(input, list, getCandidates, onPick) {
+    const hide = () => { list.hidden = true; list.replaceChildren(); };
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      if (!q) { hide(); return; }
+      const matches = getCandidates()
+        .filter((c) => c.toLowerCase().includes(q))
+        .slice(0, 8);
+      if (!matches.length) { hide(); return; }
+      list.hidden = false;
+      list.replaceChildren(...matches.map((m) =>
+        h("div", {
+          class: "autocomplete-item",
+          // mousedown (inte click) så den hinner före inputs "blur"-döljning
+          onmousedown: (e) => { e.preventDefault(); input.value = m; hide(); onPick(m); },
+        }, m)));
+    });
+    input.addEventListener("blur", () => setTimeout(hide, 150));
+  }
+
   function setupSettings() {
     const dlg = $("#settingsDialog");
 
     const clubInput = $("#favoriteClubInput");
     clubInput.value = state.favoriteClub;
-    clubInput.addEventListener("change", () => {
+    const applyFavoriteClub = () => {
       const v = clubInput.value.trim();
       state.favoriteClub = v || HB.CLUB.name;
       clubInput.value = state.favoriteClub;
       saveSettings();
       render();
-    });
+    };
+    clubInput.addEventListener("change", applyFavoriteClub);
+    attachAutocomplete($("#favoriteClubInput"), $("#favoriteClubOptions"),
+      clubPrefixCandidates, applyFavoriteClub);
 
     const themeBtns = $$("#themeSeg [data-theme-opt]");
     const syncThemeBtns = () => {
@@ -1398,6 +1509,65 @@ window.HB = window.HB || {};
       render();
     });
 
+    const fullCardBox = $("#fullCardColorsToggle");
+    fullCardBox.checked = state.fullCardColors;
+    fullCardBox.addEventListener("change", () => {
+      state.fullCardColors = fullCardBox.checked;
+      saveSettings();
+      render();
+    });
+
+    const advTableBox = $("#advancedPlayoffTableToggle");
+    advTableBox.checked = state.advancedPlayoffTable;
+    advTableBox.addEventListener("change", () => {
+      state.advancedPlayoffTable = advTableBox.checked;
+      saveSettings();
+      renderContent();
+    });
+
+    // Egna lagfärger: fritextnamn (slugifierat, cup-oberoende) → hexfärg.
+    const renderTeamColorList = () => {
+      const box = $("#teamColorList");
+      const entries = Object.entries(state.teamColorOverrides);
+      box.replaceChildren(...entries.map(([slug, color]) =>
+        h("div", { class: "team-color-item" },
+          h("span", { class: "team-color-swatch", style: "background:" + color }),
+          h("span", { class: "name" }, slug),
+          h("button", {
+            class: "btn small", type: "button",
+            onclick: () => {
+              delete state.teamColorOverrides[slug];
+              saveSettings(); renderTeamColorList(); render();
+            },
+          }, "Ta bort"))));
+    };
+    renderTeamColorList();
+    const teamColorNameInput = $("#teamColorNameInput");
+    attachAutocomplete(teamColorNameInput, $("#teamColorOptions"), () =>
+      [...new Set(state.matches.flatMap((m) =>
+        [m.home.name, m.away.name].filter(Boolean)))].sort((a, b) => a.localeCompare(b, "sv")),
+      () => {});
+    $("#teamColorAddBtn").addEventListener("click", () => {
+      const nameInp = $("#teamColorNameInput");
+      const colorInp = $("#teamColorPickerInput");
+      const name = nameInp.value.trim();
+      if (!name) return;
+      state.teamColorOverrides[slugifySv(name)] = colorInp.value;
+      nameInp.value = "";
+      saveSettings();
+      renderTeamColorList();
+      render();
+    });
+
+    const matchMinInput = $("#matchMinutesInput");
+    matchMinInput.value = state.matchMinutes;
+    matchMinInput.addEventListener("change", () => {
+      state.matchMinutes = Math.max(5, +matchMinInput.value || 30);
+      matchMinInput.value = state.matchMinutes;
+      saveSettings();
+      renderContent();
+    });
+
     const breakInput = $("#breakMinutesInput");
     breakInput.value = state.breakMinutes || "";
     breakInput.addEventListener("change", () => {
@@ -1407,11 +1577,7 @@ window.HB = window.HB || {};
       renderContent();
     });
 
-    $("#settingsBtn").addEventListener("click", () => {
-      const dl = $("#favoriteClubSuggestions");
-      dl.replaceChildren(...clubPrefixCandidates().map((n) => h("option", { value: n })));
-      dlg.showModal();
-    });
+    $("#settingsBtn").addEventListener("click", () => dlg.showModal());
     $("#settingsClose").addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   }
@@ -1441,6 +1607,19 @@ window.HB = window.HB || {};
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js").catch(() => {});
     }
+
+    // Scrolla-till-toppen: syns när man scrollat mer än en skärmhöjd.
+    const scrollTopBtn = $("#scrollTopBtn");
+    document.addEventListener("scroll", () => {
+      scrollTopBtn.classList.toggle("visible", window.scrollY > window.innerHeight);
+    }, { passive: true });
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto" : "smooth",
+      });
+    });
 
     // Skarp cuplista från data/cups.json (redigeras via admin.html);
     // HB.CUPS i config.js är reserv om filen saknas eller är trasig.
