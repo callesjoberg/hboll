@@ -1402,6 +1402,110 @@ window.HB = window.HB || {};
       m.catName ? h("span", { class: "arch-cat" }, HB.shortCat(m.catName)) : null);
   }
 
+  // Grupperar en arkiverad edition ALLA matcher (inte bara den sökta
+  // klubbens) för en given klass i slutspelsträd — samma divisionsform
+  // ({id,name,matches}) som HB.api.fetchPlayoffs() ger live, så
+  // bracketBlock/groupPlayoffRounds/drawBracketConnectors kan återanvändas
+  // rakt av. divType (satt av scripts/fetch_cupmanager.py sedan 2026-07)
+  // är det enda tillförlitliga sättet att skilja slutspel från
+  // gruppspel — roundRank kan vara 0 för båda.
+  function historicalPlayoffDivisions(matches, catName) {
+    const byDiv = new Map();
+    for (const m of matches) {
+      if (m.divType !== "Playoff" || m.catName !== catName) continue;
+      if (!byDiv.has(m.divId)) byDiv.set(m.divId, { id: m.divId, name: m.divName, matches: [] });
+      byDiv.get(m.divId).matches.push(m);
+    }
+    return [...byDiv.values()].sort((a, b) => (a.name || "").localeCompare(b.name || "", "sv"));
+  }
+
+  // Räknar fram gruppställning (S/V/O/F/mål/poäng) från arkiverade
+  // matchresultat — cupens EGNA slutgiltiga tabell arkiveras inte (bara
+  // matcherna), så det här är en lokal, förenklad rekonstruktion (2 poäng
+  // vinst/1 oavgjort, standard i svensk ungdomshandboll) — kan skilja sig
+  // från originalets exakta regler vid t.ex. inbördes möte-särskiljning.
+  function historicalGroupTables(matches, catName) {
+    const byDiv = new Map();
+    for (const m of matches) {
+      if (m.divType !== "Conference" || m.catName !== catName) continue;
+      if (!byDiv.has(m.divId)) byDiv.set(m.divId, { id: m.divId, name: m.divName, matches: [] });
+      byDiv.get(m.divId).matches.push(m);
+    }
+    const tables = [];
+    for (const d of byDiv.values()) {
+      const teams = new Map();
+      const ensure = (id, name) => {
+        if (!teams.has(id)) {
+          teams.set(id, { teamId: id, name, played: 0, won: 0, tied: 0, lost: 0, gf: 0, ga: 0 });
+        }
+        return teams.get(id);
+      };
+      for (const m of d.matches) {
+        if (!m.res || !m.res.fin || m.res.wo) continue;
+        if (m.home.id == null || m.away.id == null) continue;
+        const home = ensure(m.home.id, m.home.name), away = ensure(m.away.id, m.away.name);
+        home.played++; away.played++;
+        home.gf += m.res.hg || 0; home.ga += m.res.ag || 0;
+        away.gf += m.res.ag || 0; away.ga += m.res.hg || 0;
+        if (m.res.winner === "home") { home.won++; away.lost++; }
+        else if (m.res.winner === "away") { away.won++; home.lost++; }
+        else { home.tied++; away.tied++; }
+      }
+      const rows = [...teams.values()].map((t) => ({ ...t, points: t.won * 2 + t.tied }));
+      rows.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf ||
+        a.name.localeCompare(b.name, "sv"));
+      if (rows.length) tables.push({ id: d.id, name: d.name, rows });
+    }
+    tables.sort((a, b) => (a.name || "").localeCompare(b.name || "", "sv"));
+    return tables;
+  }
+
+  function historicalTableBlock(t) {
+    return h("section", { class: "table-box" },
+      h("h3", null, t.name || "Grupp"),
+      h("table", { class: "standings" },
+        h("thead", null, h("tr", null,
+          ["#", "Lag", "S", "V", "O", "F", "+/-", "P"].map((c, i) =>
+            h("th", { class: i < 2 ? "l" : "" }, c)))),
+        h("tbody", null, t.rows.map((r, i) =>
+          h("tr", { class: isClubName(r.name) ? "us" : "" },
+            h("td", null, String(i + 1)),
+            h("td", { class: "l" }, r.name),
+            h("td", null, String(r.played)),
+            h("td", null, String(r.won)),
+            h("td", null, String(r.tied)),
+            h("td", null, String(r.lost)),
+            h("td", null, (r.gf - r.ga > 0 ? "+" : "") + (r.gf - r.ga)),
+            h("td", { class: "pts" }, String(r.points)))))));
+  }
+
+  // Bygger slutspelsträd + tabeller för EN klass i en arkiverad edition —
+  // hela editionens matcher (inte bara den sökta klubbens), eftersom ett
+  // träd/en tabell behöver alla lag för att bli meningsfull. Returnerar
+  // {nodes, redraw}: nodes bifogas efter matchlistan i historik-dialogen
+  // (tomt om klassen varken har slutspel eller grupptabeller arkiverade);
+  // redraw (null om inget träd) MÅSTE anropas av den som lägger till
+  // noderna, både efter att de sitter i det levande DOM-trädet OCH varje
+  // gång de blir synliga igen — boxarna ligger inuti en <details> som är
+  // stängd för alla år utom det första, och getBoundingClientRect() ger
+  // meningslösa (0×0) mått på dolt innehåll.
+  function historicalExtras(matches, catName) {
+    const nodes = [];
+    let redraw = null;
+    const playoffDivs = historicalPlayoffDivisions(matches, catName);
+    if (playoffDivs.length) {
+      const boxes = playoffDivs.map((d) => bracketBlock(d, null, () => {}));
+      nodes.push(h("h4", { class: "history-sub-h" }, "Slutspel"),
+        h("div", { class: "bracket-row" }, boxes));
+      redraw = () => playoffDivs.forEach((d, i) => drawBracketConnectors(boxes[i], d, 1));
+    }
+    const tables = historicalGroupTables(matches, catName);
+    if (tables.length) {
+      nodes.push(h("h4", { class: "history-sub-h" }, "Tabeller"), ...tables.map(historicalTableBlock));
+    }
+    return { nodes, redraw };
+  }
+
   async function openHistoryDialog() {
     const idx = await HB.api.fetchArchiveIndex();
     const cupIds = Object.keys(idx).filter((id) => (idx[id].editions || []).length)
@@ -1491,14 +1595,34 @@ window.HB = window.HB || {};
           " i " + idx[selCup].cupName + "."));
         return;
       }
-      body.replaceChildren(...summaries.map((s, i) =>
-        h("details", { class: "history-year", open: i === 0 ? "" : null },
+      body.replaceChildren(...summaries.map((s, i) => {
+        const children = [
           h("summary", null,
             h("span", { class: "history-year-label" }, s.edition),
             h("span", { class: "history-year-stats" },
               s.played + " sp · " + s.won + "V " + s.tied + "O " + s.lost +
               "F · mål " + s.gf + "–" + s.ga)),
-          h("div", { class: "arena-quick-list" }, s.rows.map(archiveMatchRow)))));
+          h("div", { class: "arena-quick-list" }, s.rows.map(archiveMatchRow)),
+        ];
+        // Slutspelsträd/tabeller kräver ALLA lag i klassen, inte bara den
+        // sökta klubbens — bara meningsfullt (och görligt att bygga rimligt
+        // brett) när man smalnat av till en enda klass.
+        let redraw = null;
+        if (classFilter) {
+          const yearMatches = (editionsData.find((d) => d.edition === s.edition) || {}).matches || [];
+          const extra = historicalExtras(yearMatches, classFilter);
+          if (extra.nodes.length) children.push(h("div", { class: "history-extra" }, extra.nodes));
+          redraw = extra.redraw;
+        }
+        const isOpen = i === 0;
+        const detailsEl = h("details", { class: "history-year", open: isOpen ? "" : null }, children);
+        if (redraw) {
+          if (isOpen) requestAnimationFrame(redraw);
+          // Stängda år ritas om (rätt mått) först när de faktiskt fälls ut.
+          detailsEl.addEventListener("toggle", () => { if (detailsEl.open) redraw(); });
+        }
+        return detailsEl;
+      }));
     }
 
     async function loadCupData() {
@@ -2201,8 +2325,12 @@ window.HB = window.HB || {};
   // — ospelade matcher som kunnat lösas upp visar ett prognosticerat lagnamn
   // (tydligt markerat, class "predicted") i stället för det råa
   // platshållarnamnet ("N:an i Grupp M" osv).
-  function bracketMatchBox(m, projMap) {
+  // onClick: valfri override — historikens brackettrad matar in matcher
+  // som inte finns i state.matches (fel år), så gotoMatch(m) skulle inte
+  // hitta något att hoppa till där.
+  function bracketMatchBox(m, projMap, onClick) {
     const sc = scoreText(m.res);
+    const handleClick = onClick || (() => gotoMatch(m));
     const proj = projMap ? projMap.get(m.id) : null;
     const teamRow = (side, isHome) => {
       const projSide = proj ? (isHome ? proj.home : proj.away) : null;
@@ -2225,11 +2353,12 @@ window.HB = window.HB || {};
       class: "bracket-match" + (isClubMatch(m) ? " ours" : "") + (proj ? " predicted-match" : ""),
       "data-match-id": String(m.id),
       role: "button", tabindex: "0",
-      title: "Visa i schemat",
-      "aria-label": "Visa " + (m.home.name || "TBD") + " mot " + (m.away.name || "TBD") + " i schemat",
-      onclick: () => gotoMatch(m),
+      title: onClick ? undefined : "Visa i schemat",
+      "aria-label": "Visa " + (m.home.name || "TBD") + " mot " + (m.away.name || "TBD") +
+        (onClick ? "" : " i schemat"),
+      onclick: handleClick,
       onkeydown: (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoMatch(m); }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); }
       },
     },
       h("div", { class: "bracket-teams" }, teamRow(m.home, true), teamRow(m.away, false)),
@@ -2276,17 +2405,25 @@ window.HB = window.HB || {};
     ].join(" ");
   }
 
-  function drawBracketConnectors(boxEl, div) {
+  // zoomOverride: historikens brackettrad har ingen egen zoomreglering
+  // (renderas alltid utan CSS zoom) och ska inte påverkas av vad
+  // användaren råkar ha ställt in på live-Slutspel-fliken.
+  function drawBracketConnectors(boxEl, div, zoomOverride) {
     const bracketEl = boxEl.querySelector(".bracket");
     if (!bracketEl) return;
     const old = bracketEl.querySelector(".bracket-connectors");
     if (old) old.remove();
-    // width/height/viewBox måste komma från SAMMA mätning (getBoundingClientRect)
-    // som matchboxarnas positioner nedan — annars stämmer inte SVG:ns egna
-    // koordinatsystem mot resten av layouten så fort en förälder har
-    // CSS zoom≠1 (scrollWidth/scrollHeight följer INTE zoom-skalningen på
-    // samma sätt som getBoundingClientRect, vilket dubbel-skalade linjerna).
-    const base = bracketEl.getBoundingClientRect();
+    // SVG:n hamnar SJÄLV inuti .bracket-row (samma element som får CSS
+    // zoom:X) — webbläsaren skalar alltså SVG:ns egen box en gång TILL när
+    // den renderas, utöver den zoomning som redan syns i
+    // getBoundingClientRect(). Sätter man width/height/koordinater direkt
+    // i redan-zoomade skärmpixlar dubbel-skalas allt (stämmer bara vid
+    // 100 %, driftar isär i takt med zoomnivån). Dela bort zoom-faktorn
+    // överallt så måtten är i samma "ozoomade" enheter som webbläsaren
+    // själv multiplicerar med zoom vid rendering — precis som om zoom=1.
+    const zoom = zoomOverride != null ? zoomOverride : (state.bracketZoom || 1);
+    const raw = bracketEl.getBoundingClientRect();
+    const base = { left: raw.left, top: raw.top, width: raw.width / zoom, height: raw.height / zoom };
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "bracket-connectors");
     svg.setAttribute("width", String(base.width));
@@ -2298,8 +2435,8 @@ window.HB = window.HB || {};
       const dst = bracketEl.querySelector('[data-match-id="' + m.nextWinnerId + '"]');
       if (!src || !dst) continue;
       const sr = src.getBoundingClientRect(), dr = dst.getBoundingClientRect();
-      const x1 = sr.right - base.left, y1 = sr.top + sr.height / 2 - base.top;
-      const x2 = dr.left - base.left, y2 = dr.top + dr.height / 2 - base.top;
+      const x1 = (sr.right - base.left) / zoom, y1 = (sr.top + sr.height / 2 - base.top) / zoom;
+      const x2 = (dr.left - base.left) / zoom, y2 = (dr.top + dr.height / 2 - base.top) / zoom;
       const midX = (x1 + x2) / 2;
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("class", "bracket-connector-line" + (isClubMatch(m) ? " ours" : ""));
@@ -2309,14 +2446,14 @@ window.HB = window.HB || {};
     bracketEl.prepend(svg);
   }
 
-  function bracketBlock(div, projMap) {
+  function bracketBlock(div, projMap, matchOnClick) {
     return h("section", { class: "bracket-box" },
       h("h3", null, div.name),
       h("div", { class: "bracket" },
         groupPlayoffRounds(div).map(([, ms]) =>
           h("div", { class: "bracket-round" },
             h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
-            ms.map((m) => bracketMatchBox(m, projMap))))));
+            ms.map((m) => bracketMatchBox(m, projMap, matchOnClick))))));
   }
 
   // Sortering av den avancerade slutspelstabellen — delad mellan alla

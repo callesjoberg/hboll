@@ -1325,6 +1325,28 @@ dialog.history-dialog { max-width: 620px; }
   padding: 0 12px 12px;
 }
 
+/* slutspelsträd/tabeller för en enskild klass i en arkiverad edition —
+   samma bracket-box/table-box-stil som live-vyerna, bara nästlade en nivå
+   djupare inuti historikdialogens år-detaljer. */
+.history-extra {
+  padding: 0 12px 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.history-sub-h {
+  margin: 10px 0 2px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.history-extra .bracket-row { margin-bottom: 4px; }
+.history-extra .table-box { margin-bottom: 4px; }
+
 .arch-row {
   display: flex;
   flex-wrap: wrap;

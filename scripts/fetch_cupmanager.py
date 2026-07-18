@@ -40,8 +40,13 @@ def api_call(host, tid, query):
 
 
 def match_query(tid, limit, offset):
+    # round/roundRank/nextMatchWinner/nextMatchLoser krävs för att kunna
+    # rita slutspelsträd (samma fält som playoffQuery i js/api.js) — hämtas
+    # nu för ALLA matcher (inte bara slutspel) så en enda MatchWindow-fråga
+    # räcker; grupp-matcher får bara tomma/irrelevanta värden för dem.
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
-            "{matches:[{... on Match:{start:{},arena:{},round:{},"
+            "{matches:[{... on Match:{start:{},arena:{},round:{},roundRank:{},"
+            "nextMatchWinner:{},nextMatchLoser:{},"
             "away:{team:{}},division:{category:{},name:{}},"
             "home:{team:{}},result:{}}}]}")
 
@@ -122,15 +127,31 @@ def normalize(store):
         home, away = get(e.get("home")), get(e.get("away"))
         arena, division = get(e.get("arena")), get(e.get("division"))
         category, rnd = get(division.get("category")), get(e.get("round"))
+        rr = get(e.get("roundRank"))
+        next_w, next_l = get(e.get("nextMatchWinner")), get(e.get("nextMatchLoser"))
         matches.append({
             "id": e.get("id"),
             "start": e.get("start") or 0,
             "arena": arena.get("completeName") or arena.get("fieldName") or "",
             "divId": division.get("id") or ref_id(e.get("division")),
             "divName": name_of(division),
+            # "Conference" (gruppspel) eller "Playoff" (slutspel) — roundRank
+            # kan vara 0 för BÅDA (grupp-rundor saknar bara namn), så det
+            # här fältet är det enda tillförlitliga sättet att skilja ett
+            # riktigt slutspelsträd från vanliga gruppmatcher.
+            "divType": division.get("__typename") or "",
             "catId": ref_id(division.get("category")),
             "catName": name_of(category),
             "roundName": name_of(rnd),
+            # Samma fältnamn/betydelse som normPlayoffMatch() i js/api.js,
+            # så arkiverade matcher går att mata rakt in i samma
+            # trädritningskod (bracketBlock/groupPlayoffRounds) som
+            # live-slutspelet använder.
+            "roundRank": rnd.get("rank") if rnd.get("rank") is not None else 99,
+            "matchRank": rr.get("rank") or 0,
+            "nextWinnerId": ref_id(next_w.get("match")),
+            "nextLoserId": ref_id(next_l.get("match")),
+            "matchNr": e.get("matchNr") or None,
             "home": {"id": home.get("id") or ref_id(home.get("team")),
                      "name": name_of(home)},
             "away": {"id": away.get("id") or ref_id(away.get("team")),
