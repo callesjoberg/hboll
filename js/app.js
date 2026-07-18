@@ -388,17 +388,32 @@ window.HB = window.HB || {};
     loadProgress = 0;
     render();
     try {
-      const matches = await HB.api.fetchMatches(c, (n) => {
-        loadProgress = n;
-        const el = $("#loadNote");
-        if (el) el.textContent = "Hämtar schema … " + n + "+ matcher";
-        // Live-uppdatera "hämtar nytt …"-texten även vid en
-        // bakgrundsuppdatering (befintlig data ligger redan kvar på
-        // skärmen, #loadNote finns då inte) — annars ser en flera
-        // sekunder lång hämtning av en stor cup ut som att sidan hängt
-        // sig i stället för att faktiskt jobba.
-        renderMeta();
-      });
+      // De flesta matcherna i en cup är redan avgjorda och kan aldrig
+      // ändras — har vi redan en cache att bygga vidare på, försök bara
+      // hämta om de OSPELADE matcherna (mycket snabbare) i stället för
+      // att alltid slå om hela MatchWindow-fönstret. fetchIncremental()
+      // ger null om det inte lönar sig (för många ospelade, eller ProCup
+      // som saknar stöd) — då faller vi tillbaka på den fulla hämtningen.
+      let matches = null;
+      if (state.matches.length) {
+        matches = await HB.api.fetchIncremental(c, state.matches, (done, total) => {
+          loadProgress = done + "/" + total + " ospelade";
+          renderMeta();
+        });
+      }
+      if (!matches) {
+        matches = await HB.api.fetchMatches(c, (n) => {
+          loadProgress = n + "+";
+          const el = $("#loadNote");
+          if (el) el.textContent = "Hämtar schema … " + n + "+ matcher";
+          // Live-uppdatera "hämtar nytt …"-texten även vid en
+          // bakgrundsuppdatering (befintlig data ligger redan kvar på
+          // skärmen, #loadNote finns då inte) — annars ser en flera
+          // sekunder lång hämtning av en stor cup ut som att sidan hängt
+          // sig i stället för att faktiskt jobba.
+          renderMeta();
+        });
+      }
       state.matches = matches;
       state.loadedAt = Date.now();
       if (!c.dataUrl) HB.api.writeCache(c, matches);
@@ -614,7 +629,7 @@ window.HB = window.HB || {};
         }).format(new Date(dataTs))
       : "Uppdaterad " + fmtClock.format(new Date(state.loadedAt))) +
       " · " + n + " matcher" + (state.loading
-        ? " · hämtar nytt … (" + (loadProgress || "0") + "+)" : "");
+        ? " · hämtar nytt … (" + (loadProgress || "0") + ")" : "");
   }
 
   // --- generisk sök-, filter- och sorterbar flervalsdropdown ------------------

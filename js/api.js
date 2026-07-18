@@ -174,6 +174,49 @@ window.HB = window.HB || {};
     return j.matches || [];
   }
 
+  // Samma fältlista som matchQuery() ger per match i MatchWindow — håller
+  // enskilda Match({id})-anrop och den stora fönsterfrågan strukturellt
+  // identiska så normalize() kan användas rakt av på båda.
+  function singleMatchFields() {
+    return "{start:{},arena:{},round:{},away:{team:{}}," +
+      "division:{category:{},name:{}},home:{team:{}},result:{}}";
+  }
+
+  // Cup Managers API stödjer inte att slå ihop flera Match({id})-frågor i
+  // ETT anrop (testat: kommatecken/array-syntax/ids-parameter ger antingen
+  // bara första matchen eller HTTP 500) — varje match kräver ett eget
+  // anrop. Lönar sig ändå: de allra flesta matcherna i en cup är redan
+  // AVGJORDA och kan aldrig ändras, så bara de OSPELADE behöver hämtas om
+  // vid en uppdatering i stället för att slå om hela MatchWindow-fönstret.
+  const INCREMENTAL_MAX = 300; // fler ospelade än så: enskilda anrop lönar sig inte längre
+
+  async function fetchIncremental(cup, cachedMatches, onProgress) {
+    if (cup.dataUrl) return null; // ProCup: stöds inte, kör full hämtning
+    const unfinished = cachedMatches.filter((m) => !(m.res && m.res.fin));
+    if (!unfinished.length) return cachedMatches; // inget kan ha ändrats — inget att hämta
+    if (unfinished.length > INCREMENTAL_MAX) return null; // för många — full hämtning är snabbare
+    const combinedStore = {};
+    let done = 0;
+    for (let i = 0; i < unfinished.length; i += CONC) {
+      const batch = unfinished.slice(i, i + CONC);
+      const results = await Promise.all(
+        batch.map((m) => call(cup, "Match({id:" + m.id + "})" + singleMatchFields())));
+      for (const r of results) {
+        for (const [k, v] of Object.entries(r.responses || {})) {
+          if (v && typeof v === "object" && v.entity && typeof v.entity === "object") {
+            combinedStore[k] = v.entity;
+          }
+        }
+      }
+      done += batch.length;
+      if (onProgress) onProgress(done, unfinished.length);
+    }
+    const freshById = new Map(normalize(combinedStore).map((m) => [m.id, m]));
+    const merged = cachedMatches.map((m) => freshById.get(m.id) || m);
+    merged.sort((a, b) => a.start - b.start || a.arena.localeCompare(b.arena, "sv"));
+    return merged;
+  }
+
   async function fetchMatches(cup, onProgress) {
     if (cup.dataUrl) return fetchLocal(cup);
     return normalize(await fetchStore(cup, onProgress));
@@ -364,7 +407,7 @@ window.HB = window.HB || {};
     }
   }
 
-  HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchTable,
+  HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings,
              readCache, writeCache, localDataTs };
 })();
