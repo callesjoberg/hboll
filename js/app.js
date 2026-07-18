@@ -205,6 +205,7 @@ window.HB = window.HB || {};
     sort: "tid",             // tid | klass | plan
     matchFilter: "all",      // all | upcoming | played
     toolbarOpen: true,       // filter-/sorteringsmenyn expanderad? (session, sparas ej)
+    heroMinimized: false,    // nästa match-karusellen minimerad? (session, sparas ej)
     matches: [],
     loadedAt: 0,
     loading: false,
@@ -968,7 +969,17 @@ window.HB = window.HB || {};
       heroIndex = i;
       renderContent();
     };
-    const heroEl = h("section", { class: "hero" + (carousel ? " hero-carousel" : ""), id: "hero" },
+    // <details> ger minimera/expandera gratis (samma mönster som
+    // toolbar-collapse) — state.heroMinimized överlever omritningar så en
+    // manuell minimering inte studsar tillbaka öppen vid nästa render().
+    const heroEl = h("details", {
+      class: "hero" + (carousel ? " hero-carousel" : ""), id: "hero",
+      ...(state.heroMinimized ? {} : { open: "" }),
+    },
+      h("summary", { class: "hero-summary" },
+        live ? h("span", { class: "live-dot" }) : null,
+        live ? "Pågår nu" : (heroIndex === 0 ? "Nästa match" : "Kommande match"),
+        h("span", { class: "hero-count" }, live ? "" : countdownText(m.start))),
       carousel ? h("button", {
         class: "hero-nav hero-prev", type: "button", "aria-label": "Föregående match",
         onclick: () => step(-1),
@@ -981,10 +992,6 @@ window.HB = window.HB || {};
         class: "hero-card" +
           (isNewCard ? (heroDir < 0 ? " hero-card-prev" : " hero-card-next") : ""),
       },
-        h("div", { class: "hero-eyebrow" },
-          live ? h("span", { class: "live-dot" }) : null,
-          live ? "Pågår nu" : (heroIndex === 0 ? "Nästa match" : "Kommande match"),
-          h("span", { class: "hero-count" }, live ? "" : countdownText(m.start))),
         h("div", { class: "hero-teams" },
           h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name,
             isFavoriteTeamName(m.home.name) ? h("span", { class: "fav-team-star" }, "⭐") : null),
@@ -1006,6 +1013,7 @@ window.HB = window.HB || {};
           "aria-label": "Match " + (i + 1) + " av " + matches.length,
           onclick: () => goTo(i),
         }))) : null);
+    heroEl.addEventListener("toggle", () => { state.heroMinimized = !heroEl.open; });
     main.append(heroEl);
     if (!carousel) return;
 
@@ -1393,7 +1401,9 @@ window.HB = window.HB || {};
         if (!nowPlaced && gDay === today && g.start > now) {
           nowPlaced = true;
           wrap.append(h("div", { class: "nowline", id: "nowline" },
-            h("span", null, "NU " + fmtTime.format(new Date(now)))));
+            h("span", null,
+              "NU " + fmtTime.format(new Date(now)) +
+              " · nästa match " + countdownText(g.start))));
         }
         wrap.append(h("div", { class: "slot" },
           h("div", { class: "rail" },
@@ -1630,6 +1640,16 @@ window.HB = window.HB || {};
     });
   }
 
+  // En grupp räknas som klar (dess tabellplats INTE längre kan ändras) när
+  // alla lag spelat lika många matcher som en fulltalig serie kräver
+  // (grupp­storlek − 1, dvs alla mot alla en gång) — den vanliga
+  // gruppspelsformen i de här cuperna. Styr om ett gruppbaserat
+  // platshållarlag ("N:an i Grupp M") ska visas som en SÄKER deltagare
+  // (normal stil) eller en osäker prognos (kursiv), se buildPlayoffProjection.
+  function isGroupComplete(rows) {
+    return rows.length > 0 && rows.every((r) => r.played === rows.length - 1);
+  }
+
   // Wildcard-poolen för en given tabellposition (t.ex. alla 5:or, en per
   // grupp) — sorterad efter samma kriterier som en vanlig tabell, så
   // "Bästa 5:an"/"2:a bästa 5:an" kan plockas ur rätt position. Cachad per
@@ -1637,9 +1657,10 @@ window.HB = window.HB || {};
   function wildcardPool(byGroupNum, rank, wcCache) {
     if (wcCache.has(rank)) return wcCache.get(rank);
     const pool = Object.values(byGroupNum)
-      .map((rows) => rows[rank - 1])
-      .filter(Boolean)
-      .sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf);
+      .map((rows) => ({ row: rows[rank - 1], groupComplete: isGroupComplete(rows) }))
+      .filter((e) => e.row)
+      .sort((a, b) => b.row.points - a.row.points ||
+        (b.row.gf - b.row.ga) - (a.row.gf - a.row.ga) || b.row.gf - a.row.gf);
     wcCache.set(rank, pool);
     return pool;
   }
@@ -1648,23 +1669,30 @@ window.HB = window.HB || {};
   // N:an") mot aktuell tabellplacering. Returnerar null om strängen inte
   // känns igen — antingen redan ett riktigt lagnamn, eller en "Vinn. X"-
   // platshållare (hanteras separat i buildPlayoffProjection via
-  // nextWinnerId, se kommentaren ovanför regexarna).
+  // nextWinnerId, se kommentaren ovanför regexarna). `certain` är true bara
+  // om HELA gruppen (för N:an i Grupp M) eller ALLA bidragande grupper (för
+  // wildcards) redan är färdigspelade — annars kan ordningen fortfarande
+  // ändras och laget är en gissning, inte ett säkert faktum.
   function resolvePlaceholderTeam(name, gd, wcCache) {
     const s = (name || "").trim();
     let m;
     if ((m = PLACEHOLDER_NTH_BEST_OF_RANK.exec(s))) {
       const pool = wildcardPool(gd.byGroupNum, +m[2], wcCache);
-      const row = pool[+m[1] - 1];
-      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga } : null;
+      const e = pool[+m[1] - 1];
+      return e ? { teamId: e.row.teamId, name: e.row.name, points: e.row.points,
+        gf: e.row.gf, ga: e.row.ga, certain: pool.every((x) => x.groupComplete) } : null;
     }
     if ((m = PLACEHOLDER_BEST_OF_RANK.exec(s))) {
       const pool = wildcardPool(gd.byGroupNum, +m[1], wcCache);
-      const row = pool[0];
-      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga } : null;
+      const e = pool[0];
+      return e ? { teamId: e.row.teamId, name: e.row.name, points: e.row.points,
+        gf: e.row.gf, ga: e.row.ga, certain: pool.every((x) => x.groupComplete) } : null;
     }
     if ((m = PLACEHOLDER_RANK_IN_GROUP.exec(s))) {
-      const row = (gd.byGroupNum[+m[2]] || [])[+m[1] - 1];
-      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga } : null;
+      const rows = gd.byGroupNum[+m[2]] || [];
+      const row = rows[+m[1] - 1];
+      return row ? { teamId: row.teamId, name: row.name, points: row.points, gf: row.gf, ga: row.ga,
+        certain: isGroupComplete(rows) } : null;
     }
     return null;
   }
@@ -1698,12 +1726,18 @@ window.HB = window.HB || {};
       for (const m of ms) {
         const feeders = (feederQueue.get(m.id) || []).sort((a, b) => a.matchRank - b.matchRank);
         let feederIdx = 0;
+        // `certain`: false = laget självt är en gissning (kursiv i UI:t);
+        // true = laget är ett säkert faktum (redan bestämt), även om
+        // MATCHEN de ska spela inte är avgjord än. En "Vinn. X"-sida ärver
+        // matchcertainty från matarmatchen (f.certain) — INTE lagets egen
+        // certain-flagga — eftersom vem som vinner alltid är en gissning
+        // tills den matchen faktiskt är spelad.
         const resolveSide = (side) => {
           const r = resolvePlaceholderTeam(side.name, gd, wcCache);
           if (r) return r;
           if (PLACEHOLDER_WINNER_OF.test((side.name || "").trim())) {
             const f = feeders[feederIdx++];
-            return f ? f.winner : null;
+            return f ? { ...f.winner, certain: f.certain } : null;
           }
           if (side.id == null || !side.name) return null;
           const strength = gd.teamStrength[side.id];
@@ -1711,22 +1745,24 @@ window.HB = window.HB || {};
             teamId: side.id, name: side.name,
             points: strength ? strength.points : -1,
             gf: strength ? strength.gf : 0, ga: strength ? strength.ga : 0,
+            certain: true,
           };
         };
         const home = resolveSide(m.home);
         const away = resolveSide(m.away);
         let winner = null;
-        if (m.res && m.res.fin) {
+        const realResult = !!(m.res && m.res.fin);
+        if (realResult) {
           winner = m.res.winner === "home"
-            ? (home || { teamId: m.home.id, name: m.home.name, points: -1, gf: 0, ga: 0 })
-            : (away || { teamId: m.away.id, name: m.away.name, points: -1, gf: 0, ga: 0 });
+            ? (home || { teamId: m.home.id, name: m.home.name, points: -1, gf: 0, ga: 0, certain: true })
+            : (away || { teamId: m.away.id, name: m.away.name, points: -1, gf: 0, ga: 0, certain: true });
         } else if (home && away) {
           winner = betterTeam(home, away);
           proj.set(m.id, { home, away, winnerSide: winner === home ? "home" : "away" });
         }
         if (winner && m.nextWinnerId != null) {
           if (!feederQueue.has(m.nextWinnerId)) feederQueue.set(m.nextWinnerId, []);
-          feederQueue.get(m.nextWinnerId).push({ matchRank: m.matchRank, winner });
+          feederQueue.get(m.nextWinnerId).push({ matchRank: m.matchRank, winner, certain: realResult });
         }
       }
     }
@@ -1747,9 +1783,14 @@ window.HB = window.HB || {};
         ? proj.winnerSide === (isHome ? "home" : "away")
         : (m.res && m.res.fin && m.res.winner &&
             ((m.res.winner === "home") === isHome));
+      // Kursiv "predicted"-stil bara om LAGET SJÄLVT är en gissning (t.ex.
+      // en grupp som fortfarande spelas) — inte bara för att MATCHEN de ska
+      // mötas i är ospelad. Ett redan säkert lag (grupp klar, eller vann en
+      // riktigt spelad tidigare omgång) visas normalt även i en prognosmatch.
+      const uncertain = projSide && projSide.certain === false;
       return h("div", {
         class: "bracket-team" + (isClubName(name) ? " us" : "") +
-          (won ? " won" : "") + (projSide ? " predicted" : ""),
+          (won ? " won" : "") + (uncertain ? " predicted" : ""),
       }, name);
     };
     return h("div", {
@@ -1861,11 +1902,13 @@ window.HB = window.HB || {};
             h("td", { class: "l" }, m.roundName || ""),
             h("td", { class: "l" },
               h("span", {
-                class: (isClubName(homeName) ? "us " : "") + (proj ? "predicted" : ""),
+                class: (isClubName(homeName) ? "us " : "") +
+                  (proj && proj.home.certain === false ? "predicted" : ""),
               }, homeName),
               " – ",
               h("span", {
-                class: (isClubName(awayName) ? "us " : "") + (proj ? "predicted" : ""),
+                class: (isClubName(awayName) ? "us " : "") +
+                  (proj && proj.away.certain === false ? "predicted" : ""),
               }, awayName)),
             h("td", { class: "pts" }, proj ? "Prognos" : (sc || "–")),
             h("td", null, fmtTime.format(new Date(m.start))),

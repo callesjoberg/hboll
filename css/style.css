@@ -500,7 +500,8 @@ header.top {
 
 /* karusell: visas när flera av klubbens lag har match samtidigt (samma
    närmsta starttid, t.ex. olika planer) i stället för bara ett kort */
-.hero-carousel { padding-left: 40px; padding-right: 40px; touch-action: pan-y; }
+.hero-carousel { touch-action: pan-y; }
+.hero-carousel[open] { padding-left: 40px; padding-right: 40px; }
 
 .hero-nav {
   position: absolute;
@@ -562,7 +563,10 @@ header.top {
   .hero-card { animation: none; }
 }
 
-.hero-eyebrow {
+/* .hero-summary är samtidigt eyebrow-raden (LIVE/nedräkning) OCH handtaget
+   som minimerar/expanderar hela kortet — synlig i båda lägen, som
+   toolbar-summary. Egen pil i stället för webbläsarens standardtriangel. */
+.hero-summary {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -570,7 +574,22 @@ header.top {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #b9c6d8;
+  cursor: pointer;
+  list-style: none;
 }
+
+.hero-summary::-webkit-details-marker { display: none; }
+.hero-summary::marker { content: ""; }
+
+.hero-summary::after {
+  content: "▾";
+  font-size: 10px;
+  color: #b9c6d8;
+  transition: transform 0.15s ease;
+}
+
+.hero[open] .hero-summary::after { transform: rotate(180deg); }
+.hero:not([open]) .hero-summary { margin: 0; }
 
 .hero-count {
   margin-left: auto;
