@@ -222,9 +222,6 @@ header.top {
   align-items: center;
 }
 
-.day-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-.day-row::-webkit-scrollbar { display: none; }
-
 .chip {
   background: var(--card);
   border: 1px solid var(--line);
@@ -238,14 +235,6 @@ header.top {
   background: var(--blue);
   border-color: var(--blue);
   color: #fff;
-}
-
-.chip.day {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 @media (prefers-color-scheme: dark) {

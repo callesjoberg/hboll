@@ -179,14 +179,31 @@ window.HB = window.HB || {};
     theme: localStorage.getItem("hb:theme") || "auto",       // light | dark | auto
     teamColors: localStorage.getItem("hb:teamColors") !== "off",
     breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
+    favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
   };
 
   function applyTheme() {
     document.documentElement.dataset.theme = state.theme === "auto" ? "" : state.theme;
   }
 
+  // Bygger om HB.CLUB.pattern från den valfria favoritklubben i inställ-
+  // ningarna (förvalt: samma klubb sajten är byggd för). Håller å/ä/ö
+  // toleranta som den ursprungliga hårdkodade regexen gjorde.
+  function rebuildClubPattern() {
+    const raw = (state.favoriteClub || HB.CLUB.name).trim();
+    const escaped = raw
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/[åäÅÄ]/g, "[åäa]")
+      .replace(/[öÖ]/g, "[öo]")
+      .replace(/\s+/g, "\\s*");
+    HB.CLUB.pattern = escaped ? new RegExp("^" + escaped, "i") : /^$/;
+  }
+  rebuildClubPattern();
+
   function saveSettings() {
     localStorage.setItem("hb:theme", state.theme);
+    localStorage.setItem("hb:favoriteClub", state.favoriteClub);
+    rebuildClubPattern();
     localStorage.setItem("hb:teamColors", state.teamColors ? "on" : "off");
     localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
     applyTheme();
@@ -581,6 +598,20 @@ window.HB = window.HB || {};
     });
   }
 
+  function buildDayPicker(days) {
+    return buildPicker({
+      items: days.map((d) => ({
+        id: d, label: fmtDay.format(new Date(d + "T00:00:00Z")),
+        sortKey: Date.parse(d + "T00:00:00Z"), sortName: d, // dayKey (ÅÅÅÅ-MM-DD) sorterar redan kronologiskt
+      })),
+      selected: state.days,
+      emptyLabel: "Alla dagar",
+      countLabel: (n) => "Dagar (" + n + ")",
+      searchPlaceholder: "Sök dag …",
+      onChange: renderContent,
+    });
+  }
+
   function buildCatPicker(catEntries) {
     return buildPicker({
       items: catEntries.map(([id, name]) => ({
@@ -605,7 +636,7 @@ window.HB = window.HB || {};
     // Klubb / hela cupen
     bar.append(h("div", { class: "row scope-row" },
       h("div", { class: "seg", role: "group", "aria-label": "Omfattning" },
-        chip(HB.CLUB.name, state.scope === "club", () => {
+        chip(state.favoriteClub, state.scope === "club", () => {
           state.scope = "club"; saveUi(); render();
         }),
         chip("Hela cupen", state.scope === "all", () => {
@@ -631,30 +662,18 @@ window.HB = window.HB || {};
           }))));
     }
 
-    // Dagar (flerval — flera dagar kan vara aktiva samtidigt)
+    // Dagar, klasser och egna lag — dropdown-väljare (sök-, filter- och
+    // sorterbara) i stället för en knapp per dag/klass/lag, som blir
+    // orimligt rörigt när en cup spänner över många dagar eller klasser.
+    // Lagväljaren är alltid tillgänglig oavsett klubb- eller helcupsläge.
     const days = [...new Set(scoped().map((m) => dayKey(m.start)))].sort();
-    if (days.length > 1) {
-      bar.append(h("div", { class: "row day-row" },
-        chip("Alla dagar", state.days.size === 0, () => {
-          state.days = new Set(); saveUi(); render();
-        }, "day"),
-        days.map((d) =>
-          chip(fmtDay.format(new Date(d + "T00:00:00Z")), state.days.has(d), () => {
-            state.days.has(d) ? state.days.delete(d) : state.days.add(d);
-            saveUi(); render();
-          }, "day"))));
-    }
-
-    // Klasser och egna lag — dropdown-väljare (sök-, filter- och sorterbara)
-    // i stället för en rad med en knapp per klass/lag, som blir orimligt
-    // rörig när en cup har många klasser. Lagväljaren är alltid tillgänglig
-    // oavsett klubb- eller helcupsläge.
     const cats = new Map();
     for (const m of scoped()) if (m.catId) cats.set(m.catId, m.catName);
     const catEntries = [...cats.entries()].sort((a, b) =>
       catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
-    if (catEntries.length > 1 || clubTeamsList.length > 1) {
+    if (days.length > 1 || catEntries.length > 1 || clubTeamsList.length > 1) {
       bar.append(h("div", { class: "row" },
+        days.length > 1 ? buildDayPicker(days) : null,
         catEntries.length > 1 ? buildCatPicker(catEntries) : null,
         clubTeamsList.length > 1 ? buildTeamPicker(clubTeamsList) : null));
     }
@@ -1001,7 +1020,7 @@ window.HB = window.HB || {};
     if (!list.length) {
       if (state.scope === "club" && !scoped().length && state.matches.length) {
         main.append(h("div", { class: "banner" },
-          h("p", null, HB.CLUB.name + " verkar inte ha några matcher i " +
+          h("p", null, state.favoriteClub + " verkar inte ha några matcher i " +
             cup().name + "."),
           h("button", {
             class: "btn", type: "button",
@@ -1330,6 +1349,17 @@ window.HB = window.HB || {};
 
   function setupSettings() {
     const dlg = $("#settingsDialog");
+
+    const clubInput = $("#favoriteClubInput");
+    clubInput.value = state.favoriteClub;
+    clubInput.addEventListener("change", () => {
+      const v = clubInput.value.trim();
+      state.favoriteClub = v || HB.CLUB.name;
+      clubInput.value = state.favoriteClub;
+      saveSettings();
+      render();
+    });
+
     const themeBtns = $$("#themeSeg [data-theme-opt]");
     const syncThemeBtns = () => {
       themeBtns.forEach((b) =>
