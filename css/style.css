@@ -1327,12 +1327,34 @@ dialog.match-dialog {
 }
 
 .bracket {
+  position: relative;
   display: flex;
   align-items: stretch;
   gap: 22px;
 }
 
+/* kopplingslinjer mellan en match och matchen dess vinnare går vidare
+   till — ritade som SVG (js/app.js: drawBracketConnectors) eftersom
+   nextWinnerId ger den faktiska kopplingen, inte bara visuell närhet */
+.bracket-connectors {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bracket-connector-line {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.bracket-connector-line.ours { stroke: var(--blue); }
+
 .bracket-round {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-around;

@@ -1795,6 +1795,7 @@ window.HB = window.HB || {};
     };
     return h("div", {
       class: "bracket-match" + (isClubMatch(m) ? " ours" : "") + (proj ? " predicted-match" : ""),
+      "data-match-id": String(m.id),
       role: "button", tabindex: "0",
       title: "Visa i schemat",
       "aria-label": "Visa " + (m.home.name || "TBD") + " mot " + (m.away.name || "TBD") + " i schemat",
@@ -1819,6 +1820,40 @@ window.HB = window.HB || {};
     const rounds = [...byRound.entries()].sort((a, b) => b[0] - a[0]);
     for (const [, ms] of rounds) ms.sort((a, b) => a.matchRank - b.matchRank);
     return rounds;
+  }
+
+  // Ritar linjer mellan en match och matchen dess vinnare går vidare till
+  // (m.nextWinnerId) — en SVG-overlay i stället för en ren CSS-lösning,
+  // eftersom nextWinnerId ger den FAKTISKA kopplingen (byes/ojämna
+  // trädformer gör att man inte kan anta att match 0+1 i en omgång alltid
+  // matar match 0 i nästa). Måste köras EFTER att .bracket-box:en är
+  // inklistrad i det levande DOM-trädet, annars ger getBoundingClientRect()
+  // meningslösa mått — anropas via requestAnimationFrame från renderPlayoffs.
+  function drawBracketConnectors(boxEl, div) {
+    const bracketEl = boxEl.querySelector(".bracket");
+    if (!bracketEl) return;
+    const old = bracketEl.querySelector(".bracket-connectors");
+    if (old) old.remove();
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "bracket-connectors");
+    svg.setAttribute("width", String(bracketEl.scrollWidth));
+    svg.setAttribute("height", String(bracketEl.scrollHeight));
+    const base = bracketEl.getBoundingClientRect();
+    for (const m of div.matches) {
+      if (m.nextWinnerId == null) continue;
+      const src = bracketEl.querySelector('[data-match-id="' + m.id + '"]');
+      const dst = bracketEl.querySelector('[data-match-id="' + m.nextWinnerId + '"]');
+      if (!src || !dst) continue;
+      const sr = src.getBoundingClientRect(), dr = dst.getBoundingClientRect();
+      const x1 = sr.right - base.left, y1 = sr.top + sr.height / 2 - base.top;
+      const x2 = dr.left - base.left, y2 = dr.top + dr.height / 2 - base.top;
+      const midX = (x1 + x2) / 2;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("class", "bracket-connector-line" + (isClubMatch(m) ? " ours" : ""));
+      path.setAttribute("d", "M" + x1 + "," + y1 + " H" + midX + " V" + y2 + " H" + x2);
+      svg.appendChild(path);
+    }
+    bracketEl.prepend(svg);
   }
 
   function bracketBlock(div, projMap) {
@@ -1938,6 +1973,7 @@ window.HB = window.HB || {};
           state.advancedPlayoffTable = true; saveSettings(); renderContent();
         }))));
     let any = false, anyLoading = false;
+    const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
     for (const c of cats) {
       ensurePlayoffs(c.catId);
       const p = state.playoffs[c.catId];
@@ -1964,13 +2000,22 @@ window.HB = window.HB || {};
       if (state.advancedPlayoffTable) {
         main.append(...p.divisions.map((d, i) => bracketTableBlock(d, projMaps[i])));
       } else {
-        main.append(h("div", { class: "bracket-row" },
-          p.divisions.map((d, i) => bracketBlock(d, projMaps[i]))));
+        const boxes = p.divisions.map((d, i) => bracketBlock(d, projMaps[i]));
+        main.append(h("div", { class: "bracket-row" }, boxes));
+        p.divisions.forEach((d, i) => pendingConnectors.push({ el: boxes[i], div: d }));
       }
     }
     if (!any && !anyLoading) {
       main.append(h("div", { class: "banner" },
         "Inget slutspel publicerat för de valda klasserna ännu."));
+    }
+    if (pendingConnectors.length) {
+      // Måste vänta tills boxarna faktiskt sitter i det levande DOM-trädet
+      // (main.append ovan) innan getBoundingClientRect() ger meningsfulla
+      // mått — requestAnimationFrame räcker, kräver ingen extra timeout.
+      requestAnimationFrame(() => {
+        pendingConnectors.forEach(({ el, div }) => drawBracketConnectors(el, div));
+      });
     }
   }
 
