@@ -479,6 +479,7 @@ header.top {
 /* hero: nästa match */
 
 .hero {
+  position: relative;
   background: linear-gradient(135deg, #16283f, #1d3a63);
   color: #eef2f8;
   border-radius: var(--radius);
@@ -487,6 +488,49 @@ header.top {
   border-left: 5px solid var(--yellow);
   box-shadow: var(--shadow);
 }
+
+/* karusell: visas när flera av klubbens lag har match samtidigt (samma
+   närmsta starttid, t.ex. olika planer) i stället för bara ett kort */
+.hero-carousel { padding-left: 40px; padding-right: 40px; }
+
+.hero-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #eef2f8;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-nav:hover { background: rgba(255, 255, 255, 0.24); }
+.hero-prev { left: 8px; }
+.hero-next { right: 8px; }
+
+.hero-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.hero-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.hero-dot.on { background: var(--yellow); }
 
 .hero-eyebrow {
   display: flex;
@@ -656,6 +700,14 @@ header.top {
   font-weight: 600;
   color: var(--ink);
 }
+
+.match-head .arena-link { cursor: pointer; }
+.match-head .arena-link:hover { text-decoration: underline; }
+
+/* lagnamn i matchkort är klickbara (snabbvy) — samma diskreta hover som
+   plan-länken ovan, ingen extra visuell vikt förrän man interagerar */
+.teams .team[role="button"] { cursor: pointer; }
+.teams .team[role="button"]:hover { text-decoration: underline; text-decoration-style: dotted; }
 
 .match-body {
   display: flex;
@@ -1055,6 +1107,14 @@ dialog#settingsDialog { max-width: 380px; }
   margin-right: 5px;
   vertical-align: middle;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+
+/* favoritlag-stjärna (matchkort + nästa match-kortet) */
+
+.fav-team-star {
+  margin-left: 5px;
+  font-size: 0.85em;
+  vertical-align: middle;
 }
 
 /* vätskepaus-indikator i tidslinjen */

@@ -83,6 +83,14 @@ window.HB = window.HB || {};
       .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
 
+  // Ett specifikt eget lag (inte hela klubben) att hålla extra koll på —
+  // markeras med en ⭐ på matchkort och i nästa match-kortet. Jämförs
+  // slugifierat (som lagfärgsöverstyrningarna) så stavning/skiftläge inte
+  // spelar roll.
+  function isFavoriteTeamName(name) {
+    return !!state.favoriteTeam && slugifySv(name) === slugifySv(state.favoriteTeam);
+  }
+
   function detectTeamColor(name) {
     for (const t of slugifySv(name).split("-")) {
       if (TEAM_COLOR_WORDS[t]) return TEAM_COLOR_WORDS[t];
@@ -211,6 +219,7 @@ window.HB = window.HB || {};
     matchMinutes: +(localStorage.getItem("hb:matchMinutes") || 30), // schemarutans längd
     advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
+    favoriteTeam: localStorage.getItem("hb:favoriteTeam") || "", // tomt = ingen stjärna
     fullCardColors: localStorage.getItem("hb:fullCardColors") === "on",
     teamColorOverrides: (() => {
       try { return JSON.parse(localStorage.getItem("hb:teamColorOverrides") || "{}"); }
@@ -239,6 +248,7 @@ window.HB = window.HB || {};
   function saveSettings() {
     localStorage.setItem("hb:theme", state.theme);
     localStorage.setItem("hb:favoriteClub", state.favoriteClub);
+    localStorage.setItem("hb:favoriteTeam", state.favoriteTeam);
     rebuildClubPattern();
     localStorage.setItem("hb:teamColors", state.teamColors ? "on" : "off");
     localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
@@ -388,6 +398,8 @@ window.HB = window.HB || {};
     dialogTableCache = {};
     state.matches = [];
     state.loadedAt = 0;
+    heroIndex = 0;
+    stashedFilter = null;
     loadUi();
     saveUi();
     loadCup();
@@ -738,7 +750,11 @@ window.HB = window.HB || {};
       body.append(h("div", { class: "row" },
         foreignTeamIds.map((id) =>
           chip((teamNameById(id) || "Okänt lag") + "  ✕", true, () => {
-            state.teams.delete(id); saveUi(); render();
+            // Om det här är resultatet av ett hopp via gotoMatch()/
+            // gotoTeamMatches() (matchdialogens snabblänkar, klickbara
+            // lagnamn i tabellerna) återställs grundinställningen som
+            // gällde innan hoppet — annars tas bara laget bort ur filtret.
+            if (!restoreStashedFilter()) { state.teams.delete(id); saveUi(); render(); }
           }))));
     }
 
@@ -834,7 +850,11 @@ window.HB = window.HB || {};
 
   // --- render: hero (nästa match) ------------------------------------------
 
-  function nextClubMatch() {
+  // Klubbens kommande matcher, tidigast först. Flera lag i klubben spelar
+  // ofta samtidigt (samma starttid, olika planer) — nextClubMatches() ger
+  // ALLA matcher som delar den allra närmsta starttiden, så heron kan visa
+  // dem som en karusell i stället för att godtyckligt bara plocka en.
+  function nextClubMatches() {
     const now = Date.now();
     const pool = state.matches.filter(isClubMatch).filter((m) => {
       if (state.teams.size &&
@@ -842,7 +862,14 @@ window.HB = window.HB || {};
       if (state.cats.size && !state.cats.has(m.catId)) return false;
       return !(m.res && m.res.fin) && m.start >= now - 30 * 60000;
     });
-    return pool.length ? pool.reduce((a, b) => (a.start <= b.start ? a : b)) : null;
+    if (!pool.length) return [];
+    const earliest = Math.min(...pool.map((m) => m.start));
+    return pool.filter((m) => m.start === earliest)
+      .sort((a, b) => (a.arena || "").localeCompare(b.arena || "", "sv", { numeric: true }));
+  }
+
+  function nextClubMatch() {
+    return nextClubMatches()[0] || null;
   }
 
   function countdownText(ms) {
@@ -855,19 +882,40 @@ window.HB = window.HB || {};
     return "om " + Math.floor(hrs / 24) + " d";
   }
 
+  // Vilket kort i karusellen som visas — modulvariabel (inte i state) så
+  // den överlever renderContent()-omritningar men glöms bort vid cupbyte.
+  let heroIndex = 0;
+
   function renderHero(main) {
-    const m = nextClubMatch();
-    if (!m) return;
+    const matches = nextClubMatches();
+    if (!matches.length) return;
+    if (heroIndex >= matches.length) heroIndex = 0;
+    const m = matches[heroIndex];
     const live = isLive(m);
-    main.append(h("section", { class: "hero", id: "hero" },
+    const carousel = matches.length > 1;
+    const step = (dir) => {
+      heroIndex = (heroIndex + dir + matches.length) % matches.length;
+      renderContent();
+    };
+    main.append(h("section", { class: "hero" + (carousel ? " hero-carousel" : ""), id: "hero" },
+      carousel ? h("button", {
+        class: "hero-nav hero-prev", type: "button", "aria-label": "Föregående match",
+        onclick: () => step(-1),
+      }, "‹") : null,
+      carousel ? h("button", {
+        class: "hero-nav hero-next", type: "button", "aria-label": "Nästa match",
+        onclick: () => step(1),
+      }, "›") : null,
       h("div", { class: "hero-eyebrow" },
         live ? h("span", { class: "live-dot" }) : null,
         live ? "Pågår nu" : "Nästa match",
         h("span", { class: "hero-count" }, live ? "" : countdownText(m.start))),
       h("div", { class: "hero-teams" },
-        h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name),
+        h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name,
+          isFavoriteTeamName(m.home.name) ? h("span", { class: "fav-team-star" }, "⭐") : null),
         h("span", { class: "vs" }, live && scoreText(m.res) ? scoreText(m.res) : "mot"),
-        h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name)),
+        h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name,
+          isFavoriteTeamName(m.away.name) ? h("span", { class: "fav-team-star" }, "⭐") : null)),
       h("div", { class: "hero-info" },
         fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
         h("span", { class: "dot" }, "·"), m.arena || "plan ej satt",
@@ -876,7 +924,13 @@ window.HB = window.HB || {};
         (() => {
           const w = HB.weather.at(HB.weather.cached(cup()), m.start);
           return w ? [h("span", { class: "dot" }, "·"), w.icon + " " + w.temp + "°"] : null;
-        })())));
+        })()),
+      carousel ? h("div", { class: "hero-dots" },
+        matches.map((_, i) => h("button", {
+          class: "hero-dot" + (i === heroIndex ? " on" : ""), type: "button",
+          "aria-label": "Match " + (i + 1) + " av " + matches.length,
+          onclick: () => { heroIndex = i; renderContent(); },
+        }))) : null));
   }
 
   // --- matchdialog: lagstatistik + snabblänkar --------------------------------
@@ -895,11 +949,45 @@ window.HB = window.HB || {};
       rows.find((r) => r.name === team.name);
   }
 
+  // Sparar det filter (scope, dagar, klasser, lag, plan, matchstatus,
+  // sortering) som gällde INNAN man hoppade till en enskild matchs/lags
+  // schema via gotoMatch()/gotoTeamMatches() — så grundinställningen kan
+  // återställas efteråt i stället för att bara försvinna. Skrivs bara om
+  // det inte redan finns ett sparat läge, så flera hopp i följd (t.ex.
+  // klicka vidare från en matchdialog till en annan) alltid går tillbaka
+  // till den UR­SPRUNGLIGA grundinställningen, inte den senaste mellanvyn.
+  let stashedFilter = null;
+
+  function stashFilterIfNeeded() {
+    if (stashedFilter) return;
+    stashedFilter = {
+      scope: state.scope, days: new Set(state.days), cats: new Set(state.cats),
+      teams: new Set(state.teams), arena: state.arena,
+      matchFilter: state.matchFilter, sort: state.sort,
+    };
+  }
+
+  function restoreStashedFilter() {
+    if (!stashedFilter) return false;
+    state.scope = stashedFilter.scope;
+    state.days = new Set(stashedFilter.days);
+    state.cats = new Set(stashedFilter.cats);
+    state.teams = new Set(stashedFilter.teams);
+    state.arena = stashedFilter.arena;
+    state.matchFilter = stashedFilter.matchFilter;
+    state.sort = stashedFilter.sort;
+    stashedFilter = null;
+    saveUi();
+    render();
+    return true;
+  }
+
   // Navigerar till schemavyn med båda lagen i en specifik match filtrerade
   // fram (klubb- eller motståndarlag, oavsett) — så en slutspelsmatch går
   // att se i sitt naturliga sammanhang bland lagens övriga matcher, i
   // stället för bara i en isolerad dialogruta.
   function gotoMatch(m) {
+    stashFilterIfNeeded();
     state.scope = "all";
     state.q = "";
     state.teams = new Set([m.home.id, m.away.id].filter((id) => id != null));
@@ -917,6 +1005,7 @@ window.HB = window.HB || {};
     // Filtrera på exakt lag-id, inte namnsökning — flera lag delar ofta
     // prefix ("Alingsås HK" är ett substräng-delnamn av "Alingsås HK Blå"
     // m.fl.), så en textsökning skulle dra in alla syskonlagens matcher.
+    stashFilterIfNeeded();
     state.scope = "all";
     state.q = "";
     state.teams = new Set([team.id]);
@@ -1007,6 +1096,31 @@ window.HB = window.HB || {};
     return box;
   }
 
+  // Lättviktig snabbvy för ETT lag (tabellplacering + kommande/spelade),
+  // öppnad genom att klicka direkt på ett lagnamn i ett matchkort — utan
+  // att behöva öppna hela matchdialogen (som visar båda lagen).
+  function openTeamQuickView(m, team) {
+    const dlg = h("dialog", { class: "match-dialog" },
+      h("button", {
+        class: "dialog-x", type: "button", "aria-label": "Stäng",
+        onclick: () => dlg.close(),
+      }, "×"),
+      teamStatBlock(m, team));
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => dlg.remove());
+    document.body.append(dlg);
+    dlg.showModal();
+  }
+
+  // Filtrerar schemat till en specifik plan — återanvänder samma
+  // state.arena som plan-dropdownen i verktygsraden, så "Alla planer"
+  // där är den naturliga vägen tillbaka.
+  function filterByArena(arena) {
+    state.arena = arena;
+    saveUi();
+    render();
+  }
+
   function openMatchDialog(m) {
     const sc = scoreText(m.res);
     const dlg = h("dialog", { class: "match-dialog" },
@@ -1044,9 +1158,22 @@ window.HB = window.HB || {};
         class: "team" + (isClubName(side.name) ? " us" : "") +
           (m.res && m.res.fin && m.res.winner &&
             ((m.res.winner === "home") === (side === m.home)) ? " won" : ""),
+        // stopPropagation: klick på ett lagnamn ska öppna EN­ dast lagets
+        // egen snabbvy, inte trigga hela kortets onclick (matchdialogen
+        // med båda lagen) ovanpå.
+        ...(side.id ? {
+          role: "button", tabindex: "0",
+          onclick: (e) => { e.stopPropagation(); openTeamQuickView(m, side); },
+          onkeydown: (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault(); e.stopPropagation(); openTeamQuickView(m, side);
+            }
+          },
+        } : {}),
       },
         color ? h("span", { class: "team-color-dot", style: "background:" + color }) : null,
-        side.name || "–");
+        side.name || "–",
+        isFavoriteTeamName(side.name) ? h("span", { class: "fav-team-star" }, "⭐") : null);
     };
     const tint = cardTintColor(m);
     return h("article", {
@@ -1070,7 +1197,16 @@ window.HB = window.HB || {};
         h("span", { class: "match-head-right" },
           weather ? h("span", { class: "weather", title: weather.temp + "°C" },
             weather.icon, weather.temp + "°") : null,
-          h("span", { class: "arena" }, m.arena))),
+          m.arena ? h("span", {
+            class: "arena arena-link", role: "button", tabindex: "0",
+            title: "Visa alla matcher på " + m.arena,
+            onclick: (e) => { e.stopPropagation(); filterByArena(m.arena); },
+            onkeydown: (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault(); e.stopPropagation(); filterByArena(m.arena);
+              }
+            },
+          }, m.arena) : h("span", { class: "arena" }, m.arena))),
       h("div", { class: "match-body" },
         h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
         h("div", {
@@ -1512,6 +1648,17 @@ window.HB = window.HB || {};
     attachAutocomplete($("#favoriteClubInput"), $("#favoriteClubOptions"),
       clubPrefixCandidates, applyFavoriteClub);
 
+    const teamInput = $("#favoriteTeamInput");
+    teamInput.value = state.favoriteTeam;
+    const applyFavoriteTeam = () => {
+      state.favoriteTeam = teamInput.value.trim();
+      saveSettings();
+      renderContent();
+    };
+    teamInput.addEventListener("change", applyFavoriteTeam);
+    attachAutocomplete($("#favoriteTeamInput"), $("#favoriteTeamOptions"),
+      () => [...new Set(clubTeams().map((t) => t.name))], applyFavoriteTeam);
+
     const themeBtns = $$("#themeSeg [data-theme-opt]");
     const syncThemeBtns = () => {
       themeBtns.forEach((b) =>
@@ -1710,10 +1857,12 @@ window.HB = window.HB || {};
       if (document.visibilityState === "visible" && isLiveCup() &&
           Date.now() - state.loadedAt > 300000) loadCup(true);
     });
-    // Nedräkningen i heron tickar utan full omrendering.
+    // Nedräkningen i heron tickar utan full omrendering — för det kort
+    // (heroIndex) som just nu visas i karusellen, inte alltid det första.
     setInterval(() => {
       const el = $(".hero-count");
-      const m = nextClubMatch();
+      const matches = nextClubMatches();
+      const m = matches[heroIndex] || matches[0];
       if (el && m) el.textContent = countdownText(m.start);
     }, 30000);
   }

@@ -96,6 +96,18 @@
     </div>
 
     <div class="settings-group">
+      <label class="settings-label" for="favoriteTeamInput">Favoritlag (valfritt)</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="favoriteTeamInput" placeholder="t.ex. Alingsås HK Blå"
+               autocomplete="off">
+        <div id="favoriteTeamOptions" class="autocomplete-list" hidden></div>
+      </div>
+      <p class="muted">Ett specifikt eget lag att hålla extra koll på — det
+         får en ⭐ bredvid namnet på matchkort och i nästa match-kortet.
+         Lämna tomt för att inte visa någon stjärna.</p>
+    </div>
+
+    <div class="settings-group">
       <span class="settings-label">Utseende</span>
       <div class="seg" id="themeSeg" role="group" aria-label="Tema">
         <button class="chip" type="button" data-theme-opt="light">Ljust</button>
