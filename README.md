@@ -12,34 +12,47 @@ allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
 ## Funktioner
 
 - **Flera cuper**: Åhus Beach, Potatiscupen, Hallbybollen, Bua Beach (HK Varberg),
-  Bohus Cup och Järnvägen Cup — och fler kan läggas till på en minut.
-- **Nästa match-tavla** med nedräkning, plan, klass och väder.
-- **Tidslinje** med NU-linje som visar var i dagen man är, auto-scroll dit.
-- **Filter**: dag (flerval), klass och eget lag (sök-/sorterbara dropdowns),
-  plan, fritextsök med autocomplete, matchstatus (alla/kommande/spelade).
+  Bohus Cup och Järnvägen Cup — och fler kan läggas till på en minut. Cupväljaren
+  bor i Inställningar; headern visar bara en kompakt "aktuell cup"-knapp.
+- **Nästa match-kortet** blir en karusell (upp till 5 kommande klubbmatcher)
+  när det finns fler än en — bläddra med pilar, prickar, svep på mobil, eller
+  låt den auto-rotera var 6:e sekund. Animerade kortbyten, nedräkning, plan,
+  klass och väder.
+- **Tidslinje** med NU-linje som visar var i dagen man är, auto-scroll dit
+  (bara en gång per sidladdning — stör inte karusell-bläddring efteråt).
+- **Filter/sortering** i en expanderbar meny som går att minimera. Filter:
+  dag (flerval), klass och eget lag (sök-/sorterbara dropdowns), plan (även
+  klickbar direkt på ett matchkort), fritextsök med autocomplete, matchstatus
+  (alla/kommande/spelade).
 - **Sortering**: tid, klass, plan, resultat (vunnet/oavgjort/förlorat) eller mål.
 - **V/O/F-märke** på klubbens matchkort för snabb överblick i listan.
 - **Väderikon** (☀️/☁️/🌧️ m.fl.) på kommande matcher, via Open-Meteo.
 - **Tabeller** per grupp med klubbens lag markerade — klicka ett lagnamn
   för att se laget schema (spelade och kommande matcher).
 - **Slutspelsträd** (A-/B-/C-Slutspel) med omgångar och koppling till nästa
-  match, för cuper som kör Cup Manager.
+  match, för cuper som kör Cup Manager. En inställning kan **simulera
+  ospelade slutspelsplatser** baserat på nuvarande tabellplacering (tydligt
+  markerat som prognos, aldrig blandat med riktiga resultat).
 - **Klicka på ett matchkort** för lagstatistik (tabellplacering, antal
   spelade/kommande matcher, tidigare möten) och snabblänkar till en
-  filtrerad schemavy för respektive lag.
+  filtrerad schemavy för respektive lag — eller klicka direkt på ett lagnamn
+  för samma lättviktiga lagvy utan att öppna hela matchdialogen. En tydlig
+  "← Tillbaka till din vy"-knapp återställer alltid grundfiltret efteråt.
 - **Export** av det filtrerade/sorterade urvalet som Kalender (.ics),
   Kalkylark (.xlsx) eller CSV.
 - **Delbara länkar**: adressfältet speglar alltid aktuellt filter och
   sortering — kopiera länken och mottagaren får exakt samma vy.
 - **Live-uppdatering** av pågående cuper, utan att i onödan hämta om
-  avslutade eller ännu inte startade cuper (se nedan).
-- **Installningar**: valfri favoritklubb (med autocomplete från cupens egna
-  lagnamn — samma klubb heter ofta olika saker i olika cuper), ljust/mörkt/
-  auto-tema, färgkodning av lag som heter t.ex. Blå/Vit/Röd/Gul (liten prick,
-  eller hela matchkortet i klubbens egen färg), egna manuella lagfärger per
-  lagnamn, matchlängd (styr både kalenderexport och pausmarkering), valfri
-  pausmarkering (mat/vätska) i tidslinjen, samt en avancerad radbaserad
-  tabell som alternativ till trädvyn för slutspel.
+  avslutade eller ännu inte startade cuper (se nedan) — Uppdatera-knappen
+  visar tydligt när en hämtning pågår (kan ta 20–30 s för en stor cup).
+- **Installningar**: valfri favoritklubb och favoritlag (⭐ på matchkort,
+  med autocomplete från cupens egna lagnamn — samma klubb heter ofta olika
+  saker i olika cuper), ljust/mörkt/auto-tema, färgkodning av lag som heter
+  t.ex. Blå/Vit/Röd/Gul (liten prick, eller hela matchkortet i klubbens egen
+  färg), egna manuella lagfärger per lagnamn, matchlängd (styr både
+  kalenderexport och pausmarkering), valfri pausmarkering (mat/vätska) i
+  tidslinjen, avancerad radbaserad tabell som alternativ till trädvyn för
+  slutspel, samt slutspelsprognos (se ovan).
 - **Installationsbar (PWA)**: kan läggas till på hemskärmen, fungerar med
   offline-cache av appskalet.
 - **Matchdialog i helskärm** på mobil, med lagstatistik och tidigare möten.
@@ -135,3 +148,7 @@ Tryck **↻ Uppdatera** för att alltid tvinga fram en färsk hämtning.
   saknar `Vary: Origin` och skulle annars ge fel CORS-huvud på cacheträffar.
 - Standardklubb sätts i `js/config.js` (`HB.CLUB`), men kan bytas av
   besökaren själv i Inställningar → Favoritklubb utan kodändring.
+- Slutspelsprognosen löser platshållarlag ("N:an i Grupp M", "Bästa N:an")
+  mot gruppens tabell, och kopplar ihop omgångar via matchernas egna
+  `nextWinnerId` — siffran i en platshållare som "Vinn. 18072137" är INTE
+  samma id-rymd som `Match.id` och kan inte slås upp direkt.
