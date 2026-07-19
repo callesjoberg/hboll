@@ -2648,14 +2648,28 @@ window.HB = window.HB || {};
     // SVG:n hamnar SJÄLV inuti .bracket-row (samma element som får CSS
     // zoom:X) — webbläsaren skalar alltså SVG:ns egen box en gång TILL när
     // den renderas, utöver den zoomning som redan syns i
-    // getBoundingClientRect(). Sätter man width/height/koordinater direkt
-    // i redan-zoomade skärmpixlar dubbel-skalas allt (stämmer bara vid
-    // 100 %, driftar isär i takt med zoomnivån). Dela bort zoom-faktorn
-    // överallt så måtten är i samma "ozoomade" enheter som webbläsaren
-    // själv multiplicerar med zoom vid rendering — precis som om zoom=1.
+    // getBoundingClientRect(). Sätter man koordinater direkt i redan-
+    // zoomade skärmpixlar dubbel-skalas allt (stämmer bara vid 100 %,
+    // driftar isär i takt med zoomnivån) — dela bort zoom-faktorn för
+    // path-koordinaterna nedan så de är i samma "ozoomade" enheter som
+    // webbläsaren själv multiplicerar med zoom vid rendering.
+    //
+    // Bredd/höjd på SVG:n är ett SEPARAT problem: .bracket-box har
+    // overflow-x:auto (för att kunna scrolla breda träd i sidled i stället
+    // för att svälla hela sidan) — .bracket:s getBoundingClientRect()
+    // ger då bara den SYNLIGA (ev. scrollade) bredden, inte trädets
+    // fulla innehållsyta. Sätter man SVG:ns viewBox till den synliga
+    // bredden klipper SVG:n själv bort alla linjer som ligger bortom vad
+    // som råkar synas just nu (upptäckt 2026-07-19: linjerna "försvann"
+    // efter första omgången). scrollWidth/scrollHeight ger den fulla
+    // innehållsytan OCH är redan i lokala (ozoomade) enheter — behöver
+    // alltså inte delas med zoom, till skillnad från positionsmåtten.
     const zoom = zoomOverride != null ? zoomOverride : (state.bracketZoom || 1);
     const raw = bracketEl.getBoundingClientRect();
-    const base = { left: raw.left, top: raw.top, width: raw.width / zoom, height: raw.height / zoom };
+    const base = {
+      left: raw.left, top: raw.top,
+      width: bracketEl.scrollWidth, height: bracketEl.scrollHeight,
+    };
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "bracket-connectors");
     svg.setAttribute("width", String(base.width));
