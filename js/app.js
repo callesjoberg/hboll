@@ -2269,9 +2269,18 @@ window.HB = window.HB || {};
   // sidhöjd-delta, vilket stämmer för de vyerna eftersom de alltid visar
   // matcher i stigande tidsordning (äldst→nyast, nytt innehåll hamnar
   // alltid ovanför).
+  //
+  // autoScrolledToNow sätts till true INNAN omritningen: annars kan
+  // renderTimeline()s EGEN engångs-auto-scroll till NU-linjen råka
+  // trigga just av den här omritningen (om det händelsevis är FÖRSTA
+  // gången en NU-linje förekommer i vyn, t.ex. att man tittar på Bana
+  // för en plan där en match pågår just nu) — den skjuts upp 150ms och
+  // skulle då hoppa till EN GÅNG TILL, ovanpå kompensationen nedan, som
+  // ett andra, ryckigt "dubbelhopp" strax efter klicket.
   function preserveScrollOnExpand(btn, rerenderFn) {
     const oldTop = btn.getBoundingClientRect().top;
     const oldHeight = document.documentElement.scrollHeight;
+    autoScrolledToNow = true;
     rerenderFn();
     const newBtn = document.querySelector(".show-all-played");
     if (newBtn) {
