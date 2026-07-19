@@ -2254,6 +2254,33 @@ window.HB = window.HB || {};
   // tidigare", schemat) eller Infinity ("visa alla", bana/slutspel).
   const ARENA_RECENT_HOURS = 2; // bana/slutspelstabell: hur långt bakåt spelade matcher visas som standard
 
+  // "Visa fler/alla tidigare"-knapparna lägger ofta till matcher OVANFÖR
+  // där användaren redan tittar (äldre matcher hamnar tidigast i listan)
+  // — utan kompensation håller webbläsaren kvar samma scrollY-pixelvärde,
+  // så allt man just tittade på (inklusive knappen man klickade på) hoppar
+  // nedåt på skärmen med exakt så mycket som det nya innehållet är högt.
+  //
+  // Ankrar helst mot KNAPPEN SJÄLV (samma CSS-klass finns kvar om fler
+  // döljs matcher finns, t.ex. efter ett "visa fler"-klick i schemat) —
+  // fungerar rätt oavsett åt vilket håll nytt innehåll landade, eftersom
+  // bara knappens EGEN skärmposition mäts, inte en gissning om riktning.
+  // Om knappen försvinner helt (allt avslöjades på en gång, t.ex. Bana/
+  // slutspelstabellens enda "visa alla"-knapp) faller den tillbaka på en
+  // sidhöjd-delta, vilket stämmer för de vyerna eftersom de alltid visar
+  // matcher i stigande tidsordning (äldst→nyast, nytt innehåll hamnar
+  // alltid ovanför).
+  function preserveScrollOnExpand(btn, rerenderFn) {
+    const oldTop = btn.getBoundingClientRect().top;
+    const oldHeight = document.documentElement.scrollHeight;
+    rerenderFn();
+    const newBtn = document.querySelector(".show-all-played");
+    if (newBtn) {
+      window.scrollBy(0, newBtn.getBoundingClientRect().top - oldTop);
+    } else {
+      window.scrollBy(0, document.documentElement.scrollHeight - oldHeight);
+    }
+  }
+
   function splitRecentPlayed(list, cutoffHours, revealExtra) {
     const cutoff = Date.now() - cutoffHours * 3600000;
     const always = [];
@@ -2270,11 +2297,12 @@ window.HB = window.HB || {};
 
   function showAllPlayedButton(hiddenCount, cutoffHours, onClick) {
     if (!hiddenCount) return null;
-    return h("button", {
+    const btn = h("button", {
       class: "btn small show-all-played", type: "button",
-      onclick: onClick,
+      onclick: () => preserveScrollOnExpand(btn, onClick),
     }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
       cutoffHours + " tim visas alltid)");
+    return btn;
   }
 
   // Samma idé men laddar bara BATCH matcher i taget (klicka flera gånger
@@ -2284,16 +2312,16 @@ window.HB = window.HB || {};
   // state.revealBatchSize (förval 4, valfritt tal).
   function loadMorePlayedButtons(hiddenCount, batchSize, arrow, onLoadMore, onLoadAll) {
     if (!hiddenCount) return null;
-    return h("div", { class: "load-more-row" },
-      h("button", {
-        class: "btn small show-all-played", type: "button",
-        onclick: onLoadMore,
-      }, arrow + " Visa " + Math.min(batchSize, hiddenCount) + " tidigare matcher (" +
-        hiddenCount + " till)"),
-      hiddenCount > batchSize ? h("button", {
-        class: "btn small show-all-played", type: "button",
-        onclick: onLoadAll,
-      }, "Visa alla (" + hiddenCount + ")") : null);
+    const moreBtn = h("button", {
+      class: "btn small show-all-played", type: "button",
+      onclick: () => preserveScrollOnExpand(moreBtn, onLoadMore),
+    }, arrow + " Visa " + Math.min(batchSize, hiddenCount) + " tidigare matcher (" +
+      hiddenCount + " till)");
+    const allBtn = hiddenCount > batchSize ? h("button", {
+      class: "btn small show-all-played", type: "button",
+      onclick: () => preserveScrollOnExpand(allBtn, onLoadAll),
+    }, "Visa alla (" + hiddenCount + ")") : null;
+    return h("div", { class: "load-more-row" }, moreBtn, allBtn);
   }
 
   const SCHEMA_RECENT_HOURS = 1; // schemat: hur långt bakåt spelade matcher visas som standard
