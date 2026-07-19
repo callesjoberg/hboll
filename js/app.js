@@ -577,14 +577,21 @@ window.HB = window.HB || {};
     return [...set].sort((a, b) => a.localeCompare(b, "sv"));
   }
 
-  function filtered() {
+  // arenaOverride: Bana-fliken har sin EGEN banväljare (state.viewArena,
+  // medvetet frikopplad från verktygsradens "Alla planer"-filter, se
+  // renderArenaView) men ska annars lyda under exakt samma filter som
+  // schemat (klubb/hela cupen, dagar, klasser, egna lag, matchstatus,
+  // fritextsök) — annars "renderar"/beter den fliken sig annorlunda än
+  // resten av appen trots att verktygsraden ser likadan ut överallt.
+  function filtered(arenaOverride) {
     const q = state.q.trim().toLowerCase();
+    const arena = arenaOverride !== undefined ? arenaOverride : state.arena;
     return scoped().filter((m) => {
       if (state.days.size && !state.days.has(dayKey(m.start))) return false;
       if (state.cats.size && !state.cats.has(m.catId)) return false;
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) return false;
-      if (state.arena && m.arena !== state.arena) return false;
+      if (arena && m.arena !== arena) return false;
       if (state.matchFilter === "upcoming" && m.res && m.res.fin) return false;
       if (state.matchFilter === "played" && !(m.res && m.res.fin)) return false;
       if (q) {
@@ -2296,9 +2303,14 @@ window.HB = window.HB || {};
   // Egen flik för att snabbt välja en bana och se dess kommande/spelade
   // matcher — till skillnad från openArenaQuickView() (en tillfällig
   // dialog som inte rör filtret) är det här en riktig vy man kan stanna
-  // kvar i, med samma alla/kommande/spelade-växlare som schemat.
+  // kvar i. Lyder under EXAKT samma verktygsradsfilter (klubb/hela cupen,
+  // dagar, klasser, egna lag, matchstatus, sök) som schema/tabeller/
+  // slutspel via filtered() — hade tidigare en egen inline-kopia av bara
+  // matchstatus-växlaren (dubblett av verktygsradens) och struntade helt
+  // i klubbfiltret, vilket gjorde att fliken både såg och betedde sig
+  // annorlunda än resten av appen.
   function renderArenaView(main) {
-    const arenas = [...new Set(state.matches.map((m) => m.arena).filter(Boolean))]
+    const arenas = [...new Set(scoped().map((m) => m.arena).filter(Boolean))]
       .sort((a, b) => a.localeCompare(b, "sv", { numeric: true }));
     if (!arenas.length) {
       main.append(h("div", { class: "banner" }, "Inga planer hittades för den här cupen."));
@@ -2315,20 +2327,13 @@ window.HB = window.HB || {};
       },
         h("option", { value: "" }, "Välj bana …"),
         arenas.map((a) => h("option",
-          { value: a, ...(state.viewArena === a ? { selected: "" } : {}) }, a))),
-      state.viewArena ? h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
-        [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
-          chip(l, state.matchFilter === v, () => {
-            state.matchFilter = v; saveUi(); renderContent();
-          }))) : null));
+          { value: a, ...(state.viewArena === a ? { selected: "" } : {}) }, a)))));
 
     if (!state.viewArena) {
       main.append(h("div", { class: "banner" }, "Välj en bana ovan för att se dess matcher."));
       return;
     }
-    let list = state.matches.filter((m) => m.arena === state.viewArena);
-    if (state.matchFilter === "upcoming") list = list.filter((m) => !(m.res && m.res.fin));
-    else if (state.matchFilter === "played") list = list.filter((m) => m.res && m.res.fin);
+    const list = filtered(state.viewArena);
     if (!list.length) {
       main.append(h("div", { class: "banner" },
         "Inga matcher matchar filtret på " + state.viewArena + "."));
