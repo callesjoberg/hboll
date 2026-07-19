@@ -146,6 +146,10 @@ window.HB = window.HB || {};
         arena: arena.completeName || arena.fieldName || "",
         divId: division.id || refId(e.division),
         divName: nameOf(division),
+        // "Conference" (gruppspel) eller "Playoff" (slutspel) — enda
+        // tillförlitliga sättet att skilja dem åt för t.ex. divisionsToShow()
+        // (Tabeller-vyn ska bara visa grupptabeller, inte slutspelsträd).
+        divType: division.__typename || "",
         catId: catId,
         catName: nameOf(category),
         roundName: nameOf(round),

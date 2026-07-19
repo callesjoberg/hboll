@@ -453,6 +453,51 @@ header.top {
   color: var(--ink);
 }
 
+/* Rensa-knapp (×) i sök-/textfält — se withClearButton() i js/app.js.
+   flex:1 1 auto/min-width:0 gör att wrappern fyller ut samma utrymme som
+   den bara inputen gjorde tidigare i sina olika flex-rader (.tools-row,
+   .team-picker-search-row osv); .search/.team-picker-search behåller sin
+   egen visuella styling oförändrad inuti wrappern. */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.search-wrap input { width: 100%; padding-right: 26px; box-sizing: border-box; }
+
+.search-clear {
+  position: absolute;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.search-clear:hover { background: var(--paper); color: var(--ink); }
+
+/* Bara synlig när fältet faktiskt har text — kräver att inputen har en
+   placeholder (annars räknas den aldrig som "placeholder-shown"). */
+input:placeholder-shown ~ .search-clear { display: none; }
+
+/* Chrome/Safaris egen inbyggda rensa-x för type=search — annars blir det
+   två stycken på varandra. */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .btn {
   background: var(--card);
   border: 1px solid var(--line);
@@ -465,6 +510,18 @@ header.top {
 .btn.small { padding: 2px 8px; font-size: 12px; }
 
 .show-all-played { display: block; margin: 12px auto 0; }
+
+/* schemats "visa N tidigare"-knapp + en separat "visa alla" bredvid —
+   se loadMorePlayedButtons() i js/app.js. */
+.load-more-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.load-more-row .show-all-played { display: inline-block; margin: 0; }
 
 /* --- innehåll -------------------------------------------------------------- */
 

@@ -288,6 +288,7 @@ window.HB = window.HB || {};
     teamColors: localStorage.getItem("hb:teamColors") !== "off",
     breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
     matchMinutes: +(localStorage.getItem("hb:matchMinutes") || 30), // schemarutans längd
+    revealBatchSize: +(localStorage.getItem("hb:revealBatchSize") || 4), // "visa fler tidigare": antal per klick
     advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
     showPlayoffProjection: localStorage.getItem("hb:showPlayoffProjection") === "on",
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
@@ -326,6 +327,7 @@ window.HB = window.HB || {};
     localStorage.setItem("hb:teamColors", state.teamColors ? "on" : "off");
     localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
     localStorage.setItem("hb:matchMinutes", String(state.matchMinutes));
+    localStorage.setItem("hb:revealBatchSize", String(state.revealBatchSize));
     localStorage.setItem("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
     localStorage.setItem("hb:showPlayoffProjection", state.showPlayoffProjection ? "on" : "off");
     localStorage.setItem("hb:fullCardColors", state.fullCardColors ? "on" : "off");
@@ -631,6 +633,29 @@ window.HB = window.HB || {};
     }, label);
   }
 
+  // Slår in ett text-/sökfält i en wrapper med en ×-knapp som rensar det —
+  // återanvänds för alla sök-/filterfält i appen i stället för att förlita
+  // sig på webbläsarens inbyggda (bara Chrome/Safari, olika utseende,
+  // saknas helt i Firefox) rensa-knapp för type="search". Knappen syns
+  // bara när fältet faktiskt har ett värde (CSS :placeholder-shown, kräver
+  // att inputen har en placeholder). Skickar ett riktigt "input"-event vid
+  // rensning så befintliga lyssnare/filter reagerar som om användaren
+  // själv raderat texten — onClear (valfritt) för extra städning
+  // (t.ex. att stänga en öppen autocomplete-lista).
+  function withClearButton(input, onClear) {
+    return h("div", { class: "search-wrap" }, input,
+      h("button", {
+        class: "search-clear", type: "button", "aria-label": "Rensa",
+        tabindex: "-1",
+        onclick: () => {
+          input.value = "";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.focus();
+          if (onClear) onClear();
+        },
+      }, "×"));
+  }
+
   // --- render: toppnivå ----------------------------------------------------
 
   function render() {
@@ -794,7 +819,7 @@ window.HB = window.HB || {};
     });
 
     dd.append(summary, h("div", { class: "team-picker-panel" },
-      h("div", { class: "team-picker-search-row" }, search, clearBtn),
+      h("div", { class: "team-picker-search-row" }, withClearButton(search), clearBtn),
       sortRow, list));
     return dd;
   }
@@ -934,18 +959,19 @@ window.HB = window.HB || {};
       if (m.catName) suggestSet.add(m.catName);
     }
     const suggestions = [...suggestSet].sort((a, b) => a.localeCompare(b, "sv"));
+    const searchInput = h("input", {
+      class: "search", type: "search", placeholder: "Sök lag, plan, grupp …",
+      value: state.q, list: "search-suggestions",
+      // renderContent() (inte render()) — annars byggs sökfältet om vid
+      // varje tangenttryckning och tappar fokus/mobiltangentbordet.
+      oninput: (e) => {
+        state.q = e.target.value;
+        syncUrl(); // inte saveUi() — q ska inte fastna i localStorage mellan besök
+        renderContent();
+      },
+    });
     body.append(h("div", { class: "row tools-row" },
-      h("input", {
-        class: "search", type: "search", placeholder: "Sök lag, plan, grupp …",
-        value: state.q, list: "search-suggestions",
-        // renderContent() (inte render()) — annars byggs sökfältet om vid
-        // varje tangenttryckning och tappar fokus/mobiltangentbordet.
-        oninput: (e) => {
-          state.q = e.target.value;
-          syncUrl(); // inte saveUi() — q ska inte fastna i localStorage mellan besök
-          renderContent();
-        },
-      }),
+      withClearButton(searchInput),
       h("datalist", { id: "search-suggestions" },
         suggestions.map((s) => h("option", { value: s }))),
       arenas.length > 1 ? h("select", {
@@ -1626,7 +1652,7 @@ window.HB = window.HB || {};
     classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); });
     const search = h("input", { type: "text", placeholder: "Sök lag …", value: hs.teamQuery });
     search.addEventListener("input", () => { hs.teamQuery = search.value; refresh(); });
-    root.replaceChildren(h("div", { class: "history-controls" }, classSel, search), list);
+    root.replaceChildren(h("div", { class: "history-controls" }, classSel, withClearButton(search)), list);
     refresh();
   }
 
@@ -1840,7 +1866,14 @@ window.HB = window.HB || {};
       teamInput.value = query;
       const teamOptions = h("div", { class: "autocomplete-list" });
       teamOptions.hidden = true;
-      const teamWrap = h("div", { class: "autocomplete-wrap" }, teamInput, teamOptions);
+      // teamInput.value läses bara i "change"/Enter-lyssnarna nedan (inte
+      // "input", för att inte söka om vid varje tangenttryckning) — ×-
+      // knappen skickar bara ett "input"-event, så onClear måste själv
+      // uppdatera query/renderFiltered i stället för att förlita sig på
+      // de vanliga lyssnarna.
+      const teamWrap = h("div", { class: "autocomplete-wrap" },
+        withClearButton(teamInput, () => { query = ""; classFilter = ""; renderFiltered(); }),
+        teamOptions);
 
       const classSel = h("select", { class: "select", "aria-label": "Klass" },
         h("option", { value: "" }, "Alla klasser"));
@@ -2170,10 +2203,10 @@ window.HB = window.HB || {};
     if (state.sort === "tid") {
       const { visible, hiddenCount } = splitRecentPlayed(
         list, SCHEMA_RECENT_HOURS, state.schemaOlderRevealCount);
-      const loadMoreBtn = loadMorePlayedButton(hiddenCount, SCHEMA_REVEAL_BATCH,
-        state.timeOrder === "desc" ? "↓" : "↑", () => {
-          state.schemaOlderRevealCount += SCHEMA_REVEAL_BATCH; renderContent();
-        });
+      const loadMoreBtn = loadMorePlayedButtons(hiddenCount, state.revealBatchSize,
+        state.timeOrder === "desc" ? "↓" : "↑",
+        () => { state.schemaOlderRevealCount += state.revealBatchSize; renderContent(); },
+        () => { state.schemaOlderRevealCount = Infinity; renderContent(); });
       // Äldre matcher hamnar överst i asc-ordning (äldst→nyast) och underst
       // i desc-ordning (nyast/kommande överst) — knappen placeras därefter.
       if (loadMoreBtn && state.timeOrder === "asc") main.append(loadMoreBtn);
@@ -2238,19 +2271,25 @@ window.HB = window.HB || {};
   }
 
   // Samma idé men laddar bara BATCH matcher i taget (klicka flera gånger
-  // för att gå längre bakåt) — bättre för schemats ofta mycket längre
-  // historik än bana/slutspelets "visa allt på en gång".
-  function loadMorePlayedButton(hiddenCount, batchSize, arrow, onClick) {
+  // för att gå längre bakåt, eller "Visa alla" för att hoppa hela vägen)
+  // — bättre för schemats ofta mycket längre historik än bana/slutspelets
+  // "visa allt på en gång". batchSize styrs av inställningen
+  // state.revealBatchSize (förval 4, valfritt tal).
+  function loadMorePlayedButtons(hiddenCount, batchSize, arrow, onLoadMore, onLoadAll) {
     if (!hiddenCount) return null;
-    return h("button", {
-      class: "btn small show-all-played", type: "button",
-      onclick: onClick,
-    }, arrow + " Visa " + Math.min(batchSize, hiddenCount) + " tidigare matcher (" +
-      hiddenCount + " till)");
+    return h("div", { class: "load-more-row" },
+      h("button", {
+        class: "btn small show-all-played", type: "button",
+        onclick: onLoadMore,
+      }, arrow + " Visa " + Math.min(batchSize, hiddenCount) + " tidigare matcher (" +
+        hiddenCount + " till)"),
+      hiddenCount > batchSize ? h("button", {
+        class: "btn small show-all-played", type: "button",
+        onclick: onLoadAll,
+      }, "Visa alla (" + hiddenCount + ")") : null);
   }
 
   const SCHEMA_RECENT_HOURS = 1; // schemat: hur långt bakåt spelade matcher visas som standard
-  const SCHEMA_REVEAL_BATCH = 4; // ... och hur många fler "visa fler tidigare" öppnar upp per klick
 
   // --- render: bana -----------------------------------------------------------
 
@@ -2308,12 +2347,17 @@ window.HB = window.HB || {};
 
   function divisionsToShow() {
     // Grupper (divisioner) ur de filtrerade matcherna, med klubbens först.
+    // Slutspelsdivisioner (divType "Playoff") hör hemma i Slutspel-fliken,
+    // inte här — Division$table för dem är inte en meningsfull tabell.
+    // m.divType saknas för gammal cachad data (fylls i vid nästa synk) och
+    // för ProCup — då räknas matchen in som förr (odiskriminerat).
     const map = new Map();
     for (const m of scoped()) {
       if (state.cats.size && !state.cats.has(m.catId)) continue;
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) continue;
       if (!m.divId) continue;
+      if (m.divType === "Playoff") continue;
       if (!map.has(m.divId)) {
         map.set(m.divId, {
           id: m.divId, name: m.divName, catId: m.catId, catName: m.catName,
@@ -3017,6 +3061,9 @@ window.HB = window.HB || {};
     clubInput.addEventListener("change", applyFavoriteClub);
     attachAutocomplete($("#favoriteClubInput"), $("#favoriteClubOptions"),
       clubPrefixCandidates, applyFavoriteClub);
+    $("#favoriteClubClear").addEventListener("click", () => {
+      clubInput.value = ""; applyFavoriteClub(); clubInput.focus();
+    });
 
     const teamInput = $("#favoriteTeamInput");
     teamInput.value = state.favoriteTeam;
@@ -3028,6 +3075,9 @@ window.HB = window.HB || {};
     teamInput.addEventListener("change", applyFavoriteTeam);
     attachAutocomplete($("#favoriteTeamInput"), $("#favoriteTeamOptions"),
       () => [...new Set(clubTeams().map((t) => t.name))], applyFavoriteTeam);
+    $("#favoriteTeamClear").addEventListener("click", () => {
+      teamInput.value = ""; applyFavoriteTeam(); teamInput.focus();
+    });
 
     const themeBtns = $$("#themeSeg [data-theme-opt]");
     const syncThemeBtns = () => {
@@ -3095,6 +3145,11 @@ window.HB = window.HB || {};
       [...new Set(state.matches.flatMap((m) =>
         [m.home.name, m.away.name].filter(Boolean)))].sort((a, b) => a.localeCompare(b, "sv")),
       () => {});
+    $("#teamColorNameClear").addEventListener("click", () => {
+      teamColorNameInput.value = "";
+      teamColorNameInput.dispatchEvent(new Event("input", { bubbles: true }));
+      teamColorNameInput.focus();
+    });
     $("#teamColorAddBtn").addEventListener("click", () => {
       const nameInp = $("#teamColorNameInput");
       const colorInp = $("#teamColorPickerInput");
@@ -3121,6 +3176,15 @@ window.HB = window.HB || {};
     breakInput.addEventListener("change", () => {
       state.breakMinutes = Math.max(0, +breakInput.value || 0);
       breakInput.value = state.breakMinutes || "";
+      saveSettings();
+      renderContent();
+    });
+
+    const revealBatchInput = $("#revealBatchInput");
+    revealBatchInput.value = state.revealBatchSize;
+    revealBatchInput.addEventListener("change", () => {
+      state.revealBatchSize = Math.max(1, +revealBatchInput.value || 4);
+      revealBatchInput.value = state.revealBatchSize;
       saveSettings();
       renderContent();
     });

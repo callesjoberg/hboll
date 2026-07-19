@@ -86,8 +86,11 @@
     <div class="settings-group">
       <label class="settings-label" for="favoriteClubInput">Favoritklubb</label>
       <div class="autocomplete-wrap">
-        <input type="text" id="favoriteClubInput" placeholder="t.ex. Alingsås HK"
-               autocomplete="off">
+        <div class="search-wrap">
+          <input type="text" id="favoriteClubInput" placeholder="t.ex. Alingsås HK"
+                 autocomplete="off">
+          <button type="button" class="search-clear" id="favoriteClubClear" aria-label="Rensa" tabindex="-1">×</button>
+        </div>
         <div id="favoriteClubOptions" class="autocomplete-list" hidden></div>
       </div>
       <p class="muted">Styr vilka lag som räknas som &quot;dina&quot; — fliken
@@ -100,8 +103,11 @@
     <div class="settings-group">
       <label class="settings-label" for="favoriteTeamInput">Favoritlag (valfritt)</label>
       <div class="autocomplete-wrap">
-        <input type="text" id="favoriteTeamInput" placeholder="t.ex. Alingsås HK Blå"
-               autocomplete="off">
+        <div class="search-wrap">
+          <input type="text" id="favoriteTeamInput" placeholder="t.ex. Alingsås HK Blå"
+                 autocomplete="off">
+          <button type="button" class="search-clear" id="favoriteTeamClear" aria-label="Rensa" tabindex="-1">×</button>
+        </div>
         <div id="favoriteTeamOptions" class="autocomplete-list" hidden></div>
       </div>
       <p class="muted">Ett specifikt eget lag att hålla extra koll på — det
@@ -145,11 +151,14 @@
     <div class="settings-group">
       <span class="settings-label">Egna lagfärger</span>
       <p class="muted">Ge ett specifikt lag en egen kortfärg, oavsett namn —
-         t.ex. &quot;Lugi HF 3&quot; alltid röd. Vinner över inställningen ovan.</p>
+         t.ex. &quot;Alingsås HK F2011&quot; alltid röd. Vinner över inställningen ovan.</p>
       <div class="settings-inline">
         <div class="autocomplete-wrap" style="flex:1">
-          <input type="text" id="teamColorNameInput" placeholder="Lagnamn, t.ex. Lugi HF 3"
-                 autocomplete="off">
+          <div class="search-wrap">
+            <input type="text" id="teamColorNameInput" placeholder="Lagnamn, t.ex. Alingsås HK F2011"
+                   autocomplete="off">
+            <button type="button" class="search-clear" id="teamColorNameClear" aria-label="Rensa" tabindex="-1">×</button>
+          </div>
           <div id="teamColorOptions" class="autocomplete-list" hidden></div>
         </div>
         <input type="color" id="teamColorPickerInput" value="#1f5fbf">
@@ -178,6 +187,16 @@
       <p class="muted">Räknas på den lista som just nu visas, sorterad på tid,
          minus matchlängden ovan — filtrera t.ex. till ett eget lag för att
          se dess luckor.</p>
+    </div>
+
+    <div class="settings-group">
+      <label class="settings-label" for="revealBatchInput">
+        "Visa fler tidigare matcher" i schemat — hur många åt gången
+      </label>
+      <div class="settings-inline">
+        <input type="number" id="revealBatchInput" min="1" step="1" style="width:70px">
+        <span>matcher per klick (det finns alltid en egen "Visa alla"-knapp också)</span>
+      </div>
     </div>
   </dialog>
 
