@@ -2254,40 +2254,26 @@ window.HB = window.HB || {};
   // tidigare", schemat) eller Infinity ("visa alla", bana/slutspel).
   const ARENA_RECENT_HOURS = 2; // bana/slutspelstabell: hur långt bakåt spelade matcher visas som standard
 
-  // "Visa fler/alla tidigare"-knapparna lägger ofta till matcher OVANFÖR
-  // där användaren redan tittar (äldre matcher hamnar tidigast i listan)
-  // — utan kompensation håller webbläsaren kvar samma scrollY-pixelvärde,
-  // så allt man just tittade på (inklusive knappen man klickade på) hoppar
-  // nedåt på skärmen med exakt så mycket som det nya innehållet är högt.
-  //
-  // Ankrar helst mot KNAPPEN SJÄLV (samma CSS-klass finns kvar om fler
-  // döljs matcher finns, t.ex. efter ett "visa fler"-klick i schemat) —
-  // fungerar rätt oavsett åt vilket håll nytt innehåll landade, eftersom
-  // bara knappens EGEN skärmposition mäts, inte en gissning om riktning.
-  // Om knappen försvinner helt (allt avslöjades på en gång, t.ex. Bana/
-  // slutspelstabellens enda "visa alla"-knapp) faller den tillbaka på en
-  // sidhöjd-delta, vilket stämmer för de vyerna eftersom de alltid visar
-  // matcher i stigande tidsordning (äldst→nyast, nytt innehåll hamnar
-  // alltid ovanför).
-  //
-  // autoScrolledToNow sätts till true INNAN omritningen: annars kan
-  // renderTimeline()s EGEN engångs-auto-scroll till NU-linjen råka
-  // trigga just av den här omritningen (om det händelsevis är FÖRSTA
-  // gången en NU-linje förekommer i vyn, t.ex. att man tittar på Bana
-  // för en plan där en match pågår just nu) — den skjuts upp 150ms och
-  // skulle då hoppa till EN GÅNG TILL, ovanpå kompensationen nedan, som
-  // ett andra, ryckigt "dubbelhopp" strax efter klicket.
-  function preserveScrollOnExpand(btn, rerenderFn) {
-    const oldTop = btn.getBoundingClientRect().top;
-    const oldHeight = document.documentElement.scrollHeight;
-    autoScrolledToNow = true;
+  // "Visa fler/alla tidigare"-knapparna kan lägga till matcher antingen
+  // OVANFÖR eller NEDANFÖR där man redan tittar, beroende på
+  // sorteringsordning (stigande/fallande) — att försöka bevara exakt
+  // skärmposition (tidigare försök) blir därför inkonsekvent och svårt
+  // att förutsäga, och kan dessutom krocka med renderTimeline()s egen
+  // engångs-auto-scroll till NU-linjen. Enklare, tydligare regel:
+  // - Schemat: scrolla till NU-linjen, som en tidslinje — några
+  //   föregående matcher, aktuell, och kommande, enligt aktuellt filter.
+  //   Samma idé som det vanliga förstagångs-scrollet, fast upprepad.
+  // - Övriga vyer (Bana, slutspelstabellen): stanna högst upp i
+  //   innehållet — förutsägbart oavsett åt vilket håll nytt innehåll
+  //   landade.
+  function preserveScrollOnExpand(rerenderFn) {
+    autoScrolledToNow = true; // hindra renderTimeline() från att scrolla dit SJÄLV också
     rerenderFn();
-    const newBtn = document.querySelector(".show-all-played");
-    if (newBtn) {
-      window.scrollBy(0, newBtn.getBoundingClientRect().top - oldTop);
-    } else {
-      window.scrollBy(0, document.documentElement.scrollHeight - oldHeight);
+    if (state.view === "schema") {
+      const nl = $("#nowline");
+      if (nl) { nl.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
     }
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
 
   function splitRecentPlayed(list, cutoffHours, revealExtra) {
@@ -2306,12 +2292,11 @@ window.HB = window.HB || {};
 
   function showAllPlayedButton(hiddenCount, cutoffHours, onClick) {
     if (!hiddenCount) return null;
-    const btn = h("button", {
+    return h("button", {
       class: "btn small show-all-played", type: "button",
-      onclick: () => preserveScrollOnExpand(btn, onClick),
+      onclick: () => preserveScrollOnExpand(onClick),
     }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
       cutoffHours + " tim visas alltid)");
-    return btn;
   }
 
   // Samma idé men laddar bara BATCH matcher i taget (klicka flera gånger
@@ -2323,12 +2308,12 @@ window.HB = window.HB || {};
     if (!hiddenCount) return null;
     const moreBtn = h("button", {
       class: "btn small show-all-played", type: "button",
-      onclick: () => preserveScrollOnExpand(moreBtn, onLoadMore),
+      onclick: () => preserveScrollOnExpand(onLoadMore),
     }, arrow + " Visa " + Math.min(batchSize, hiddenCount) + " tidigare matcher (" +
       hiddenCount + " till)");
     const allBtn = hiddenCount > batchSize ? h("button", {
       class: "btn small show-all-played", type: "button",
-      onclick: () => preserveScrollOnExpand(allBtn, onLoadAll),
+      onclick: () => preserveScrollOnExpand(onLoadAll),
     }, "Visa alla (" + hiddenCount + ")") : null;
     return h("div", { class: "load-more-row" }, moreBtn, allBtn);
   }
