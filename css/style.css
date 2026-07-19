@@ -1270,9 +1270,33 @@ dialog.match-dialog {
   gap: 8px;
 }
 
-/* historik: jämför resultat mellan cupens år ------------------------------ */
+/* historik: jämför lag mellan år, eller bläddra i en hel gammal upplaga
+   som en egen liten app (Schema/Tabeller/Slutspel/Bana) ----------------- */
 
-dialog.history-dialog { max-width: 620px; }
+/* Alltid helskärm (inte bara mobil som .match-dialog) — historikens
+   "Bläddra i ett år"-läge ska kännas som den riktiga appen, med plats för
+   en egen flikrad och breda slutspelsträd/tabeller. */
+dialog.history-dialog {
+  margin: 0;
+  inset: 0;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  padding: max(20px, env(safe-area-inset-top)) 18px
+           max(14px, env(safe-area-inset-bottom)) 18px;
+  overflow-y: auto;
+}
+
+.history-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.history-head .cat { font-size: 16px; }
 
 .history-controls {
   display: flex;
@@ -1285,7 +1309,35 @@ dialog.history-dialog { max-width: 620px; }
 .history-controls .autocomplete-wrap { flex: 1 1 200px; min-width: 160px; }
 .history-controls input { width: 100%; }
 
-.history-body { max-height: 65vh; overflow-y: auto; }
+.history-mode-body { margin-top: 14px; }
+
+/* "Bläddra i ett år" ----------------------------------------------------- */
+
+.history-picker {
+  max-width: 480px;
+  display: grid;
+  gap: 14px;
+}
+
+.history-viewer-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 6px;
+}
+
+.history-viewer-head .cat { font-weight: 600; color: var(--blue); }
+
+.history-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+
+.history-viewer-body { min-height: 40vh; }
+.history-tables-content { display: grid; gap: 4px; }
 
 .history-year {
   border: 1px solid var(--line);
