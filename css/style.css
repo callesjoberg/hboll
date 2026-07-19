@@ -1413,6 +1413,12 @@ dialog.history-dialog { max-width: 620px; }
   gap: 16px;
   margin-bottom: 16px;
   transform-origin: top left;
+  /* Samma min-width:auto-fälla en nivå upp: inuti historikdialogen är
+     .bracket-row själv ett grid-item (.history-extra), så utan den här
+     kunde INTE .bracket-box:s egen min-width:0 hjälpa — .bracket-row
+     vägrade redan krympa under sitt totala innehålls bredd. */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .bracket-box {
