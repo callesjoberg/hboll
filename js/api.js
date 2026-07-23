@@ -348,8 +348,13 @@ window.HB = window.HB || {};
         flatStore[k] = v.entity;
       }
     }
+    // Object.values ger ingen garanterad ordning (beror på JSON-svarets
+    // nyckelordning) — utan den här sorteringen kunde A-/B-/C-Slutspel
+    // komma i vilken ordning som helst (t.ex. A/C/B). Namnen sorterar
+    // redan rätt bokstavsordning (A- före B- före C-Slutspel).
     const divisions = Object.values(flatStore)
-      .filter((e) => e.__typename === "Playoff");
+      .filter((e) => e.__typename === "Playoff")
+      .sort((a, b) => nameOf(a).localeCompare(nameOf(b), "sv", { numeric: true }));
     const result = divisions.map((div) => {
       const divName = nameOf(div);
       // div.matches är en referens till en egen topnyckel ("$matches"),

@@ -273,6 +273,7 @@ window.HB = window.HB || {};
     heroMinimized: false,    // nästa match-karusellen minimerad? (session, sparas ej)
     bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
     playoffDivTab: {},       // catId -> vald slutspelsdivision (A-/B-/C-Slutspel) när en klass har flera (session, sparas ej)
+    playoffCatTab: null,     // vald klass i Slutspel-vyn när fler än en klass är filtrerad fram (session, sparas ej)
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -2976,9 +2977,26 @@ window.HB = window.HB || {};
       main.append(h("div", { class: "banner" }, "Inga klasser att visa."));
       return;
     }
+
+    // Flera klasser filtrerade fram samtidigt (t.ex. både pojkar och
+    // flickor) visades tidigare staplade under varandra — en klassväljare
+    // (dropdown, eftersom antalet klasser kan bli stort — till skillnad
+    // från A-/B-/C-fliken som alltid är max tre) gör i stället att bara EN
+    // klass byggs/visas åt gången, precis som divisionsvalet nedan.
+    let selCat = cats[0];
+    if (cats.length > 1) {
+      selCat = cats.find((c) => c.catId === state.playoffCatTab) || cats[0];
+    }
+
     // Snabbväxling träd/tabell direkt i vyn — samma state.advancedPlayoffTable
     // som inställningens kryssruta, så de två alltid är i synk.
     main.append(h("div", { class: "row" },
+      cats.length > 1 ? h("select", {
+        class: "select", "aria-label": "Välj klass",
+        onchange: (e) => { state.playoffCatTab = +e.target.value; renderContent(); },
+      }, cats.map((c) => h("option", {
+        value: String(c.catId), ...(c.catId === selCat.catId ? { selected: "" } : {}),
+      }, c.catName))) : null,
       h("div", { class: "seg", role: "group", "aria-label": "Slutspelsvy" },
         chip("Träd", !state.advancedPlayoffTable, () => {
           state.advancedPlayoffTable = false; saveSettings(); renderContent();
@@ -3005,16 +3023,16 @@ window.HB = window.HB || {};
         }, "+")) : null));
     let any = false, anyLoading = false;
     const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
-    for (const c of cats) {
-      ensurePlayoffs(c.catId);
-      const p = state.playoffs[c.catId];
-      if (!p || p.status === "loading") {
-        anyLoading = true;
-        main.append(h("h2", { class: "day-h" }, c.catName),
-          h("p", { class: "muted" }, "Hämtar slutspel …"));
-        continue;
-      }
-      if (p.status === "error" || !p.divisions.length) continue; // inget slutspel ännu — hoppa tyst
+    const c = selCat;
+    ensurePlayoffs(c.catId);
+    const p = state.playoffs[c.catId];
+    if (!p || p.status === "loading") {
+      anyLoading = true;
+      main.append(h("h2", { class: "day-h" }, c.catName),
+        h("p", { class: "muted" }, "Hämtar slutspel …"));
+    } else if (p.status === "error" || !p.divisions.length) {
+      // inget slutspel ännu — hoppa tyst
+    } else {
       any = true;
       main.append(h("h2", { class: "day-h" }, c.catName));
 
