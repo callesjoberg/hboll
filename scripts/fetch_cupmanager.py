@@ -18,6 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _freshness import should_refresh  # noqa: E402
+from _sanity import check_plausible  # noqa: E402
 
 PAGE = 1000
 MAX_PAGES = 40
@@ -165,15 +166,20 @@ def normalize(store):
     return matches
 
 
-def write_if_changed(path, data):
-    if path.exists():
+def write_if_changed(path, data, old=None):
+    if old is None and path.exists():
         try:
             old = json.loads(path.read_text(encoding="utf-8"))
-            if old.get("matches") == data["matches"]:
-                print(f"{path.name}: oförändrad — skriver inte om")
-                return
         except Exception:
-            pass
+            old = None
+    if old and old.get("matches") == data["matches"]:
+        print(f"{path.name}: oförändrad — skriver inte om")
+        return
+    ok, reason = check_plausible(old, data)
+    if not ok:
+        print(f"{path.name}: VÄGRAR skriva — data ser orimlig ut ({reason}). "
+              f"Behåller senaste kända goda version.")
+        return
     path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     print(f"skrev {path.name} ({len(data['matches'])} matcher)")
 
@@ -202,7 +208,7 @@ def main():
             continue
         matches = normalize(store)
         print(f"{cup['id']}: {len(matches)} matcher på {time.time()-t0:.0f}s")
-        write_if_changed(snapshot_path, {"ts": int(time.time() * 1000), "matches": matches})
+        write_if_changed(snapshot_path, {"ts": int(time.time() * 1000), "matches": matches}, old=old)
 
 
 if __name__ == "__main__":
