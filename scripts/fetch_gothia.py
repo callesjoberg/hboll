@@ -27,6 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _freshness import should_refresh  # noqa: E402
 from _sanity import check_plausible  # noqa: E402
+from _ics import write_team_ics_files  # noqa: E402
 
 GRAPHQL_URL = "https://results.cupmanager.net/rest/tournamentapp_graphql"
 
@@ -58,6 +59,15 @@ query($cup: Int, $tournament: String, $cat: Int) {
   category(cupId: $cup, tournamentId: $tournament, categoryId: $cat) {
     id
     name
+    teams {
+      id
+      publicPlayers {
+        name
+        shirtNr
+        position
+        goalCount
+      }
+    }
     divisions {
       id
       name
@@ -205,6 +215,15 @@ def scrape_category(cup_id, tournament_id, cat):
     matches = []
     tables = {}
     playoff_divisions = []
+    rosters = {}
+    for t in category.get("teams") or []:
+        players = t.get("publicPlayers") or []
+        if not players:
+            continue  # de flesta yngre/mindre lag har ingen trupp inlagd
+        rosters[str(t["id"])] = [{
+            "name": p["name"].strip(), "shirtNr": p.get("shirtNr"),
+            "position": p.get("position") or "", "goals": p.get("goalCount") or 0,
+        } for p in players]
     for div in category["divisions"]:
         div_type = DIV_TYPE.get(div["type"], "Conference")
         for m in div["matches"]:
@@ -223,7 +242,7 @@ def scrape_category(cup_id, tournament_id, cat):
                     "gf": r.get("goalsWon") or 0, "ga": r.get("goalsLost") or 0,
                     "points": r.get("points") or 0,
                 } for r in rows]
-    return matches, tables, playoff_divisions
+    return matches, tables, playoff_divisions, rosters
 
 
 def scrape(cup_id, edition_name):
@@ -233,28 +252,32 @@ def scrape(cup_id, edition_name):
                if edition_name else None) or editions[-1]
     print(f"cup {cup_id}: upplaga {edition['name']} (id {edition['id']})")
 
-    all_matches, all_tables, all_playoffs = [], {}, {}
+    all_matches, all_tables, all_playoffs, all_rosters = [], {}, {}, {}
     for tournament in edition["tournaments"]:
         cats = tournament["categories"]
         print(f"  tournament {tournament['id']}: {len(cats)} klasser")
         for cat in cats:
-            matches, tables, pdivs = scrape_category(cup_id, tournament["id"], cat)
+            matches, tables, pdivs, rosters = scrape_category(cup_id, tournament["id"], cat)
             all_matches.extend(matches)
             all_tables.update(tables)
+            all_rosters.update(rosters)
             if pdivs:
                 all_playoffs[str(cat["id"])] = pdivs
             print(f"    {cat['name']}: {len(matches)} matcher, {len(tables)} tabeller, "
-                  f"{len(pdivs)} slutspelsträd")
+                  f"{len(pdivs)} slutspelsträd, {len(rosters)} lag med trupp")
 
     all_matches.sort(key=lambda m: (m["start"], m["arena"]))
     return {"ts": int(time.time() * 1000), "matches": all_matches,
-            "tables": all_tables, "playoffs": all_playoffs}
+            "tables": all_tables, "playoffs": all_playoffs, "rosters": all_rosters}
 
 
 def main():
-    out_dir = Path(__file__).resolve().parent.parent / "data"
+    root = Path(__file__).resolve().parent.parent
+    out_dir = root / "data"
     out_dir.mkdir(exist_ok=True)
-    for cup_id, edition_name, fname, _cup_key in TOURNAMENTS:
+    cups_by_id = {c["id"]: c for c in
+                  json.loads((root / "data" / "cups.json").read_text(encoding="utf-8"))["cups"]}
+    for gothia_cup_id, edition_name, fname, cup_key in TOURNAMENTS:
         path = out_dir / fname
         old = None
         if path.exists():
@@ -266,14 +289,14 @@ def main():
             print(f"{fname}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
             continue
         try:
-            data = scrape(cup_id, edition_name)
+            data = scrape(gothia_cup_id, edition_name)
         except Exception as e:
-            print(f"{cup_id} ({fname}): HOPPAR ÖVER ({e})")
+            print(f"{cup_key} ({fname}): HOPPAR ÖVER ({e})")
             continue
         # Skriv bara om innehållet (utom tidsstämpeln) ändrats, så att
         # CI-jobbet kan committa på "git diff" rakt av.
-        if (old and old.get("matches") == data["matches"] and
-                old.get("tables") == data["tables"] and old.get("playoffs") == data["playoffs"]):
+        if (old and old.get("matches") == data["matches"] and old.get("tables") == data["tables"] and
+                old.get("playoffs") == data["playoffs"] and old.get("rosters") == data["rosters"]):
             print(f"{path}: oförändrad — skriver inte om")
             continue
         ok, reason = check_plausible(old, data)
@@ -284,6 +307,12 @@ def main():
         path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         print(f"skrev {path} ({len(data['matches'])} matcher, {len(data['tables'])} tabeller, "
               f"{len(data['playoffs'])} klasser med slutspel)")
+        cup_meta = cups_by_id.get(cup_key, {})
+        n = write_team_ics_files(
+            out_dir / "ics", cup_key, cup_meta.get("name", cup_key), cup_meta.get("place", ""),
+            data["matches"])
+        if n:
+            print(f"  + {n} klubblags .ics-filer i data/ics/{cup_key}/")
 
 
 if __name__ == "__main__":

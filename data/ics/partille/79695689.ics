@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-81334399@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T102000
+DTEND;TZID=Europe/Stockholm:20260701T105000
+SUMMARY:Alingsås HK – Önnereds HK (Parahandboll Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Parahandboll · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81334401@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T120500
+DTEND;TZID=Europe/Stockholm:20260701T123500
+SUMMARY:IK Sävehof – Alingsås HK (Parahandboll Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Parahandboll · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81473465@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T142500
+DTEND;TZID=Europe/Stockholm:20260701T145500
+SUMMARY:HK Aranäs – Alingsås HK (Parahandboll Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Parahandboll · Group 1
+END:VEVENT
+END:VCALENDAR

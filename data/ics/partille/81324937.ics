@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-81333558@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T080000
+DTEND;TZID=Europe/Stockholm:20260630T083000
+SUMMARY:Alingsås HK – Skuru IK (Boys 15 Group 6)
+LOCATION:Heden 18\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81333556@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T094500
+DTEND;TZID=Europe/Stockholm:20260630T101500
+SUMMARY:CD Puertosol – Alingsås HK (Boys 15 Group 6)
+LOCATION:Heden 15 - Hummel\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81333559@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T135000
+DTEND;TZID=Europe/Stockholm:20260701T142000
+SUMMARY:Alingsås HK – Njård IL (Boys 15 Group 6)
+LOCATION:Heden 7\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81333555@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T172000
+DTEND;TZID=Europe/Stockholm:20260701T175000
+SUMMARY:TSV Kronshagen – Alingsås HK (Boys 15 Group 6)
+LOCATION:Heden 17 \, Partille
+DESCRIPTION:Partille Cup · Boys 15 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81333554@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T094500
+DTEND;TZID=Europe/Stockholm:20260702T101500
+SUMMARY:Karlshamns HF 1 – Alingsås HK (Boys 15 Group 6)
+LOCATION:Kviberg 21\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81333557@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T113000
+DTEND;TZID=Europe/Stockholm:20260702T120000
+SUMMARY:Alingsås HK – Frederikshavn F.I (Boys 15 Group 6)
+LOCATION:Kviberg 24\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81959438@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T150000
+DTEND;TZID=Europe/Stockholm:20260703T153000
+SUMMARY:HC Eynatten-Raeren – Alingsås HK (Boys 15 B-Play-off)
+LOCATION:Kviberg 15\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · B-Play-off
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81959436@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T164500
+DTEND;TZID=Europe/Stockholm:20260703T171500
+SUMMARY:Neistin 1 – Alingsås HK (Boys 15 B-Play-off)
+LOCATION:Kviberg 24\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · B-Play-off
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81959435@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260704T091000
+DTEND;TZID=Europe/Stockholm:20260704T094000
+SUMMARY:Alingsås HK – Dalby Gif 1 (Boys 15 B-Play-off)
+LOCATION:Heden 28 - Toyota\, Partille
+DESCRIPTION:Partille Cup · Boys 15 · B-Play-off
+END:VEVENT
+END:VCALENDAR

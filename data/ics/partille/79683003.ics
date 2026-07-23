@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-79975501@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T113000
+DTEND;TZID=Europe/Stockholm:20260630T120000
+SUMMARY:IFK Kristianstad 2 – Alingsås HK 2 (Boys 14 Group 18)
+LOCATION:Kviberg 10\, Partille
+DESCRIPTION:Partille Cup · Boys 14 · Group 18
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79975488@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T094500
+DTEND;TZID=Europe/Stockholm:20260701T101500
+SUMMARY:Alingsås HK 2 – BRH (Boys 14 Group 18)
+LOCATION:Kviberg 9\, Partille
+DESCRIPTION:Partille Cup · Boys 14 · Group 18
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79975496@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T113000
+DTEND;TZID=Europe/Stockholm:20260701T120000
+SUMMARY:Övrevoll Hosle IL – Alingsås HK 2 (Boys 14 Group 18)
+LOCATION:Kviberg 10\, Partille
+DESCRIPTION:Partille Cup · Boys 14 · Group 18
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79975506@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T083500
+DTEND;TZID=Europe/Stockholm:20260702T090500
+SUMMARY:AGF-Lyseng\, Aarhus – Alingsås HK 2 (Boys 14 Group 18)
+LOCATION:Heden 10\, Partille
+DESCRIPTION:Partille Cup · Boys 14 · Group 18
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79975491@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T102000
+DTEND;TZID=Europe/Stockholm:20260702T105000
+SUMMARY:Alingsås HK 2 – IFK Skövde 1 (Boys 14 Group 18)
+LOCATION:Heden 15 - Hummel\, Partille
+DESCRIPTION:Partille Cup · Boys 14 · Group 18
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81971979@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T113000
+DTEND;TZID=Europe/Stockholm:20260703T120000
+SUMMARY:IK Sävehof 1 – Alingsås HK 2 (Boys 14 B-Play-off)
+LOCATION:Kviberg 14\, Partille
+DESCRIPTION:Partille Cup · Boys 14 · B-Play-off
+END:VEVENT
+END:VCALENDAR

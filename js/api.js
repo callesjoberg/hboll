@@ -166,6 +166,7 @@ window.HB = window.HB || {};
 
   const localTables = {};   // cupId -> {divId: rows}
   const localPlayoffs = {}; // cupId -> {catId: [{id, name, matches}]} (bara cuper som har det, se cup.hasPlayoffs)
+  const localRosters = {};  // cupId -> {teamId: [{name, shirtNr, position, goals}]} (bara Gothia-cuper hittills)
   const localDataTs = {};   // cupId -> när skrapan senast kördes
 
   async function fetchLocal(cup) {
@@ -176,8 +177,16 @@ window.HB = window.HB || {};
     const j = await r.json();
     localTables[cup.id] = j.tables || {};
     localPlayoffs[cup.id] = j.playoffs || {};
+    localRosters[cup.id] = j.rosters || {};
     localDataTs[cup.id] = j.ts || 0;
     return j.matches || [];
+  }
+
+  // Truppdata finns bara för dataUrl-cuper vars skrapa faktiskt bygger den
+  // (Partille/Gothia, se scripts/fetch_gothia.py) — [] annars, tyst.
+  function fetchRoster(cup, teamId) {
+    if (!cup.dataUrl) return [];
+    return (localRosters[cup.id] || {})[teamId] || [];
   }
 
   // Samma fältlista som matchQuery() ger per match i MatchWindow — håller
@@ -506,7 +515,7 @@ window.HB = window.HB || {};
   }
 
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
-             fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings,
+             fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              readCache, writeCache, localDataTs,
              fetchArchiveIndex, fetchArchiveEdition };
 })();

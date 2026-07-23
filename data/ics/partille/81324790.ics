@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-81337467@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T131500
+DTEND;TZID=Europe/Stockholm:20260630T134500
+SUMMARY:Ull/Kisa IL – Alingsås HK (Girls 15 Group 16)
+LOCATION:Kviberg 21\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · Group 16
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81338985@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T150000
+DTEND;TZID=Europe/Stockholm:20260630T153000
+SUMMARY:Kiruna HK – Alingsås HK (Girls 15 Group 16)
+LOCATION:Kviberg 16\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · Group 16
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81337451@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T105500
+DTEND;TZID=Europe/Stockholm:20260701T112500
+SUMMARY:Alingsås HK – Gustavsberg IF HK (Girls 15 Group 16)
+LOCATION:Härlanda Park 10\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · Group 16
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81956819@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T124000
+DTEND;TZID=Europe/Stockholm:20260701T131000
+SUMMARY:Alingsås HK – Redbergslids IK 2 (Girls 15 Group 16)
+LOCATION:Härlanda Park 2\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · Group 16
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81337464@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T142500
+DTEND;TZID=Europe/Stockholm:20260702T145500
+SUMMARY:Alingsås HK – West Kirby Grammar School (Girls 15 Group 16)
+LOCATION:Heden 21\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · Group 16
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81337457@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T161000
+DTEND;TZID=Europe/Stockholm:20260702T164000
+SUMMARY:HSG Angeln – Alingsås HK (Girls 15 Group 16)
+LOCATION:Heden 20 \, Partille
+DESCRIPTION:Partille Cup · Girls 15 · Group 16
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81758739@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T150000
+DTEND;TZID=Europe/Stockholm:20260703T153000
+SUMMARY:Alingsås HK – Søndermarkens IK (Girls 15 B-Play-off)
+LOCATION:Kviberg 24\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · B-Play-off
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81758722@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T172000
+DTEND;TZID=Europe/Stockholm:20260703T175000
+SUMMARY:Alingsås HK – Skövde HF (Girls 15 B-Play-off)
+LOCATION:Kviberg 14\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · B-Play-off
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81758721@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260704T094500
+DTEND;TZID=Europe/Stockholm:20260704T101500
+SUMMARY:Alingsås HK – IK Bolton (Girls 15 B-Play-off)
+LOCATION:Heden 15 - Hummel\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · B-Play-off
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81758720@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260704T120500
+DTEND;TZID=Europe/Stockholm:20260704T123500
+SUMMARY:Alingsås HK – KvIK Sport (Girls 15 B-Play-off)
+LOCATION:Heden 13 - Norrmejerier\, Partille
+DESCRIPTION:Partille Cup · Girls 15 · B-Play-off
+END:VEVENT
+END:VCALENDAR

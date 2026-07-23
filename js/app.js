@@ -69,6 +69,34 @@ window.HB = window.HB || {};
     return HB.CLUB.pattern.test(name || "");
   }
 
+  // Filnamnssäker version av ett lag-id — måste vara EXAKT samma algoritm
+  // som slugify_team_id() i scripts/_ics.py, annars pekar länken fel.
+  function slugifyTeamId(teamId) {
+    let s = String(teamId)
+      .replace(/[åä]/g, "a").replace(/ö/g, "o")
+      .replace(/[ÅÄ]/g, "A").replace(/Ö/g, "O");
+    s = s.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
+    return s || "lag";
+  }
+
+  // Prenumererbar kalender-URL för ETT lags matcher, eller null om ingen
+  // finns för den här cupen/laget. Cup Manager har en egen inbyggd
+  // livetjänst (regenereras vid varje hämtning, alltid färsk) som funkar
+  // för ALLA lag; dataUrl-cuper (ProCup/Gothia) saknar en sådan tjänst, så
+  // där finns bara statiska filer (byggda av scripts/_ics.py, uppdaterade
+  // i samma takt som resten av cupens data) och bara för klubbens egna lag
+  // (annars skulle t.ex. Partilles ~1400 lag ge lika många småfiler).
+  function calendarSubscribeUrl(team) {
+    const c = cup();
+    if (!c.dataUrl) {
+      return "https://" + c.host + "/service/GetTeamCalendarService?teamId=" + team.id;
+    }
+    if (isClubName(team.name)) {
+      return "data/ics/" + c.id + "/" + slugifyTeamId(team.id) + ".ics";
+    }
+    return null;
+  }
+
   // Färgord i lagnamnet (t.ex. "Alingsås HK Blå", "Lödde Vikings HK Svart/Röd")
   // → en representativ hex-färg, för en liten prick bredvid lagnamnet.
   const TEAM_COLOR_WORDS = {
@@ -1989,9 +2017,30 @@ window.HB = window.HB || {};
     if (dlg) dlg.close();
   }
 
+  // Trupplista (om cupen har sådan data, se cup.hasRosters) — shirtnummer,
+  // position, mål. Bara Partille/Gothia-cuper hittills, och bara för lag
+  // som faktiskt matat in en trupp (de flesta yngre/mindre lag har ingen).
+  function rosterBlock(team) {
+    const c = cup();
+    if (!c.hasRosters) return null;
+    const players = HB.api.fetchRoster(c, team.id);
+    if (!players.length) return null;
+    const sorted = [...players].sort((a, b) =>
+      (a.shirtNr == null ? 999 : a.shirtNr) - (b.shirtNr == null ? 999 : b.shirtNr));
+    return h("div", { class: "team-roster" },
+      h("h4", null, "Trupp"),
+      h("ul", { class: "team-roster-list" },
+        sorted.map((p) => h("li", null,
+          h("span", { class: "roster-nr" }, p.shirtNr != null ? String(p.shirtNr) : "–"),
+          h("span", { class: "roster-name" }, p.name),
+          p.position ? h("span", { class: "roster-pos" }, p.position) : null,
+          p.goals ? h("span", { class: "roster-goals" }, p.goals + " mål") : null))));
+  }
+
   function teamStatBlock(m, team, side) {
     const counts = teamMatchCounts(team.id);
     const statLine = h("p", { class: "muted team-stat-line" }, "Hämtar tabellplacering …");
+    const calUrl = calendarSubscribeUrl(team);
     const box = h("div", { class: "team-stat-block" },
       h("h3", { class: isClubName(team.name) ? "us" : "" }, team.name),
       statLine,
@@ -2008,7 +2057,12 @@ window.HB = window.HB || {};
           class: "btn small", type: "button",
           disabled: counts.played === 0 ? "" : null,
           onclick: () => gotoTeamMatches(team, "played"),
-        }, "Spelade matcher")));
+        }, "Spelade matcher"),
+        calUrl ? h("a", {
+          class: "btn small", href: calUrl, target: "_blank", rel: "noopener",
+          title: "Lägg till i din kalenderapp för att prenumerera — nya/ändrade matcher dyker upp automatiskt",
+        }, "📅 Prenumerera") : null),
+      rosterBlock(team));
 
     if (!m.divId) {
       statLine.textContent = "Ingen tabell tillgänglig för den här klassen.";

@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1000@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Eskilstuna Guif 2 – Alingsås HK Vit (F12 Grupp 5)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1202@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Alingsås HK Vit – RP IF 1 (P14/13 Grupp 5)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-978@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:NKIK – Alingsås HK Vit (F12 Grupp 5)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-32@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Alingsås HK Vit – Örebro SK U 2 (P14/13 Grupp 5)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-965@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Alingsås HK Vit – Karlskoga HK (F12 Grupp 5)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-30@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:GT Söder HK 2 – Alingsås HK Vit (P14/13 Grupp 5)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-662@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Alingsås HK Vit – Backa HK Röd (F12 A-8-dels:03)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1166@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Alingsås HK Vit – Årsta AIK 2 (P14/13 A-8-dels:03)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-548@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Alingsås HK Vit – BK Heid svart (F12 A-kvartsfinal:02)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-587@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Alingsås HK Vit – LIF Lindesberg Orange (P14/13 A-kvartsfinal:02)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-632@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Alingsås HK Blå – Alingsås HK Vit (F12 A-semifinal:01)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-638@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:RP IF 2 – Alingsås HK Vit (P14/13 A-semifinal:01)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-semifinal:01
+END:VEVENT
+END:VCALENDAR

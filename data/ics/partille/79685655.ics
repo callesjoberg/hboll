@@ -1,0 +1,63 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-80224121@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T083500
+DTEND;TZID=Europe/Stockholm:20260630T090500
+SUMMARY:Leipzig\, SC DHfK – Alingsås HK (Boys 18 Group 1)
+LOCATION:4 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-80224124@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T102000
+DTEND;TZID=Europe/Stockholm:20260630T105000
+SUMMARY:Alingsås HK – GOG (Boys 18 Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-80224129@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T161000
+DTEND;TZID=Europe/Stockholm:20260701T164000
+SUMMARY:Önnereds HK 1 – Alingsås HK (Boys 18 Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-80224134@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T183000
+DTEND;TZID=Europe/Stockholm:20260701T190000
+SUMMARY:IFK Kristianstad Orange – Alingsås HK (Boys 18 Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-80224140@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T161000
+DTEND;TZID=Europe/Stockholm:20260702T164000
+SUMMARY:Alingsås HK – Redbergslids IK (Boys 18 Group 1)
+LOCATION:1 Fristad Arena (Heden)\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · Group 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-82369042@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T114000
+DTEND;TZID=Europe/Stockholm:20260703T121000
+SUMMARY:Alingsås HK – OV Helsingborg (Boys 18 A-Play-off)
+LOCATION:Heden 16 - Hummel\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · A-Play-off
+END:VEVENT
+BEGIN:VEVENT
+UID:match-82369041@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T145500
+DTEND;TZID=Europe/Stockholm:20260703T152500
+SUMMARY:Alingsås HK – HK Aranäs (Boys 18 A-Play-off)
+LOCATION:Heden 9\, Partille
+DESCRIPTION:Partille Cup · Boys 18 · A-Play-off
+END:VEVENT
+END:VCALENDAR

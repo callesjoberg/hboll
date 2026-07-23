@@ -24,6 +24,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _freshness import should_refresh  # noqa: E402
 from _sanity import check_plausible  # noqa: E402
+from _ics import write_team_ics_files  # noqa: E402
 
 BASE = "https://procup.se/cup/"
 
@@ -210,9 +211,12 @@ def scrape(ev):
 
 
 def main():
-    out_dir = Path(__file__).resolve().parent.parent / "data"
+    root = Path(__file__).resolve().parent.parent
+    out_dir = root / "data"
     out_dir.mkdir(exist_ok=True)
-    for ev, fname, _cup_id in TOURNAMENTS:
+    cups_by_id = {c["id"]: c for c in
+                  json.loads((root / "data" / "cups.json").read_text(encoding="utf-8"))["cups"]}
+    for ev, fname, cup_id in TOURNAMENTS:
         path = out_dir / fname
         old = None
         if path.exists():
@@ -244,6 +248,12 @@ def main():
         path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         print(f"skrev {path} ({len(data['matches'])} matcher, "
               f"{len(data['tables'])} tabeller)")
+        cup_meta = cups_by_id.get(cup_id, {})
+        n = write_team_ics_files(
+            out_dir / "ics", cup_id, cup_meta.get("name", cup_id), cup_meta.get("place", ""),
+            data["matches"])
+        if n:
+            print(f"  + {n} klubblags .ics-filer i data/ics/{cup_id}/")
 
 
 if __name__ == "__main__":

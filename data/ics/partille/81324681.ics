@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-79974556@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T091000
+DTEND;TZID=Europe/Stockholm:20260630T094000
+SUMMARY:IK Sund 2 – Alingsås HK (Boys 13 Group 2)
+LOCATION:Heden 26 - Toyota\, Partille
+DESCRIPTION:Partille Cup · Boys 13 · Group 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974558@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T105500
+DTEND;TZID=Europe/Stockholm:20260630T112500
+SUMMARY:Alingsås HK – Frederikshavn F.I (Boys 13 Group 2)
+LOCATION:Heden 23 - Nordic Wellness\, Partille
+DESCRIPTION:Partille Cup · Boys 13 · Group 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974562@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T124000
+DTEND;TZID=Europe/Stockholm:20260701T131000
+SUMMARY:RK Rugvica – Alingsås HK (Boys 13 Group 2)
+LOCATION:Heden 9\, Partille
+DESCRIPTION:Partille Cup · Boys 13 · Group 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974567@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T083500
+DTEND;TZID=Europe/Stockholm:20260702T090500
+SUMMARY:Haslum IL – Alingsås HK (Boys 13 Group 2)
+LOCATION:Kviberg 17\, Partille
+DESCRIPTION:Partille Cup · Boys 13 · Group 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974572@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T102000
+DTEND;TZID=Europe/Stockholm:20260702T105000
+SUMMARY:Alingsås HK – Fram 1 (Boys 13 Group 2)
+LOCATION:Kviberg 9\, Partille
+DESCRIPTION:Partille Cup · Boys 13 · Group 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81761212@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T091000
+DTEND;TZID=Europe/Stockholm:20260703T094000
+SUMMARY:HC Koblenz – Alingsås HK (Boys 13 B-Play-off)
+LOCATION:Kviberg 18\, Partille
+DESCRIPTION:Partille Cup · Boys 13 · B-Play-off
+END:VEVENT
+END:VCALENDAR

@@ -88,6 +88,7 @@ HB.CUPS = [
     host: "results.partillecup.com",
     dataUrl: "data/partille-2026.json",
     hasPlayoffs: true,
+    hasRosters: true,
     beach: false,
     lat: 57.7395, lon: 12.1064,
   },

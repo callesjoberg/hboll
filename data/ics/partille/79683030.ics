@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-79974245@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T135000
+DTEND;TZID=Europe/Stockholm:20260630T142000
+SUMMARY:IK Sävehof 2 – Alingsås HK 1 (Boys 12 Group 7)
+LOCATION:Kviberg 1 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974240@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T153500
+DTEND;TZID=Europe/Stockholm:20260630T160500
+SUMMARY:Alingsås HK 1 – IFK Ystad (Boys 12 Group 7)
+LOCATION:Kviberg 4 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974234@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T105500
+DTEND;TZID=Europe/Stockholm:20260701T112500
+SUMMARY:HEI Håndbold – Alingsås HK 1 (Boys 12 Group 7)
+LOCATION:Kviberg 2 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974230@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T080000
+DTEND;TZID=Europe/Stockholm:20260702T083000
+SUMMARY:Alingsås HK 1 – H 71 2 (Boys 12 Group 7)
+LOCATION:Valhalla 1\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974237@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T094500
+DTEND;TZID=Europe/Stockholm:20260702T101500
+SUMMARY:Alingsås HK 1 – Maltepe Fide Okulları SK 2 (Boys 12 Group 7)
+LOCATION:Valhalla 4\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81332875@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T143500
+DTEND;TZID=Europe/Stockholm:20260703T150500
+SUMMARY:Önnereds HK 2 – Alingsås HK 1 (Boys 12 B-Play-off)
+LOCATION:Heden 28 - Toyota\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · B-Play-off
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Partille Cup
+BEGIN:VEVENT
+UID:match-79974203@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260630T150000
+DTEND;TZID=Europe/Stockholm:20260630T153000
+SUMMARY:Alingsås HK 2 – Redbergslids IK 1 (Boys 12 Group 6)
+LOCATION:Valhalla 2\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974207@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T183000
+DTEND;TZID=Europe/Stockholm:20260701T190000
+SUMMARY:RK Zagreb – Alingsås HK 2 (Boys 12 Group 6)
+LOCATION:Valhalla 3\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974210@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260701T201500
+DTEND;TZID=Europe/Stockholm:20260701T204500
+SUMMARY:Alingsås HK 2 – Hisar Okulları SK (Boys 12 Group 6)
+LOCATION:Valhalla 4\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974213@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T080000
+DTEND;TZID=Europe/Stockholm:20260702T083000
+SUMMARY:Alingsås HK 2 – OV Helsingborg 2 (Boys 12 Group 6)
+LOCATION:Kviberg 2 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79974218@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260702T094500
+DTEND;TZID=Europe/Stockholm:20260702T101500
+SUMMARY:Herning FH 1 – Alingsås HK 2 (Boys 12 Group 6)
+LOCATION:Kviberg 5 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · Group 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81450148@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T105500
+DTEND;TZID=Europe/Stockholm:20260703T112500
+SUMMARY:Alingsås HK 2 – Enköpings HF 2 (Boys 12 C-Playoff)
+LOCATION:Kviberg 2 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · C-Playoff
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81450145@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260703T150000
+DTEND;TZID=Europe/Stockholm:20260703T153000
+SUMMARY:Marks HK – Alingsås HK 2 (Boys 12 C-Playoff)
+LOCATION:Kviberg 2 (Serneke Arena)\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · C-Playoff
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81450144@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260704T105500
+DTEND;TZID=Europe/Stockholm:20260704T112500
+SUMMARY:Alingsås HK 2 – Torslanda HK 2 (Boys 12 C-Playoff)
+LOCATION:Heden 16 - Hummel\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · C-Playoff
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81450133@partille.hboll
+DTSTART;TZID=Europe/Stockholm:20260704T135000
+DTEND;TZID=Europe/Stockholm:20260704T142000
+SUMMARY:Önnereds HK 1 – Alingsås HK 2 (Boys 12 C-Playoff)
+LOCATION:Heden 5\, Partille
+DESCRIPTION:Partille Cup · Boys 12 · C-Playoff
+END:VEVENT
+END:VCALENDAR
