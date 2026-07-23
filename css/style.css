@@ -1147,7 +1147,7 @@ dialog#settingsDialog { max-width: 380px; }
    sida vid sida via grid-auto-placement; allt annat (.full) tar hela
    bredden — cupväljaren och kryssrutorna vinner inget på att delas upp. */
 @media (min-width: 700px) {
-  dialog#settingsDialog {
+  dialog#settingsDialog[open] {
     max-width: 660px;
     display: grid;
     grid-template-columns: 1fr 1fr;
