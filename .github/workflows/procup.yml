@@ -3,9 +3,20 @@ name: Uppdatera cupdata
 on:
   workflow_dispatch:
   schedule:
-    # Var 6:e timme; tätare uppdatering behövs bara under cuphelger
-    # (kör manuellt via workflow_dispatch/admin-sidan eller sänk intervallet då).
-    - cron: "23 */6 * * *"
+    # Var 20:e minut — men scripts/_freshness.py håller den EFFEKTIVA
+    # kadensen nere per cup: bara cuper inom/nära sitt eget kända
+    # matchfönster (73h innan start till 24h efter sista matchen) skrapas
+    # varje körning. Cuper långt fram i tiden kollas glest (~var 6:e
+    # timme, samma kadens som tidigare), avslutade cuper trappar av helt
+    # efter några uppföljningskontroller. Ingen extra kostnad att köra
+    # tätt: publika repon har obegränsade Actions-minuter, och de flesta
+    # körningarna gör inga nätverksanrop alls (should_refresh() säger nej
+    # innan skrapningen ens börjar).
+    - cron: "*/20 * * * *"
+
+concurrency:
+  group: update-cupdata
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -34,9 +45,24 @@ jobs:
           git add data/
           if git diff --cached --quiet; then
             echo "Ingen ändring — hoppar över commit."
-          else
-            git commit -m "Uppdatera ProCup-data"
-            # Skydd mot kapplöpning med manuella pushar under körningen.
-            git pull --rebase origin main
-            git push
+            exit 0
           fi
+          git commit -m "Uppdatera cupdata"
+          # Race-härdad push: var-20-minanders-körningar (plus manuella
+          # pushar) kan hinna krocka. Försök integrera och pusha om,
+          # annars hoppa tyst över just den här publiceringen i stället
+          # för att fela jobbet — nästa körning tar det.
+          n=0
+          until git push; do
+            n=$((n+1))
+            if [ "$n" -ge 5 ]; then
+              echo "Push misslyckades efter $n försök."; exit 1
+            fi
+            echo "Push avvisad (kapplöpning) — försöker igen ($n)."
+            if ! git pull --rebase --autostash origin main; then
+              git rebase --abort 2>/dev/null || true
+              echo "Rebase-konflikt — hoppar över den här publiceringen (nästa körning fixar)."
+              exit 0
+            fi
+            sleep $(( (RANDOM % 4) + 2 ))
+          done
