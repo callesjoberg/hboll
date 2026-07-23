@@ -21,6 +21,9 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _freshness import should_refresh  # noqa: E402
+
 BASE = "https://procup.se/cup/"
 
 # Turneringar att hämta: (ev-id, utfil, cup-id i js/config.js)
@@ -209,19 +212,29 @@ def main():
     out_dir = Path(__file__).resolve().parent.parent / "data"
     out_dir.mkdir(exist_ok=True)
     for ev, fname, _cup_id in TOURNAMENTS:
-        data = scrape(ev)
         path = out_dir / fname
-        # Skriv bara om innehållet (utom tidsstämpeln) ändrats, så att
-        # CI-jobbet kan committa på "git diff" rakt av.
+        old = None
         if path.exists():
             try:
                 old = json.loads(path.read_text(encoding="utf-8"))
-                if (old.get("matches") == data["matches"] and
-                        old.get("tables") == data["tables"]):
-                    print(f"{path}: oförändrad — skriver inte om")
-                    continue
             except Exception:
                 pass
+        if not should_refresh(old):
+            print(f"{fname}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
+            continue
+        # En cups skrapning får inte stoppa RESTEN av listan om t.ex.
+        # ProCup blockerar/svarar fel för just den — samma per-cup-
+        # isolering som fetch_cupmanager.py redan hade.
+        try:
+            data = scrape(ev)
+        except Exception as e:
+            print(f"ev {ev} ({fname}): HOPPAR ÖVER ({e})")
+            continue
+        # Skriv bara om innehållet (utom tidsstämpeln) ändrats, så att
+        # CI-jobbet kan committa på "git diff" rakt av.
+        if old and old.get("matches") == data["matches"] and old.get("tables") == data["tables"]:
+            print(f"{path}: oförändrad — skriver inte om")
+            continue
         path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         print(f"skrev {path} ({len(data['matches'])} matcher, "
               f"{len(data['tables'])} tabeller)")

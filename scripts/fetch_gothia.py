@@ -24,6 +24,9 @@ import time
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _freshness import should_refresh  # noqa: E402
+
 GRAPHQL_URL = "https://results.cupmanager.net/rest/tournamentapp_graphql"
 
 # Cuper att hämta: (gothiaCupId, edition-namn ELLER None=senaste, utfil,
@@ -251,20 +254,27 @@ def main():
     out_dir = Path(__file__).resolve().parent.parent / "data"
     out_dir.mkdir(exist_ok=True)
     for cup_id, edition_name, fname, _cup_key in TOURNAMENTS:
-        data = scrape(cup_id, edition_name)
         path = out_dir / fname
-        # Skriv bara om innehållet (utom tidsstämpeln) ändrats, så att
-        # CI-jobbet kan committa på "git diff" rakt av.
+        old = None
         if path.exists():
             try:
                 old = json.loads(path.read_text(encoding="utf-8"))
-                if (old.get("matches") == data["matches"] and
-                        old.get("tables") == data["tables"] and
-                        old.get("playoffs") == data["playoffs"]):
-                    print(f"{path}: oförändrad — skriver inte om")
-                    continue
             except Exception:
                 pass
+        if not should_refresh(old):
+            print(f"{fname}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
+            continue
+        try:
+            data = scrape(cup_id, edition_name)
+        except Exception as e:
+            print(f"{cup_id} ({fname}): HOPPAR ÖVER ({e})")
+            continue
+        # Skriv bara om innehållet (utom tidsstämpeln) ändrats, så att
+        # CI-jobbet kan committa på "git diff" rakt av.
+        if (old and old.get("matches") == data["matches"] and
+                old.get("tables") == data["tables"] and old.get("playoffs") == data["playoffs"]):
+            print(f"{path}: oförändrad — skriver inte om")
+            continue
         path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         print(f"skrev {path} ({len(data['matches'])} matcher, {len(data['tables'])} tabeller, "
               f"{len(data['playoffs'])} klasser med slutspel)")

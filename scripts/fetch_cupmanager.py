@@ -16,6 +16,9 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _freshness import should_refresh  # noqa: E402
+
 PAGE = 1000
 MAX_PAGES = 40
 CONC = 4
@@ -181,6 +184,16 @@ def main():
     for cup in cups:
         if not cup.get("tournamentId"):
             continue  # ProCup-cuper hanteras av fetch_procup.py
+        snapshot_path = ROOT / "data" / f"snapshot-{cup['id']}.json"
+        old = None
+        if snapshot_path.exists():
+            try:
+                old = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        if not should_refresh(old):
+            print(f"{cup['id']}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
+            continue
         t0 = time.time()
         try:
             store = fetch_store(cup["host"], cup["tournamentId"])
@@ -189,8 +202,7 @@ def main():
             continue
         matches = normalize(store)
         print(f"{cup['id']}: {len(matches)} matcher på {time.time()-t0:.0f}s")
-        write_if_changed(ROOT / "data" / f"snapshot-{cup['id']}.json",
-                         {"ts": int(time.time() * 1000), "matches": matches})
+        write_if_changed(snapshot_path, {"ts": int(time.time() * 1000), "matches": matches})
 
 
 if __name__ == "__main__":
