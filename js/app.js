@@ -2430,11 +2430,14 @@ window.HB = window.HB || {};
       return;
     }
     let lastCat = null;
+    let groupEl = null;
     for (const d of divs) {
       ensureTable(d.id);
       if (d.catName !== lastCat) {
         lastCat = d.catName;
         main.append(h("h2", { class: "day-h" }, d.catName));
+        groupEl = h("div", { class: "table-group" });
+        main.append(groupEl);
       }
       const t = state.tables[d.id];
       const box = h("section", { class: "table-box" },
@@ -2468,7 +2471,7 @@ window.HB = window.HB || {};
               h("td", null, (r.gf - r.ga > 0 ? "+" : "") + (r.gf - r.ga)),
               h("td", { class: "pts" }, String(r.points)))))));
       }
-      main.append(box);
+      groupEl.append(box);
     }
   }
 
