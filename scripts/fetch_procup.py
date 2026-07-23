@@ -24,8 +24,14 @@ from zoneinfo import ZoneInfo
 BASE = "https://procup.se/cup/"
 
 # Turneringar att hämta: (ev-id, utfil, cup-id i js/config.js)
+# Aranäs Open (Kungsbacka) kör också ProCup, men rätt ev-id för 2026 gick
+# inte att hitta säkert — ev=38182 visade sig fortfarande vara 2025 års
+# redan spelade matcher (maj 2025) trots att sidans anmälningstext redan
+# pratade om 2026. Lägg till när rätt ev-id är bekräftat.
 TOURNAMENTS = [
     (39543, "jarnvagen-2026.json", "jarnvagen"),
+    (39785, "vikingaspelen-2026.json", "vikingaspelen"),
+    (39247, "katrineholm-2026.json", "katrineholm"),
 ]
 
 

@@ -154,6 +154,83 @@
       "beach": false,
       "lat": 57.7089,
       "lon": 11.9746
+    },
+    {
+      "id": "irstablixten",
+      "name": "IrstaBlixten",
+      "place": "Västerås",
+      "edition": "2026",
+      "host": "irstablixten.cupmanager.net",
+      "tournamentId": 65542011,
+      "beach": false,
+      "lat": 59.6295,
+      "lon": 16.6015
+    },
+    {
+      "id": "junicupen",
+      "name": "Junicupen",
+      "place": "Uddevalla",
+      "edition": "2026",
+      "host": "junicupen.cupmanager.net",
+      "tournamentId": 69888831,
+      "beach": false,
+      "lat": 58.3498,
+      "lon": 11.9422
+    },
+    {
+      "id": "sundsvall",
+      "name": "GIF Sundsvall Cup",
+      "place": "Sundsvall",
+      "edition": "2026",
+      "host": "gifsundsvallcup.cupmanager.net",
+      "tournamentId": 61576575,
+      "beach": false,
+      "lat": 62.3908,
+      "lon": 17.3069
+    },
+    {
+      "id": "tyreso",
+      "name": "Tyresö Cup",
+      "place": "Tyresö",
+      "edition": "2026",
+      "host": "tyresocup.cupmanager.net",
+      "tournamentId": 65920031,
+      "beach": false,
+      "lat": 59.2489,
+      "lon": 18.2266
+    },
+    {
+      "id": "skuru",
+      "name": "Skurucupen",
+      "place": "Nacka",
+      "edition": "2026",
+      "host": "skurucupen.cupmanager.net",
+      "tournamentId": 72717882,
+      "beach": false,
+      "lat": 59.3103,
+      "lon": 18.1638
+    },
+    {
+      "id": "vikingaspelen",
+      "name": "Vikingaspelen",
+      "place": "Löddeköpinge",
+      "edition": "2026",
+      "host": "procup.se",
+      "dataUrl": "data/vikingaspelen-2026.json",
+      "beach": false,
+      "lat": 55.7967,
+      "lon": 13.1024
+    },
+    {
+      "id": "katrineholm",
+      "name": "Katrineholm Handboll Cup",
+      "place": "Katrineholm",
+      "edition": "2026",
+      "host": "procup.se",
+      "dataUrl": "data/katrineholm-2026.json",
+      "beach": false,
+      "lat": 58.9948,
+      "lon": 16.2110
     }
   ]
 }
