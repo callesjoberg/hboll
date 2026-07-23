@@ -121,6 +121,39 @@
       "beach": false,
       "lat": 57.7089,
       "lon": 11.9746
+    },
+    {
+      "id": "eken",
+      "name": "Eken Cup",
+      "place": "Stockholm",
+      "edition": "2026",
+      "host": "ekencup.cupmanager.net",
+      "tournamentId": 69947527,
+      "beach": false,
+      "lat": 59.2738,
+      "lon": 18.0870
+    },
+    {
+      "id": "orebro",
+      "name": "Örebrocupen Handboll",
+      "place": "Örebro",
+      "edition": "2026",
+      "host": "orebrohandboll.cupmanager.net",
+      "tournamentId": 72655435,
+      "beach": false,
+      "lat": 59.2741,
+      "lon": 15.2066
+    },
+    {
+      "id": "goteborgcup",
+      "name": "Göteborg Cup Handboll",
+      "place": "Göteborg",
+      "edition": "2026",
+      "host": "goteborgcup.cupmanager.net",
+      "tournamentId": 72459189,
+      "beach": false,
+      "lat": 57.7089,
+      "lon": 11.9746
     }
   ]
 }
