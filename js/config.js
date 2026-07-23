@@ -76,6 +76,21 @@ HB.CUPS = [
     beach: false,
     lat: 59.0646, lon: 15.1099,
   },
+  {
+    // "Gothia Result Web"-plattformen (delas med Gothia Cup), inte Cup
+    // Manager trots domänen — datan förhämtas av scripts/fetch_gothia.py.
+    // hasPlayoffs: true eftersom den skrapan (till skillnad från ProCup)
+    // bygger en riktig slutspelsstruktur.
+    id: "partille",
+    name: "Partille Cup",
+    place: "Partille",
+    edition: "2026",
+    host: "results.partillecup.com",
+    dataUrl: "data/partille-2026.json",
+    hasPlayoffs: true,
+    beach: false,
+    lat: 57.7395, lon: 12.1064,
+  },
 ];
 
 // Egna cuper som användaren lagt till via UI:t (sparas i localStorage).

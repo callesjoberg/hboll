@@ -165,6 +165,7 @@ window.HB = window.HB || {};
   // --- förhämtad data (ProCup-cuper utan API/CORS) -----------------------
 
   const localTables = {};   // cupId -> {divId: rows}
+  const localPlayoffs = {}; // cupId -> {catId: [{id, name, matches}]} (bara cuper som har det, se cup.hasPlayoffs)
   const localDataTs = {};   // cupId -> när skrapan senast kördes
 
   async function fetchLocal(cup) {
@@ -174,6 +175,7 @@ window.HB = window.HB || {};
     if (!r.ok) throw new Error("HTTP " + r.status);
     const j = await r.json();
     localTables[cup.id] = j.tables || {};
+    localPlayoffs[cup.id] = j.playoffs || {};
     localDataTs[cup.id] = j.ts || 0;
     return j.matches || [];
   }
@@ -336,7 +338,10 @@ window.HB = window.HB || {};
   // Alla slutspelsträd (Playoff-divisioner, t.ex. A-/B-/C-Slutspel) för en
   // kategori, i ett enda anrop. Tomt om kategorin saknar slutspel än.
   async function fetchPlayoffs(cup, categoryId, cacheable) {
-    if (cup.dataUrl) return []; // ProCup: slutspelsdata stöds inte ännu
+    // Bara några dataUrl-cuper (t.ex. Partille, skrapad av
+    // scripts/fetch_gothia.py) har en playoffs-struktur i sin JSON —
+    // ProCup-skrapan (fetch_procup.py) bygger ingen sådan än.
+    if (cup.dataUrl) return (localPlayoffs[cup.id] || {})[categoryId] || [];
     if (cacheable) {
       const cached = readSubCache(cup, "playoffs", categoryId);
       if (cached) return cached;

@@ -1,7 +1,8 @@
-/* export.js — CSV- och XLSX-export av matchlistan (samma urval som .ics).
-   XLSX skrivs för hand: en osminkad, okomprimerad (STORE) ZIP med minimal
-   OOXML-kalkylbladstruktur. Inga beroenden, samma no-build-filosofi som
-   resten av sajten. */
+/* export.js — CSV/XLSX/JSON/XML-export av matchlistan samt tabeller/slutspel
+   (Tabeller- och Slutspel-vyerna bygger sina egna fält/rader i app.js och
+   anropar de generiska *Table-funktionerna här). XLSX skrivs för hand: en
+   osminkad, okomprimerad (STORE) ZIP med minimal OOXML-kalkylbladstruktur.
+   Inga beroenden, samma no-build-filosofi som resten av sajten. */
 
 window.HB = window.HB || {};
 
@@ -25,15 +26,24 @@ window.HB = window.HB || {};
     return "spelad";
   }
 
-  // Delad radkälla för CSV och XLSX — ändra kolumner på ett ställe.
-  function rows(matches) {
-    const header = ["Datum", "Tid", "Klass", "Grupp", "Hemmalag", "Bortalag", "Resultat", "Plan"];
-    const body = matches.map((m) => {
+  // Delad fält-/raddefinition för matchlistan (Schema/Bana) — samma urval
+  // i alla format. "fields" är [{label, key}]: label = kolumnrubrik
+  // (CSV/XLSX), key = maskinvänligt namn (JSON-nyckel/XML-tagg).
+  const MATCH_FIELDS = [
+    { label: "Datum", key: "datum" }, { label: "Tid", key: "tid" },
+    { label: "Klass", key: "klass" }, { label: "Grupp", key: "grupp" },
+    { label: "Hemmalag", key: "hemmalag" }, { label: "Bortalag", key: "bortalag" },
+    { label: "Resultat", key: "resultat" }, { label: "Plan", key: "plan" },
+  ];
+
+  function matchRows(matches) {
+    return matches.map((m) => {
       const { date, time } = wallDateTime(m.start);
-      return [date, time, m.catName, m.divName, m.home.name, m.away.name,
-        resultText(m.res), m.arena];
+      return {
+        datum: date, tid: time, klass: m.catName, grupp: m.divName,
+        hemmalag: m.home.name, bortalag: m.away.name, resultat: resultText(m.res), plan: m.arena,
+      };
     });
-    return [header, ...body];
   }
 
   function triggerDownload(blob, filename) {
@@ -53,16 +63,62 @@ window.HB = window.HB || {};
     return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
 
-  function buildCsv(matches) {
-    // Semikolon som avgränsare — svensk Excel tolkar annars kommatecken som
-    // decimaltecken och klämmer ihop allt i en kolumn. BOM för rätt å/ä/ö.
-    const lines = rows(matches).map((r) => r.map(csvEscape).join(";"));
+  // Semikolon som avgränsare — svensk Excel tolkar annars kommatecken som
+  // decimaltecken och klämmer ihop allt i en kolumn. BOM för rätt å/ä/ö.
+  function buildCsvTable(fields, rows) {
+    const header = fields.map((f) => f.label);
+    const body = rows.map((r) => fields.map((f) => r[f.key]));
+    const lines = [header, ...body].map((r) => r.map(csvEscape).join(";"));
     return "﻿" + lines.join("\r\n") + "\r\n";
   }
 
+  function downloadCsvTable(fields, rows, filename) {
+    const blob = new Blob([buildCsvTable(fields, rows)], { type: "text/csv;charset=utf-8" });
+    triggerDownload(blob, filename);
+  }
+
+  function buildCsv(matches) { return buildCsvTable(MATCH_FIELDS, matchRows(matches)); }
   function downloadCsv(cup, matches, filename) {
-    const blob = new Blob([buildCsv(matches)], { type: "text/csv;charset=utf-8" });
-    triggerDownload(blob, filename || cup.id + "-schema.csv");
+    downloadCsvTable(MATCH_FIELDS, matchRows(matches), filename || cup.id + "-schema.csv");
+  }
+
+  // --- JSON --------------------------------------------------------------
+
+  function buildJsonTable(fields, rows) {
+    return JSON.stringify(rows.map((r) => {
+      const o = {};
+      for (const f of fields) o[f.key] = r[f.key];
+      return o;
+    }), null, 2);
+  }
+
+  function downloadJsonTable(fields, rows, filename) {
+    const blob = new Blob([buildJsonTable(fields, rows)], { type: "application/json;charset=utf-8" });
+    triggerDownload(blob, filename);
+  }
+
+  // --- XML -----------------------------------------------------------------
+
+  function xmlEscape(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function buildXmlTable(fields, rows, rootTag, rowTag) {
+    const body = rows.map((r) => {
+      const cells = fields.map((f) =>
+        "<" + f.key + ">" + xmlEscape(r[f.key]) + "</" + f.key + ">").join("");
+      return "<" + rowTag + ">" + cells + "</" + rowTag + ">";
+    }).join("");
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      "<" + rootTag + ">" + body + "</" + rootTag + ">";
+  }
+
+  function downloadXmlTable(fields, rows, rootTag, rowTag, filename) {
+    const blob = new Blob([buildXmlTable(fields, rows, rootTag, rowTag)],
+      { type: "application/xml;charset=utf-8" });
+    triggerDownload(blob, filename);
   }
 
   // --- XLSX: minimal ZIP (STORE) + OOXML --------------------------------------
@@ -149,9 +205,8 @@ window.HB = window.HB || {};
       { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   }
 
-  function xmlEscape(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  function xmlEscapeCell(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
   function colLetter(idx) {
@@ -168,7 +223,7 @@ window.HB = window.HB || {};
     const body = tableRows.map((row, ri) => {
       const cells = row.map((val, ci) =>
         '<c r="' + colLetter(ci) + (ri + 1) + '" t="inlineStr"><is><t xml:space="preserve">' +
-        xmlEscape(val) + "</t></is></c>").join("");
+        xmlEscapeCell(val) + "</t></is></c>").join("");
       return '<row r="' + (ri + 1) + '">' + cells + "</row>";
     }).join("");
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
@@ -189,32 +244,44 @@ window.HB = window.HB || {};
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
     "</Relationships>";
 
-  const WORKBOOK_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
-    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-    '<sheets><sheet name="Matcher" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  function workbookXml(sheetName) {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+      'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+      '<sheets><sheet name="' + xmlEscapeCell(sheetName) + '" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  }
 
   const WORKBOOK_RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
     "</Relationships>";
 
-  function buildXlsx(matches) {
+  function buildXlsxTable(fields, rows, sheetName) {
     const enc = new TextEncoder();
+    const header = fields.map((f) => f.label);
+    const body = rows.map((r) => fields.map((f) => r[f.key]));
     return zipStore([
       { name: "[Content_Types].xml", data: enc.encode(CONTENT_TYPES) },
       { name: "_rels/.rels", data: enc.encode(ROOT_RELS) },
-      { name: "xl/workbook.xml", data: enc.encode(WORKBOOK_XML) },
+      { name: "xl/workbook.xml", data: enc.encode(workbookXml(sheetName || "Blad1")) },
       { name: "xl/_rels/workbook.xml.rels", data: enc.encode(WORKBOOK_RELS) },
-      { name: "xl/worksheets/sheet1.xml", data: enc.encode(sheetXml(rows(matches))) },
+      { name: "xl/worksheets/sheet1.xml", data: enc.encode(sheetXml([header, ...body])) },
     ]);
   }
 
-  function downloadXlsx(cup, matches, filename) {
-    triggerDownload(buildXlsx(matches), filename || cup.id + "-schema.xlsx");
+  function downloadXlsxTable(fields, rows, filename, sheetName) {
+    triggerDownload(buildXlsxTable(fields, rows, sheetName), filename);
   }
 
-  HB.exportRows = rows;
-  HB.csv = { build: buildCsv, download: downloadCsv };
-  HB.xlsx = { build: buildXlsx, download: downloadXlsx };
+  function buildXlsx(matches) { return buildXlsxTable(MATCH_FIELDS, matchRows(matches), "Matcher"); }
+  function downloadXlsx(cup, matches, filename) {
+    downloadXlsxTable(MATCH_FIELDS, matchRows(matches), filename || cup.id + "-schema.xlsx", "Matcher");
+  }
+
+  HB.exportRows = matchRows;
+  HB.matchExportFields = MATCH_FIELDS;
+  HB.csv = { build: buildCsv, download: downloadCsv, buildTable: buildCsvTable, downloadTable: downloadCsvTable };
+  HB.xlsx = { build: buildXlsx, download: downloadXlsx, buildTable: buildXlsxTable, downloadTable: downloadXlsxTable };
+  HB.json = { buildTable: buildJsonTable, downloadTable: downloadJsonTable };
+  HB.xmlExport = { buildTable: buildXmlTable, downloadTable: downloadXmlTable };
 })();

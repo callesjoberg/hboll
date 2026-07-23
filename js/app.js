@@ -287,6 +287,21 @@ window.HB = window.HB || {};
     // av misstag när man går in och kollar saker under dagen — sparas
     // därför per cup precis som filtren själva, INTE bara för sessionen.
     filterLocked: false,
+    // Extra upplagor (tidigare år) vars matcher blandas in i den vanliga
+    // vyn OVANPÅ innevarande års live-data — tom = bara innevarande år,
+    // precis som idag. Sparas per cup (som cats/teams) eftersom det är en
+    // medveten "sök över flera år"-inställning man vill behålla, inte bara
+    // för sessionen. De faktiska matcherna cachas INTE i localStorage (för
+    // stora payloads) utan hämtas om vid varje sidladdning — statiska
+    // arkivfiler är billiga att hämta om (webbläsarens HTTP-cache räcker).
+    years: new Set(),
+    // Innevarande upplaga är förvald men går att stänga av separat (egen
+    // växel bredvid årsväljaren, inte en del av years-flervalet ovan) —
+    // annars fanns inget sätt att titta på ENBART tidigare år i
+    // huvudgränssnittet, bara via Historik-modalen.
+    includeCurrentYear: true,
+    yearMatches: {},         // "cupId:edition" -> {status, matches} (session, sparas ej)
+    archiveEditions: {},     // cupId -> {status, editions: [årtal, nyast först]} (session, sparas ej)
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -304,6 +319,7 @@ window.HB = window.HB || {};
     breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
     matchMinutes: +(localStorage.getItem("hb:matchMinutes") || 30), // schemarutans längd
     revealBatchSize: +(localStorage.getItem("hb:revealBatchSize") || 4), // "visa fler tidigare": antal per klick
+    recentMatchCount: +(localStorage.getItem("hb:recentMatchCount") || 2), // Bana/slutspelstabell: visa senast spelade N st
     advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
     showPlayoffProjection: localStorage.getItem("hb:showPlayoffProjection") === "on",
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
@@ -343,6 +359,7 @@ window.HB = window.HB || {};
     localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
     localStorage.setItem("hb:matchMinutes", String(state.matchMinutes));
     localStorage.setItem("hb:revealBatchSize", String(state.revealBatchSize));
+    localStorage.setItem("hb:recentMatchCount", String(state.recentMatchCount));
     localStorage.setItem("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
     localStorage.setItem("hb:showPlayoffProjection", state.showPlayoffProjection ? "on" : "off");
     localStorage.setItem("hb:fullCardColors", state.fullCardColors ? "on" : "off");
@@ -364,7 +381,8 @@ window.HB = window.HB || {};
     localStorage.setItem("hb:cup", state.cupId);
     localStorage.setItem(uiKey(), JSON.stringify({
       view: state.view, scope: state.scope, days: [...state.days],
-      cats: [...state.cats], teams: [...state.teams],
+      cats: [...state.cats], teams: [...state.teams], years: [...state.years],
+      includeCurrentYear: state.includeCurrentYear,
       arena: state.arena, viewArena: state.viewArena,
       sort: state.sort, timeOrder: state.timeOrder, matchFilter: state.matchFilter,
       filterLocked: state.filterLocked,
@@ -385,6 +403,8 @@ window.HB = window.HB || {};
     if (state.days.size) p.set("days", [...state.days].join(","));
     if (state.cats.size) p.set("cats", [...state.cats].join(","));
     if (state.teams.size) p.set("teams", [...state.teams].join(","));
+    if (state.years.size) p.set("years", [...state.years].join(","));
+    if (!state.includeCurrentYear) p.set("curYear", "0");
     if (state.arena) p.set("arena", state.arena);
     if (state.viewArena) p.set("viewArena", state.viewArena);
     if (state.sort !== "tid") p.set("sort", state.sort);
@@ -397,7 +417,8 @@ window.HB = window.HB || {};
 
   function loadUi() {
     state.view = "schema"; state.scope = "club"; state.days = new Set();
-    state.cats = new Set(); state.teams = new Set();
+    state.cats = new Set(); state.teams = new Set(); state.years = new Set();
+    state.includeCurrentYear = true;
     state.viewCats = new Set(); state.viewTeams = new Set();
     state.arena = ""; state.viewArena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
     state.timeOrder = "asc"; state.schemaOlderRevealCount = 0; state.filterLocked = false;
@@ -409,6 +430,8 @@ window.HB = window.HB || {};
       else if (typeof s.day === "string" && s.day !== "all") state.days = new Set([s.day]); // migrera gammalt format
       if (Array.isArray(s.cats)) state.cats = new Set(s.cats);
       if (Array.isArray(s.teams)) state.teams = new Set(s.teams);
+      if (Array.isArray(s.years)) state.years = new Set(s.years);
+      if (s.includeCurrentYear === false) state.includeCurrentYear = false;
       if (s.arena) state.arena = s.arena;
       if (s.viewArena) state.viewArena = s.viewArena;
       if (s.sort) state.sort = s.sort;
@@ -566,8 +589,70 @@ window.HB = window.HB || {};
 
   // --- härledningar ------------------------------------------------------
 
+  // Tillgängliga tidigare upplagor (år) för INNEVARANDE cup, ur det
+  // statiska arkivindexet (samma data/archive/index.json som Historik-
+  // modalen använder) — populerar årsväljaren i verktygsraden. Innevarande
+  // (live) upplaga filtreras bort här: den ingår redan alltid i
+  // allActiveMatches() utan att behöva kryssas i.
+  function ensureArchiveEditions() {
+    const cupId = state.cupId;
+    if (state.archiveEditions[cupId]) return;
+    state.archiveEditions[cupId] = { status: "loading", editions: [] };
+    HB.api.fetchArchiveIndex().then((idx) => {
+      const entry = idx[cupId];
+      const editions = ((entry && entry.editions) || [])
+        .map((e) => e.edition)
+        .filter((e) => e !== cup().edition)
+        .sort((a, b) => b.localeCompare(a, "sv", { numeric: true }));
+      state.archiveEditions[cupId] = { status: "done", editions };
+      render();
+    }).catch(() => {
+      state.archiveEditions[cupId] = { status: "done", editions: [] };
+      render();
+    });
+  }
+
+  // Hämtar en hel arkiverad upplagas matcher (en gång, cachas i minnet för
+  // sessionen) när den kryssas i årsväljaren. Nyckeln inkluderar cupId —
+  // annars skulle t.ex. "2024" för två olika cuper krocka i samma cache.
+  // Varje match stämplas med .edition så Schema/Tabeller/Slutspel kan
+  // visa/gruppera per år och skilja arkiverade divisioner/kategorier
+  // (som måste räknas fram lokalt, se ensureTable/ensurePlayoffs) från
+  // innevarande års live-hämtade (odefinierad .edition = live).
+  function ensureYearMatches(edition) {
+    const key = state.cupId + ":" + edition;
+    if (state.yearMatches[key]) return;
+    state.yearMatches[key] = { status: "loading", matches: [] };
+    HB.api.fetchArchiveEdition(state.cupId, edition).then((data) => {
+      const matches = ((data && data.matches) || []).map((m) => ({ ...m, edition }));
+      state.yearMatches[key] = { status: "done", matches };
+      render();
+    }).catch(() => {
+      state.yearMatches[key] = { status: "error", matches: [] };
+      render();
+    });
+  }
+
+  // Innevarande års live-matcher (state.matches) PLUS matcherna från varje
+  // extra år som kryssats i årsväljaren (state.years) — den kombinerade
+  // pool som scoped()/filtered()/divisionsToShow()/categoriesToShow() alla
+  // arbetar vidare på. Match-/kategori-/lag-ID:n krockar aldrig mellan år
+  // (verifierat mot faktisk arkivdata — Cup Manager delar ut nya ID:n varje
+  // upplaga), så poolen kan bara slås ihop rakt av utan omskrivning.
+  function allActiveMatches() {
+    const base = state.includeCurrentYear ? state.matches : [];
+    if (!state.years.size) return base;
+    const extra = [];
+    for (const edition of state.years) {
+      const ym = state.yearMatches[state.cupId + ":" + edition];
+      if (ym && ym.status === "done") extra.push(...ym.matches);
+    }
+    return extra.length ? base.concat(extra) : base;
+  }
+
   function scoped() {
-    return state.scope === "club" ? state.matches.filter(isClubMatch) : state.matches;
+    const pool = allActiveMatches();
+    return state.scope === "club" ? pool.filter(isClubMatch) : pool;
   }
 
   // Har användaren gjort ett AKTIVT val av klass(er), lag och/eller en
@@ -585,24 +670,38 @@ window.HB = window.HB || {};
     return state.cats.size > 0 || state.teams.size > 0 || !!state.q.trim();
   }
 
+  // Boolesk fritextsökning, delad av alla sökrutor (huvudsökrutan och
+  // klass/lag/år-väljarnas sökfält): "&" = OCH (alla termer i en grupp
+  // måste matcha), "/" eller "," = ELLER (någon grupp räcker). Ex:
+  // "2011&flickor/2013" matchar allt som innehåller ("2011" OCH "flickor")
+  // ELLER "2013".
+  function matchesBooleanQuery(haystack, query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const orGroups = q.split(/[/,]/).map((g) => g.trim()).filter(Boolean);
+    if (!orGroups.length) return true;
+    return orGroups.some((group) =>
+      group.split("&").map((t) => t.trim()).filter(Boolean).every((t) => haystack.includes(t)));
+  }
+
   // Matchar en match mot fritextsökningen (lag, plan, klass, grupp, omgång)
   // — delad av filtered() (Schema/Bana) och Tabeller/Slutspels egna
   // urvalsfunktioner (divisionsToShow/categoriesToShow) så att sökrutan
   // beter sig likadant i alla flikar i stället för att bara fungera i
   // Schema, trots att den syns i verktygsraden överallt.
   function matchesSearchQuery(m) {
-    const q = state.q.trim().toLowerCase();
-    if (!q) return true;
+    if (!state.q.trim()) return true;
     const hay = (m.home.name + " " + m.away.name + " " + m.arena + " " +
       m.catName + " " + m.divName + " " + m.roundName).toLowerCase();
-    return hay.includes(q);
+    return matchesBooleanQuery(hay, state.q);
   }
 
   // Ett gemensamt "vy-filter" (viewCats/viewTeams) — se state ovan.
   // isFilterLocked() delas mellan renderToolbar (som bygger låsknappen)
   // och Schema/Tabeller/Slutspel (som avgör om vy-filterraden ska visas).
   function hasLockableSelection() {
-    return state.days.size > 0 || state.cats.size > 0 || state.teams.size > 0;
+    return state.days.size > 0 || state.cats.size > 0 || state.teams.size > 0 ||
+      state.years.size > 0 || !state.includeCurrentYear;
   }
   function isFilterLocked() {
     return state.filterLocked && hasLockableSelection();
@@ -700,6 +799,7 @@ window.HB = window.HB || {};
         emptyLabel: "Visa: alla klasser",
         countLabel: (n) => n === 1 ? "Visar 1 klass" : "Visar " + n + " klasser",
         searchPlaceholder: "Sök klass …",
+        genderQuickSelect: true,
         onChange: () => { renderContent(); refreshViewTeamSlot(); },
       }));
     }
@@ -710,7 +810,11 @@ window.HB = window.HB || {};
 
   function clubTeams() {
     const map = new Map();
-    for (const m of state.matches) {
+    // allActiveMatches() (inte state.matches direkt) — annars skulle
+    // klubbens lagväljare fortsätta visa INNEVARANDE års lag även när man
+    // stängt av det (state.includeCurrentYear) och bara tittar på tidigare
+    // år, vilket hade räknat upp lag som inte ens spelar i den valda vyn.
+    for (const m of allActiveMatches()) {
       for (const side of [m.home, m.away]) {
         if (side.id && isClubName(side.name) && !map.has(side.id)) {
           map.set(side.id, {
@@ -900,8 +1004,11 @@ window.HB = window.HB || {};
   }
 
   function renderTabs() {
-    // Slutspelsdata finns bara för Cup Manager-cuper (inte ProCup/dataUrl).
-    const playoffsSupported = !cup().dataUrl;
+    // Slutspelsdata finns för Cup Manager-cuper och de dataUrl-cuper vars
+    // skrapa faktiskt bygger en playoffs-struktur (cup.hasPlayoffs, se
+    // scripts/fetch_gothia.py) — INTE ProCup (fetch_procup.py stödjer det
+    // inte än).
+    const playoffsSupported = !cup().dataUrl || !!cup().hasPlayoffs;
     if (!playoffsSupported && state.view === "slutspel") state.view = "schema";
     $$("#viewTabs .tab").forEach((b) => {
       const isPlayoffTab = b.dataset.view === "slutspel";
@@ -951,6 +1058,7 @@ window.HB = window.HB || {};
 
     const search = h("input", {
       class: "team-picker-search", type: "search", placeholder: opts.searchPlaceholder,
+      title: "Stöder & (och) och / eller , (eller), t.ex. 2011&flickor/2013",
     });
     const clearBtn = h("button", {
       class: "btn small", type: "button",
@@ -992,23 +1100,67 @@ window.HB = window.HB || {};
           onchange: (e) => {
             e.target.checked ? opts.selected.add(it.id) : opts.selected.delete(it.id);
             saveUi(); setSummary(); opts.onChange();
+            syncGenderBoxes();
           },
         });
         const row = h("label", { class: "team-picker-item" }, cb, it.label);
         row.dataset.name = it.sortName;
         row.dataset.catkey = String(it.sortKey);
         row.dataset.search = it.label.toLowerCase();
+        row._id = it.id; // rådata (kan vara nummer) — dataset tvingar sträng
+        row._checkbox = cb;
+        if (opts.genderQuickSelect) row.dataset.gender = (parseCat(it.label) || {}).g || "";
         return row;
       }));
 
+    // Snabbval Flickor/Pojkar (bara klassväljaren, se buildCatPicker): kryssar
+    // eller kryssar ur ALLA just nu SYNLIGA (sökfiltrerade) klasser av det
+    // könet i ett klick — praktiskt när t.ex. en sökning på "2013" ger
+    // träffar utspridda över flera år/åldrar och man bara vill ha
+    // flickornas eller bara pojkarnas av dem. Reflekterar aktuellt urval
+    // (ikryssad om ALLA synliga av könet redan är valda, streckad om BARA
+    // några är det) i stället för att vara en engångsknapp utan status.
+    let genderRow = null;
+    const syncGenderBoxes = () => {
+      if (!genderRow) return;
+      for (const g of ["F", "P"]) {
+        const box = genderRow.querySelector('input[data-gender-toggle="' + g + '"]');
+        const visible = [...list.children].filter((row) => !row.hidden && row.dataset.gender === g);
+        box.disabled = !visible.length;
+        const allSelected = visible.length > 0 && visible.every((row) => opts.selected.has(row._id));
+        box.checked = allSelected;
+        box.indeterminate = !allSelected && visible.some((row) => opts.selected.has(row._id));
+      }
+    };
+    if (opts.genderQuickSelect) {
+      genderRow = h("div", { class: "team-picker-gender-row" },
+        [["F", "Flickor"], ["P", "Pojkar"]].map(([g, label]) =>
+          h("label", { class: "team-picker-gender-item" },
+            h("input", {
+              type: "checkbox", "data-gender-toggle": g,
+              onchange: (e) => {
+                const visible = [...list.children].filter((row) => !row.hidden && row.dataset.gender === g);
+                for (const row of visible) {
+                  row._checkbox.checked = e.target.checked;
+                  e.target.checked ? opts.selected.add(row._id) : opts.selected.delete(row._id);
+                }
+                saveUi(); setSummary(); opts.onChange();
+                syncGenderBoxes();
+              },
+            }),
+            label)));
+    }
+
     search.addEventListener("input", () => {
-      const q = search.value.trim().toLowerCase();
-      for (const item of list.children) item.hidden = !!q && !item.dataset.search.includes(q);
+      const q = search.value;
+      for (const item of list.children) item.hidden = !matchesBooleanQuery(item.dataset.search, q);
+      syncGenderBoxes();
     });
+    syncGenderBoxes();
 
     dd.append(summary, h("div", { class: "team-picker-panel" },
       h("div", { class: "team-picker-search-row" }, withClearButton(search), clearBtn),
-      sortRow, list));
+      genderRow, sortRow, list));
     return dd;
   }
 
@@ -1049,7 +1201,52 @@ window.HB = window.HB || {};
       emptyLabel: "Alla klasser",
       countLabel: (n) => "Klasser (" + n + ")",
       searchPlaceholder: "Sök klass …",
+      genderQuickSelect: true,
       onChange: onChange || renderContent,
+    });
+  }
+
+  // Årsväljaren — flerval där INNEVARANDE upplaga är en vanlig kryssruta
+  // bland de arkiverade åren (inte en separat knapp bredvid) — kryssad som
+  // förval. De facto två olika lagringsplatser (state.includeCurrentYear
+  // för just den raden, state.years för resten) presenteras som EN
+  // sömlös lista genom yearSelectionProxy nedan, som efterliknar ett
+  // Set (size/has/add/delete/clear) men dirigerar innevarande upplagas
+  // id till den booleanen i stället för till Set:et — buildPicker() bryr
+  // sig aldrig om skillnaden. Kryssade år blandas in i hela appen (Schema/
+  // Tabeller/Slutspel) OVANPÅ (eller i stället för, om innevarande år
+  // kryssas ur) live-datan, se allActiveMatches().
+  //
+  // Till skillnad från dag-/klass-/lag-väljarna ovan (som håller sin egen
+  // <details> vid liv över ändringar) anropar onChange en full render()
+  // direkt — att ändra årsvalet kan ändra VILKA dagar/klasser/lag som ens
+  // finns att välja bland, vilket ändå kräver att hela verktygsraden byggs
+  // om. Känd konsekvens: dropdownen stängs efter varje enskilt årkryss
+  // (måste öppnas igen för nästa val) — en medveten avvägning för v1.
+  function buildYearPicker(editions, currentEdition) {
+    const yearSelectionProxy = {
+      get size() { return state.years.size + (state.includeCurrentYear ? 1 : 0); },
+      has: (id) => id === currentEdition ? state.includeCurrentYear : state.years.has(id),
+      add: (id) => { if (id === currentEdition) state.includeCurrentYear = true; else state.years.add(id); },
+      delete: (id) => { if (id === currentEdition) state.includeCurrentYear = false; else state.years.delete(id); },
+      clear: () => { state.years.clear(); state.includeCurrentYear = false; },
+    };
+    const items = [currentEdition, ...editions].map((y) => ({
+      id: y, label: y, sortKey: -Number(y) || 0, sortName: y,
+    }));
+    return buildPicker({
+      items,
+      selected: yearSelectionProxy,
+      emptyLabel: "Inga år valda",
+      // Standardläget (bara innevarande år) ska fortfarande läsas som
+      // "Innevarande år", inte det generiska "1 år" — annars ser den
+      // vanligaste inställningen ut som ett aktivt urval i onödan.
+      countLabel: (n) => (n === 1 && state.includeCurrentYear) ? "Innevarande år" : n + " år",
+      searchPlaceholder: "Sök år …",
+      onChange: () => {
+        for (const y of state.years) ensureYearMatches(y);
+        render();
+      },
     });
   }
 
@@ -1060,6 +1257,15 @@ window.HB = window.HB || {};
     bar.replaceChildren();
     if (!state.matches.length) return;
     const clubTeamsList = clubTeams();
+    ensureArchiveEditions();
+    const archiveEntry = state.archiveEditions[state.cupId];
+    const archiveYears = (archiveEntry && archiveEntry.editions) || [];
+    // state.years (vilka extra år som ska blandas in) sparas i localStorage
+    // och överlever en omladdning, men de FAKTISKA matcherna
+    // (state.yearMatches) gör det medvetet inte (se state-kommentaren) —
+    // så varje redan valt år måste hämtas om här. ensureYearMatches() är
+    // billig att anropa upprepade gånger (no-op om redan hämtat/hämtas).
+    for (const edition of state.years) ensureYearMatches(edition);
 
     // Hela verktygsraden går i en expanderbar meny — så att den kan
     // minimeras när man valt filter/sortering klart, i stället för att
@@ -1157,7 +1363,7 @@ window.HB = window.HB || {};
           state.matchFilter = v; saveUi(); render();
         })));
 
-    // Ett enda lås fryser dagar+klasser+lag TILLSAMMANS (till en chip
+    // Ett enda lås fryser år+dagar+klasser+lag TILLSAMMANS (till en chip
     // bredvid "Filter och sortering", se dd/lockSlot ovan) — tanken är att
     // man gör sin inställning en gång (t.ex. på morgonen) och sedan under
     // dagens återkommande snabbtitt inte råkar rubba den. Scope och
@@ -1165,6 +1371,15 @@ window.HB = window.HB || {};
     // grundinställningen som ska skyddas.
     function lockSummary() {
       const parts = [];
+      if (!state.includeCurrentYear) {
+        // Utan innevarande år (state.includeCurrentYear=false) blir "+"-
+        // prefixet missvisande (inget att lägga OVANPÅ) — lista bara åren.
+        const years = [...state.years].sort().reverse();
+        parts.push(years.length ? years.join(", ") : "inget år valt");
+      } else if (state.years.size) {
+        const years = [...state.years].sort().reverse();
+        parts.push("+" + (years.length <= 3 ? years.join(", ") : years.length + " extra år"));
+      }
       if (state.days.size) {
         const names = days.filter((d) => state.days.has(d))
           .map((d) => fmtDay.format(new Date(d + "T00:00:00Z")));
@@ -1199,7 +1414,9 @@ window.HB = window.HB || {};
     // placerad mitt i eller sist i en lång kedja av chips, och försvann
     // dessutom ur sikte så fort man fällde ihop panelen.
     const refreshLockSlot = () => {
-      if (days.length <= 1 && catEntries.length <= 1) { lockSlot.replaceChildren(); return; }
+      if (days.length <= 1 && catEntries.length <= 1 && !archiveYears.length) {
+        lockSlot.replaceChildren(); return;
+      }
       if (isFilterLocked()) {
         lockSlot.replaceChildren(
           // Nollställ vy-filtret (viewCats/viewTeams) vid upplåsning — annars
@@ -1235,9 +1452,15 @@ window.HB = window.HB || {};
     if (days.length > 1 || catEntries.length > 1) {
       const row = h("div", { class: "row" }, scopeSeg);
       if (!isLocked) {
-        row.append(
+        // Element.append() (till skillnad från h()) stringifierar null/
+        // undefined till en bokstavlig "null"-textnod i stället för att
+        // hoppa över dem — filtrera bort inaktuella delar (ingen arkiverad
+        // historik/en enda dag/en enda klass) innan de skickas in.
+        row.append(...[
+          archiveYears.length ? buildYearPicker(archiveYears, cup().edition) : null,
           days.length > 1 ? buildDayPicker(days, onTeamOrDayChange) : null,
-          catEntries.length > 1 ? buildCatPicker(catEntries, onCatChange) : null);
+          catEntries.length > 1 ? buildCatPicker(catEntries, onCatChange) : null,
+        ].filter((el) => el != null));
         refreshTeamRow();
         row.append(teamSlot);
       }
@@ -1245,7 +1468,9 @@ window.HB = window.HB || {};
       body.append(row);
     } else {
       if (!isLocked) refreshTeamRow();
-      body.append(h("div", { class: "row" }, scopeSeg, isLocked ? null : teamSlot,
+      body.append(h("div", { class: "row" }, scopeSeg,
+        (!isLocked && archiveYears.length) ? buildYearPicker(archiveYears, cup().edition) : null,
+        isLocked ? null : teamSlot,
         h("span", { class: "row-sep" }), statusSeg));
     }
 
@@ -1266,6 +1491,7 @@ window.HB = window.HB || {};
     const suggestions = [...suggestSet].sort((a, b) => a.localeCompare(b, "sv"));
     const searchInput = h("input", {
       class: "search", type: "search", placeholder: "Sök lag, plan, grupp …",
+      title: "Stöder & (och) och / eller , (eller), t.ex. 2011&flickor/2013",
       value: state.q, list: "search-suggestions",
       // renderContent() (inte render()) — annars byggs sökfältet om vid
       // varje tangenttryckning och tappar fokus/mobiltangentbordet.
@@ -1286,17 +1512,21 @@ window.HB = window.HB || {};
         h("option", { value: "" }, "Alla planer"),
         arenas.map((a) => h("option",
           { value: a, ...(state.arena === a ? { selected: "" } : {}) }, a))) : null,
-      h("select", {
+      // Sorteringsvalet och Äldst/Nyast-knappen styr bara sorted()/state.sort,
+      // som enbart renderSchema() läser — meningslösa (och missvisande, som
+      // om de skulle kunna omordna slutspelstabellen/standings) på övriga
+      // flikar, så de visas bara i Schema.
+      state.view === "schema" ? h("select", {
         class: "select", "aria-label": "Sortering",
         onchange: (e) => { state.sort = e.target.value; saveUi(); render(); },
       },
         [["tid", "Sortera: tid"], ["klass", "Sortera: klass"], ["plan", "Sortera: plan"],
          ["resultat", "Sortera: resultat"], ["mal", "Sortera: mål"]]
           .map(([v, l]) => h("option",
-            { value: v, ...(state.sort === v ? { selected: "" } : {}) }, l))),
+            { value: v, ...(state.sort === v ? { selected: "" } : {}) }, l))) : null,
       // Bara meningsfull för tidssortering — klass/plan/resultat-grupperingen
       // har ingen enskild kronologisk riktning att vända på.
-      state.sort === "tid" ? h("button", {
+      state.view === "schema" && state.sort === "tid" ? h("button", {
         class: "chip", type: "button",
         title: state.timeOrder === "desc"
           ? "Nyast/kommande överst — klicka för äldst överst"
@@ -1313,8 +1543,11 @@ window.HB = window.HB || {};
     ));
   }
 
-  // Exporterar exakt den synliga, filtrerade och sorterade listan — samma
-  // urval i alla tre format, inga dolda undantag.
+  // Exporterar exakt den synliga, filtrerade (och för Schema: sorterade)
+  // datan för den flik man står på — inga dolda undantag. Schema/Bana
+  // exporterar matchlistan (samma urval i alla format); Tabeller exporterar
+  // de tabeller som faktiskt visas; Slutspel exporterar den visade
+  // slutspelstabellen eller — om man väljer det — samtliga.
   function exportBaseName() {
     return cup().id + "-" + (state.scope === "club" ? "ahk" : "alla");
   }
@@ -1326,7 +1559,15 @@ window.HB = window.HB || {};
       class: "export-item", type: "button",
       onclick: () => { onClick(); dd.open = false; },
     }, label);
-    dd.append(summary, h("div", { class: "team-picker-panel export-panel" },
+    const panel = state.view === "tabeller" ? buildTablesExportPanel(item)
+      : state.view === "slutspel" ? buildPlayoffExportPanel(item)
+      : buildMatchExportPanel(item);
+    dd.append(summary, panel);
+    return dd;
+  }
+
+  function buildMatchExportPanel(item) {
+    return h("div", { class: "team-picker-panel export-panel" },
       item("📅 Kalender (.ics)", () => {
         const list = sorted(filtered());
         if (list.length) HB.ics.download(cup(), list, exportBaseName() + ".ics", state.matchMinutes);
@@ -1338,8 +1579,157 @@ window.HB = window.HB || {};
       item("CSV (.csv)", () => {
         const list = sorted(filtered());
         if (list.length) HB.csv.download(cup(), list, exportBaseName() + ".csv");
-      })));
-    return dd;
+      }),
+      item("JSON (.json)", () => {
+        const list = sorted(filtered());
+        if (list.length) HB.json.downloadTable(HB.matchExportFields, HB.exportRows(list), exportBaseName() + ".json");
+      }),
+      item("XML (.xml)", () => {
+        const list = sorted(filtered());
+        if (list.length) {
+          HB.xmlExport.downloadTable(HB.matchExportFields, HB.exportRows(list),
+            "matcher", "match", exportBaseName() + ".xml");
+        }
+      }));
+  }
+
+  const TABLE_EXPORT_FIELDS = [
+    { label: "Klass", key: "klass" }, { label: "Grupp", key: "grupp" },
+    { label: "#", key: "plac" }, { label: "Lag", key: "lag" },
+    { label: "S", key: "spelade" }, { label: "V", key: "vunna" },
+    { label: "O", key: "oavgjorda" }, { label: "F", key: "forlorade" },
+    { label: "+/-", key: "malskillnad" }, { label: "P", key: "poang" },
+  ];
+
+  // Samma divisioner som renderTables() faktiskt visar (divisionsToShow()),
+  // med samma tabelldata (state.tables, redan hämtad av renderTables) —
+  // ingen egen fetch, exporten är alltid i synk med det man ser på skärmen.
+  function tablesExportData() {
+    const rows = [];
+    for (const d of divisionsToShow()) {
+      const t = state.tables[d.id];
+      if (!t || t.status !== "done" || !t.rows.length) continue;
+      const klass = d.catName + (state.years.size ? " " + (d.edition || cup().edition) : "");
+      t.rows.forEach((r, i) => {
+        rows.push({
+          klass, grupp: d.name || "Grupp", plac: i + 1, lag: r.name,
+          spelade: r.played, vunna: r.won, oavgjorda: r.tied, forlorade: r.lost,
+          malskillnad: r.gf - r.ga, poang: r.points,
+        });
+      });
+    }
+    return { fields: TABLE_EXPORT_FIELDS, rows };
+  }
+
+  function buildTablesExportPanel(item) {
+    return h("div", { class: "team-picker-panel export-panel" },
+      item("📊 Kalkylark (.xlsx)", () => {
+        const { fields, rows } = tablesExportData();
+        if (rows.length) HB.xlsx.downloadTable(fields, rows, exportBaseName() + "-tabeller.xlsx", "Tabeller");
+      }),
+      item("CSV (.csv)", () => {
+        const { fields, rows } = tablesExportData();
+        if (rows.length) HB.csv.downloadTable(fields, rows, exportBaseName() + "-tabeller.csv");
+      }),
+      item("JSON (.json)", () => {
+        const { fields, rows } = tablesExportData();
+        if (rows.length) HB.json.downloadTable(fields, rows, exportBaseName() + "-tabeller.json");
+      }),
+      item("XML (.xml)", () => {
+        const { fields, rows } = tablesExportData();
+        if (rows.length) HB.xmlExport.downloadTable(fields, rows, "tabeller", "rad", exportBaseName() + "-tabeller.xml");
+      }));
+  }
+
+  const PLAYOFF_EXPORT_FIELDS = [
+    { label: "Klass", key: "klass" }, { label: "Slutspel", key: "slutspel" },
+    { label: "Omgång", key: "omgang" }, { label: "Nr", key: "nr" },
+    { label: "Hemmalag", key: "hemmalag" }, { label: "Bortalag", key: "bortalag" },
+    { label: "Resultat", key: "resultat" }, { label: "Tid", key: "tid" }, { label: "Bana", key: "bana" },
+  ];
+
+  // Vilken klass/division renderPlayoffs() just nu faktiskt visar — samma
+  // urvalslogik som där (state.playoffCatTab/state.playoffDivTab), men
+  // fristående av den fungerar oavsett om trädet eller tabellen är byggd.
+  function currentPlayoffSelection() {
+    const cats = categoriesToShow();
+    if (!cats.length) return null;
+    const selCat = cats.length > 1 ? (cats.find((c) => c.catId === state.playoffCatTab) || cats[0]) : cats[0];
+    const p = state.playoffs[selCat.catId];
+    if (!p || p.status !== "done" || !p.divisions.length) return { cat: selCat, div: null };
+    const selDiv = p.divisions.length > 1
+      ? (p.divisions.find((d) => d.id === state.playoffDivTab[selCat.catId]) || p.divisions[0])
+      : p.divisions[0];
+    return { cat: selCat, div: selDiv };
+  }
+
+  // Naturlig ordning (finalen överst) — samma princip som bracketTableBlock().
+  function playoffDivExportRows(cat, div) {
+    const klass = cat.catName + (state.years.size ? " " + (cat.edition || cup().edition) : "");
+    return groupPlayoffRounds(div).flatMap(([, ms]) => ms).reverse().map((m) => ({
+      klass, slutspel: div.name || "", omgang: m.roundName || "", nr: m.matchNr || "",
+      hemmalag: m.home.name || "TBD", bortalag: m.away.name || "TBD",
+      resultat: scoreText(m.res) || "",
+      tid: dayKeyFmt.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
+      bana: m.arena || "",
+    }));
+  }
+
+  function playoffExportData(scopeAll) {
+    let rows = [];
+    if (scopeAll) {
+      for (const cat of categoriesToShow()) {
+        const p = state.playoffs[cat.catId];
+        if (!p || p.status !== "done") continue;
+        for (const div of p.divisions) rows = rows.concat(playoffDivExportRows(cat, div));
+      }
+    } else {
+      const sel = currentPlayoffSelection();
+      if (sel && sel.div) rows = playoffDivExportRows(sel.cat, sel.div);
+    }
+    return { fields: PLAYOFF_EXPORT_FIELDS, rows };
+  }
+
+  // "Samtliga tabeller" kan innebära klasser vars slutspel aldrig hämtats
+  // (renderPlayoffs laddar bara den just visade klassen) — startar hämtning
+  // för alla och väntar kort in dem innan export, i stället för att tyst
+  // exportera ett ofullständigt urval.
+  async function ensureAllPlayoffsLoaded(cats) {
+    for (const cat of cats) ensurePlayoffs(cat.catId, cat.edition);
+    for (let i = 0; i < 50; i++) {
+      if (cats.every((cat) => state.playoffs[cat.catId] && state.playoffs[cat.catId].status !== "loading")) return;
+      await new Promise((res) => setTimeout(res, 200));
+    }
+  }
+
+  let exportPlayoffScope = "current"; // session, sparas ej — samma princip som bracketSort
+
+  function buildPlayoffExportPanel(item) {
+    const scopeBtnCurrent = h("button", { class: "chip", type: "button" }, "Visad tabell");
+    const scopeBtnAll = h("button", { class: "chip", type: "button" }, "Samtliga tabeller");
+    const syncScope = () => {
+      scopeBtnCurrent.classList.toggle("on", exportPlayoffScope === "current");
+      scopeBtnAll.classList.toggle("on", exportPlayoffScope === "all");
+    };
+    scopeBtnCurrent.onclick = () => { exportPlayoffScope = "current"; syncScope(); };
+    scopeBtnAll.onclick = () => { exportPlayoffScope = "all"; syncScope(); };
+    syncScope();
+    const run = async (fn) => {
+      const all = exportPlayoffScope === "all";
+      if (all) await ensureAllPlayoffsLoaded(categoriesToShow());
+      const { fields, rows } = playoffExportData(all);
+      if (rows.length) fn(fields, rows);
+    };
+    return h("div", { class: "team-picker-panel export-panel" },
+      h("div", { class: "team-picker-sort-row" }, scopeBtnCurrent, scopeBtnAll),
+      item("📊 Kalkylark (.xlsx)", () => run((fields, rows) =>
+        HB.xlsx.downloadTable(fields, rows, exportBaseName() + "-slutspel.xlsx", "Slutspel"))),
+      item("CSV (.csv)", () => run((fields, rows) =>
+        HB.csv.downloadTable(fields, rows, exportBaseName() + "-slutspel.csv"))),
+      item("JSON (.json)", () => run((fields, rows) =>
+        HB.json.downloadTable(fields, rows, exportBaseName() + "-slutspel.json"))),
+      item("XML (.xml)", () => run((fields, rows) =>
+        HB.xmlExport.downloadTable(fields, rows, "slutspel", "match", exportBaseName() + "-slutspel.xml"))));
   }
 
   // --- render: hero (nästa match) ------------------------------------------
@@ -1797,28 +2187,63 @@ window.HB = window.HB || {};
       m.catName ? h("span", { class: "arch-cat" }, HB.shortCat(m.catName)) : null);
   }
 
-  // Grupperar en arkiverad edition ALLA matcher (inte bara den sökta
-  // klubbens) för en given klass i slutspelsträd — samma divisionsform
+  // Grupperar en lista matcher per divId — samma divisionsform
   // ({id,name,matches}) som HB.api.fetchPlayoffs() ger live, så
   // bracketBlock/groupPlayoffRounds/drawBracketConnectors kan återanvändas
-  // rakt av. divType (satt av scripts/fetch_cupmanager.py sedan 2026-07)
-  // är det enda tillförlitliga sättet att skilja slutspel från
-  // gruppspel — roundRank kan vara 0 för båda.
-  function historicalPlayoffDivisions(matches, catName) {
+  // rakt av oavsett källa (arkiverad edition via historicalPlayoffDivisions
+  // nedan, ELLER ett extra år inblandat i huvudappen, se ensurePlayoffs()).
+  function groupPlayoffDivisionsById(matches) {
     const byDiv = new Map();
     for (const m of matches) {
-      if (m.divType !== "Playoff" || m.catName !== catName) continue;
       if (!byDiv.has(m.divId)) byDiv.set(m.divId, { id: m.divId, name: m.divName, matches: [] });
       byDiv.get(m.divId).matches.push(m);
     }
     return [...byDiv.values()].sort((a, b) => (a.name || "").localeCompare(b.name || "", "sv"));
   }
 
-  // Räknar fram gruppställning (S/V/O/F/mål/poäng) från arkiverade
-  // matchresultat — cupens EGNA slutgiltiga tabell arkiveras inte (bara
+  // Grupperar en arkiverad edition ALLA matcher (inte bara den sökta
+  // klubbens) för en given klass i slutspelsträd. divType (satt av
+  // scripts/fetch_cupmanager.py sedan 2026-07) är det enda tillförlitliga
+  // sättet att skilja slutspel från gruppspel — roundRank kan vara 0 för
+  // båda.
+  function historicalPlayoffDivisions(matches, catName) {
+    return groupPlayoffDivisionsById(
+      matches.filter((m) => m.divType === "Playoff" && m.catName === catName));
+  }
+
+  // Räknar fram gruppställning (S/V/O/F/mål/poäng) från matchresultat för
+  // EN division — cupens egen slutgiltiga tabell arkiveras inte (bara
   // matcherna), så det här är en lokal, förenklad rekonstruktion (2 poäng
   // vinst/1 oavgjort, standard i svensk ungdomshandboll) — kan skilja sig
   // från originalets exakta regler vid t.ex. inbördes möte-särskiljning.
+  // Delad av historicalGroupTables (Historik-modalen) och ensureTable()
+  // (huvudappens Tabeller-flik, för divisioner som hör till ett extra
+  // inblandat år i stället för innevarande live-upplaga).
+  function computeGroupTableRows(divMatches) {
+    const teams = new Map();
+    const ensure = (id, name) => {
+      if (!teams.has(id)) {
+        teams.set(id, { teamId: id, name, played: 0, won: 0, tied: 0, lost: 0, gf: 0, ga: 0 });
+      }
+      return teams.get(id);
+    };
+    for (const m of divMatches) {
+      if (!m.res || !m.res.fin || m.res.wo) continue;
+      if (m.home.id == null || m.away.id == null) continue;
+      const home = ensure(m.home.id, m.home.name), away = ensure(m.away.id, m.away.name);
+      home.played++; away.played++;
+      home.gf += m.res.hg || 0; home.ga += m.res.ag || 0;
+      away.gf += m.res.ag || 0; away.ga += m.res.hg || 0;
+      if (m.res.winner === "home") { home.won++; away.lost++; }
+      else if (m.res.winner === "away") { away.won++; home.lost++; }
+      else { home.tied++; away.tied++; }
+    }
+    const rows = [...teams.values()].map((t) => ({ ...t, points: t.won * 2 + t.tied }));
+    rows.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf ||
+      a.name.localeCompare(b.name, "sv"));
+    return rows;
+  }
+
   function historicalGroupTables(matches, catName) {
     const byDiv = new Map();
     for (const m of matches) {
@@ -1828,27 +2253,7 @@ window.HB = window.HB || {};
     }
     const tables = [];
     for (const d of byDiv.values()) {
-      const teams = new Map();
-      const ensure = (id, name) => {
-        if (!teams.has(id)) {
-          teams.set(id, { teamId: id, name, played: 0, won: 0, tied: 0, lost: 0, gf: 0, ga: 0 });
-        }
-        return teams.get(id);
-      };
-      for (const m of d.matches) {
-        if (!m.res || !m.res.fin || m.res.wo) continue;
-        if (m.home.id == null || m.away.id == null) continue;
-        const home = ensure(m.home.id, m.home.name), away = ensure(m.away.id, m.away.name);
-        home.played++; away.played++;
-        home.gf += m.res.hg || 0; home.ga += m.res.ag || 0;
-        away.gf += m.res.ag || 0; away.ga += m.res.hg || 0;
-        if (m.res.winner === "home") { home.won++; away.lost++; }
-        else if (m.res.winner === "away") { away.won++; home.lost++; }
-        else { home.tied++; away.tied++; }
-      }
-      const rows = [...teams.values()].map((t) => ({ ...t, points: t.won * 2 + t.tied }));
-      rows.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf ||
-        a.name.localeCompare(b.name, "sv"));
+      const rows = computeGroupTableRows(d.matches);
       if (rows.length) tables.push({ id: d.id, name: d.name, rows });
     }
     tables.sort((a, b) => (a.name || "").localeCompare(b.name || "", "sv"));
@@ -2366,6 +2771,11 @@ window.HB = window.HB || {};
     },
       h("div", { class: "match-head" },
         h("span", { class: "cat" }, HB.shortCat(m.catName)),
+        // m.edition är bara satt för matcher som blandats in från ett
+        // extra år (state.years, se allActiveMatches) — odefinierad för
+        // innevarande live-upplaga, som därför inte får någon badge (den
+        // gemensamma/underförstådda "vanliga" kortlayouten).
+        m.edition ? h("span", { class: "match-year-badge" }, m.edition) : null,
         m.divName ? h("span", { class: "div" }, m.divName) : null,
         m.roundName && m.roundName !== m.divName
           ? h("span", { class: "div" }, m.roundName) : null,
@@ -2537,7 +2947,11 @@ window.HB = window.HB || {};
         if (k !== lastKey || !sect) {
           lastKey = k;
           sect = h("div", { class: "slot-matches" });
-          wrap.append(k !== null ? h("h2", { class: "day-h" }, k) : null, sect);
+          // Samma Element.append()-fälla som ovan (stringifierar null till
+          // "null") — hoppa över rubriken helt i stället för att skicka in
+          // ett null-argument när "Sortera: mål" (ingen gruppering) är valt.
+          if (k !== null) wrap.append(h("h2", { class: "day-h" }, k));
+          wrap.append(sect);
         }
         const card = matchCard(m);
         card.prepend(h("div", { class: "when" },
@@ -2548,14 +2962,14 @@ window.HB = window.HB || {};
     }
   }
 
-  // Döljer gamla spelade matcher bakom en knapp, så en lång lista (en bana
-  // med hundratals matcher, ett fullt schema, en slutspelstabell med
-  // många klasser) blir överskådlig — behåller alltid ALLA kommande/
-  // pågående matcher plus spelade matcher från de senaste cutoffHours
-  // timmarna. revealExtra öppnar upp DE NÄRMAST cutoff (dvs de senast
-  // spelade av de gömda) — antingen ett fast antal i taget ("visa fler
-  // tidigare", schemat) eller Infinity ("visa alla", bana/slutspel).
-  const ARENA_RECENT_HOURS = 2; // bana/slutspelstabell: hur långt bakåt spelade matcher visas som standard
+  // Döljer gamla spelade matcher bakom en knapp, så en lång lista (ett fullt
+  // schema) blir överskådlig — behåller alltid ALLA kommande/pågående
+  // matcher plus spelade matcher från de senaste cutoffHours timmarna.
+  // revealExtra öppnar upp DE NÄRMAST cutoff (dvs de senast spelade av de
+  // gömda) — antingen ett fast antal i taget ("visa fler tidigare",
+  // schemat) eller Infinity ("visa alla"). Bana/slutspelstabellen använder
+  // i stället den antalsbaserade splitRecentPlayedByCount() nedan, se dess
+  // kommentar för varför.
 
   // "Visa fler/alla tidigare"-knapparna kan lägga till matcher antingen
   // OVANFÖR eller NEDANFÖR där man redan tittar, beroende på
@@ -2600,6 +3014,37 @@ window.HB = window.HB || {};
       onclick: () => preserveScrollOnExpand(onClick),
     }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
       cutoffHours + " tim visas alltid)");
+  }
+
+  // Antalsbaserad variant av splitRecentPlayed() — för Bana och slutspels-
+  // tabellen. Ett fast timfönster är opålitligt där: matchlängden varierar
+  // för mycket mellan cuper (korta beachmatcher kontra långa 11-manna-
+  // matcher) för att t.ex. "senaste 2 tim" ska ge samma antal synliga
+  // matcher överallt. Visar i stället alltid de N SENAST SPELADE matcherna
+  // (oavsett hur länge sedan de spelades) plus alla ännu ospelade — man
+  // ser matchflödet (senaste resultatet + vad som är på gång) lika bra på
+  // en kort som en lång cup. N styrs av inställningen state.recentMatchCount.
+  function splitRecentPlayedByCount(list, recentCount, revealExtra) {
+    const finished = [];
+    const rest = [];
+    for (const m of list) {
+      if (m.res && m.res.fin) finished.push(m); else rest.push(m);
+    }
+    finished.sort((a, b) => a.start - b.start);
+    const keep = revealExtra === Infinity ? finished.length : recentCount + revealExtra;
+    const always = finished.slice(Math.max(0, finished.length - keep));
+    const hiddenCount = finished.length - always.length;
+    const visible = [...always, ...rest].sort((a, b) => a.start - b.start);
+    return { visible, hiddenCount };
+  }
+
+  function showAllPlayedButtonCount(hiddenCount, recentCount, onClick) {
+    if (!hiddenCount) return null;
+    return h("button", {
+      class: "btn small show-all-played", type: "button",
+      onclick: () => preserveScrollOnExpand(onClick),
+    }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
+      recentCount + " visas alltid)");
   }
 
   // Samma idé men laddar bara BATCH matcher i taget (klicka flera gånger
@@ -2664,10 +3109,10 @@ window.HB = window.HB || {};
         "Inga matcher matchar filtret på " + state.viewArena + "."));
       return;
     }
-    const { visible, hiddenCount } = splitRecentPlayed(
-      list, ARENA_RECENT_HOURS, state.showAllPlayedArena ? Infinity : 0);
+    const { visible, hiddenCount } = splitRecentPlayedByCount(
+      list, state.recentMatchCount, state.showAllPlayedArena ? Infinity : 0);
     renderTimeline(main, visible);
-    const btn = showAllPlayedButton(hiddenCount, ARENA_RECENT_HOURS, () => {
+    const btn = showAllPlayedButtonCount(hiddenCount, state.recentMatchCount, () => {
       state.showAllPlayedArena = true; renderContent();
     });
     if (btn) main.append(btn);
@@ -2692,8 +3137,13 @@ window.HB = window.HB || {};
       if (m.divType === "Playoff") continue;
       if (!map.has(m.divId)) {
         map.set(m.divId, {
+          // edition: null för innevarande (live) upplaga, annars årtalet —
+          // avgör i renderTables()/ensureTable() om tabellen ska hämtas
+          // live från Cup Manager eller räknas fram lokalt ur redan
+          // inladdade arkivmatcher (samma divId-rymd krockar aldrig
+          // mellan upplagor, se allActiveMatches()).
           id: m.divId, name: m.divName, catId: m.catId, catName: m.catName,
-          ours: false,
+          edition: m.edition || null, ours: false,
         });
       }
       const d = map.get(m.divId);
@@ -2703,14 +3153,24 @@ window.HB = window.HB || {};
     if (state.scope === "club") divs = divs.filter((d) => d.ours);
     divs.sort((a, b) => catSortKey(a.catName) - catSortKey(b.catName) ||
       a.catName.localeCompare(b.catName, "sv") ||
+      (b.edition || "").localeCompare(a.edition || "") ||
       a.name.localeCompare(b.name, "sv", { numeric: true }));
     return divs;
   }
 
   let tableQueue = Promise.resolve();
 
-  function ensureTable(divId) {
+  function ensureTable(divId, edition) {
     if (state.tables[divId]) return;
+    if (edition) {
+      // Arkiverat år: all data redan hämtad (state.yearMatches), ingen
+      // fetch — cupens egen slutgiltiga tabell arkiveras inte (bara
+      // matcherna), så räkna fram den lokalt precis som Historik gör
+      // (computeGroupTableRows, delad med historicalGroupTables).
+      const divMatches = allActiveMatches().filter((m) => m.divId === divId);
+      state.tables[divId] = { status: "done", rows: computeGroupTableRows(divMatches) };
+      return;
+    }
     state.tables[divId] = { status: "loading", rows: [] };
     const complete = allMatchesFinished(state.matches.filter((m) => m.divId === divId));
     tableQueue = tableQueue.then(async () => {
@@ -2735,13 +3195,18 @@ window.HB = window.HB || {};
       main.append(h("div", { class: "banner" }, "Inga grupper att visa."));
       return;
     }
-    let lastCat = null;
+    let lastGroupKey = null;
     let groupEl = null;
     for (const d of divs) {
-      ensureTable(d.id);
-      if (d.catName !== lastCat) {
-        lastCat = d.catName;
-        main.append(h("h2", { class: "day-h" }, d.catName));
+      ensureTable(d.id, d.edition);
+      // Gruppnyckeln inkluderar årtal — annars skulle två olika års
+      // klasser med IDENTISKT namn (typ vuxenklasser utan födelseår i
+      // namnet) råka slås ihop under samma rubrik när flera år är aktiva.
+      const groupKey = d.catName + "|" + (d.edition || "");
+      if (groupKey !== lastGroupKey) {
+        lastGroupKey = groupKey;
+        const heading = d.catName + (state.years.size ? " · " + (d.edition || cup().edition) : "");
+        main.append(h("h2", { class: "day-h" }, heading));
         groupEl = h("div", { class: "table-group" });
         main.append(groupEl);
       }
@@ -2796,21 +3261,34 @@ window.HB = window.HB || {};
       if (!matchesViewFilter(m)) continue;
       if (!m.catId) continue;
       if (!map.has(m.catId)) {
-        map.set(m.catId, { catId: m.catId, catName: m.catName, ours: false });
+        // edition: se motsvarande kommentar i divisionsToShow().
+        map.set(m.catId, { catId: m.catId, catName: m.catName, edition: m.edition || null, ours: false });
       }
       if (isClubMatch(m)) map.get(m.catId).ours = true;
     }
     let cats = [...map.values()];
     if (state.scope === "club") cats = cats.filter((c) => c.ours);
     cats.sort((a, b) => catSortKey(a.catName) - catSortKey(b.catName) ||
-      a.catName.localeCompare(b.catName, "sv"));
+      a.catName.localeCompare(b.catName, "sv") ||
+      (b.edition || "").localeCompare(a.edition || ""));
     return cats;
   }
 
   let playoffQueue = Promise.resolve();
 
-  function ensurePlayoffs(catId) {
+  function ensurePlayoffs(catId, edition) {
     if (state.playoffs[catId]) return;
+    if (edition) {
+      // Arkiverat år: matcherna är redan hämtade (state.yearMatches) och
+      // bär redan roundRank/matchRank/nextWinnerId/nextLoserId — samma
+      // fält HB.api.fetchPlayoffs() ger live — så trädet kan byggas lokalt
+      // utan ny fetch, med samma gruppering (groupPlayoffDivisionsById)
+      // som Historik-modalen använder.
+      const catMatches = allActiveMatches()
+        .filter((m) => m.catId === catId && m.divType === "Playoff");
+      state.playoffs[catId] = { status: "done", divisions: groupPlayoffDivisionsById(catMatches) };
+      return;
+    }
     state.playoffs[catId] = { status: "loading", divisions: [] };
     const complete = allMatchesFinished(
       state.matches.filter((m) => m.catId === catId && m.divType === "Playoff"));
@@ -3158,6 +3636,10 @@ window.HB = window.HB || {};
   let bracketSort = null;
 
   const BRACKET_SORT_COLS = {
+    // roundRank: lägre = senare omgång (finalen = 0) — se groupPlayoffRounds().
+    // Stigande sortering på detta ger alltså finalen överst, samma ordning
+    // som det naturliga (ej klickade) läget nedan.
+    omgang: (m) => m.roundRank * 1000 + (m.matchRank || 0),
     nr: (m) => m.matchNr || "",
     lag: (m) => (m.home.name || "").toLowerCase(),
     resultat: (m) => (m.res && m.res.fin && !m.res.wo) ? (m.res.hg || 0) + (m.res.ag || 0) : -1,
@@ -3179,20 +3661,26 @@ window.HB = window.HB || {};
   // "Avancerad tabell": samma slutspelsmatcher som bracketBlock, men som en
   // radbaserad tabell med tid/plan — mer detaljer och lättare att scrolla
   // på smala skärmar än trädets sidledes kolumner. Kolumnrubrikerna är
-  // klickbara och sorterar (klick igen växlar riktning; "Omgång" återgår
-  // till trädets naturliga ordning).
+  // klickbara och sorterar (klick igen växlar riktning). "Omgång" är
+  // förvalt (utan att en egen sortering behöver klickas fram) i samma
+  // ordning som trädet fast omvänd — finalen överst.
   function bracketTableBlock(div, projMap) {
-    const allRows = sortBracketRows(groupPlayoffRounds(div).flatMap(([, ms]) => ms));
-    const { visible: rows, hiddenCount } = splitRecentPlayed(
-      allRows, ARENA_RECENT_HOURS, state.showAllPlayedBracket ? Infinity : 0);
+    const allRows = groupPlayoffRounds(div).flatMap(([, ms]) => ms);
+    const { visible: splitRows, hiddenCount } = splitRecentPlayedByCount(
+      allRows, state.recentMatchCount, state.showAllPlayedBracket ? Infinity : 0);
+    // splitRecentPlayedByCount sorterar alltid kronologiskt stigande internt
+    // (för att avgöra äldst/nyast) — den egentliga sorteringen (bracketSort,
+    // eller naturlig omgångsordning) måste därför läggas på EFTER, annars
+    // skrivs den över och kolumnklick/riktningsbyten ser ut att inte ha
+    // någon effekt.
+    const rows = bracketSort ? sortBracketRows(splitRows) : [...splitRows].reverse();
     const headerCell = (label, col, wide) => {
-      const active = col ? bracketSort && bracketSort.col === col : !bracketSort;
+      const active = bracketSort ? bracketSort.col === col : col === "omgang";
       return h("th", {
         class: (wide ? "l " : "") + "bracket-th-sort" + (active ? " on" : ""),
         role: "button", tabindex: "0",
         onclick: () => {
-          if (!col) { bracketSort = null; }
-          else if (bracketSort && bracketSort.col === col) { bracketSort.dir *= -1; }
+          if (bracketSort && bracketSort.col === col) { bracketSort.dir *= -1; }
           else { bracketSort = { col, dir: 1 }; }
           renderContent();
         },
@@ -3205,7 +3693,7 @@ window.HB = window.HB || {};
       h("h3", null, div.name),
       h("table", { class: "standings bracket-table" },
         h("thead", null, h("tr", null,
-          headerCell("Omgång", null, true),
+          headerCell("Omgång", "omgang", true),
           headerCell("Nr", "nr"),
           headerCell("Lag", "lag", true),
           headerCell("Resultat", "resultat"),
@@ -3240,7 +3728,7 @@ window.HB = window.HB || {};
             h("td", null, fmtTime.format(new Date(m.start))),
             h("td", null, m.arena || ""));
         }))),
-      showAllPlayedButton(hiddenCount, ARENA_RECENT_HOURS, () => {
+      showAllPlayedButtonCount(hiddenCount, state.recentMatchCount, () => {
         state.showAllPlayedBracket = true; renderContent();
       }));
   }
@@ -3267,6 +3755,10 @@ window.HB = window.HB || {};
       selCat = cats.find((c) => c.catId === state.playoffCatTab) || cats[0];
     }
 
+    // Klass-etiketten får ett årtal på slutet så fort mer än innevarande
+    // år är inblandat (state.years) — annars kan t.ex. "Damer Elit" 2024
+    // och 2025 se ut som samma alternativ i listan.
+    const catLabel = (c) => c.catName + (state.years.size ? " · " + (c.edition || cup().edition) : "");
     if (cats.length > 1) {
       main.append(h("div", { class: "row" },
         h("select", {
@@ -3274,22 +3766,22 @@ window.HB = window.HB || {};
           onchange: (e) => { state.playoffCatTab = +e.target.value; renderContent(); },
         }, cats.map((c) => h("option", {
           value: String(c.catId), ...(c.catId === selCat.catId ? { selected: "" } : {}),
-        }, c.catName)))));
+        }, catLabel(c))))));
     }
     let any = false, anyLoading = false;
     const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
     const c = selCat;
-    ensurePlayoffs(c.catId);
+    ensurePlayoffs(c.catId, c.edition);
     const p = state.playoffs[c.catId];
     if (!p || p.status === "loading") {
       anyLoading = true;
-      main.append(h("h2", { class: "day-h" }, c.catName),
+      main.append(h("h2", { class: "day-h" }, catLabel(c)),
         h("p", { class: "muted" }, "Hämtar slutspel …"));
     } else if (p.status === "error" || !p.divisions.length) {
       // inget slutspel ännu — hoppa tyst
     } else {
       any = true;
-      main.append(h("h2", { class: "day-h" }, c.catName));
+      main.append(h("h2", { class: "day-h" }, catLabel(c)));
 
       // Flera slutspelsträd i samma klass (A-/B-/C-Slutspel) visas som
       // flikar i stället för alla staplade ovanpå varandra — bara den
@@ -3313,7 +3805,7 @@ window.HB = window.HB || {};
       // rad ovanför — en tunn vertikal avdelare (.row-sep, bara när det
       // faktiskt finns flikar att skilja från) visar att de hör till en
       // annan kategori, utan att pressas hela vägen till högerkanten.
-      main.append(h("div", { class: "row" }, divTabs, divTabs ? h("span", { class: "row-sep" }) : null,
+      main.append(h("div", { class: "row playoff-tabs-row" }, divTabs, divTabs ? h("span", { class: "row-sep" }) : null,
         h("div", { class: "seg-group" },
           h("div", { class: "seg", role: "group", "aria-label": "Slutspelsvy" },
             chip("Träd", !state.advancedPlayoffTable, () => {
@@ -3340,14 +3832,18 @@ window.HB = window.HB || {};
               onclick: () => { state.bracketZoom = Math.min(3, +(state.bracketZoom + 0.2).toFixed(2)); renderContent(); },
             }, "+")) : null)));
 
+      // Prognosen bygger på ANNU OSPELADE mötens sannolika utgång — inget
+      // ett arkiverat (avslutat) år har, och ensureGroupTables() skulle
+      // ändå fråga live-API:t om en kategori som inte finns i innevarande
+      // tournamentId. Bara meningsfull/möjlig för innevarande upplaga.
       let gd = null;
-      if (state.showPlayoffProjection) {
+      if (state.showPlayoffProjection && !c.edition) {
         ensureGroupTables(c.catId);
         const gt = state.groupTables[c.catId];
         if (gt && gt.status === "done") gd = gt;
       }
       const projMap = gd ? buildPlayoffProjection(selDiv, gd) : null;
-      if (state.showPlayoffProjection && state.groupTables[c.catId] &&
+      if (state.showPlayoffProjection && !c.edition && state.groupTables[c.catId] &&
           state.groupTables[c.catId].status === "loading") {
         main.append(h("p", { class: "muted" }, "Hämtar tabeller för prognosen …"));
       }
@@ -3624,6 +4120,15 @@ window.HB = window.HB || {};
       renderContent();
     });
 
+    const recentMatchCountInput = $("#recentMatchCountInput");
+    recentMatchCountInput.value = state.recentMatchCount;
+    recentMatchCountInput.addEventListener("change", () => {
+      state.recentMatchCount = Math.max(1, +recentMatchCountInput.value || 2);
+      recentMatchCountInput.value = state.recentMatchCount;
+      saveSettings();
+      renderContent();
+    });
+
     // advancedPlayoffTable kan numera ändras utanför dialogen (snabbväxlingen
     // i slutspelsvyn) — synka kryssrutan mot state igen varje gång dialogen
     // öppnas, annars kan den visa fel läge efter en sådan ändring.
@@ -3724,6 +4229,8 @@ window.HB = window.HB || {};
       if (params.get("days")) state.days = new Set(params.get("days").split(","));
       if (params.get("cats")) state.cats = new Set(params.get("cats").split(",").map(toId));
       if (params.get("teams")) state.teams = new Set(params.get("teams").split(",").map(toId));
+      if (params.get("years")) state.years = new Set(params.get("years").split(","));
+      if (params.get("curYear") === "0") state.includeCurrentYear = false;
       if (params.get("arena")) state.arena = params.get("arena");
       if (params.get("viewArena")) state.viewArena = params.get("viewArena");
       if (params.get("sort")) state.sort = params.get("sort");

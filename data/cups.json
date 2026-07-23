@@ -67,6 +67,18 @@
       "lon": 15.1099
     },
     {
+      "id": "partille",
+      "name": "Partille Cup",
+      "place": "Partille",
+      "edition": "2026",
+      "host": "results.partillecup.com",
+      "dataUrl": "data/partille-2026.json",
+      "hasPlayoffs": true,
+      "beach": false,
+      "lat": 57.7395,
+      "lon": 12.1064
+    },
+    {
       "id": "skadevi",
       "name": "Skadevi Handbollscup",
       "place": "Skövde",

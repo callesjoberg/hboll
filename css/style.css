@@ -408,6 +408,22 @@ header.top {
 
 .team-picker-sort-row { display: flex; gap: 6px; }
 
+/* Snabbval Flickor/Pojkar — bara klassväljaren (buildPicker med
+   opts.genderQuickSelect, se js/app.js). Egen rad ovanför sorteringen så
+   den inte blandas ihop med "Sortera: klass/namn"-kontrollerna. */
+.team-picker-gender-row { display: flex; gap: 12px; padding: 2px 2px 4px; }
+
+.team-picker-gender-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.team-picker-gender-item input[disabled] { opacity: 0.4; cursor: default; }
+
 .team-picker-list {
   display: grid;
   gap: 2px;
@@ -433,7 +449,10 @@ header.top {
 
 .team-picker-item input { flex-shrink: 0; }
 
-.export-dd .export-panel { width: 200px; padding: 6px; gap: 2px; }
+.export-dd .export-panel { width: 240px; max-width: calc(100vw - 40px); padding: 6px; gap: 2px; }
+/* Slutspel-exportens "Visad tabell"/"Samtliga tabeller"-väljare — kan bli
+   trängre än de vanliga formatknapparna, får wrappa om panelen är smal. */
+.export-panel .team-picker-sort-row { flex-wrap: wrap; padding: 0 2px 4px; }
 
 .export-item {
   display: block;
@@ -812,6 +831,17 @@ input[type="search"]::-webkit-search-cancel-button {
   font-weight: 600;
   color: var(--blue);
   letter-spacing: 0.04em;
+}
+
+/* Syns bara på matcher som blandats in från ett extra år (årsväljaren i
+   verktygsraden, se allActiveMatches()/matchCard() i js/app.js) — märker
+   ut att just den här matchen INTE är från innevarande upplaga. */
+.match-year-badge {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-weight: 600;
 }
 
 .outcome-badge {
@@ -1619,7 +1649,12 @@ dialog.history-dialog {
 .bracket-box.panning { cursor: grabbing; user-select: none; }
 :root.bracket-panning { cursor: grabbing; }
 
-.playoff-div-tabs { margin: 4px 0 12px; }
+/* Ingen egen margin på divTabs — en asymmetrisk topp-/bottenmargin på ETT
+   flex-item i .playoff-tabs-row (align-items:center) trycker isär dess
+   marginbox från syskonens, så Träd/Tabell-växlaren hamnade synligt några
+   pixlar lägre än A-/B-/C-Slutspel-flikarna trots att båda är lika höga.
+   Mellanrummet till innehållet under läggs i stället på hela raden. */
+.playoff-tabs-row { margin-bottom: 12px; }
 
 .bracket-box h3 {
   margin: 0 0 14px;

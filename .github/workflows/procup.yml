@@ -20,6 +20,8 @@ jobs:
           python-version: "3.12"
       - name: Skrapa ProCup
         run: python3 scripts/fetch_procup.py
+      - name: Skrapa Gothia Result Web-cuper (Partille m.fl.)
+        run: python3 scripts/fetch_gothia.py
       - name: Snapshotta Cup Manager-cuperna
         run: python3 scripts/fetch_cupmanager.py
       - name: Arkivera årets resultat (för jämförelse mellan år)
