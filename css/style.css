@@ -259,10 +259,30 @@ header.top {
    man valt klart, i stället för att permanent ta plats i schemat. */
 .toolbar-collapse { display: grid; }
 
+/* Summary-elementet är nu bara en flex-rad som håller ihop TVÅ separata
+   piller — etiketten (.toolbar-summary-label) och låskontrollen (lockSlot
+   i renderToolbar, se dess egen "🔒 Lås"-knapp/chip-styling) — i stället
+   för att vara EN stor pill. Det gör att låsknappen alltid syns direkt
+   bredvid "Filter och sortering", oavsett om panelen är öppen eller
+   stängd, utan de layoutproblem det gav att placera den som en extern
+   syskon-flexrad till hela <details>-elementet (som kan bli mycket högt
+   när panelen är öppen). Låsknappen ligger INUTI <summary> men stoppar
+   sin egen click-propagation (se renderToolbar) så den inte råkar
+   trigga details-togglen när man klickar den. */
 .toolbar-summary {
   cursor: pointer;
   list-style: none;
   user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-summary::-webkit-details-marker { display: none; }
+.toolbar-summary::marker { content: ""; }
+
+.toolbar-summary-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -276,17 +296,14 @@ header.top {
   width: fit-content;
 }
 
-.toolbar-summary::-webkit-details-marker { display: none; }
-.toolbar-summary::marker { content: ""; }
-
-.toolbar-summary::after {
+.toolbar-summary-label::after {
   content: "▾";
   font-size: 10px;
   color: var(--ink-soft);
   transition: transform 0.15s ease;
 }
 
-.toolbar-collapse[open] .toolbar-summary::after { transform: rotate(180deg); }
+.toolbar-collapse[open] .toolbar-summary-label::after { transform: rotate(180deg); }
 
 .toolbar-body {
   display: grid;
@@ -439,19 +456,17 @@ header.top {
 .seg .chip:first-child { border-radius: 999px 0 0 999px; }
 .seg .chip:last-child { border-radius: 0 999px 999px 0; border-left: none; }
 
-/* Klubbnamn kan vara långa och variera i längd — i stället för att
-   radbryta verktygsraden till två rader låser vi den till en rad som
-   scrollar i sidled när innehållet inte får plats. */
-.scope-row {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 2px;
-}
+/* Generisk hjälpklass: en tunn vertikal linje mellan två grupper av
+   kontroller på samma rad — t.ex. mellan filterkedjan och matchstatus
+   (alla/kommande/spelade) i renderToolbar, eller mellan A-/B-/C-Slutspel-
+   flikarna och träd/tabell+zoom. Visar att det som följer hör till en
+   annan kategori utan att pressas hela vägen till radens högerkant (såg
+   obalanserat ut med stort tomrum framför på breda skärmar). align-self:
+   stretch gör att linjen matchar höjden på flexradens övriga chips/segs.
+   Radbryter raden hamnar den bara tyst i övergången, ingen egen rad. */
+.row-sep { align-self: stretch; width: 1px; margin: 2px 4px; background: var(--ink-soft); opacity: 0.5; }
 
-.scope-row .seg + .seg { margin-left: auto; }
+.seg-group { display: flex; align-items: center; gap: 6px; }
 
 .tools-row { gap: 8px; }
 
@@ -488,6 +503,13 @@ header.top {
   flex: 1 1 auto;
   min-width: 0;
 }
+
+/* Huvudsökrutan i verktygsraden behöver inte fylla ut hela radens bredd
+   (till skillnad från sökfälten inuti dropdown-panelerna, som SKA fylla
+   sin panel) — kortare låter plan-/sorterings-/exportkontrollerna som
+   följer sitta naturligt bredvid i stället för att tryckas långt ut åt
+   höger av en onödigt bred, mest tom sökruta. */
+.tools-row .search-wrap { flex: 0 1 240px; }
 
 .search-wrap input { width: 100%; padding-right: 26px; box-sizing: border-box; }
 
@@ -531,6 +553,8 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .btn:hover { border-color: var(--blue); }
 .btn.small { padding: 2px 8px; font-size: 12px; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.btn[disabled]:hover { border-color: var(--line); }
 
 .show-all-played { display: block; margin: 12px auto 0; }
 

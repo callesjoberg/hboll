@@ -263,6 +263,14 @@ window.HB = window.HB || {};
     days: new Set(),         // tom = alla dagar
     cats: new Set(),
     teams: new Set(),
+    // Ytterligare avsmalning OVANPÅ bas-filtret (cats/teams), bara för att
+    // styra vad som VISAS i Schema/Tabeller/Slutspel — inte en del av
+    // bas-urvalet. Tänkt för när bas-filtret är låst (se filterLocked
+    // nedan): fyller det tomrum som annars uppstår när verktygsradens
+    // egna klass-/lagväljare göms bort, så man kan bläddra inom sitt
+    // låsta urval utan att låsa upp det. Session, sparas ej.
+    viewCats: new Set(),
+    viewTeams: new Set(),
     arena: "",
     viewArena: "",           // vald bana i Bana-fliken (separat från arena-filtret ovan)
     q: "",
@@ -274,6 +282,11 @@ window.HB = window.HB || {};
     bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
     playoffDivTab: {},       // catId -> vald slutspelsdivision (A-/B-/C-Slutspel) när en klass har flera (session, sparas ej)
     playoffCatTab: null,     // vald klass i Slutspel-vyn när fler än en klass är filtrerad fram (session, sparas ej)
+    // Fryser dagar/klasser/lag (fälls ihop till en chip bredvid "Filter och
+    // sortering", se renderToolbar) så att morgonens inställning inte rubbas
+    // av misstag när man går in och kollar saker under dagen — sparas
+    // därför per cup precis som filtren själva, INTE bara för sessionen.
+    filterLocked: false,
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -354,6 +367,7 @@ window.HB = window.HB || {};
       cats: [...state.cats], teams: [...state.teams],
       arena: state.arena, viewArena: state.viewArena,
       sort: state.sort, timeOrder: state.timeOrder, matchFilter: state.matchFilter,
+      filterLocked: state.filterLocked,
     }));
     syncUrl();
   }
@@ -384,8 +398,9 @@ window.HB = window.HB || {};
   function loadUi() {
     state.view = "schema"; state.scope = "club"; state.days = new Set();
     state.cats = new Set(); state.teams = new Set();
+    state.viewCats = new Set(); state.viewTeams = new Set();
     state.arena = ""; state.viewArena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
-    state.timeOrder = "asc"; state.schemaOlderRevealCount = 0;
+    state.timeOrder = "asc"; state.schemaOlderRevealCount = 0; state.filterLocked = false;
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
@@ -400,6 +415,7 @@ window.HB = window.HB || {};
       if (s.timeOrder === "desc") state.timeOrder = "desc";
       if (["all", "upcoming", "played"].includes(s.matchFilter)) state.matchFilter = s.matchFilter;
       else if (s.played === false) state.matchFilter = "upcoming"; // migrera gammal boolean
+      if (s.filterLocked) state.filterLocked = true;
     } catch { /* trasig state: kör default */ }
   }
 
@@ -554,15 +570,142 @@ window.HB = window.HB || {};
     return state.scope === "club" ? state.matches.filter(isClubMatch) : state.matches;
   }
 
-  // Har användaren gjort ett AKTIVT val av klass(er) och/eller lag? Styr om
-  // Schema/Tabeller/Slutspel visar sitt fulla innehåll — annars skulle appen
-  // by default rendera samtliga klasser/lag/tabeller/slutspelsträd för hela
-  // klubben (eller hela cupen), vilket är onödigt tungt och sällan det man
-  // faktiskt vill se. Bana-fliken har redan sin egen motsvarande spärr
-  // (kräver en vald bana) och Hero-kortet (nästa match) är en lättviktig
-  // teaser som ska synas oavsett — bara de fulla listorna/tabellerna spärras.
+  // Har användaren gjort ett AKTIVT val av klass(er), lag och/eller en
+  // fritextsökning? Styr om Schema/Tabeller/Slutspel visar sitt fulla
+  // innehåll — annars skulle appen by default rendera samtliga klasser/
+  // lag/tabeller/slutspelsträd för hela klubben (eller hela cupen), vilket
+  // är onödigt tungt och sällan det man faktiskt vill se. Bana-fliken har
+  // redan sin egen motsvarande spärr (kräver en vald bana) och Hero-kortet
+  // (nästa match) är en lättviktig teaser som ska synas oavsett — bara de
+  // fulla listorna/tabellerna spärras. Fritextsökningen räknades tidigare
+  // INTE som ett aktivt val här — man kunde skriva ett lagnamn i sökrutan
+  // utan att kryssa någon klass/lag och bara få tomt/"välj klass"-meddelan-
+  // det tillbaka, trots träffar.
   function hasFilterSelection() {
-    return state.cats.size > 0 || state.teams.size > 0;
+    return state.cats.size > 0 || state.teams.size > 0 || !!state.q.trim();
+  }
+
+  // Matchar en match mot fritextsökningen (lag, plan, klass, grupp, omgång)
+  // — delad av filtered() (Schema/Bana) och Tabeller/Slutspels egna
+  // urvalsfunktioner (divisionsToShow/categoriesToShow) så att sökrutan
+  // beter sig likadant i alla flikar i stället för att bara fungera i
+  // Schema, trots att den syns i verktygsraden överallt.
+  function matchesSearchQuery(m) {
+    const q = state.q.trim().toLowerCase();
+    if (!q) return true;
+    const hay = (m.home.name + " " + m.away.name + " " + m.arena + " " +
+      m.catName + " " + m.divName + " " + m.roundName).toLowerCase();
+    return hay.includes(q);
+  }
+
+  // Ett gemensamt "vy-filter" (viewCats/viewTeams) — se state ovan.
+  // isFilterLocked() delas mellan renderToolbar (som bygger låsknappen)
+  // och Schema/Tabeller/Slutspel (som avgör om vy-filterraden ska visas).
+  function hasLockableSelection() {
+    return state.days.size > 0 || state.cats.size > 0 || state.teams.size > 0;
+  }
+  function isFilterLocked() {
+    return state.filterLocked && hasLockableSelection();
+  }
+
+  function matchesViewFilter(m) {
+    if (state.viewCats.size && !state.viewCats.has(m.catId)) return false;
+    if (state.viewTeams.size &&
+        !state.viewTeams.has(m.home.id) && !state.viewTeams.has(m.away.id)) return false;
+    return true;
+  }
+
+  // Kandidater för vy-filtrets klass-/lagväljare: allt inom bas-filtret
+  // (scope+dagar+bas-klasser+bas-lag) — INTE fritextsök/plan/matchstatus,
+  // de är Schema-specifika och ska inte påverka vad Tabeller/Slutspel
+  // erbjuder att bläddra bland.
+  function viewFilterCandidates() {
+    const base = scoped().filter((m) => {
+      if (state.days.size && !state.days.has(dayKey(m.start))) return false;
+      if (state.cats.size && !state.cats.has(m.catId)) return false;
+      if (state.teams.size &&
+          !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) return false;
+      return true;
+    });
+    const catMap = new Map();
+    const teamMap = new Map();
+    for (const m of base) {
+      if (m.catId) catMap.set(m.catId, m.catName);
+      for (const side of [m.home, m.away]) {
+        if (side.id && !teamMap.has(side.id)) {
+          teamMap.set(side.id, {
+            id: side.id, name: side.name, suffix: teamSuffix(side.name),
+            catName: m.catName, catId: m.catId,
+          });
+        }
+      }
+    }
+    const catEntries = [...catMap.entries()].sort((a, b) =>
+      catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
+    const teams = [...teamMap.values()].sort((a, b) =>
+      catSortKey(a.catName) - catSortKey(b.catName) || a.suffix.localeCompare(b.suffix, "sv"));
+    return { catEntries, teams };
+  }
+
+  // Vy-filterraden: klass- och lagväljare (samma sök-/sorterbara
+  // dropdown-komponent som verktygsradens, se buildPicker) som fyller det
+  // tomrum som uppstår i Schema/Tabeller/Slutspel när bas-filtret är låst
+  // och verktygsradens egna klass-/lagväljare därför göms bort — så man
+  // kan bläddra inom sitt låsta urval utan att låsa upp det. Bara synlig
+  // när bas-filtret faktiskt är låst OCH det finns mer än en klass/ett lag
+  // att välja bland — annars gör verktygsradens egna, redan synliga
+  // pickers exakt samma jobb, och en andra uppsättning skulle bara vara en
+  // förvirrande dubblett. Lagkandidaterna smalnas av av vald(a) vy-klass(er)
+  // (samma nivå1/nivå2-mönster som verktygsradens bas-pickers) — annars
+  // skulle t.ex. en F12-klubb dyka upp i lagvalet trots att vyn redan
+  // smalnats till F13, en garanterad återvändsgränd (noll träffar).
+  //
+  // Byggs och lever i renderToolbar (INTE i respektive vy) trots att den
+  // logiskt hör till Schema/Tabeller/Slutspel — renderContent() (som
+  // uppdaterar själva matchlistan/tabellerna/trädet när valet ändras)
+  // bygger om HELA huvudinnehållet, vilket skulle stänga en öppen
+  // dropdown om den låg där. I verktygsraden, som bara render() bygger
+  // om, kan pickerns egen <details> hållas vid liv över ändringar precis
+  // som bas-filtrets klass-/lagväljare gör.
+  function buildViewFilterRow() {
+    if (!isFilterLocked() || state.view === "bana") return null;
+    const { catEntries, teams: allTeams } = viewFilterCandidates();
+    if (catEntries.length <= 1 && allTeams.length <= 1) return null;
+
+    const teamSlot = h("span", { style: "display:contents" });
+    const refreshViewTeamSlot = () => {
+      const teams = state.viewCats.size
+        ? allTeams.filter((t) => state.viewCats.has(t.catId))
+        : allTeams;
+      teamSlot.replaceChildren(...(teams.length > 1 ? [buildPicker({
+        items: teams.map((t) => ({
+          id: t.id, label: HB.shortCat(t.catName) + " " + t.suffix,
+          sortKey: catSortKey(t.catName), sortName: t.suffix,
+        })),
+        selected: state.viewTeams,
+        emptyLabel: "Visa: alla lag",
+        countLabel: (n) => "Visar " + n + " lag",
+        searchPlaceholder: "Sök lag …",
+        onChange: renderContent,
+      })] : []));
+    };
+
+    const row = h("div", { class: "row" });
+    if (catEntries.length > 1) {
+      row.append(buildPicker({
+        items: catEntries.map(([id, name]) => ({
+          id, label: name, sortKey: catSortKey(name), sortName: name,
+        })),
+        selected: state.viewCats,
+        emptyLabel: "Visa: alla klasser",
+        countLabel: (n) => n === 1 ? "Visar 1 klass" : "Visar " + n + " klasser",
+        searchPlaceholder: "Sök klass …",
+        onChange: () => { renderContent(); refreshViewTeamSlot(); },
+      }));
+    }
+    refreshViewTeamSlot();
+    row.append(teamSlot);
+    return row;
   }
 
   function clubTeams() {
@@ -570,6 +713,26 @@ window.HB = window.HB || {};
     for (const m of state.matches) {
       for (const side of [m.home, m.away]) {
         if (side.id && isClubName(side.name) && !map.has(side.id)) {
+          map.set(side.id, {
+            id: side.id, name: side.name, suffix: teamSuffix(side.name),
+            catName: m.catName, catId: m.catId,
+          });
+        }
+      }
+    }
+    return [...map.values()].sort((a, b) =>
+      catSortKey(a.catName) - catSortKey(b.catName) ||
+      a.suffix.localeCompare(b.suffix, "sv"));
+  }
+
+  // Alla lag (oavsett klubb) inom nuvarande scope — clubTeams() räcker
+  // inte i "Hela cupen"-läge, där lagväljarens nivå 2 (se renderToolbar)
+  // ska kunna smalna av bland SAMTLIGA lag i cupen, inte bara egna klubbens.
+  function allScopedTeams() {
+    const map = new Map();
+    for (const m of scoped()) {
+      for (const side of [m.home, m.away]) {
+        if (side.id && !map.has(side.id)) {
           map.set(side.id, {
             id: side.id, name: side.name, suffix: teamSuffix(side.name),
             catName: m.catName, catId: m.catId,
@@ -607,7 +770,6 @@ window.HB = window.HB || {};
   // fritextsök) — annars "renderar"/beter den fliken sig annorlunda än
   // resten av appen trots att verktygsraden ser likadan ut överallt.
   function filtered(arenaOverride) {
-    const q = state.q.trim().toLowerCase();
     const arena = arenaOverride !== undefined ? arenaOverride : state.arena;
     return scoped().filter((m) => {
       if (state.days.size && !state.days.has(dayKey(m.start))) return false;
@@ -617,11 +779,7 @@ window.HB = window.HB || {};
       if (arena && m.arena !== arena) return false;
       if (state.matchFilter === "upcoming" && m.res && m.res.fin) return false;
       if (state.matchFilter === "played" && !(m.res && m.res.fin)) return false;
-      if (q) {
-        const hay = (m.home.name + " " + m.away.name + " " + m.arena + " " +
-          m.catName + " " + m.divName + " " + m.roundName).toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
+      if (!matchesSearchQuery(m)) return false;
       return true;
     });
   }
@@ -854,7 +1012,7 @@ window.HB = window.HB || {};
     return dd;
   }
 
-  function buildTeamPicker(teams) {
+  function buildTeamPicker(teams, onChange) {
     return buildPicker({
       items: teams.map((t) => ({
         id: t.id, label: HB.shortCat(t.catName) + " " + t.suffix,
@@ -864,11 +1022,11 @@ window.HB = window.HB || {};
       emptyLabel: "Alla lag",
       countLabel: (n) => "Lag (" + n + ")",
       searchPlaceholder: "Sök lag …",
-      onChange: renderContent,
+      onChange: onChange || renderContent,
     });
   }
 
-  function buildDayPicker(days) {
+  function buildDayPicker(days, onChange) {
     return buildPicker({
       items: days.map((d) => ({
         id: d, label: fmtDay.format(new Date(d + "T00:00:00Z")),
@@ -878,11 +1036,11 @@ window.HB = window.HB || {};
       emptyLabel: "Alla dagar",
       countLabel: (n) => "Dagar (" + n + ")",
       searchPlaceholder: "Sök dag …",
-      onChange: renderContent,
+      onChange: onChange || renderContent,
     });
   }
 
-  function buildCatPicker(catEntries) {
+  function buildCatPicker(catEntries, onChange) {
     return buildPicker({
       items: catEntries.map(([id, name]) => ({
         id, label: name, sortKey: catSortKey(name), sortName: name,
@@ -891,7 +1049,7 @@ window.HB = window.HB || {};
       emptyLabel: "Alla klasser",
       countLabel: (n) => "Klasser (" + n + ")",
       searchPlaceholder: "Sök klass …",
-      onChange: renderContent,
+      onChange: onChange || renderContent,
     });
   }
 
@@ -914,25 +1072,22 @@ window.HB = window.HB || {};
     });
     dd.addEventListener("toggle", () => { state.toolbarOpen = dd.open; });
     const bodyEl = h("div", { class: "toolbar-body" });
-    dd.append(h("summary", { class: "toolbar-summary" }, "Filter och sortering"), bodyEl);
+    // lockSlot sitter INUTI <summary>, bredvid etikett-pillen, och hålls
+    // vid liv separat (se längre ner) — så att låsknappen/den låsta klass-
+    // chippen förblir synlig och klickbar även när man fällt ihop hela
+    // filterpanelen, i stället för att gömmas undan med resten av
+    // filtren. display:contents på wrappern gör att den inte syns som en
+    // egen tom pill innan den fyllts. Klick på dess innehåll stoppas från
+    // att bubbla upp (stopPropagation) så det inte råkar trigga <summary>s
+    // inbyggda öppna/stäng-toggle.
+    const lockSlot = h("span", { style: "display:contents", onclick: (e) => e.stopPropagation() });
+    dd.append(
+      h("summary", { class: "toolbar-summary" },
+        h("span", { class: "toolbar-summary-label" }, "Filter och sortering"),
+        lockSlot),
+      bodyEl);
     bar.append(dd);
     const body = bodyEl;
-
-    // Klubb / hela cupen
-    body.append(h("div", { class: "row scope-row" },
-      h("div", { class: "seg", role: "group", "aria-label": "Omfattning" },
-        chip(state.favoriteClub, state.scope === "club", () => {
-          state.scope = "club"; saveUi(); render();
-        }),
-        chip("Hela cupen", state.scope === "all", () => {
-          state.scope = "all"; saveUi(); render();
-        })),
-      h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
-        [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
-          chip(l, state.matchFilter === v, () => {
-            state.matchFilter = v; saveUi(); render();
-          }))),
-    ));
 
     // Tillbaka-knapp: syns så snart man hoppat till en tillfällig
     // filtrering — ett lags kommande/spelade matcher (matchdialogens
@@ -961,21 +1116,141 @@ window.HB = window.HB || {};
           }))));
     }
 
-    // Dagar, klasser och egna lag — dropdown-väljare (sök-, filter- och
-    // sorterbara) i stället för en knapp per dag/klass/lag, som blir
-    // orimligt rörigt när en cup spänner över många dagar eller klasser.
-    // Lagväljaren är alltid tillgänglig oavsett klubb- eller helcupsläge.
+    // Dagar och klasser — dropdown-väljare (sök-, filter- och sorterbara)
+    // i stället för en knapp per dag/klass, som blir orimligt rörigt när
+    // en cup spänner över många dagar eller klasser.
     const days = [...new Set(scoped().map((m) => dayKey(m.start)))].sort();
     const cats = new Map();
     for (const m of scoped()) if (m.catId) cats.set(m.catId, m.catName);
     const catEntries = [...cats.entries()].sort((a, b) =>
       catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
-    if (days.length > 1 || catEntries.length > 1 || clubTeamsList.length > 1) {
-      body.append(h("div", { class: "row" },
-        days.length > 1 ? buildDayPicker(days) : null,
-        catEntries.length > 1 ? buildCatPicker(catEntries) : null,
-        clubTeamsList.length > 1 ? buildTeamPicker(clubTeamsList) : null));
+
+    // Lagväljaren: nivå 2 i ett tvånivåfilter där klasserna ovan är
+    // grundinställningen (nivå 1). I "Hela cupen"-läge (potentiellt
+    // hundratals lag i en stor cup) visas lagväljaren först sedan minst en
+    // klass valts, annars blir listan orimligt lång; i klubbläge (fåtal
+    // egna lag) är den synlig direkt som förut, men smalnas ändå av om
+    // klasser valts.
+    function teamPickerCandidates() {
+      const pool = state.scope === "club" ? clubTeamsList : allScopedTeams();
+      return state.cats.size
+        ? pool.filter((t) => state.cats.has(t.catId))
+        : (state.scope === "club" ? pool : []);
     }
+
+    // Klubb/hela cupen inleder raden. Matchstatus (alla/kommande/spelade)
+    // följer i stället direkt efter filterkedjan, avskild med en tunn
+    // vertikal linje (.row-sep) i stället för att pressas till högerkanten
+    // — pressat till kanten såg konstigt/obalanserat ut på breda skärmar
+    // (stort tomrum innan den), en avdelare räcker för att visa att den
+    // hör till en annan kategori (läge, inte "vad ska visas").
+    const scopeSeg = h("div", { class: "seg", role: "group", "aria-label": "Omfattning" },
+      chip(state.favoriteClub, state.scope === "club", () => {
+        state.scope = "club"; saveUi(); render();
+      }),
+      chip("Hela cupen", state.scope === "all", () => {
+        state.scope = "all"; saveUi(); render();
+      }));
+    const statusSeg = h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
+      [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
+        chip(l, state.matchFilter === v, () => {
+          state.matchFilter = v; saveUi(); render();
+        })));
+
+    // Ett enda lås fryser dagar+klasser+lag TILLSAMMANS (till en chip
+    // bredvid "Filter och sortering", se dd/lockSlot ovan) — tanken är att
+    // man gör sin inställning en gång (t.ex. på morgonen) och sedan under
+    // dagens återkommande snabbtitt inte råkar rubba den. Scope och
+    // matchstatus räknas INTE in — de är ett visningsläge, inte en del av
+    // grundinställningen som ska skyddas.
+    function lockSummary() {
+      const parts = [];
+      if (state.days.size) {
+        const names = days.filter((d) => state.days.has(d))
+          .map((d) => fmtDay.format(new Date(d + "T00:00:00Z")));
+        parts.push(names.length <= 2 ? names.join(", ") : names.length + " dagar");
+      }
+      if (state.cats.size) {
+        const names = catEntries.filter(([id]) => state.cats.has(id)).map(([, name]) => HB.shortCat(name));
+        parts.push(names.length <= 3 ? names.join(", ") : names.length + " klasser");
+      }
+      if (state.teams.size) {
+        const names = [...state.teams].map((id) => teamNameById(id)).filter(Boolean);
+        parts.push(names.length <= 2 ? names.join(", ") : names.length + " lag");
+      }
+      return parts.join(" · ");
+    }
+    const isLocked = isFilterLocked();
+
+    // teamSlot hålls vid liv separat och bara ombyggd via replaceChildren()
+    // (inte hela raden) så att ett enskilt klasskryss — som INTE bygger om
+    // sin egen <details>-dropdown, se buildPicker ovan — ändå kan uppdatera
+    // vilka lag som blir valbara utan att hela verktygsraden (och därmed
+    // öppna dropdowns) byggs om.
+    const teamSlot = h("span", { style: "display:contents" });
+    const refreshTeamRow = () => {
+      const candidates = teamPickerCandidates();
+      teamSlot.replaceChildren(...(candidates.length > 1 ? [buildTeamPicker(candidates, onTeamOrDayChange)] : []));
+    };
+
+    // Låskontrollen (knapp när upplåst, klickbar sammanfattnings-chip när
+    // låst) byggs här men lever i lockSlot bredvid "Filter och sortering"
+    // (se ovan) i stället för i filterraden — där gjorde den sig konstigt
+    // placerad mitt i eller sist i en lång kedja av chips, och försvann
+    // dessutom ur sikte så fort man fällde ihop panelen.
+    const refreshLockSlot = () => {
+      if (days.length <= 1 && catEntries.length <= 1) { lockSlot.replaceChildren(); return; }
+      if (isFilterLocked()) {
+        lockSlot.replaceChildren(
+          // Nollställ vy-filtret (viewCats/viewTeams) vid upplåsning — annars
+          // fortsätter det osynligt att smalna av resultatet (ingen rad kvar
+          // som visar/styr det, den försvinner ju med låset) trots att
+          // bas-filtrets egna, nu synliga pickers ser ut att styra allt.
+          chip("🔒 " + lockSummary(), true, () => {
+            state.filterLocked = false;
+            state.viewCats = new Set(); state.viewTeams = new Set();
+            saveUi(); render();
+          }));
+      } else {
+        lockSlot.replaceChildren(h("button", {
+          class: "btn small", type: "button",
+          ...(hasLockableSelection() ? {} : { disabled: "" }),
+          title: "Lås dagar, klasser och lag så att inställningen inte ändras av misstag",
+          onclick: () => {
+            state.filterLocked = true;
+            state.viewCats = new Set(); state.viewTeams = new Set();
+            saveUi(); render();
+          },
+        }, "🔒 Lås"));
+      }
+    };
+    // onCatChange bygger om lagväljarens kandidater (klassvalet styr vilka
+    // lag som är valbara) — onTeamOrDayChange gör INTE det, för att undvika
+    // att bygga om (och därmed stänga) lagväljarens egen öppna dropdown när
+    // man kryssar i den.
+    const onCatChange = () => { renderContent(); refreshLockSlot(); refreshTeamRow(); };
+    const onTeamOrDayChange = () => { renderContent(); refreshLockSlot(); };
+    refreshLockSlot();
+
+    if (days.length > 1 || catEntries.length > 1) {
+      const row = h("div", { class: "row" }, scopeSeg);
+      if (!isLocked) {
+        row.append(
+          days.length > 1 ? buildDayPicker(days, onTeamOrDayChange) : null,
+          catEntries.length > 1 ? buildCatPicker(catEntries, onCatChange) : null);
+        refreshTeamRow();
+        row.append(teamSlot);
+      }
+      row.append(h("span", { class: "row-sep" }), statusSeg);
+      body.append(row);
+    } else {
+      if (!isLocked) refreshTeamRow();
+      body.append(h("div", { class: "row" }, scopeSeg, isLocked ? null : teamSlot,
+        h("span", { class: "row-sep" }), statusSeg));
+    }
+
+    const viewFilterRow = buildViewFilterRow();
+    if (viewFilterRow) body.append(viewFilterRow);
 
     // Sök · plan · sortering · export
     const arenas = [...new Set(scoped().map((m) => m.arena).filter(Boolean))]
@@ -2218,7 +2493,7 @@ window.HB = window.HB || {};
         "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
       return;
     }
-    const list = sorted(filtered());
+    const list = sorted(filtered().filter(matchesViewFilter));
     if (!list.length) {
       if (state.scope === "club" && !scoped().length && state.matches.length) {
         main.append(h("div", { class: "banner" },
@@ -2411,6 +2686,8 @@ window.HB = window.HB || {};
       if (state.cats.size && !state.cats.has(m.catId)) continue;
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) continue;
+      if (!matchesSearchQuery(m)) continue;
+      if (!matchesViewFilter(m)) continue;
       if (!m.divId) continue;
       if (m.divType === "Playoff") continue;
       if (!map.has(m.divId)) {
@@ -2515,6 +2792,8 @@ window.HB = window.HB || {};
       if (state.cats.size && !state.cats.has(m.catId)) continue;
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) continue;
+      if (!matchesSearchQuery(m)) continue;
+      if (!matchesViewFilter(m)) continue;
       if (!m.catId) continue;
       if (!map.has(m.catId)) {
         map.set(m.catId, { catId: m.catId, catName: m.catName, ours: false });
@@ -2988,39 +3267,15 @@ window.HB = window.HB || {};
       selCat = cats.find((c) => c.catId === state.playoffCatTab) || cats[0];
     }
 
-    // Snabbväxling träd/tabell direkt i vyn — samma state.advancedPlayoffTable
-    // som inställningens kryssruta, så de två alltid är i synk.
-    main.append(h("div", { class: "row" },
-      cats.length > 1 ? h("select", {
-        class: "select", "aria-label": "Välj klass",
-        onchange: (e) => { state.playoffCatTab = +e.target.value; renderContent(); },
-      }, cats.map((c) => h("option", {
-        value: String(c.catId), ...(c.catId === selCat.catId ? { selected: "" } : {}),
-      }, c.catName))) : null,
-      h("div", { class: "seg", role: "group", "aria-label": "Slutspelsvy" },
-        chip("Träd", !state.advancedPlayoffTable, () => {
-          state.advancedPlayoffTable = false; saveSettings(); renderContent();
-        }),
-        chip("Tabell", state.advancedPlayoffTable, () => {
-          state.advancedPlayoffTable = true; saveSettings(); renderContent();
-        })),
-      // Zoom är bara meningsfull i trädvyn — tabellen radbryter/scrollar
-      // redan naturligt och behöver ingen skalning.
-      !state.advancedPlayoffTable ? h("div", { class: "seg bracket-zoom", role: "group", "aria-label": "Zoom" },
-        h("button", {
-          class: "chip", type: "button", "aria-label": "Zooma ut",
-          disabled: state.bracketZoom <= 0.6 ? "" : null,
-          onclick: () => { state.bracketZoom = Math.max(0.6, +(state.bracketZoom - 0.2).toFixed(2)); renderContent(); },
-        }, "−"),
-        h("button", {
-          class: "chip", type: "button", title: "Återställ zoom",
-          onclick: () => { state.bracketZoom = 1; renderContent(); },
-        }, Math.round(state.bracketZoom * 100) + "%"),
-        h("button", {
-          class: "chip", type: "button", "aria-label": "Zooma in",
-          disabled: state.bracketZoom >= 3 ? "" : null,
-          onclick: () => { state.bracketZoom = Math.min(3, +(state.bracketZoom + 0.2).toFixed(2)); renderContent(); },
-        }, "+")) : null));
+    if (cats.length > 1) {
+      main.append(h("div", { class: "row" },
+        h("select", {
+          class: "select", "aria-label": "Välj klass",
+          onchange: (e) => { state.playoffCatTab = +e.target.value; renderContent(); },
+        }, cats.map((c) => h("option", {
+          value: String(c.catId), ...(c.catId === selCat.catId ? { selected: "" } : {}),
+        }, c.catName)))));
+    }
     let any = false, anyLoading = false;
     const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
     const c = selCat;
@@ -3041,14 +3296,49 @@ window.HB = window.HB || {};
       // valda divisionen byggs (kopplingslinjer, ev. prognos), så växling
       // mellan A/B/C kostar inget förrän man faktiskt klickar dit.
       let selDiv = p.divisions[0];
-      if (p.divisions.length > 1) {
-        const curId = state.playoffDivTab[c.catId];
-        selDiv = p.divisions.find((d) => d.id === curId) || p.divisions[0];
-        main.append(h("div", { class: "seg playoff-div-tabs", role: "tablist", "aria-label": "Slutspelsträd" },
-          p.divisions.map((d) => chip(d.name, d.id === selDiv.id, () => {
-            state.playoffDivTab[c.catId] = d.id; renderContent();
-          }))));
-      }
+      const divTabs = p.divisions.length > 1
+        ? (() => {
+            const curId = state.playoffDivTab[c.catId];
+            selDiv = p.divisions.find((d) => d.id === curId) || p.divisions[0];
+            return h("div", { class: "seg playoff-div-tabs", role: "tablist", "aria-label": "Slutspelsträd" },
+              p.divisions.map((d) => chip(d.name, d.id === selDiv.id, () => {
+                state.playoffDivTab[c.catId] = d.id; renderContent();
+              })));
+          })()
+        : null;
+
+      // Träd/Tabell-växlaren och zoomen (samma state.advancedPlayoffTable
+      // som inställningens kryssruta, så de två alltid är i synk) delar rad
+      // med A-/B-/C-Slutspel-flikarna i stället för att ligga på en egen
+      // rad ovanför — en tunn vertikal avdelare (.row-sep, bara när det
+      // faktiskt finns flikar att skilja från) visar att de hör till en
+      // annan kategori, utan att pressas hela vägen till högerkanten.
+      main.append(h("div", { class: "row" }, divTabs, divTabs ? h("span", { class: "row-sep" }) : null,
+        h("div", { class: "seg-group" },
+          h("div", { class: "seg", role: "group", "aria-label": "Slutspelsvy" },
+            chip("Träd", !state.advancedPlayoffTable, () => {
+              state.advancedPlayoffTable = false; saveSettings(); renderContent();
+            }),
+            chip("Tabell", state.advancedPlayoffTable, () => {
+              state.advancedPlayoffTable = true; saveSettings(); renderContent();
+            })),
+          // Zoom är bara meningsfull i trädvyn — tabellen radbryter/scrollar
+          // redan naturligt och behöver ingen skalning.
+          !state.advancedPlayoffTable ? h("div", { class: "seg bracket-zoom", role: "group", "aria-label": "Zoom" },
+            h("button", {
+              class: "chip", type: "button", "aria-label": "Zooma ut",
+              disabled: state.bracketZoom <= 0.6 ? "" : null,
+              onclick: () => { state.bracketZoom = Math.max(0.6, +(state.bracketZoom - 0.2).toFixed(2)); renderContent(); },
+            }, "−"),
+            h("button", {
+              class: "chip", type: "button", title: "Återställ zoom",
+              onclick: () => { state.bracketZoom = 1; renderContent(); },
+            }, Math.round(state.bracketZoom * 100) + "%"),
+            h("button", {
+              class: "chip", type: "button", "aria-label": "Zooma in",
+              disabled: state.bracketZoom >= 3 ? "" : null,
+              onclick: () => { state.bracketZoom = Math.min(3, +(state.bracketZoom + 0.2).toFixed(2)); renderContent(); },
+            }, "+")) : null)));
 
       let gd = null;
       if (state.showPlayoffProjection) {
