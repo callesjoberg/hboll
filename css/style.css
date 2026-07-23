@@ -1140,6 +1140,25 @@ dialog#settingsDialog { max-width: 380px; }
   }
 }
 
+/* padda/dator: den fasta 380px-bredden var samma oavsett skärmstorlek och
+   såg ut som en mobilruta mitt på en stor skärm — bredda den och lägg
+   grupperna i två kolumner i stället för en lång enkolumnslista.
+   Naturliga par (favoritklubb/-lag, matchlängd/paus) hamnar automatiskt
+   sida vid sida via grid-auto-placement; allt annat (.full) tar hela
+   bredden — cupväljaren och kryssrutorna vinner inget på att delas upp. */
+@media (min-width: 700px) {
+  dialog#settingsDialog {
+    max-width: 660px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 24px;
+    align-items: start;
+  }
+  dialog#settingsDialog > h2 { grid-column: 1 / -1; }
+  dialog#settingsDialog .settings-group { margin: 0; }
+  dialog#settingsDialog .settings-group.full { grid-column: 1 / -1; }
+}
+
 .settings-group {
   margin: 14px 0;
   display: grid;

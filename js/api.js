@@ -228,8 +228,17 @@ window.HB = window.HB || {};
 
   // --- tabeller ---------------------------------------------------------
 
-  async function fetchTable(cup, divisionId) {
+  // `cacheable` skickas in av app.js (som känner till matchresultaten) och
+  // är bara true när ALLA matcher i divisionen/kategorin redan är klara —
+  // då kan svaret aldrig ändras och sparas i localStorage för evigt, precis
+  // som den avslutade-cup-regeln i refreshTtl()/writeCache() ovan. Är det
+  // inte klarspelat hämtas alltid färskt (ingen cache-läsning, ingen skrivning).
+  async function fetchTable(cup, divisionId, cacheable) {
     if (cup.dataUrl) return (localTables[cup.id] || {})[divisionId] || [];
+    if (cacheable) {
+      const cached = readSubCache(cup, "table", divisionId);
+      if (cached) return cached;
+    }
     const q = "Division({id:" + divisionId + "})$table";
     const resp = (await call(cup, q)).responses || {};
     let ent = resp[q] && resp[q].entity;
@@ -241,8 +250,7 @@ window.HB = window.HB || {};
         }
       }
     }
-    if (!ent || !Array.isArray(ent.rows)) return [];
-    return ent.rows.map((r) => ({
+    const rows = (!ent || !Array.isArray(ent.rows)) ? [] : ent.rows.map((r) => ({
       name: nameOf(r),
       teamId: refId(r.team),
       played: r.played || 0,
@@ -253,6 +261,8 @@ window.HB = window.HB || {};
       ga: Math.abs(r.goalsLost || 0), // API:t ger insläppta mål som negativt tal
       points: r.points || 0,
     }));
+    if (cacheable && rows.length) writeSubCache(cup, "table", divisionId, rows);
+    return rows;
   }
 
   // --- gruppdivisioner (för slutspelsprognos) ------------------------------
@@ -268,8 +278,12 @@ window.HB = window.HB || {};
   // en kategori — id+namn, används för att slå upp respektive grupps
   // tabell via fetchTable() och därigenom lösa upp slutspelets
   // platshållarnamn ("N:an i Grupp M") mot nuvarande tabellplacering.
-  async function fetchGroupDivisions(cup, categoryId) {
+  async function fetchGroupDivisions(cup, categoryId, cacheable) {
     if (cup.dataUrl) return [];
+    if (cacheable) {
+      const cached = readSubCache(cup, "groupdivs", categoryId);
+      if (cached) return cached;
+    }
     const resp = (await call(cup, groupDivisionsQuery(categoryId, cup.tournamentId))).responses || {};
     const flatStore = {};
     for (const [k, v] of Object.entries(resp)) {
@@ -277,9 +291,11 @@ window.HB = window.HB || {};
         flatStore[k] = v.entity;
       }
     }
-    return Object.values(flatStore)
+    const divs = Object.values(flatStore)
       .filter((e) => e.__typename === "Conference" && e.id != null)
       .map((d) => ({ id: d.id, name: nameOf(d) }));
+    if (cacheable && divs.length) writeSubCache(cup, "groupdivs", categoryId, divs);
+    return divs;
   }
 
   // --- slutspel (A/B/C) och inbördes möten ---------------------------------
@@ -319,8 +335,12 @@ window.HB = window.HB || {};
 
   // Alla slutspelsträd (Playoff-divisioner, t.ex. A-/B-/C-Slutspel) för en
   // kategori, i ett enda anrop. Tomt om kategorin saknar slutspel än.
-  async function fetchPlayoffs(cup, categoryId) {
+  async function fetchPlayoffs(cup, categoryId, cacheable) {
     if (cup.dataUrl) return []; // ProCup: slutspelsdata stöds inte ännu
+    if (cacheable) {
+      const cached = readSubCache(cup, "playoffs", categoryId);
+      if (cached) return cached;
+    }
     const resp = (await call(cup, playoffQuery(categoryId, cup.tournamentId))).responses || {};
     const flatStore = {};
     for (const [k, v] of Object.entries(resp)) {
@@ -330,7 +350,7 @@ window.HB = window.HB || {};
     }
     const divisions = Object.values(flatStore)
       .filter((e) => e.__typename === "Playoff");
-    return divisions.map((div) => {
+    const result = divisions.map((div) => {
       const divName = nameOf(div);
       // div.matches är en referens till en egen topnyckel ("$matches"),
       // inte en direkt inline-array — samma platta store-mönster som
@@ -347,6 +367,8 @@ window.HB = window.HB || {};
         });
       return { id: div.id ?? null, name: divName, matches };
     }).filter((d) => d.matches.length);
+    if (cacheable && result.length) writeSubCache(cup, "playoffs", categoryId, result);
+    return result;
   }
 
   // Historiska möten mellan lagen i en given match (samma kategori/cup).
@@ -407,6 +429,39 @@ window.HB = window.HB || {};
           }
         }
         localStorage.setItem(cacheKey(cup), payload);
+      } catch { /* kör vidare utan cache */ }
+    }
+  }
+
+  // Samma cache-mönster som ovan, men generellt för mindre delsvar
+  // (gruppställning/slutspelsträd/gruppdivisioner) som app.js bara skickar
+  // in som `cacheable` när ALLA berörda matcher redan är klara — se
+  // fetchTable/fetchGroupDivisions/fetchPlayoffs ovan.
+  function subCacheKey(cup, kind, id) {
+    return "hb:" + kind + ":" + cup.id + ":" + cup.tournamentId + ":" + id;
+  }
+
+  function readSubCache(cup, kind, id) {
+    try {
+      const raw = localStorage.getItem(subCacheKey(cup, kind, id));
+      return raw ? JSON.parse(raw).data : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSubCache(cup, kind, id, data) {
+    const payload = JSON.stringify({ ts: Date.now(), data });
+    const key = subCacheKey(cup, kind, id);
+    try {
+      localStorage.setItem(key, payload);
+    } catch {
+      // Fullt: släng andra sparade delsvar av samma slag och försök igen.
+      try {
+        for (const k of Object.keys(localStorage)) {
+          if (k.startsWith("hb:" + kind + ":") && k !== key) localStorage.removeItem(k);
+        }
+        localStorage.setItem(key, payload);
       } catch { /* kör vidare utan cache */ }
     }
   }

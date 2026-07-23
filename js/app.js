@@ -417,6 +417,16 @@ window.HB = window.HB || {};
     return 60000;                                      // pågår
   }
 
+  // Är ALLA matcher i listan klara (har ett slutgiltigt resultat)? Styr om
+  // gruppställningar/slutspelsträd (ensureTable/ensurePlayoffs/
+  // ensureGroupTables nedan) kan cachas i localStorage för evigt — samma
+  // "avslutad = ändras aldrig"-tanke som refreshTtl() ovan, fast per
+  // division/kategori i stället för för hela cupen (de hämtas ju var för
+  // sig, inte i samma anrop som schemat).
+  function allMatchesFinished(list) {
+    return list.length > 0 && list.every((m) => m.res && m.res.fin);
+  }
+
   function loadWeather() {
     const c = cup();
     HB.weather.fetchForecast(c).then(() => {
@@ -541,6 +551,17 @@ window.HB = window.HB || {};
 
   function scoped() {
     return state.scope === "club" ? state.matches.filter(isClubMatch) : state.matches;
+  }
+
+  // Har användaren gjort ett AKTIVT val av klass(er) och/eller lag? Styr om
+  // Schema/Tabeller/Slutspel visar sitt fulla innehåll — annars skulle appen
+  // by default rendera samtliga klasser/lag/tabeller/slutspelsträd för hela
+  // klubben (eller hela cupen), vilket är onödigt tungt och sällan det man
+  // faktiskt vill se. Bana-fliken har redan sin egen motsvarande spärr
+  // (kräver en vald bana) och Hero-kortet (nästa match) är en lättviktig
+  // teaser som ska synas oavsett — bara de fulla listorna/tabellerna spärras.
+  function hasFilterSelection() {
+    return state.cats.size > 0 || state.teams.size > 0;
   }
 
   function clubTeams() {
@@ -2191,6 +2212,11 @@ window.HB = window.HB || {};
 
   function renderSchema(main) {
     renderHero(main);
+    if (!hasFilterSelection()) {
+      main.append(h("div", { class: "banner" },
+        "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
+      return;
+    }
     const list = sorted(filtered());
     if (!list.length) {
       if (state.scope === "club" && !scoped().length && state.matches.length) {
@@ -2408,9 +2434,10 @@ window.HB = window.HB || {};
   function ensureTable(divId) {
     if (state.tables[divId]) return;
     state.tables[divId] = { status: "loading", rows: [] };
+    const complete = allMatchesFinished(state.matches.filter((m) => m.divId === divId));
     tableQueue = tableQueue.then(async () => {
       try {
-        const rows = await HB.api.fetchTable(cup(), divId);
+        const rows = await HB.api.fetchTable(cup(), divId, complete);
         state.tables[divId] = { status: "done", rows };
       } catch {
         state.tables[divId] = { status: "error", rows: [] };
@@ -2420,12 +2447,12 @@ window.HB = window.HB || {};
   }
 
   function renderTables(main) {
-    const divs = divisionsToShow();
-    if (state.scope === "all" && !state.cats.size) {
+    if (!hasFilterSelection()) {
       main.append(h("div", { class: "banner" },
-        "Välj minst en klass ovan för att visa tabeller för hela cupen."));
+        "Välj en eller flera klasser eller lag ovan för att visa tabeller."));
       return;
     }
+    const divs = divisionsToShow();
     if (!divs.length) {
       main.append(h("div", { class: "banner" }, "Inga grupper att visa."));
       return;
@@ -2505,9 +2532,11 @@ window.HB = window.HB || {};
   function ensurePlayoffs(catId) {
     if (state.playoffs[catId]) return;
     state.playoffs[catId] = { status: "loading", divisions: [] };
+    const complete = allMatchesFinished(
+      state.matches.filter((m) => m.catId === catId && m.divType === "Playoff"));
     playoffQueue = playoffQueue.then(async () => {
       try {
-        const divisions = await HB.api.fetchPlayoffs(cup(), catId);
+        const divisions = await HB.api.fetchPlayoffs(cup(), catId, complete);
         state.playoffs[catId] = { status: "done", divisions };
       } catch {
         state.playoffs[catId] = { status: "error", divisions: [] };
@@ -2541,15 +2570,17 @@ window.HB = window.HB || {};
   function ensureGroupTables(catId) {
     if (state.groupTables[catId]) return;
     state.groupTables[catId] = { status: "loading" };
+    const complete = allMatchesFinished(
+      state.matches.filter((m) => m.catId === catId && m.divType !== "Playoff"));
     groupTablesQueue = groupTablesQueue.then(async () => {
       try {
-        const groups = await HB.api.fetchGroupDivisions(cup(), catId);
+        const groups = await HB.api.fetchGroupDivisions(cup(), catId, complete);
         const byGroupNum = {};
         const teamStrength = {};
         await Promise.all(groups.map(async (g) => {
           const gm = /grupp\s*(\d+)/i.exec(g.name || "");
           if (!gm) return;
-          const rows = await HB.api.fetchTable(cup(), g.id);
+          const rows = await HB.api.fetchTable(cup(), g.id, complete);
           byGroupNum[+gm[1]] = rows;
           for (const r of rows) {
             if (r.teamId) teamStrength[r.teamId] = { points: r.points, gf: r.gf, ga: r.ga, name: r.name };
@@ -2935,12 +2966,12 @@ window.HB = window.HB || {};
   }
 
   function renderPlayoffs(main) {
-    const cats = categoriesToShow();
-    if (state.scope === "all" && !state.cats.size) {
+    if (!hasFilterSelection()) {
       main.append(h("div", { class: "banner" },
-        "Välj minst en klass ovan för att visa slutspel för hela cupen."));
+        "Välj en eller flera klasser eller lag ovan för att visa slutspel."));
       return;
     }
+    const cats = categoriesToShow();
     if (!cats.length) {
       main.append(h("div", { class: "banner" }, "Inga klasser att visa."));
       return;
