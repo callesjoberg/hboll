@@ -231,6 +231,17 @@
       "beach": false,
       "lat": 58.9948,
       "lon": 16.2110
+    },
+    {
+      "id": "aranas",
+      "name": "Aranäs Open",
+      "place": "Kungsbacka",
+      "edition": "2025",
+      "host": "procup.se",
+      "dataUrl": "data/aranas-2025.json",
+      "beach": false,
+      "lat": 57.4878,
+      "lon": 12.0765
     }
   ]
 }
