@@ -1568,7 +1568,15 @@ dialog.history-dialog {
      (syntes bara som "bara första omgången, kan inte scrolla i sidled"). */
   min-width: 0;
   max-width: 100%;
+  cursor: grab;
 }
+
+/* dra-för-att-panorera (js/app.js: setupBracketPan) — grabbing-markören och
+   avstängd textmarkering bara medan man faktiskt drar. */
+.bracket-box.panning { cursor: grabbing; user-select: none; }
+:root.bracket-panning { cursor: grabbing; }
+
+.playoff-div-tabs { margin: 4px 0 12px; }
 
 .bracket-box h3 {
   margin: 0 0 14px;

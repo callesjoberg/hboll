@@ -272,6 +272,7 @@ window.HB = window.HB || {};
     toolbarOpen: true,       // filter-/sorteringsmenyn expanderad? (session, sparas ej)
     heroMinimized: false,    // nästa match-karusellen minimerad? (session, sparas ej)
     bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
+    playoffDivTab: {},       // catId -> vald slutspelsdivision (A-/B-/C-Slutspel) när en klass har flera (session, sparas ej)
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -2960,7 +2961,7 @@ window.HB = window.HB || {};
         h("button", {
           class: "chip", type: "button", "aria-label": "Zooma ut",
           disabled: state.bracketZoom <= 0.6 ? "" : null,
-          onclick: () => { state.bracketZoom = Math.max(0.6, +(state.bracketZoom - 0.15).toFixed(2)); renderContent(); },
+          onclick: () => { state.bracketZoom = Math.max(0.6, +(state.bracketZoom - 0.2).toFixed(2)); renderContent(); },
         }, "−"),
         h("button", {
           class: "chip", type: "button", title: "Återställ zoom",
@@ -2968,8 +2969,8 @@ window.HB = window.HB || {};
         }, Math.round(state.bracketZoom * 100) + "%"),
         h("button", {
           class: "chip", type: "button", "aria-label": "Zooma in",
-          disabled: state.bracketZoom >= 1.5 ? "" : null,
-          onclick: () => { state.bracketZoom = Math.min(1.5, +(state.bracketZoom + 0.15).toFixed(2)); renderContent(); },
+          disabled: state.bracketZoom >= 3 ? "" : null,
+          onclick: () => { state.bracketZoom = Math.min(3, +(state.bracketZoom + 0.2).toFixed(2)); renderContent(); },
         }, "+")) : null));
     let any = false, anyLoading = false;
     const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
@@ -2985,23 +2986,38 @@ window.HB = window.HB || {};
       if (p.status === "error" || !p.divisions.length) continue; // inget slutspel ännu — hoppa tyst
       any = true;
       main.append(h("h2", { class: "day-h" }, c.catName));
+
+      // Flera slutspelsträd i samma klass (A-/B-/C-Slutspel) visas som
+      // flikar i stället för alla staplade ovanpå varandra — bara den
+      // valda divisionen byggs (kopplingslinjer, ev. prognos), så växling
+      // mellan A/B/C kostar inget förrän man faktiskt klickar dit.
+      let selDiv = p.divisions[0];
+      if (p.divisions.length > 1) {
+        const curId = state.playoffDivTab[c.catId];
+        selDiv = p.divisions.find((d) => d.id === curId) || p.divisions[0];
+        main.append(h("div", { class: "seg playoff-div-tabs", role: "tablist", "aria-label": "Slutspelsträd" },
+          p.divisions.map((d) => chip(d.name, d.id === selDiv.id, () => {
+            state.playoffDivTab[c.catId] = d.id; renderContent();
+          }))));
+      }
+
       let gd = null;
       if (state.showPlayoffProjection) {
         ensureGroupTables(c.catId);
         const gt = state.groupTables[c.catId];
         if (gt && gt.status === "done") gd = gt;
       }
-      const projMaps = p.divisions.map((d) => (gd ? buildPlayoffProjection(d, gd) : null));
+      const projMap = gd ? buildPlayoffProjection(selDiv, gd) : null;
       if (state.showPlayoffProjection && state.groupTables[c.catId] &&
           state.groupTables[c.catId].status === "loading") {
         main.append(h("p", { class: "muted" }, "Hämtar tabeller för prognosen …"));
       }
       if (state.advancedPlayoffTable) {
-        main.append(...p.divisions.map((d, i) => bracketTableBlock(d, projMaps[i])));
+        main.append(bracketTableBlock(selDiv, projMap));
       } else {
-        const boxes = p.divisions.map((d, i) => bracketBlock(d, projMaps[i]));
-        main.append(h("div", { class: "bracket-row", style: "zoom:" + state.bracketZoom }, boxes));
-        p.divisions.forEach((d, i) => pendingConnectors.push({ el: boxes[i], div: d }));
+        const box = bracketBlock(selDiv, projMap);
+        main.append(h("div", { class: "bracket-row", style: "zoom:" + state.bracketZoom }, [box]));
+        pendingConnectors.push({ el: box, div: selDiv });
       }
     }
     if (!any && !anyLoading) {
@@ -3016,6 +3032,56 @@ window.HB = window.HB || {};
         pendingConnectors.forEach(({ el, div }) => drawBracketConnectors(el, div));
       });
     }
+  }
+
+  // Greppa-och-dra-panorering i slutspelsträdet: .bracket-box scrollar redan
+  // vågrätt (overflow-x:auto) och sidan lodrätt som vanligt, men bara via
+  // scrollbar/hjul/touch. En delegerad pointerdown/move/up (satt upp en gång,
+  // inte per rendering) ger samma "greppa kartan"-känsla. Bara musen — touch
+  // har redan sin egen naturliga scroll/pinch, och att kapa pointermove där
+  // skulle bara krocka med den.
+  function setupBracketPan() {
+    let box = null, dragging = false, moved = false;
+    let startX = 0, startY = 0, startScrollLeft = 0, startScrollY = 0;
+    document.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      const b = e.target.closest(".bracket-box");
+      if (!b) return;
+      box = b; dragging = true; moved = false;
+      startX = e.clientX; startY = e.clientY;
+      startScrollLeft = box.scrollLeft; startScrollY = window.scrollY;
+    });
+    document.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!moved && Math.hypot(dx, dy) < 4) return;
+      if (!moved) {
+        moved = true;
+        box.classList.add("panning");
+        document.documentElement.classList.add("bracket-panning");
+      }
+      box.scrollLeft = startScrollLeft - dx;
+      window.scrollTo(window.scrollX, startScrollY - dy);
+      e.preventDefault();
+    });
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      document.documentElement.classList.remove("bracket-panning");
+      if (box) {
+        box.classList.remove("panning");
+        if (moved) {
+          // Sväljer klicket efter en drag så matchkortet under muspekaren
+          // inte öppnas som om man klickat det.
+          const swallow = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+          box.addEventListener("click", swallow, { capture: true, once: true });
+          setTimeout(() => box.removeEventListener("click", swallow, { capture: true }), 0);
+        }
+      }
+      box = null;
+    }
+    document.addEventListener("pointerup", endDrag);
+    document.addEventListener("pointercancel", endDrag);
   }
 
   // --- lägg till cup ----------------------------------------------------------
@@ -3301,6 +3367,7 @@ window.HB = window.HB || {};
     setupAddCup();
     setupSettings();
     setupHistory();
+    setupBracketPan();
 
     // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
     // lyssnare (i stället för en per renderToolbar-anrop) hittar alltid
