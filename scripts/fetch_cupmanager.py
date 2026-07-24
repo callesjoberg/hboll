@@ -7,6 +7,7 @@ Syfte: förstabesök på sajten laddar direkt från snapshotten i stället för 
 vänta på API:t; webbläsaren live-uppdaterar sedan bara pågående cuper.
 Körs av GitHub Actions tillsammans med ProCup-skrapan. Ren stdlib."""
 
+import argparse
 import json
 import re
 import sys
@@ -233,11 +234,25 @@ def write_if_changed(path, data, old=None):
 
 
 def main():
+    p = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--force", action="store_true",
+                    help="ignorera should_refresh (_freshness.py) och hämta om ALLA cuper, "
+                         "även sen länge avslutade — för engångsbackfyllning när ett nytt "
+                         "fält lagts till i normalize()/clubs_from_store() som gamla, "
+                         "annars aldrig-omskrapade snapshottar saknar")
+    p.add_argument("--only", default=None,
+                    help="komma-separerad lista cup-id:n (förval: alla Cup Manager-cuper)")
+    args = p.parse_args()
+    only = set(args.only.split(",")) if args.only else None
+
     cups = json.loads((ROOT / "data" / "cups.json").read_text(
         encoding="utf-8"))["cups"]
     for cup in cups:
         if not cup.get("tournamentId"):
             continue  # ProCup-cuper hanteras av fetch_procup.py
+        if only and cup["id"] not in only:
+            continue
         snapshot_path = ROOT / "data" / f"snapshot-{cup['id']}.json"
         old = None
         if snapshot_path.exists():
@@ -245,7 +260,7 @@ def main():
                 old = json.loads(snapshot_path.read_text(encoding="utf-8"))
             except Exception:
                 pass
-        if not should_refresh(old):
+        if not args.force and not should_refresh(old):
             print(f"{cup['id']}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
             continue
         t0 = time.time()

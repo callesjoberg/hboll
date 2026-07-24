@@ -368,6 +368,9 @@ window.HB = window.HB || {};
     // adress) — skiljer sig från HB.api.clubGeo som bara har de vars
     // adress gick att slå upp. Fylls av ensureCupClubGeo. Session, sparas ej.
     mapCupAllClubs: {},
+    // Karta-fliken: valt år (ett av arkivets, null = "Nu"/live data) —
+    // se renderMapView/mergedClubGeoForYear. Session, sparas ej.
+    mapYear: null,
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -4133,6 +4136,64 @@ window.HB = window.HB || {};
     return merged;
   }
 
+  // Samma sammanslagning som mergedClubGeo, men för ETT specifikt arkiverat
+  // år i stället för live-data. Arkiverade matcher sparar bara ett RENT
+  // klubbnamn (se normalize() i fetch_cupmanager.py/fetch_gothia.py), ingen
+  // egen adress — så adressen slås alltid upp via klubbkatalogen
+  // (namnmatchning, clubGeoFromMatches), oavsett om cupen normalt har egen
+  // adressdata (klassisk Cup Manager) eller inte (ProCup/Gothia). Kräver
+  // att ensureYearMatches(year, cupId) redan körts (se renderMapView) —
+  // hoppar tyst över cuper vars år inte hunnit laddas än.
+  function mergedClubGeoForYear(cupIds, year, directory) {
+    const merged = {};
+    for (const cupId of cupIds) {
+      const ym = state.yearMatches[cupId + ":" + year];
+      if (!ym || ym.status !== "done") continue;
+      const geo = clubGeoFromMatches(ym.matches, directory);
+      const cupObj = HB.allCups().find((c) => c.id === cupId);
+      const cupName = (cupObj && cupObj.name) || cupId;
+      for (const [name, info] of Object.entries(geo)) {
+        if (!merged[name]) merged[name] = { ...info, cups: [] };
+        merged[name].cups.push(cupName);
+      }
+    }
+    return merged;
+  }
+
+  // Klubbkatalogen (data/club-directory.json) behövs för årsläget oavsett
+  // cuptyp (se mergedClubGeoForYear ovan) — HB.api.fetchClubDirectory()
+  // cachar redan själva fetch-anropet, men vi vill dessutom trigga en
+  // omritning när den blir klar (annars sitter Karta fast på "Hämtar …"
+  // tills nästa oberoende omritning råkar ske).
+  let clubDirectoryCache = null;
+  function ensureClubDirectory() {
+    if (clubDirectoryCache) return;
+    HB.api.fetchClubDirectory().then((dir) => {
+      clubDirectoryCache = dir || {};
+      if (state.view === "karta") render();
+    });
+  }
+
+  // Tidslinje-uppspelning: klickar man "Spela upp" stegas state.mapYear
+  // fram genom de arkiverade åren automatiskt (loopar om från början) tills
+  // man pausar eller lämnar Karta-fliken (self-check i själva tickern —
+  // samma "inget explicit unmount-hook"-mönster som !document.body.
+  // contains(mapBox) används för kartan själv).
+  let mapPlayTimer = null;
+  function stopMapPlay() {
+    if (mapPlayTimer) { clearInterval(mapPlayTimer); mapPlayTimer = null; }
+  }
+  function toggleMapPlay(years) {
+    if (mapPlayTimer) { stopMapPlay(); renderContent(); return; }
+    mapPlayTimer = setInterval(() => {
+      if (state.view !== "karta") { stopMapPlay(); return; }
+      const cur = years.indexOf(state.mapYear);
+      state.mapYear = years[cur === -1 || cur === years.length - 1 ? 0 : cur + 1];
+      renderContent();
+    }, 1400);
+    renderContent();
+  }
+
   let currentMap = null; // föregående kartinstans — måste .remove()'as explicit,
                           // annars läcker en WebGL-kontext varje gång fliken öppnas igen
 
@@ -4155,36 +4216,85 @@ window.HB = window.HB || {};
       searchPlaceholder: "Sök cup …",
       sortToggle: false, // cuper har inget "klass"-begrepp — bara namnsortering
       soloClickable: true, // klick på cupnamnet väljer bara den cupen
-      onChange: () => renderContent(),
+      onChange: () => { stopMapPlay(); renderContent(); },
     });
     root.append(h("div", { class: "history-controls" }, cupPicker));
 
     const selectedIds = [...state.mapCupIds];
-    for (const id of selectedIds) ensureCupClubGeo(id);
-    if (selectedIds.some((id) => state.mapCupStatus[id] === "loading")) {
-      root.append(h("p", { class: "muted" }, "Hämtar klubbdata …"));
-      return;
+
+    // År-väljare: union av arkiverade (spelade) år över VALDA cuper — "Nu"
+    // (dagens live-data) är alltid ett alternativ, även utan arkivhistorik.
+    const idx = state.archiveIndex || {};
+    const yearSet = new Set();
+    for (const id of selectedIds) {
+      for (const e of ((idx[id] && idx[id].editions) || [])) if (e.matches > 0) yearSet.add(e.edition);
+    }
+    const years = [...yearSet].sort();
+    if (state.mapYear && !years.includes(state.mapYear)) state.mapYear = null; // t.ex. efter cupbyte
+    if (years.length) {
+      const yearSelect = h("select", { class: "select", "aria-label": "År" },
+        h("option", { value: "" }, "Nu"),
+        years.map((y) => h("option", { value: y }, y)));
+      yearSelect.value = state.mapYear || "";
+      yearSelect.addEventListener("change", () => {
+        stopMapPlay();
+        state.mapYear = yearSelect.value || null;
+        renderContent();
+      });
+      const playBtn = h("button", {
+        class: "btn small", type: "button", ...(years.length < 2 ? { disabled: "" } : {}),
+        onclick: () => toggleMapPlay(years),
+      }, mapPlayTimer ? "⏸ Pausa" : "▶ Spela upp");
+      root.append(h("div", { class: "row trend-baseline-row" }, yearSelect, playBtn));
     }
 
-    const merged = mergedClubGeo(selectedIds);
+    let merged, allClubs;
+    if (state.mapYear) {
+      ensureClubDirectory();
+      for (const id of selectedIds) ensureYearMatches(state.mapYear, id);
+      const pending = !clubDirectoryCache || selectedIds.some((id) => {
+        const ym = state.yearMatches[id + ":" + state.mapYear];
+        return !ym || ym.status === "loading";
+      });
+      if (pending) {
+        root.append(h("p", { class: "muted" }, "Hämtar arkiverad klubbdata …"));
+        return;
+      }
+      merged = mergedClubGeoForYear(selectedIds, state.mapYear, clubDirectoryCache);
+      allClubs = new Set();
+      for (const id of selectedIds) {
+        const ym = state.yearMatches[id + ":" + state.mapYear];
+        if (ym && ym.status === "done") for (const name of allClubNamesFromMatches(ym.matches)) allClubs.add(name);
+      }
+    } else {
+      for (const id of selectedIds) ensureCupClubGeo(id);
+      if (selectedIds.some((id) => state.mapCupStatus[id] === "loading")) {
+        root.append(h("p", { class: "muted" }, "Hämtar klubbdata …"));
+        return;
+      }
+      merged = mergedClubGeo(selectedIds);
+      allClubs = new Set();
+      for (const id of selectedIds) {
+        for (const name of (state.mapCupAllClubs[id] || [])) allClubs.add(name);
+      }
+    }
+
     const entries = Object.entries(merged);
     // Alla klubbar (kända+okända adress) i de valda cuperna, oavsett om vi
     // lyckades placera dem på kartan — mängdskillnaden mot merged nedan ger
     // hur många som saknar känd adress (många utländska klubbar, se
     // allClubNamesFromMatches).
-    const allClubs = new Set();
-    for (const id of selectedIds) {
-      for (const name of (state.mapCupAllClubs[id] || [])) allClubs.add(name);
-    }
     const unknownNames = [...allClubs].filter((name) => !merged[name]).sort((a, b) => a.localeCompare(b, "sv"));
     if (!entries.length && !unknownNames.length) {
-      root.append(h("p", { class: "muted" }, "Ingen klubbdata i valda cuper."));
+      root.append(h("p", { class: "muted" },
+        "Ingen klubbdata i valda cuper" + (state.mapYear ? " för " + state.mapYear : "") + "."));
       return;
     }
     const cityCount = new Set(entries.map(([, info]) => info.city).filter(Boolean)).size;
     const countryCount = new Set(entries.map(([, info]) => info.country).filter(Boolean)).size;
     root.append(h("p", { class: "muted map-count" },
-      allClubs.size + " klubbar totalt · " + entries.length + " med känd adress (" +
+      allClubs.size + " klubbar totalt" + (state.mapYear ? " (" + state.mapYear + ")" : "") + " · " +
+      entries.length + " med känd adress (" +
       cityCount + " städer" + (countryCount > 1 ? " · " + countryCount + " länder" : "") + ")" +
       (unknownNames.length ? " · " + unknownNames.length + " utan känd adress" : "")));
 
