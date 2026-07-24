@@ -163,10 +163,17 @@ def normalize(store):
             "nextWinnerId": ref_id(next_w.get("match")),
             "nextLoserId": ref_id(next_l.get("match")),
             "matchNr": e.get("matchNr") or None,
+            # club: rena klubbnamnet (NameClub.name, samma entitet som
+            # clubs_from_store redan går via för adressen) UTAN lagsuffix,
+            # till skillnad från "name" (fullt lagnamn, t.ex. "Alingsås HK
+            # Blå"). Kräver ingen extra fråga — home/away:s team:{club:{...}}
+            # är redan hämtat för adressen, bara ett extra steg i store:n.
             "home": {"id": home.get("id") or ref_id(home.get("team")),
-                     "name": name_of(home)},
+                     "name": name_of(home),
+                     "club": get(get(home.get("team")).get("club")).get("name")},
             "away": {"id": away.get("id") or ref_id(away.get("team")),
-                     "name": name_of(away)},
+                     "name": name_of(away),
+                     "club": get(get(away.get("team")).get("club")).get("name")},
             "res": norm_result(get(e.get("result"))),
         })
     matches.sort(key=lambda m: (m["start"], m["arena"]))

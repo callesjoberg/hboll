@@ -357,6 +357,10 @@ window.HB = window.HB || {};
     // samma cup inte hämtas om flera gånger. Session, sparas ej.
     mapCupIds: new Set(),
     mapCupStatus: {},
+    // cupId -> Set(klubbnamn), ALLA deltagande klubbar (kända+okända
+    // adress) — skiljer sig från HB.api.clubGeo som bara har de vars
+    // adress gick att slå upp. Fylls av ensureCupClubGeo. Session, sparas ej.
+    mapCupAllClubs: {},
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -2639,15 +2643,21 @@ window.HB = window.HB || {};
 
   // --- Trend-fliken: formkurva över cupens år -------------------------------
   // Bygger helt på nyckeltal som redan finns i data/archive/index.json
-  // (matches/teams/classes/days per edition, se build_index() i
+  // (matches/teams/classes/days/clubs per edition, se build_index() i
   // scripts/archive_results.py) — ingen ytterligare nätverksfråga behövs
   // utöver den fetchArchiveIndex() som init() redan gjort vid appstart.
   // Antal SPELARE går inte att visa: ingen källa (Cup Manager/ProCup) ger
   // spelardata alls, förutom Partilles trupplistor (se rosterFor) som
   // ändå bara täcker en enda cup — inte en meningsfull trendlinje.
+  //
+  // clubs (distinkta KLUBBAR, till skillnad från "teams" som räknar varje
+  // åldersklass-lag för sig) bygger på ett rent klubbnamnsfält
+  // (home/away.club) som tillkom senare — arkivfiler skrapade innan dess
+  // saknar det och ger då 0, inte ett fel.
   const TREND_METRICS = [
     ["matches", "Matcher", "var(--blue)"],
     ["teams", "Lag", "var(--yellow)"],
+    ["clubs", "Klubbar", "var(--orange)"],
     ["classes", "Klasser", "var(--won)"],
     ["days", "Speldagar", "var(--purple)"],
   ];
@@ -2668,12 +2678,12 @@ window.HB = window.HB || {};
   // Linjediagram, allt normerat till % av baslinjeåret (100 %) — så matcher
   // (tusental) och speldagar (ental) kan visas i samma diagram och svara
   // direkt på "växer eller minskar cupen".
-  function buildTrendSvg(editions, baseIdx) {
+  function buildTrendSvg(editions, baseIdx, metrics) {
     const w = 640, h = 260, padL = 26, padR = 26, padT = 16, padB = 26;
     const innerW = w - padL - padR, innerH = h - padT - padB;
     const n = editions.length;
     const x = (i) => padL + (n === 1 ? innerW / 2 : (innerW * i) / (n - 1));
-    const series = TREND_METRICS.map(([key, label, color]) => {
+    const series = metrics.map(([key, label, color]) => {
       const base = editions[baseIdx][key] || 0;
       const raw = editions.map((e) => e[key] || 0);
       const values = raw.map((v) => (base > 0 ? (v / base) * 100 : (v > 0 ? 100 : 0)));
@@ -2741,11 +2751,18 @@ window.HB = window.HB || {};
   // ur index.json:s aggregat) och det filtrerade läget (omräknat från fulla
   // matchlistor) i renderTrendView, eftersom formen är identisk i båda fallen.
   function renderTrendChartBlock(root, editions) {
+    // "Klubbar" kräver att ALLA visade år faktiskt skrapats med det rena
+    // klubbnamnsfältet (home/away.club, tillkom 2026-07-24) — annars skulle
+    // äldre, ännu inte omskrapade år visa en missvisande rak nedgång till 0
+    // i stället för "okänt". Göms helt tills historiken hunnit skrapas om
+    // (sker automatiskt i bakgrunden, se archive_results.py/build_index()).
+    const metrics = TREND_METRICS.filter(([key]) =>
+      key !== "clubs" || editions.every((e) => (e[key] || 0) > 0));
     const baseIdx = trendBaselineIndex(editions);
     const baseEd = editions[baseIdx];
     const lastEd = editions[editions.length - 1];
     const legend = h("div", { class: "trend-legend" },
-      TREND_METRICS.map(([key, label, color]) => {
+      metrics.map(([key, label, color]) => {
         const base = baseEd[key] || 0;
         const last = lastEd[key] || 0;
         const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
@@ -2761,12 +2778,31 @@ window.HB = window.HB || {};
         " hoppas över som baslinje — ovanligt liten upplaga, troligen corona-neddragen)"
       : "";
     root.append(
-      h("div", { class: "trend-chart-box" }, buildTrendSvg(editions, baseIdx)),
+      h("div", { class: "trend-chart-box" }, buildTrendSvg(editions, baseIdx, metrics)),
       legend,
       h("p", { class: "muted trend-note" },
         "Allt normerat mot " + baseEd.edition + " (= 100 %)" + skippedOutlier +
         ". Antal spelare visas inte — ingen av källorna (Cup Manager/ProCup) ger " +
-        "spelardata, förutom Partilles trupplistor."));
+        "spelardata, förutom Partilles trupplistor."),
+      // Rådata i tabellform under diagrammet — SAMMA editions-lista (alla
+      // arkiverade år, oavsett vilket som råkar vara normeringens
+      // baslinje) så man kan slå upp exakta tal utan att behöva hovra
+      // pluppar i grafen.
+      trendTable(editions, metrics));
+  }
+
+  // Återanvänder .table-box/.standings (samma stil som grupptabellerna i
+  // Tabeller-vyn) i stället för att bygga en egen tabellstil från grunden.
+  function trendTable(editions, metrics) {
+    return h("div", { class: "table-box" },
+      h("table", { class: "standings" },
+        h("thead", null, h("tr", null,
+          h("th", { class: "l" }, "År"),
+          metrics.map(([, label]) => h("th", null, label)))),
+        h("tbody", null, editions.map((e) =>
+          h("tr", null,
+            h("th", { class: "l", scope: "row" }, e.edition),
+            metrics.map(([key]) => h("td", null, String(e[key] ?? 0))))))));
   }
 
   // Cup-över-cuper-läget (flera cuper + ett klubbnamn, se
@@ -2954,23 +2990,26 @@ window.HB = window.HB || {};
       if (teamQuery) matches = matches.filter((m) =>
         matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery) ||
         matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery));
-      const teams = new Set(), classes = new Set(), days = new Set();
+      const teams = new Set(), classes = new Set(), days = new Set(), clubs = new Set();
       for (const m of matches) {
         // Utan lag-/klubbfilter: räkna båda lagen som vanligt (alla lag i
-        // urvalet). MED filter: "Lag" ska betyda "hur många av VÅRA lag
-        // deltog" (deltagande, se användarens exempel "Alingsås HK över
-        // tid") — inte antalet motståndare de råkat möta, så bara den sida
-        // vars namn faktiskt matchar sökningen räknas in.
+        // urvalet). MED filter: "Lag"/"Klubbar" ska betyda "hur många av
+        // VÅRA lag/klubbar deltog" (deltagande, se användarens exempel
+        // "Alingsås HK över tid") — inte antalet motståndare de råkat
+        // möta, så bara den sida vars namn faktiskt matchar sökningen
+        // räknas in.
         const homeIsUs = !teamQuery || matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery);
         const awayIsUs = !teamQuery || matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
         if (homeIsUs && m.home.id != null) teams.add(m.home.id);
         if (awayIsUs && m.away.id != null) teams.add(m.away.id);
+        if (homeIsUs && m.home.club) clubs.add(m.home.club);
+        if (awayIsUs && m.away.club) clubs.add(m.away.club);
         if (m.catName) classes.add(m.catName);
         if (m.start) days.add(Math.floor(m.start / 86400000));
       }
       return {
-        edition: meta.edition, matches: matches.length,
-        teams: teams.size, classes: classes.size, days: days.size,
+        edition: meta.edition, matches: matches.length, teams: teams.size,
+        clubs: clubs.size, classes: classes.size, days: days.size,
       };
     });
     if (computed.every((e) => e.matches === 0)) {
@@ -3698,6 +3737,23 @@ window.HB = window.HB || {};
     return geo;
   }
 
+  // ALLA distinkta klubbar (kända+okända adress) bland matchernas lag —
+  // .club (rent klubbnamn, se normalize() i fetch_cupmanager.py/
+  // fetch_gothia.py) används när det finns, annars faller den tillbaka på
+  // hela lagnamnet (ProCup saknar ett rent klubbnamnsfält helt — kan då
+  // överskatta antalet för klubbar med flera åldersklasslag, men bättre
+  // än att inte räkna med dem alls).
+  function allClubNamesFromMatches(matches) {
+    const names = new Set();
+    for (const m of matches) {
+      for (const side of [m.home, m.away]) {
+        const name = side.club || side.name;
+        if (name) names.add(name);
+      }
+    }
+    return names;
+  }
+
   // Hämtar en ANNAN cups (inte nödvändigtvis den just nu aktiva) klubbdata
   // direkt ur dess CI-byggda snapshot — helt fristående från loadCup()/
   // huvudappens matchdata, så att Karta kan visa flera cuper samtidigt utan
@@ -3706,8 +3762,9 @@ window.HB = window.HB || {};
   function ensureCupClubGeo(cupId) {
     if (HB.api.clubGeo[cupId] || state.mapCupStatus[cupId]) return;
     state.mapCupStatus[cupId] = "loading";
-    const done = (geo) => {
+    const done = (geo, allClubs) => {
       HB.api.clubGeo[cupId] = geo;
+      state.mapCupAllClubs[cupId] = allClubs;
       state.mapCupStatus[cupId] = "done";
       // renderTabs() alltid — kan avgöra om Karta-fliken ska visas/döljas nu
       // när vi vet säkert. render() (dyrare, ritar om hela sidan) bara om
@@ -3723,14 +3780,15 @@ window.HB = window.HB || {};
         fetch(c.dataUrl + "?_=" + Date.now().toString(36)).then((r) => (r.ok ? r.json() : null)),
         HB.api.fetchClubDirectory(),
       ]).then(([data, directory]) => {
-        done(clubGeoFromMatches((data && data.matches) || [], directory || {}));
-      }).catch(() => done({}));
+        const matches = (data && data.matches) || [];
+        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches));
+      }).catch(() => done({}, new Set()));
       return;
     }
     fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
       .then((r) => (r.ok ? r.json() : null))
-      .then((j) => done((j && j.clubs) || {}))
-      .catch(() => done({}));
+      .then((j) => done((j && j.clubs) || {}, allClubNamesFromMatches((j && j.matches) || [])))
+      .catch(() => done({}, new Set()));
   }
 
   // Slår ihop klubbdata för flera valda cuper till en enda lista, med vilka
@@ -3787,15 +3845,25 @@ window.HB = window.HB || {};
 
     const merged = mergedClubGeo(selectedIds);
     const entries = Object.entries(merged);
-    if (!entries.length) {
+    // Alla klubbar (kända+okända adress) i de valda cuperna, oavsett om vi
+    // lyckades placera dem på kartan — mängdskillnaden mot merged nedan ger
+    // hur många som saknar känd adress (många utländska klubbar, se
+    // allClubNamesFromMatches).
+    const allClubs = new Set();
+    for (const id of selectedIds) {
+      for (const name of (state.mapCupAllClubs[id] || [])) allClubs.add(name);
+    }
+    const unknownNames = [...allClubs].filter((name) => !merged[name]).sort((a, b) => a.localeCompare(b, "sv"));
+    if (!entries.length && !unknownNames.length) {
       root.append(h("p", { class: "muted" }, "Ingen klubbdata i valda cuper."));
       return;
     }
     const cityCount = new Set(entries.map(([, info]) => info.city).filter(Boolean)).size;
     const countryCount = new Set(entries.map(([, info]) => info.country).filter(Boolean)).size;
     root.append(h("p", { class: "muted map-count" },
-      entries.length + " klubbar · " + cityCount + " städer" +
-      (countryCount > 1 ? " · " + countryCount + " länder" : "")));
+      allClubs.size + " klubbar totalt · " + entries.length + " med känd adress (" +
+      cityCount + " städer" + (countryCount > 1 ? " · " + countryCount + " länder" : "") + ")" +
+      (unknownNames.length ? " · " + unknownNames.length + " utan känd adress" : "")));
 
     const mapBox = h("div", { class: "map-box" });
     root.append(mapBox);
@@ -3803,13 +3871,18 @@ window.HB = window.HB || {};
       // Om användaren hunnit byta cup/flik medan biblioteket laddade från
       // CDN: mapBox sitter inte kvar i dokumentet längre, rita inte i den.
       if (!document.body.contains(mapBox)) return;
-      buildMap(maplibregl, mapBox, merged, selectedIds.length > 1);
+      buildMap(maplibregl, mapBox, merged, selectedIds.length > 1, unknownNames);
     }).catch((e) => {
       mapBox.replaceChildren(h("p", { class: "muted" }, "Kunde inte ladda kartan: " + e.message));
     });
   }
 
-  function buildMap(maplibregl, container, geo, showCups) {
+  // Fast referenspunkt (Nordsjön, mellan Norge/Danmark/Storbritannien) för
+  // "okänd adress"-nålen — ett symboliskt hav-läge i stället för att gissa
+  // en riktig plats, gott om utrymme där ingen verklig klubb råkar hamna.
+  const UNKNOWN_CLUB_MARKER_LNGLAT = [6, 58.5];
+
+  function buildMap(maplibregl, container, geo, showCups, unknownNames) {
     if (currentMap) { currentMap.remove(); currentMap = null; }
     const map = new maplibregl.Map({
       container,
@@ -3835,6 +3908,20 @@ window.HB = window.HB || {};
         .setLngLat(lngLat)
         .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(popupBody))
         .addTo(map);
+    }
+    if (unknownNames && unknownNames.length) {
+      const cap = 60;
+      const popupBody = h("div", { class: "map-popup map-popup-wide" },
+        h("strong", null, unknownNames.length + " klubbar utan känd adress"),
+        h("p", { class: "muted" },
+          "Ingen av dem har (ännu) spelat i en cup där adressen gick att slå upp."),
+        h("div", { class: "map-unknown-list" },
+          unknownNames.slice(0, cap).join(", ") + (unknownNames.length > cap ? " …" : "")));
+      new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer den från vanliga (blå) klubbnålar
+        .setLngLat(UNKNOWN_CLUB_MARKER_LNGLAT)
+        .setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody))
+        .addTo(map);
+      bounds.extend(UNKNOWN_CLUB_MARKER_LNGLAT);
     }
     if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40, maxZoom: 10 });
   }

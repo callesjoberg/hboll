@@ -160,8 +160,19 @@ window.HB = window.HB || {};
         catId: catId,
         catName: nameOf(category),
         roundName: nameOf(round),
-        home: { id: home.id || refId(home.team), name: nameOf(home) },
-        away: { id: away.id || refId(away.team), name: nameOf(away) },
+        // club: rena klubbnamnet (NameClub.name) UTAN lagsuffix, till
+        // skillnad från "name" (fullt lagnamn, t.ex. "Alingsås HK Blå") —
+        // kräver ingen extra fråga, home/away:s team:{club:{...}} är redan
+        // hämtat för Karta-vyns adress (se TEAM_FIELDS), bara ett extra
+        // steg genom store:n. Används av Trends klubbräkning.
+        home: {
+          id: home.id || refId(home.team), name: nameOf(home),
+          club: (storeGet(store, (storeGet(store, home.team) || {}).club) || {}).name || null,
+        },
+        away: {
+          id: away.id || refId(away.team), name: nameOf(away),
+          club: (storeGet(store, (storeGet(store, away.team) || {}).club) || {}).name || null,
+        },
         res: result,
       });
     }

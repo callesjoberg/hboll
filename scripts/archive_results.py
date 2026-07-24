@@ -61,6 +61,7 @@ def build_index():
         teams = set()
         classes = set()
         days = set()
+        clubs = set()
         for m in matches:
             home, away = m.get("home") or {}, m.get("away") or {}
             if home.get("id") is not None:
@@ -74,6 +75,14 @@ def build_index():
                 # js/api.js normalize()) — enkel heltalsdivision ger alltså
                 # redan rätt svenskt kalenderdatum utan tidszonhantering.
                 days.add(start // 86400000)
+            # club: rena klubbnamnet (se normalize() i fetch_cupmanager.py/
+            # fetch_gothia.py) — saknas i äldre arkivfiler skrapade innan
+            # fältet fanns, då blir "clubs" bara 0 för den upplagan (se
+            # trendClassOptions-liknande fallback i js/app.js).
+            if home.get("club"):
+                clubs.add(home["club"])
+            if away.get("club"):
+                clubs.add(away["club"])
         by_cup.setdefault(cid, {"cupName": d.get("cupName") or cid, "editions": []})
         by_cup[cid]["cupName"] = d.get("cupName") or by_cup[cid]["cupName"]
         by_cup[cid]["editions"].append({
@@ -84,6 +93,7 @@ def build_index():
             "teams": len(teams),
             "classes": len(classes),
             "days": len(days),
+            "clubs": len(clubs),
             "ts": d.get("ts"),
         })
     for cid in by_cup:
