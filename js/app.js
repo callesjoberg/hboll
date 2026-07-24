@@ -1195,10 +1195,17 @@ window.HB = window.HB || {};
     // clubGeoFromMatches/ensureCupClubGeo) — båda vägarna är asynkrona
     // (till skillnad från tidigare då bara cup().dataUrl avgjorde direkt),
     // så vänta som Trend ovan tills vi VET säkert (mapCupStatus "done")
-    // innan ett direktlänkat view=karta nollställs.
+    // innan ett direktlänkat view=karta nollställs. En cup vars INNEVARANDE
+    // upplaga ännu inte publicerat något (t.ex. Lundaspelen inför en ny
+    // säsong — se samma resonemang i renderToolbar/renderContent) kan ändå
+    // ha gott om arkiverad historik att visa via Kartans årsväljare — räcker
+    // därför att ANTINGEN live-data ELLER minst ett spelat arkiverat år
+    // finns, annars göms fliken helt i onödan trots att det finns massor
+    // att titta på.
     ensureCupClubGeo(state.cupId);
     const mapKnown = state.mapCupStatus[state.cupId] === "done";
-    const mapSupported = Object.keys(HB.api.clubGeo[state.cupId] || {}).length > 0;
+    const mapHasArchive = ((archiveEntry && archiveEntry.editions) || []).some((e) => e.matches > 0);
+    const mapSupported = Object.keys(HB.api.clubGeo[state.cupId] || {}).length > 0 || mapHasArchive;
     if (mapKnown && !mapSupported && state.view === "karta") state.view = "schema";
     // Klubb/Lag söker över ALLA cupers arkiv (inte bara innevarande cup) —
     // visas så fort NÅGON cup har minst ett spelat arkiverat år, oavsett
