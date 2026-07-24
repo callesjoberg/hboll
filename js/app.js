@@ -331,6 +331,12 @@ window.HB = window.HB || {};
     yearMatches: {},         // "cupId:edition" -> {status, matches} (session, sparas ej)
     yearRosters: {},         // "cupId:edition" -> {teamId: [{name,shirtNr,position,goals}]} (session, sparas ej)
     archiveEditions: {},     // cupId -> {status, editions: [årtal, nyast först]} (session, sparas ej)
+    // Hela data/archive/index.json (cupId -> {cupName, editions:[{edition,
+    // matches,teams,classes,days,...}]}), laddas EN gång vid appstart (se
+    // init()) — till skillnad från archiveEditions ovan (bara årtalslista,
+    // per cup, exkl. innevarande år) behåller den här alla nyckeltal OCH
+    // innevarande år, vilket Trend-fliken (renderTrendView) behöver.
+    archiveIndex: null,
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -1005,6 +1011,11 @@ window.HB = window.HB || {};
   function renderContent() {
     const main = $("#content");
     main.replaceChildren();
+    // Trend bygger uteslutande på det arkiverade data/archive/index.json —
+    // beror INTE på om innevarande upplaga hunnit publicera ett schema än,
+    // så den måste renderas innan bannern nedan ("inget schema publicerat")
+    // annars skulle blockera den i onödan.
+    if (state.view === "trend") { renderTrendView(main); return; }
     if (state.error) {
       main.append(h("div", { class: "banner error" },
         h("p", null, state.error),
@@ -1051,9 +1062,20 @@ window.HB = window.HB || {};
     // inte än).
     const playoffsSupported = !cup().dataUrl || !!cup().hasPlayoffs;
     if (!playoffsSupported && state.view === "slutspel") state.view = "schema";
+    // Trend kräver minst två arkiverade år för INNEVARANDE cup (samma
+    // tröskel som formkurvans "kan inte visas"-meddelande) — arkivindexet
+    // laddas asynkront (se init()) och kan alltså vara null första gången
+    // renderTabs() körs. Nollställ INTE ett direktlänkat view=trend bara
+    // för att indexet inte hunnit svara än (trendSupported vore då alltid
+    // false) — vänta med att döma ut fliken tills vi vet säkert.
+    const archiveEntry = state.archiveIndex && state.archiveIndex[state.cupId];
+    const trendSupported = ((archiveEntry && archiveEntry.editions) || [])
+      .filter((e) => e.matches > 0).length >= 2;
+    if (state.archiveIndex && !trendSupported && state.view === "trend") state.view = "schema";
     $$("#viewTabs .tab").forEach((b) => {
       const isPlayoffTab = b.dataset.view === "slutspel";
-      b.hidden = isPlayoffTab && !playoffsSupported;
+      const isTrendTab = b.dataset.view === "trend";
+      b.hidden = (isPlayoffTab && !playoffsSupported) || (isTrendTab && !trendSupported);
       b.classList.toggle("on", b.dataset.view === state.view);
       b.setAttribute("aria-selected", String(b.dataset.view === state.view));
     });
@@ -1296,6 +1318,10 @@ window.HB = window.HB || {};
   function renderToolbar() {
     const bar = $("#toolbar");
     bar.replaceChildren();
+    // Trend bygger på HELA arkivet oavsett dag-/klass-/lagfilter (den
+    // filtrerar inte state.matches alls) — verktygsraden vore bara
+    // missvisande brus där.
+    if (state.view === "trend") return;
     if (!state.matches.length) return;
     const clubTeamsList = clubTeams();
     ensureArchiveEditions();
@@ -2520,11 +2546,11 @@ window.HB = window.HB || {};
     ["bana", "Bana", renderHistoryArenaTab],
   ];
 
-  // --- historik, läge "Trend": formkurva över cupens år --------------------
+  // --- Trend-fliken: formkurva över cupens år -------------------------------
   // Bygger helt på nyckeltal som redan finns i data/archive/index.json
   // (matches/teams/classes/days per edition, se build_index() i
   // scripts/archive_results.py) — ingen ytterligare nätverksfråga behövs
-  // utöver den fetchArchiveIndex() som openHistoryDialog redan gjort.
+  // utöver den fetchArchiveIndex() som init() redan gjort vid appstart.
   // Antal SPELARE går inte att visa: ingen källa (Cup Manager/ProCup) ger
   // spelardata alls, förutom Partilles trupplistor (se rosterFor) som
   // ändå bara täcker en enda cup — inte en meningsfull trendlinje.
@@ -2607,54 +2633,50 @@ window.HB = window.HB || {};
     return svg;
   }
 
-  function renderTrendMode(root, idx, cupIds) {
-    let selCup = cupIds.includes(state.cupId) ? state.cupId : cupIds[0];
-    const cupSel = h("select", { class: "select", "aria-label": "Välj cup" },
-      cupIds.map((id) => h("option", { value: id }, idx[id].cupName)));
-    cupSel.value = selCup;
-    const body = h("div", { class: "trend-body" });
-    root.replaceChildren(h("div", { class: "history-controls" }, cupSel), body);
-
-    function refresh() {
-      const editions = (idx[selCup].editions || [])
-        .filter((e) => e.matches > 0)
-        .slice().sort((a, b) => a.edition.localeCompare(b.edition));
-      if (editions.length < 2) {
-        body.replaceChildren(h("p", { class: "muted" },
-          idx[selCup].cupName + " har bara " + editions.length +
-          " arkiverat år — behöver minst två för att visa en formkurva."));
-        return;
-      }
-      const baseIdx = trendBaselineIndex(editions);
-      const baseEd = editions[baseIdx];
-      const lastEd = editions[editions.length - 1];
-      const legend = h("div", { class: "trend-legend" },
-        TREND_METRICS.map(([key, label, color]) => {
-          const base = baseEd[key] || 0;
-          const last = lastEd[key] || 0;
-          const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
-          return h("div", { class: "trend-legend-item" },
-            h("span", { class: "trend-swatch", style: "background:" + color }),
-            h("span", null, label + ": " + base + " → " + last),
-            pct == null || lastEd === baseEd ? null : h("span",
-              { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
-              (pct > 0 ? "+" : "") + pct + " %"));
-        }));
-      const skippedOutlier = baseIdx > 0
-        ? " (" + editions.slice(0, baseIdx).map((e) => e.edition).join(", ") +
-          " hoppas över som baslinje — ovanligt liten upplaga, troligen corona-neddragen)"
-        : "";
-      body.replaceChildren(
-        h("div", { class: "trend-chart-box" }, buildTrendSvg(editions, baseIdx)),
-        legend,
-        h("p", { class: "muted trend-note" },
-          "Allt normerat mot " + baseEd.edition + " (= 100 %)" + skippedOutlier +
-          ". Antal spelare visas inte — ingen av källorna (Cup Manager/ProCup) ger " +
-          "spelardata, förutom Partilles trupplistor."));
+  // Egen toppnivåflik (bredvid Schema/Tabeller/Slutspel/Bana) för INNEVARANDE
+  // cup — flyttad hit från en Historik-modalflik 2026-07-24, då den kändes
+  // avskild från resten av appen (särskilt efter att fritt årsval byggdes in
+  // direkt i huvudvyn, se state.years/ensureYearMatches). Ingen egen
+  // cupväljare längre: byt cup som vanligt i headern, samma som alla andra
+  // flikar. state.archiveIndex laddas en gång vid appstart (se init()).
+  function renderTrendView(root) {
+    const idx = state.archiveIndex || {};
+    const entry = idx[state.cupId];
+    const editions = ((entry && entry.editions) || [])
+      .filter((e) => e.matches > 0)
+      .slice().sort((a, b) => a.edition.localeCompare(b.edition));
+    if (editions.length < 2) {
+      root.append(h("div", { class: "banner" },
+        cup().name + " har bara " + editions.length +
+        " arkiverat år — behöver minst två för att visa en formkurva."));
+      return;
     }
-
-    cupSel.addEventListener("change", () => { selCup = cupSel.value; refresh(); });
-    refresh();
+    const baseIdx = trendBaselineIndex(editions);
+    const baseEd = editions[baseIdx];
+    const lastEd = editions[editions.length - 1];
+    const legend = h("div", { class: "trend-legend" },
+      TREND_METRICS.map(([key, label, color]) => {
+        const base = baseEd[key] || 0;
+        const last = lastEd[key] || 0;
+        const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
+        return h("div", { class: "trend-legend-item" },
+          h("span", { class: "trend-swatch", style: "background:" + color }),
+          h("span", null, label + ": " + base + " → " + last),
+          pct == null || lastEd === baseEd ? null : h("span",
+            { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
+            (pct > 0 ? "+" : "") + pct + " %"));
+      }));
+    const skippedOutlier = baseIdx > 0
+      ? " (" + editions.slice(0, baseIdx).map((e) => e.edition).join(", ") +
+        " hoppas över som baslinje — ovanligt liten upplaga, troligen corona-neddragen)"
+      : "";
+    root.append(
+      h("div", { class: "trend-chart-box" }, buildTrendSvg(editions, baseIdx)),
+      legend,
+      h("p", { class: "muted trend-note" },
+        "Allt normerat mot " + baseEd.edition + " (= 100 %)" + skippedOutlier +
+        ". Antal spelare visas inte — ingen av källorna (Cup Manager/ProCup) ger " +
+        "spelardata, förutom Partilles trupplistor."));
   }
 
   function renderBrowseMode(root, idx, cupIds) {
@@ -2744,7 +2766,7 @@ window.HB = window.HB || {};
       return;
     }
 
-    let mode = "compare"; // "compare" (jämför lag mellan år) | "browse" (bläddra i ett helt år) | "trend" (formkurva)
+    let mode = "compare"; // "compare" (jämför lag mellan år) | "browse" (bläddra i ett helt år)
 
     function renderShell() {
       dlg.replaceChildren(
@@ -2753,12 +2775,10 @@ window.HB = window.HB || {};
           h("span", { class: "cat" }, "Historik"),
           h("div", { class: "seg", role: "group", "aria-label": "Historikläge" },
             chip("Jämför lag", mode === "compare", () => { mode = "compare"; renderShell(); }),
-            chip("Bläddra i ett år", mode === "browse", () => { mode = "browse"; renderShell(); }),
-            chip("Trend", mode === "trend", () => { mode = "trend"; renderShell(); }))),
+            chip("Bläddra i ett år", mode === "browse", () => { mode = "browse"; renderShell(); }))),
         h("div", { class: "history-mode-body" }));
       const modeBody = dlg.querySelector(".history-mode-body");
       if (mode === "compare") renderCompareMode(modeBody);
-      else if (mode === "trend") renderTrendMode(modeBody, idx, cupIds);
       else renderBrowseMode(modeBody, idx, cupIds);
       if (!dlg.open) dlg.showModal();
     }
@@ -4447,6 +4467,16 @@ window.HB = window.HB || {};
       saveUi(); // spara den delade vyn som din egen, och normalisera URL:en
     }
     loadCup();
+
+    // Trend-fliken behöver arkivindexet för att veta om den ska visas alls
+    // (döljs annars om innevarande cup har färre än två arkiverade år) —
+    // hämtas en gång, oberoende av loadCup(), samma index.json som
+    // ensureArchiveEditions()/Historik redan använder.
+    HB.api.fetchArchiveIndex().then((idx) => {
+      state.archiveIndex = idx || {};
+      renderTabs();
+      if (state.view === "trend") render();
+    }).catch(() => { state.archiveIndex = {}; renderTabs(); });
 
     // Auto-uppdatera var tredje minut — men bara cuper som faktiskt pågår.
     const isLiveCup = () => refreshTtl(state.matches) <= 180000;
