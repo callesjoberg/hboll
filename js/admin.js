@@ -158,6 +158,27 @@
       wrap.append(inp);
       return wrap;
     };
+    // Sport styr bl.a. vilka cuper som visas ihop i sportväljaren i
+    // inställningar samt vilka Trend/Karta erbjuder att jämföra mot
+    // varandra (js/app.js) — select i stället för fritext så värdet alltid
+    // är ett av de två appen faktiskt känner igen.
+    const sportField = () => {
+      const wrap = document.createElement("label");
+      wrap.className = "admin-field";
+      wrap.append("Sport");
+      const sel = document.createElement("select");
+      sel.className = "select";
+      for (const [value, label] of [["handboll", "Handboll"], ["fotboll", "Fotboll"]]) {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = label;
+        if ((cup.sport || "handboll") === value) opt.selected = true;
+        sel.append(opt);
+      }
+      sel.addEventListener("change", () => { cup.sport = sel.value; });
+      wrap.append(sel);
+      return wrap;
+    };
     const head = document.createElement("div");
     head.className = "admin-cup-head";
     const title = document.createElement("strong");
@@ -189,6 +210,7 @@
       field("Namn", "name", "Åhus Beach"),
       field("Ort", "place", "Åhus"),
       field("År", "edition", "2026"),
+      sportField(),
       field("Värd", "host", "…cupmanager.net"),
       field("Turnerings-ID", "tournamentId", "8 siffror (Cup Manager)"),
       field("Datafil (ProCup)", "dataUrl", "data/….json"),

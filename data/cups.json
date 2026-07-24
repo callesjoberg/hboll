@@ -9,7 +9,8 @@
       "tournamentId": 70944382,
       "beach": true,
       "lat": 55.9167,
-      "lon": 14.2833
+      "lon": 14.2833,
+      "sport": "handboll"
     },
     {
       "id": "potatis",
@@ -20,7 +21,8 @@
       "tournamentId": 67026461,
       "beach": false,
       "lat": 57.9303,
-      "lon": 12.5334
+      "lon": 12.5334,
+      "sport": "handboll"
     },
     {
       "id": "hallby",
@@ -31,7 +33,8 @@
       "tournamentId": 63611315,
       "beach": false,
       "lat": 57.7815,
-      "lon": 14.1562
+      "lon": 14.1562,
+      "sport": "handboll"
     },
     {
       "id": "bua",
@@ -42,7 +45,8 @@
       "tournamentId": 69938110,
       "beach": true,
       "lat": 57.2378,
-      "lon": 12.1219
+      "lon": 12.1219,
+      "sport": "handboll"
     },
     {
       "id": "bohus",
@@ -52,8 +56,9 @@
       "host": "bohuscup.cupmanager.net",
       "tournamentId": 69150040,
       "beach": false,
-      "lat": 57.8710,
-      "lon": 11.9805
+      "lat": 57.871,
+      "lon": 11.9805,
+      "sport": "handboll"
     },
     {
       "id": "jarnvagen",
@@ -64,7 +69,8 @@
       "dataUrl": "data/jarnvagen-2026.json",
       "beach": false,
       "lat": 59.0646,
-      "lon": 15.1099
+      "lon": 15.1099,
+      "sport": "handboll"
     },
     {
       "id": "partille",
@@ -77,7 +83,8 @@
       "hasRosters": true,
       "beach": false,
       "lat": 57.7395,
-      "lon": 12.1064
+      "lon": 12.1064,
+      "sport": "handboll"
     },
     {
       "id": "skadevi",
@@ -87,8 +94,9 @@
       "host": "skadevihandboll.cupmanager.net",
       "tournamentId": 73513085,
       "beach": false,
-      "lat": 58.3910,
-      "lon": 13.8454
+      "lat": 58.391,
+      "lon": 13.8454,
+      "sport": "handboll"
     },
     {
       "id": "hellton",
@@ -99,7 +107,8 @@
       "tournamentId": 75678071,
       "beach": false,
       "lat": 59.3793,
-      "lon": 13.5036
+      "lon": 13.5036,
+      "sport": "handboll"
     },
     {
       "id": "lundaspelen",
@@ -110,7 +119,8 @@
       "tournamentId": 76285495,
       "beach": false,
       "lat": 55.7047,
-      "lon": 13.1910
+      "lon": 13.191,
+      "sport": "handboll"
     },
     {
       "id": "norden",
@@ -121,7 +131,8 @@
       "tournamentId": 76037575,
       "beach": false,
       "lat": 57.7089,
-      "lon": 11.9746
+      "lon": 11.9746,
+      "sport": "handboll"
     },
     {
       "id": "eken",
@@ -132,7 +143,8 @@
       "tournamentId": 69947527,
       "beach": false,
       "lat": 59.2738,
-      "lon": 18.0870
+      "lon": 18.087,
+      "sport": "handboll"
     },
     {
       "id": "orebro",
@@ -143,7 +155,8 @@
       "tournamentId": 72655435,
       "beach": false,
       "lat": 59.2741,
-      "lon": 15.2066
+      "lon": 15.2066,
+      "sport": "handboll"
     },
     {
       "id": "goteborgcup",
@@ -154,7 +167,8 @@
       "tournamentId": 72459189,
       "beach": false,
       "lat": 57.7089,
-      "lon": 11.9746
+      "lon": 11.9746,
+      "sport": "handboll"
     },
     {
       "id": "irstablixten",
@@ -165,7 +179,8 @@
       "tournamentId": 65542011,
       "beach": false,
       "lat": 59.6295,
-      "lon": 16.6015
+      "lon": 16.6015,
+      "sport": "handboll"
     },
     {
       "id": "junicupen",
@@ -176,7 +191,8 @@
       "tournamentId": 69888831,
       "beach": false,
       "lat": 58.3498,
-      "lon": 11.9422
+      "lon": 11.9422,
+      "sport": "handboll"
     },
     {
       "id": "sundsvall",
@@ -187,7 +203,8 @@
       "tournamentId": 61576575,
       "beach": false,
       "lat": 62.3908,
-      "lon": 17.3069
+      "lon": 17.3069,
+      "sport": "handboll"
     },
     {
       "id": "tyreso",
@@ -198,7 +215,8 @@
       "tournamentId": 65920031,
       "beach": false,
       "lat": 59.2489,
-      "lon": 18.2266
+      "lon": 18.2266,
+      "sport": "handboll"
     },
     {
       "id": "skuru",
@@ -209,7 +227,8 @@
       "tournamentId": 72717882,
       "beach": false,
       "lat": 59.3103,
-      "lon": 18.1638
+      "lon": 18.1638,
+      "sport": "handboll"
     },
     {
       "id": "vikingaspelen",
@@ -220,7 +239,8 @@
       "dataUrl": "data/vikingaspelen-2026.json",
       "beach": false,
       "lat": 55.7967,
-      "lon": 13.1024
+      "lon": 13.1024,
+      "sport": "handboll"
     },
     {
       "id": "katrineholm",
@@ -231,7 +251,8 @@
       "dataUrl": "data/katrineholm-2026.json",
       "beach": false,
       "lat": 58.9948,
-      "lon": 16.2110
+      "lon": 16.211,
+      "sport": "handboll"
     },
     {
       "id": "aranas",
@@ -242,7 +263,8 @@
       "dataUrl": "data/aranas-2025.json",
       "beach": false,
       "lat": 57.4878,
-      "lon": 12.0765
+      "lon": 12.0765,
+      "sport": "handboll"
     },
     {
       "id": "goteborgbeach",
@@ -253,7 +275,8 @@
       "tournamentId": 73897776,
       "beach": true,
       "lat": 57.7646,
-      "lon": 11.8006
+      "lon": 11.8006,
+      "sport": "handboll"
     },
     {
       "id": "goteborgfotboll",

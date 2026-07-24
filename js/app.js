@@ -1124,10 +1124,36 @@ window.HB = window.HB || {};
     else renderTables(main);
   }
 
+  const SPORT_LABELS = { handboll: "Handboll", fotboll: "Fotboll" };
+
+  // Vilken sport cupväljaren i inställningar just nu VISAR — skilt från
+  // innevarande cups egen sport (state.cupId/cup().sport), så man kan bläddra
+  // bland t.ex. fotbollscuper utan att först behöva byta aktiv cup. null =
+  // följ innevarande cups sport (förvalet, nollställs varje gång dialogen
+  // öppnas, se openSettings). Modulnivå, inte state — rent UI-tillstånd för
+  // själva dialogen, inget att spara mellan besök.
+  let cupSwitcherSport = null;
+
   function renderCups() {
+    const allCups = HB.allCups();
+    // En sportväljare bara om det faktiskt FINNS mer än en sport bland
+    // cuperna — annars bara ett meningslöst extra klick för alla som bara
+    // någonsin kör handboll.
+    const sports = [...new Set(allCups.map((c) => c.sport || "handboll"))];
+    const activeSport = cupSwitcherSport || cup().sport || "handboll";
+    const sportToggleEl = $("#sportToggle");
+    if (sportToggleEl) {
+      sportToggleEl.hidden = sports.length < 2;
+      sportToggleEl.replaceChildren(
+        ...sports.map((sp) => chip(SPORT_LABELS[sp] || sp, sp === activeSport, () => {
+          cupSwitcherSport = sp;
+          renderCups();
+        })));
+    }
+
     const row = $("#cupRow");
     row.replaceChildren(
-      ...HB.allCups().map((c) =>
+      ...allCups.filter((c) => (c.sport || "handboll") === activeSport).map((c) =>
         h("button", {
           class: "cup" + (c.id === state.cupId ? " on" : ""),
           type: "button", onclick: () => switchCup(c.id),
@@ -2957,10 +2983,18 @@ window.HB = window.HB || {};
   // som faktiskt har någon arkiverad historik alls, oavsett om de stödjer
   // formkurvans egna >=2-årskrav (ett enda deltagar-år är fortfarande
   // relevant information).
-  function trendCupOptions() {
+  //
+  // sportFilter (valfri): begränsar till en sport (t.ex. "handboll" eller
+  // "fotboll", se cup.sport i data/cups.json). Trend-jämförelsegrafen
+  // använder detta (blandar man in fotbollscupers matcher/lag-antal i en
+  // handbollsjämförelse blir talen meningslösa) — Klubb/Lag gör INTE det,
+  // en klubb kan i teorin ha sektioner i flera sporter och hela poängen
+  // där är att hitta ALLA cuper den förekommer i.
+  function trendCupOptions(sportFilter) {
     const idx = state.archiveIndex || {};
     return HB.allCups()
       .filter((c) => (idx[c.id] && idx[c.id].editions || []).some((e) => e.matches > 0))
+      .filter((c) => !sportFilter || (c.sport || "handboll") === sportFilter)
       .map((c) => c.id);
   }
 
@@ -2989,12 +3023,21 @@ window.HB = window.HB || {};
   // vore ett obegripligt filter att applicera på andra cupers helt egna
   // klassnamnsscheman i jämförelseläget.
   function renderTrendView(root) {
-    const cupOptions = trendCupOptions();
+    // Bara cuper av SAMMA sport som innevarande cup — att jämföra t.ex.
+    // matchantal mellan en handbolls- och en fotbollscup i samma graf är
+    // meningslöst. Byt aktiv cup (Inställningar) för att jämföra fotbolls-
+    // cuper med varandra i stället.
+    const cupOptions = trendCupOptions(cup().sport || "handboll");
     if (!cupOptions.length) {
       root.append(h("div", { class: "banner" },
         "Ingen cup har tillräckligt med arkiverad historik för en formkurva."));
       return;
     }
+    // Städa bort ev. kvarvarande urval från en ANNAN sport (t.ex. om man
+    // valde flera fotbollscuper och sedan bytte aktiv cup till en
+    // handbollscup i Inställningar) — annars skulle den fortfarande
+    // blandas in i jämförelsen trots att den inte ens syns i väljaren längre.
+    for (const id of [...state.trendCupIds]) if (!cupOptions.includes(id)) state.trendCupIds.delete(id);
     if (!state.trendCupIds.size) state.trendCupIds.add(state.cupId);
 
     const cupPicker = buildPicker({
@@ -4416,11 +4459,18 @@ window.HB = window.HB || {};
                                  // motiverar att faktiskt återskapa kartinstansen.
 
   function renderMapView(root) {
-    // Alla cuper listas nu, inte bara klassiska Cup Manager-cuper —
-    // ProCup/Gothia-cuper kan också få (gissad) klubbdata, se
-    // ensureCupClubGeo/clubGeoFromMatches. En cup utan några träffar ger
-    // bara en tom karta för just den, inget att spärra bort i förväg.
-    const mapCupOptions = HB.allCups();
+    // Alla cuper AV SAMMA SPORT som innevarande cup listas — inte bara
+    // klassiska Cup Manager-cuper (ProCup/Gothia-cuper kan också få
+    // (gissad) klubbdata, se ensureCupClubGeo/clubGeoFromMatches), men att
+    // blanda t.ex. handbolls- och fotbollsklubbar på samma karta är
+    // förvirrande snarare än informativt. Byt aktiv cup (Inställningar)
+    // för att se fotbollscupernas klubbar i stället. En cup utan några
+    // träffar ger bara en tom karta för just den, inget att spärra bort
+    // i förväg.
+    const mapCupOptions = HB.allCups().filter((c) => (c.sport || "handboll") === (cup().sport || "handboll"));
+    // Städa bort ev. kvarvarande urval från en ANNAN sport, se motsvarande
+    // kommentar i renderTrendView.
+    for (const id of [...state.mapCupIds]) if (!mapCupOptions.some((c) => c.id === id)) state.mapCupIds.delete(id);
     // Förval: bara innevarande cup, en gång — renderTabs() garanterar redan
     // att man bara kan NÅ Karta-fliken när innevarande cup stödjer den, så
     // ingen ytterligare giltighetskoll behövs här.
@@ -5701,6 +5751,11 @@ window.HB = window.HB || {};
     // öppnas, annars kan den visa fel läge efter en sådan ändring.
     const openSettings = () => {
       advTableBox.checked = state.advancedPlayoffTable;
+      // Öppna alltid mot INNEVARANDE cups sport, oavsett vilken sport man
+      // råkade bläddra i senast dialogen var öppen — annars kan den se ut
+      // att "glömt" vilken cup som faktiskt är aktiv.
+      cupSwitcherSport = null;
+      renderCups();
       dlg.showModal();
     };
     $("#settingsBtn").addEventListener("click", openSettings);
