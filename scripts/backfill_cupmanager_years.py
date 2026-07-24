@@ -105,13 +105,23 @@ def main():
                 print(f"  {cup['id']} {year} (tid {tid}): HOPPAR ÖVER ({e})")
                 continue
             matches = normalize(store)
-            # Skriv ändå om matches är tom: till skillnad från den löpande
-            # skrapningen av INNEVARANDE år (där "inget publicerat än" bara
-            # betyder "kolla igen senare") vet vi HÄR redan att upplagan
-            # faktiskt existerat (Cup$editions listade den) — 0 matcher
-            # betyder alltså "aldrig något schema publicerat", troligen en
-            # inställd upplaga (t.ex. corona 2021). Mer informativt att visa
-            # den som en riktig nollpunkt i Trend än att tyst hoppa över den.
+            if not matches and year == cup.get("edition"):
+                # Innevarande, aktivt spårade upplaga (cups.json "edition")
+                # — "inget publicerat än" betyder bara "kolla igen senare",
+                # INTE en bekräftad inställd upplaga. archive_results.py
+                # skriver redan denna fil automatiskt så fort snapshot-
+                # datat får riktiga matcher; skriver vi en nollfil här i
+                # förtid visar Trend en missvisande "0" för en cup som
+                # bara ännu inte spelats/publicerats.
+                print(f"  {cup['id']} {year}: 0 matcher men är innevarande upplaga — hoppar över")
+                continue
+            # Skriv ändå om matches är tom för ÄLDRE upplagor: till skillnad
+            # från innevarande år (ovan) vet vi HÄR redan att upplagan
+            # faktiskt existerat (Cup$editions listade den) OCH att den
+            # inte längre är aktiv/spårad — 0 matcher betyder alltså
+            # "aldrig något schema publicerat", troligen en inställd
+            # upplaga (t.ex. corona 2021). Mer informativt att visa den
+            # som en riktig nollpunkt i Trend än att tyst hoppa över den.
             dest.write_text(json.dumps({
                 "cupId": cup["id"], "cupName": cup["name"], "edition": year,
                 "ts": int(time.time() * 1000), "matches": matches,
