@@ -92,6 +92,16 @@ HB.CUPS = [
     beach: false,
     lat: 57.7395, lon: 12.1064,
   },
+  {
+    id: "goteborgbeach",
+    name: "Göteborg Beachfestival",
+    place: "Björlanda, Göteborg",
+    edition: "2026",
+    host: "goteborgbeachfestival.cupmanager.net",
+    tournamentId: 73897776,
+    beach: true,
+    lat: 57.7646, lon: 11.8006,
+  },
 ];
 
 // Egna cuper som användaren lagt till via UI:t (sparas i localStorage).
