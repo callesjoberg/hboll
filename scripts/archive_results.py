@@ -58,6 +58,22 @@ def build_index():
             continue
         matches = d.get("matches") or []
         finished = sum(1 for m in matches if (m.get("res") or {}).get("fin"))
+        teams = set()
+        classes = set()
+        days = set()
+        for m in matches:
+            home, away = m.get("home") or {}, m.get("away") or {}
+            if home.get("id") is not None:
+                teams.add(home["id"])
+            if away.get("id") is not None:
+                teams.add(away["id"])
+            classes.add(m.get("catId") if m.get("catId") is not None else m.get("catName"))
+            start = m.get("start")
+            if start:
+                # "start" är svensk väggtid kodad som UTC-epoch-ms (se
+                # js/api.js normalize()) — enkel heltalsdivision ger alltså
+                # redan rätt svenskt kalenderdatum utan tidszonhantering.
+                days.add(start // 86400000)
         by_cup.setdefault(cid, {"cupName": d.get("cupName") or cid, "editions": []})
         by_cup[cid]["cupName"] = d.get("cupName") or by_cup[cid]["cupName"]
         by_cup[cid]["editions"].append({
@@ -65,6 +81,9 @@ def build_index():
             "file": f"data/archive/{f.name}",
             "matches": len(matches),
             "finished": finished,
+            "teams": len(teams),
+            "classes": len(classes),
+            "days": len(days),
             "ts": d.get("ts"),
         })
     for cid in by_cup:

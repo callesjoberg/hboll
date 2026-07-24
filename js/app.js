@@ -2520,6 +2520,143 @@ window.HB = window.HB || {};
     ["bana", "Bana", renderHistoryArenaTab],
   ];
 
+  // --- historik, läge "Trend": formkurva över cupens år --------------------
+  // Bygger helt på nyckeltal som redan finns i data/archive/index.json
+  // (matches/teams/classes/days per edition, se build_index() i
+  // scripts/archive_results.py) — ingen ytterligare nätverksfråga behövs
+  // utöver den fetchArchiveIndex() som openHistoryDialog redan gjort.
+  // Antal SPELARE går inte att visa: ingen källa (Cup Manager/ProCup) ger
+  // spelardata alls, förutom Partilles trupplistor (se rosterFor) som
+  // ändå bara täcker en enda cup — inte en meningsfull trendlinje.
+  const TREND_METRICS = [
+    ["matches", "Matcher", "var(--blue)"],
+    ["teams", "Lag", "var(--yellow)"],
+    ["classes", "Klasser", "var(--won)"],
+    ["days", "Speldagar", "var(--purple)"],
+  ];
+
+  // Flera cupers första arkiverade år (2020/2021) var kraftigt coronaneddragna
+  // (t.ex. Åhus Beach 2020: 107 matcher mot 4600+ varje år sedan) — indexerar
+  // man rakt av mot ÅR ETT blir den upplagan en missvisande 100%-baslinje som
+  // trycker ihop alla andra linjer nära botten. Väljer i stället första året
+  // som når minst 40 % av cupens STÖRSTA matchantal som ankare; onormalt små
+  // tidiga år visas fortfarande som punkter på kurvan, men styr inte skalan.
+  function trendBaselineIndex(editions) {
+    const maxMatches = Math.max(...editions.map((e) => e.matches || 0));
+    const threshold = maxMatches * 0.4;
+    const i = editions.findIndex((e) => (e.matches || 0) >= threshold);
+    return i === -1 ? 0 : i;
+  }
+
+  // Linjediagram, allt normerat till % av baslinjeåret (100 %) — så matcher
+  // (tusental) och speldagar (ental) kan visas i samma diagram och svara
+  // direkt på "växer eller minskar cupen".
+  function buildTrendSvg(editions, baseIdx) {
+    const w = 640, h = 260, padL = 26, padR = 26, padT = 16, padB = 26;
+    const innerW = w - padL - padR, innerH = h - padT - padB;
+    const n = editions.length;
+    const x = (i) => padL + (n === 1 ? innerW / 2 : (innerW * i) / (n - 1));
+    const series = TREND_METRICS.map(([key, label, color]) => {
+      const base = editions[baseIdx][key] || 0;
+      const raw = editions.map((e) => e[key] || 0);
+      const values = raw.map((v) => (base > 0 ? (v / base) * 100 : (v > 0 ? 100 : 0)));
+      return { key, label, color, values, raw };
+    });
+    const allVals = series.flatMap((s) => s.values);
+    const maxV = Math.max(100, ...allVals) * 1.1;
+    const y = (v) => padT + innerH - (v / (maxV || 1)) * innerH;
+
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "trend-svg");
+    svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+    const baseline = document.createElementNS(NS, "line");
+    baseline.setAttribute("x1", String(padL)); baseline.setAttribute("x2", String(w - padR));
+    baseline.setAttribute("y1", String(y(100))); baseline.setAttribute("y2", String(y(100)));
+    baseline.setAttribute("class", "trend-baseline");
+    svg.appendChild(baseline);
+
+    editions.forEach((e, i) => {
+      const t = document.createElementNS(NS, "text");
+      t.setAttribute("x", String(x(i))); t.setAttribute("y", String(h - 6));
+      t.setAttribute("text-anchor", "middle"); t.setAttribute("class", "trend-axis-label");
+      t.textContent = e.edition;
+      svg.appendChild(t);
+    });
+
+    for (const s of series) {
+      const poly = document.createElementNS(NS, "polyline");
+      poly.setAttribute("points", s.values.map((v, i) => x(i) + "," + y(v)).join(" "));
+      poly.setAttribute("class", "trend-line");
+      poly.setAttribute("style", "stroke:" + s.color);
+      svg.appendChild(poly);
+      s.values.forEach((v, i) => {
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", String(x(i))); c.setAttribute("cy", String(y(v))); c.setAttribute("r", "3.5");
+        c.setAttribute("class", "trend-dot");
+        c.setAttribute("style", "fill:" + s.color);
+        const title = document.createElementNS(NS, "title");
+        title.textContent = s.label + " " + editions[i].edition + ": " + s.raw[i] +
+          " (" + Math.round(v) + " % av " + editions[baseIdx].edition + ")";
+        c.appendChild(title);
+        svg.appendChild(c);
+      });
+    }
+    return svg;
+  }
+
+  function renderTrendMode(root, idx, cupIds) {
+    let selCup = cupIds.includes(state.cupId) ? state.cupId : cupIds[0];
+    const cupSel = h("select", { class: "select", "aria-label": "Välj cup" },
+      cupIds.map((id) => h("option", { value: id }, idx[id].cupName)));
+    cupSel.value = selCup;
+    const body = h("div", { class: "trend-body" });
+    root.replaceChildren(h("div", { class: "history-controls" }, cupSel), body);
+
+    function refresh() {
+      const editions = (idx[selCup].editions || [])
+        .filter((e) => e.matches > 0)
+        .slice().sort((a, b) => a.edition.localeCompare(b.edition));
+      if (editions.length < 2) {
+        body.replaceChildren(h("p", { class: "muted" },
+          idx[selCup].cupName + " har bara " + editions.length +
+          " arkiverat år — behöver minst två för att visa en formkurva."));
+        return;
+      }
+      const baseIdx = trendBaselineIndex(editions);
+      const baseEd = editions[baseIdx];
+      const lastEd = editions[editions.length - 1];
+      const legend = h("div", { class: "trend-legend" },
+        TREND_METRICS.map(([key, label, color]) => {
+          const base = baseEd[key] || 0;
+          const last = lastEd[key] || 0;
+          const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
+          return h("div", { class: "trend-legend-item" },
+            h("span", { class: "trend-swatch", style: "background:" + color }),
+            h("span", null, label + ": " + base + " → " + last),
+            pct == null || lastEd === baseEd ? null : h("span",
+              { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
+              (pct > 0 ? "+" : "") + pct + " %"));
+        }));
+      const skippedOutlier = baseIdx > 0
+        ? " (" + editions.slice(0, baseIdx).map((e) => e.edition).join(", ") +
+          " hoppas över som baslinje — ovanligt liten upplaga, troligen corona-neddragen)"
+        : "";
+      body.replaceChildren(
+        h("div", { class: "trend-chart-box" }, buildTrendSvg(editions, baseIdx)),
+        legend,
+        h("p", { class: "muted trend-note" },
+          "Allt normerat mot " + baseEd.edition + " (= 100 %)" + skippedOutlier +
+          ". Antal spelare visas inte — ingen av källorna (Cup Manager/ProCup) ger " +
+          "spelardata, förutom Partilles trupplistor."));
+    }
+
+    cupSel.addEventListener("change", () => { selCup = cupSel.value; refresh(); });
+    refresh();
+  }
+
   function renderBrowseMode(root, idx, cupIds) {
     // hs = lokal, isolerad "state" för EN vald cup+edition — motsvarar
     // huvudappens state.matches/state.view men rör aldrig den riktiga
@@ -2607,7 +2744,7 @@ window.HB = window.HB || {};
       return;
     }
 
-    let mode = "compare"; // "compare" (jämför lag mellan år) | "browse" (bläddra i ett helt år)
+    let mode = "compare"; // "compare" (jämför lag mellan år) | "browse" (bläddra i ett helt år) | "trend" (formkurva)
 
     function renderShell() {
       dlg.replaceChildren(
@@ -2616,10 +2753,12 @@ window.HB = window.HB || {};
           h("span", { class: "cat" }, "Historik"),
           h("div", { class: "seg", role: "group", "aria-label": "Historikläge" },
             chip("Jämför lag", mode === "compare", () => { mode = "compare"; renderShell(); }),
-            chip("Bläddra i ett år", mode === "browse", () => { mode = "browse"; renderShell(); }))),
+            chip("Bläddra i ett år", mode === "browse", () => { mode = "browse"; renderShell(); }),
+            chip("Trend", mode === "trend", () => { mode = "trend"; renderShell(); }))),
         h("div", { class: "history-mode-body" }));
       const modeBody = dlg.querySelector(".history-mode-body");
       if (mode === "compare") renderCompareMode(modeBody);
+      else if (mode === "trend") renderTrendMode(modeBody, idx, cupIds);
       else renderBrowseMode(modeBody, idx, cupIds);
       if (!dlg.open) dlg.showModal();
     }

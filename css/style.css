@@ -12,6 +12,7 @@
   --line: #dfe5ec;
   --live: #d22f27;
   --won: #2f9e44;
+  --purple: #8854d0;
   --radius: 10px;
   --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
   /* Innehållets breddtak — smalt på mobil (nästan alltid under detta ändå),
@@ -49,6 +50,7 @@
     --card: #16202e;
     --line: #26313f;
     --shadow: none;
+    --purple: #b98cf2;
   }
 }
 
@@ -63,6 +65,7 @@
   --card: #16202e;
   --line: #26313f;
   --shadow: none;
+  --purple: #b98cf2;
 }
 
 :root[data-theme="light"] {
@@ -74,6 +77,7 @@
   --card: #ffffff;
   --line: #dfe5ec;
   --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
+  --purple: #8854d0;
 }
 
 * { box-sizing: border-box; }
@@ -1463,6 +1467,52 @@ dialog.history-dialog {
 .history-controls input { width: 100%; }
 
 .history-mode-body { margin-top: 14px; }
+
+/* "Trend" ------------------------------------------------------------------ */
+
+.trend-chart-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.trend-svg { display: block; width: 100%; height: auto; }
+
+.trend-baseline { stroke: var(--line); stroke-width: 1; stroke-dasharray: 4 3; }
+
+.trend-axis-label { fill: var(--ink-soft); font-size: 11px; }
+
+.trend-line { fill: none; stroke-width: 2; opacity: 0.85; }
+
+.trend-dot { stroke: var(--card); stroke-width: 1.5; cursor: default; }
+
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 12px;
+}
+
+.trend-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.trend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.trend-delta { font-weight: 600; }
+.trend-delta.up { color: var(--won); }
+.trend-delta.down { color: var(--live); }
+
+.trend-note { margin-top: 10px; font-size: 12px; }
 
 /* "Bläddra i ett år" ----------------------------------------------------- */
 
