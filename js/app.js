@@ -578,7 +578,21 @@ window.HB = window.HB || {};
       // så Karta-fliken skulle permanent se ut att sakna data tills cachen
       // en dag naturligt förnyas). Lämna clubGeo osatt i stället, så
       // ensureCupClubGeo hämtar riktig geodata från snapshotten.
-      if (cached.clubs) HB.api.clubGeo[c.id] = cached.clubs;
+      //
+      // mapCupAllClubs/mapCupStatus sätts HÄR också (inte bara i
+      // ensureCupClubGeo:s done()) — annars vinner detta snabbare, direkta
+      // cache-läsvägen alltid racet mot ensureCupClubGeo:s egen (senare
+      // startade) hämtning, vars guard (if HB.api.clubGeo[cupId] ...)
+      // redan ser clubGeo som satt och hoppar över hela sin done()-körning
+      // — så mapCupAllClubs för INNEVARANDE cup skulle aldrig fyllas i,
+      // vilket visar sig som "0 klubbar totalt" i Karta trots att adresser
+      // faktiskt finns (entries/merged byggs direkt ur HB.api.clubGeo, som
+      // ANDRA halvan av paret, och blir därför inte tomt).
+      if (cached.clubs) {
+        HB.api.clubGeo[c.id] = cached.clubs;
+        state.mapCupAllClubs[c.id] = allClubNamesFromMatches(cached.matches);
+        state.mapCupStatus[c.id] = "done";
+      }
     } else if (!c.dataUrl) {
       // Ingen lokal cache: starta från CI-byggd snapshot i repot,
       // så att förstabesöket slipper vänta på cupmanager-API:t.
@@ -591,6 +605,8 @@ window.HB = window.HB || {};
             state.matches = j.matches;
             state.loadedAt = j.ts || 0;
             HB.api.clubGeo[c.id] = j.clubs || {};
+            state.mapCupAllClubs[c.id] = allClubNamesFromMatches(j.matches);
+            state.mapCupStatus[c.id] = "done";
             HB.api.writeCache(c, j.matches, j.ts);
           }
         }
@@ -2710,6 +2726,19 @@ window.HB = window.HB || {};
     ["days", "Speldagar", "var(--purple)"],
   ];
 
+  // Delad palett för "flera saker jämförs samtidigt"-vyer (Trend-
+  // jämförelsegrafen, Kartans flercupsläge) — rena hex-värden, INTE CSS-
+  // variabler: MapLibre-markörernas SVG-fill löser inte pålitligt var() i
+  // alla webbläsare (till skillnad från inline-SVG:ns stroke, se
+  // buildTrendCompareSvg, där CSS-variabler fungerar fint). MAP_SHARED_COLOR
+  // (samma blå som Kartans tidigare enda markörfärg) är reserverad för
+  // "klubben spelar i FLERA av de valda cuperna" — får INTE återanvändas i
+  // MAP_CUP_COLORS, annars går det inte att skilja "unik för cup #1" från
+  // "delad" när cup #1 råkar få den färgen.
+  const MAP_SHARED_COLOR = "#1f5fbf";
+  const MAP_CUP_COLORS = ["#e0a72a", "#c8660a", "#2f9e44", "#8854d0", "#d22f27", "#12a89d", "#c2528f"];
+  const MULTI_COLOR_PALETTE = [MAP_SHARED_COLOR, ...MAP_CUP_COLORS];
+
   // Flera cupers första arkiverade år (2020/2021) var kraftigt coronaneddragna
   // (t.ex. Åhus Beach 2020: 107 matcher mot 4600+ varje år sedan) — indexerar
   // man rakt av mot ÅR ETT blir den upplagan en missvisande 100%-baslinje som
@@ -3088,14 +3117,12 @@ window.HB = window.HB || {};
   // storlek, så en liten och en stor cup går att jämföra rakt av.
   function renderTrendCompare(root, cupIds) {
     const idx = state.archiveIndex || {};
-    const palette = ["var(--blue)", "var(--yellow)", "var(--orange)", "var(--won)",
-      "var(--purple)", "var(--lost)", "var(--live)"];
     const cupsData = cupIds.map((id, i) => {
       const entry = idx[id];
       const editions = ((entry && entry.editions) || [])
         .slice().sort((a, b) => a.edition.localeCompare(b.edition));
       const name = (HB.allCups().find((c) => c.id === id) || {}).name || id;
-      return { cupId: id, cupName: name, editions, color: palette[i % palette.length] };
+      return { cupId: id, cupName: name, editions, color: MULTI_COLOR_PALETTE[i % MULTI_COLOR_PALETTE.length] };
     }).filter((c) => c.editions.some((e) => e.matches > 0));
     if (!cupsData.length) {
       root.append(h("p", { class: "muted" },
@@ -4194,8 +4221,20 @@ window.HB = window.HB || {};
     renderContent();
   }
 
-  let currentMap = null; // föregående kartinstans — måste .remove()'as explicit,
-                          // annars läcker en WebGL-kontext varje gång fliken öppnas igen
+  let currentMap = null;        // föregående kartinstans — måste .remove()'as explicit,
+                                 // annars läcker en WebGL-kontext varje gång fliken byts bort
+  let currentMapMarkers = [];   // markörerna som sitter på currentMap just nu — måste rensas
+                                 // manuellt innan nya läggs dit (samma anledning som ovan)
+  let mapBoxEl = null;          // DOM-noden kartan bor i — sparas modulnivå (INTE i renderMapView)
+                                 // så samma nod kan flyttas in i det nya innehållet varje
+                                 // omritning i stället för att byggas om från grunden; annars
+                                 // skulle årsbyte/"Spela upp" förstöra och återskapa hela
+                                 // MapLibre-instansen varje gång — synligt som att kartan
+                                 // "laddar om" (zoom/panorering återställs) i stället för att
+                                 // bara pinnarna byts ut, vilket användaren uttryckligen inte vill.
+  let mapBoxKey = null;         // vilka cuper (sorterad, kommaseparerad id-lista) kartan
+                                 // just nu byggts för — bara EN cupändring (inte årsbyte)
+                                 // motiverar att faktiskt återskapa kartinstansen.
 
   function renderMapView(root) {
     // Alla cuper listas nu, inte bara klassiska Cup Manager-cuper —
@@ -4298,15 +4337,54 @@ window.HB = window.HB || {};
       cityCount + " städer" + (countryCount > 1 ? " · " + countryCount + " länder" : "") + ")" +
       (unknownNames.length ? " · " + unknownNames.length + " utan känd adress" : "")));
 
-    const mapBox = h("div", { class: "map-box" });
-    root.append(mapBox);
+    // Flercupsläge: en färg per vald cup (MAP_CUP_COLORS, cykliskt) plus en
+    // reserverad delad färg (MAP_SHARED_COLOR) för klubbar som spelat i
+    // FLERA av de valda cuperna — se cupColorForClub/legenden nedan.
+    const showCups = selectedIds.length > 1;
+    const cupColorByName = new Map(selectedIds.map((id, i) => [
+      (HB.allCups().find((c) => c.id === id) || {}).name || id,
+      MAP_CUP_COLORS[i % MAP_CUP_COLORS.length],
+    ]));
+    if (showCups) {
+      root.append(h("div", { class: "trend-legend" },
+        [...cupColorByName.entries()].map(([name, color]) =>
+          h("div", { class: "trend-legend-item" },
+            h("span", { class: "trend-swatch", style: "background:" + color }),
+            h("span", null, name))).concat(
+          h("div", { class: "trend-legend-item" },
+            h("span", { class: "trend-swatch", style: "background:" + MAP_SHARED_COLOR }),
+            h("span", null, "Flera av de valda cuperna")))));
+    }
+    const cupColorForClub = (info) => !showCups || info.cups.length > 1
+      ? MAP_SHARED_COLOR : (cupColorByName.get(info.cups[0]) || MAP_SHARED_COLOR);
+
+    // Samma cupurval som senast (bara årtalet eller "spela upp" har ändrats)
+    // → återanvänd den redan levande kartinstansen och byt bara ut
+    // pinnarna, i stället för att förstöra och återskapa allt (skulle synas
+    // som att kartan "laddar om" — panorering/zoom nollställs, se
+    // mapBoxEl-kommentaren ovan).
+    const cupsKey = selectedIds.slice().sort().join(",");
+    const needsNewMap = !mapBoxEl || mapBoxKey !== cupsKey || !currentMap;
+    if (needsNewMap) { mapBoxEl = h("div", { class: "map-box" }); mapBoxKey = cupsKey; }
+    // Lokal, stabil referens för DENNA körnings async-callback — mapBoxEl
+    // (modulnivå) kan hinna bytas ut av en SENARE renderMapView-körning
+    // innan löftet nedan löser sig (t.ex. snabba cupbyten i rad), annars
+    // skulle den gamla callbacken råka rita i/kolla fel nod.
+    const box = mapBoxEl;
+    root.append(box);
     ensureMapLibre().then((maplibregl) => {
       // Om användaren hunnit byta cup/flik medan biblioteket laddade från
-      // CDN: mapBox sitter inte kvar i dokumentet längre, rita inte i den.
-      if (!document.body.contains(mapBox)) return;
-      buildMap(maplibregl, mapBox, merged, selectedIds.length > 1, unknownNames);
+      // CDN: box sitter inte kvar i dokumentet längre, rita inte i den.
+      if (!document.body.contains(box)) return;
+      if (needsNewMap) {
+        createMap(maplibregl, box, merged, unknownNames, cupColorForClub);
+      } else {
+        currentMap.resize(); // återfäst nod kan ha bytt storlek medan den var frånkopplad
+        paintMapMarkers(maplibregl, merged, unknownNames, cupColorForClub);
+      }
     }).catch((e) => {
-      mapBox.replaceChildren(h("p", { class: "muted" }, "Kunde inte ladda kartan: " + e.message));
+      if (!document.body.contains(box)) return;
+      box.replaceChildren(h("p", { class: "muted" }, "Kunde inte ladda kartan: " + e.message));
     });
   }
 
@@ -4315,32 +4393,26 @@ window.HB = window.HB || {};
   // en riktig plats, gott om utrymme där ingen verklig klubb råkar hamna.
   const UNKNOWN_CLUB_MARKER_LNGLAT = [6, 58.5];
 
-  function buildMap(maplibregl, container, geo, showCups, unknownNames) {
-    if (currentMap) { currentMap.remove(); currentMap = null; }
-    const map = new maplibregl.Map({
-      container,
-      style: "https://tiles.openfreemap.org/styles/liberty",
-      center: [15, 62], // ungefärligt Sverige-centrum, ersätts direkt av fitBounds nedan
-      zoom: 4,
-    });
-    currentMap = map;
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
-
-    const bounds = new maplibregl.LngLatBounds();
+  // Rensar bort ALLA nuvarande markörer och lägger dit nya — men rör INTE
+  // kartans center/zoom (ingen fitBounds här), till skillnad från createMap
+  // nedan. Används både av createMap (efter en nyskapad karta, då följs
+  // det av en fitBounds) och fristående vid årsbyte/"Spela upp" på en
+  // redan befintlig karta (då ska vyn stå still, se renderMapView).
+  function paintMapMarkers(maplibregl, geo, unknownNames, cupColorForClub) {
+    for (const mk of currentMapMarkers) mk.remove();
+    currentMapMarkers = [];
     for (const [name, info] of Object.entries(geo)) {
-      const lngLat = [info.lng, info.lat];
-      bounds.extend(lngLat);
       const popupBody = h("div", { class: "map-popup" },
         h("strong", null, name),
         h("br"),
         info.city + (info.country ? ", " + info.country : ""),
         // "Deltar i: ..." bara meningsfullt när fler än en cup är vald —
         // annars bara upprepar den redan kända (aktuella) cupen i onödan.
-        showCups ? h("div", { class: "muted" }, "Deltar i: " + info.cups.join(", ")) : null);
-      new maplibregl.Marker({ color: "#1f5fbf" })
-        .setLngLat(lngLat)
+        info.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + info.cups.join(", ")) : null);
+      currentMapMarkers.push(new maplibregl.Marker({ color: cupColorForClub(info) })
+        .setLngLat([info.lng, info.lat])
         .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(popupBody))
-        .addTo(map);
+        .addTo(currentMap));
     }
     if (unknownNames && unknownNames.length) {
       const cap = 60;
@@ -4350,13 +4422,27 @@ window.HB = window.HB || {};
           "Ingen av dem har (ännu) spelat i en cup där adressen gick att slå upp."),
         h("div", { class: "map-unknown-list" },
           unknownNames.slice(0, cap).join(", ") + (unknownNames.length > cap ? " …" : "")));
-      new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer den från vanliga (blå) klubbnålar
+      currentMapMarkers.push(new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer den från klubbnålarna
         .setLngLat(UNKNOWN_CLUB_MARKER_LNGLAT)
         .setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody))
-        .addTo(map);
-      bounds.extend(UNKNOWN_CLUB_MARKER_LNGLAT);
+        .addTo(currentMap));
     }
-    if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40, maxZoom: 10 });
+  }
+
+  function createMap(maplibregl, container, geo, unknownNames, cupColorForClub) {
+    if (currentMap) { currentMap.remove(); currentMap = null; currentMapMarkers = []; }
+    currentMap = new maplibregl.Map({
+      container,
+      style: "https://tiles.openfreemap.org/styles/liberty",
+      center: [15, 62], // ungefärligt Sverige-centrum, ersätts direkt av fitBounds nedan
+      zoom: 4,
+    });
+    currentMap.addControl(new maplibregl.NavigationControl(), "top-right");
+    paintMapMarkers(maplibregl, geo, unknownNames, cupColorForClub);
+    const bounds = new maplibregl.LngLatBounds();
+    for (const info of Object.values(geo)) bounds.extend([info.lng, info.lat]);
+    if (unknownNames && unknownNames.length) bounds.extend(UNKNOWN_CLUB_MARKER_LNGLAT);
+    if (!bounds.isEmpty()) currentMap.fitBounds(bounds, { padding: 40, maxZoom: 10 });
   }
 
   // --- render: tabeller -------------------------------------------------------
