@@ -368,6 +368,12 @@ window.HB = window.HB || {};
     // adress) — skiljer sig från HB.api.clubGeo som bara har de vars
     // adress gick att slå upp. Fylls av ensureCupClubGeo. Session, sparas ej.
     mapCupAllClubs: {},
+    // cupId -> antal lag (distinkta lag-id, se teamsAndClassesFromMatches)
+    // respektive Set(klassnamn) — till Kartans sammanfattningsrad. Fylls
+    // av ensureCupClubGeo (och loadCup(), se dess kommentar om samma race
+    // som mapCupAllClubs hade). Session, sparas ej.
+    mapCupTeamCount: {},
+    mapCupClasses: {},
     // Karta-fliken: valt år (ett av arkivets, null = "Nu"/live data) —
     // se renderMapView/mergedClubGeoForYear. Session, sparas ej.
     mapYear: null,
@@ -591,6 +597,9 @@ window.HB = window.HB || {};
       if (cached.clubs) {
         HB.api.clubGeo[c.id] = cached.clubs;
         state.mapCupAllClubs[c.id] = allClubNamesFromMatches(cached.matches);
+        const tc = teamsAndClassesFromMatches(cached.matches);
+        state.mapCupTeamCount[c.id] = tc.teamCount;
+        state.mapCupClasses[c.id] = tc.classes;
         state.mapCupStatus[c.id] = "done";
       }
     } else if (!c.dataUrl) {
@@ -606,6 +615,9 @@ window.HB = window.HB || {};
             state.loadedAt = j.ts || 0;
             HB.api.clubGeo[c.id] = j.clubs || {};
             state.mapCupAllClubs[c.id] = allClubNamesFromMatches(j.matches);
+            const tc = teamsAndClassesFromMatches(j.matches);
+            state.mapCupTeamCount[c.id] = tc.teamCount;
+            state.mapCupClasses[c.id] = tc.classes;
             state.mapCupStatus[c.id] = "done";
             HB.api.writeCache(c, j.matches, j.ts);
           }
@@ -4067,22 +4079,162 @@ window.HB = window.HB || {};
     return mapLibreLoadPromise;
   }
 
+  // Klubbnamnsmatchning (clubGeoFromMatches nedan, se matchClubName längre
+  // ner för själva flernivålogiken): ett lagnamn ("Karlskrona Handboll",
+  // "LUGI HF 1", "Alingsås HK Röd") jämförs mot klubbkatalogen i tre steg
+  // med FALLANDE säkerhet — exakt namn, sedan ett ordnings-/klubbtyps-
+  // bevarande prefix (skiftläges-/genitiv-okänsligt), och bara som sista
+  // utväg en stopordsrensad "kärna" (klubbtypsord som HK/IF/Handbollsklubb
+  // bortstrukna, ordning ignorerad). De två sista fångar tillsammans tre
+  // återkommande missmatchningar som en ren startsWith-prefixjämförelse
+  // missar: skiftläge (ProCup skriver ofta VERSALER), genitiv-s ("Kungälv"
+  // vs "Kungälvs"), och omvänd ordning på klubbtyp/ortnamn ("HF Karlskrona"
+  // vs "Karlskrona Handboll").
+  const CLUB_STOPWORD_PREFIXES = [
+    "handbollsförening", "handbollsforening", "handbollsklubb", "handboll",
+    "fotbollsförening", "fotbollsforening", "fotbollsklubb", "fotboll",
+    "idrottsförening", "idrottsforening", "idrottsklubb", "idrottsallians", "idrott",
+    "bollklubb", "förening", "forening", "klubb", "allmänna", "allmanna",
+  ];
+  const CLUB_STOPWORD_EXACT = new Set([
+    "ik", "hk", "if", "ff", "bk", "gf", "sk", "hf", "fk", "gif", "aif", "bif", "kif", "fbk", "tk",
+  ]);
+  function isClubStopword(word) {
+    return CLUB_STOPWORD_EXACT.has(word) || CLUB_STOPWORD_PREFIXES.some((p) => word.startsWith(p));
+  }
+  // Bara ord längre än 3 tecken — annars riskerar korta äkta förkortningar
+  // (som redan hunnit filtreras bort som stoppord ändå) att stympas i onödan.
+  function stripGenitive(word) {
+    return word.length > 3 && word.endsWith("s") ? word.slice(0, -1) : word;
+  }
+  function coreClubTokens(name) {
+    return name.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(/\s+/)
+      .filter(Boolean).filter((w) => !isClubStopword(w)).map(stripGenitive);
+  }
+  function clubSignature(tokens) {
+    return tokens.slice().sort().join("|");
+  }
+
+  // En katalog kan ha FLERA namn som normaliserar till samma kärna (t.ex.
+  // "HF Karlskrona" och "Handbollsföreningen Karlskrona") — antingen för
+  // att det bara är stavningsvarianter av SAMMA klubb, eller (farligare)
+  // för att det råkar vara TVÅ olika klubbar med samma ortnamn men olika
+  // sport/sektion (t.ex. "Vallentuna HK" och "Vallentuna Fotboll" — båda
+  // tappar sin sportbeteckning som stoppord och blir "vallentuna"). Kan
+  // inte skiljas åt på namnet ensamt efter normaliseringen — så gissa
+  // bara om alla kandidater faktiskt pekar på (nästan) samma koordinat,
+  // annars är det för osäkert och vi hoppar hellre över klubben helt.
+  function pickUnambiguousClub(candidates, directory) {
+    if (candidates.length === 1) return candidates[0];
+    const coordKey = (n) => Math.round(directory[n].lat * 500) + "," + Math.round(directory[n].lng * 500);
+    return new Set(candidates.map(coordKey)).size === 1 ? candidates[0] : null;
+  }
+
+  // Bevarar ORDNING och klubbtypsord (till skillnad från coreClubTokens,
+  // som medvetet slår ihop t.ex. "Kungälvs HK" och "Kungälvs FF" till
+  // samma "kungälv"-kärna) — bara skiftläge/skiljetecken/genitiv-s
+  // normaliserat bort, per ord. Används för en rak prefixjämförelse
+  // (matchClubName tier 2) som INTE kan förväxla två olika sporters
+  // klubbar i samma ort, till skillnad från den stopordsrensade
+  // kärnmatchningen (tier 3, se där).
+  function normalizeForPrefix(name) {
+    return name.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()
+      .split(/\s+/).filter(Boolean).map(stripGenitive).join(" ");
+  }
+
+  // Cachar indexet per katalog-objekt (WeakMap — directory är samma
+  // objekt-referens genom hela sessionen, se HB.api.fetchClubDirectory) så
+  // det bara byggs en gång i stället för vid varje anrop.
+  const clubDirIndexCache = new WeakMap();
+  function clubDirIndex(directory) {
+    if (clubDirIndexCache.has(directory)) return clubDirIndexCache.get(directory);
+    const byExact = new Map();     // gemener+trim -> exakt katalognamn
+    const byPrefix = [];           // [normaliseratNamn, katalognamn], längst-först
+    const bySignature = new Map(); // stopordsrensad kärn-signatur -> [katalognamn, ...]
+    for (const dirName of Object.keys(directory)) {
+      byExact.set(dirName.toLowerCase().trim(), dirName);
+      byPrefix.push([normalizeForPrefix(dirName), dirName]);
+      const sig = clubSignature(coreClubTokens(dirName));
+      if (!sig) continue;
+      if (!bySignature.has(sig)) bySignature.set(sig, []);
+      bySignature.get(sig).push(dirName);
+    }
+    byPrefix.sort((a, b) => b[0].length - a[0].length); // längsta (mest specifika) prefixet vinner
+    const index = { byExact, byPrefix, bySignature };
+    clubDirIndexCache.set(directory, index);
+    return index;
+  }
+
+  // Bara DESSA sista-token-mönster stryks vid ett omatchat helnamn — rena
+  // siffror, en enstaka bokstav (t.ex. "A"-laget) eller ett vanligt
+  // lagfärgsord. Testat (se länken i commit-meddelandet): en OBEGRÄNSAD
+  // strypning av "vad som helst sist i namnet" gav falska träffar som
+  // "IF Malmö Redhawks" → "HK Malmö" (helt annan sport/klubb) eller
+  // "Kristianstads Bladet" → "Kristianstad HK" — "Redhawks"/"Bladet" är
+  // INTE bortdragbara suffix, de är en del av ett namn som bara råkar dela
+  // inledande ord med en riktig klubb. Med den här spärren stannar
+  // sökningen i stället direkt om sista token inte ser ut som ett äkta
+  // lag-suffix, hellre "okänd adress" än en gissning som pekar helt fel.
+  const CLUB_COLOR_WORDS = new Set([
+    "röd", "blå", "gul", "vit", "svart", "grön", "orange", "lila", "rosa", "silver", "guld", "grå",
+  ]);
+  function isStrippableSuffixToken(word) {
+    return /^\d+$/.test(word) || word.length === 1 || CLUB_COLOR_WORDS.has(word);
+  }
+
+  // Tre nivåer, i FALLANDE säkerhetsordning — varje nivå försöks bara om
+  // den föregående inte gav träff:
+  //
+  // 1. Exakt (skiftläges-okänsligt) — "Kungälvs HK" mot katalogens egna
+  //    "Kungälvs HK".
+  // 2. Ordnings- OCH klubbtypsbevarande prefix ("Kungälvs HK Röd" mot
+  //    "Kungälvs HK", "LUGI HF 1" mot "Lugi HF") — skiftläge/genitiv-s
+  //    normaliserat, men INTE klubbtypsordet (HK/FF/...) bortstruket,
+  //    så den kan aldrig förväxla "Kungälvs HK" med "Kungälvs FF": de
+  //    normaliserar till olika strängar ("kungälv hk" vs "kungälv ff")
+  //    som aldrig är prefix av varandra.
+  // 3. Stopordsrensad kärn-signatur (se coreClubTokens/pickUnambiguousClub
+  //    ovan) — sista utväg, för ordnings-omkastade namn som "IK Sävehof"
+  //    mot "Sävehof" eller "HF Karlskrona" mot "Karlskrona Handboll", där
+  //    klubbtypsordet MÅSTE strykas för att över huvud taget hitta en
+  //    gemensam kärna. Riskerar att slå ihop olika sporters klubbar i
+  //    samma ort (se pickUnambiguousClub) — därför sist, och bara om
+  //    resultatet är entydigt.
+  function matchClubName(name, directory) {
+    const index = clubDirIndex(directory);
+    const exact = index.byExact.get(name.toLowerCase().trim());
+    if (exact) return exact;
+    const normalized = normalizeForPrefix(name);
+    const prefixHit = index.byPrefix.find(([normDir]) => normDir && normalized.startsWith(normDir));
+    if (prefixHit) return prefixHit[1];
+    let tokens = coreClubTokens(name);
+    while (tokens.length) {
+      const candidates = index.bySignature.get(clubSignature(tokens));
+      if (candidates) {
+        const picked = pickUnambiguousClub(candidates, directory);
+        if (picked) return picked;
+      }
+      if (!isStrippableSuffixToken(tokens[tokens.length - 1])) break;
+      tokens = tokens.slice(0, -1);
+    }
+    return null;
+  }
+
   // {klubbnamn: {city,lat,lng,country}} — gissar adress åt cuper som INTE
-  // har egen adressdata (ProCup/Gothia) genom att slå upp deras lagnamn mot
-  // den samlade klubbkatalogen (scripts/build_club_directory.py, byggd ur
-  // ALLA klassiska Cup Manager-cupers riktiga adresser). Samma
-  // längst-prefix-matchning som clubTeamCounts — en klubb som ALDRIG spelat
-  // i någon klassisk Cup Manager-cup går inte att lösa upp, ingen adress
-  // för den då.
+  // har egen adressdata (ProCup/Gothia, samt ALLA cupers arkiverade år)
+  // genom att slå upp deras lagnamn mot den samlade klubbkatalogen
+  // (scripts/build_club_directory.py, byggd ur ALLA klassiska Cup Manager-
+  // cupers riktiga adresser) via matchClubName ovan. En klubb som ALDRIG
+  // spelat i någon klassisk Cup Manager-cup går fortfarande inte att lösa
+  // upp, ingen adress för den då.
   function clubGeoFromMatches(matches, directory) {
-    const dirNames = Object.keys(directory).sort((a, b) => b.length - a.length);
     const geo = {};
     const seenTeamNames = new Set();
     for (const m of matches) {
       for (const side of [m.home, m.away]) {
         if (!side.name || seenTeamNames.has(side.name)) continue;
         seenTeamNames.add(side.name);
-        const club = dirNames.find((c) => side.name.startsWith(c));
+        const club = matchClubName(side.name, directory);
         if (club) geo[club] = directory[club];
       }
     }
@@ -4106,6 +4258,20 @@ window.HB = window.HB || {};
     return names;
   }
 
+  // Antal DISTINKTA lag (id, inte klubbnamn — ett lag är en åldersklass-
+  // trupp, en klubb kan ha flera) och Set(klassnamn) ur en matchlista —
+  // till Kartans sammanfattningsrad ("X lag · Y klubbar totalt · ...").
+  function teamsAndClassesFromMatches(matches) {
+    const teamIds = new Set();
+    const classes = new Set();
+    for (const m of matches) {
+      if (m.home && m.home.id != null) teamIds.add(m.home.id);
+      if (m.away && m.away.id != null) teamIds.add(m.away.id);
+      if (m.catName) classes.add(m.catName);
+    }
+    return { teamCount: teamIds.size, classes };
+  }
+
   // Hämtar en ANNAN cups (inte nödvändigtvis den just nu aktiva) klubbdata
   // direkt ur dess CI-byggda snapshot — helt fristående från loadCup()/
   // huvudappens matchdata, så att Karta kan visa flera cuper samtidigt utan
@@ -4114,9 +4280,11 @@ window.HB = window.HB || {};
   function ensureCupClubGeo(cupId) {
     if (HB.api.clubGeo[cupId] || state.mapCupStatus[cupId]) return;
     state.mapCupStatus[cupId] = "loading";
-    const done = (geo, allClubs) => {
+    const done = (geo, allClubs, teamCount, classes) => {
       HB.api.clubGeo[cupId] = geo;
       state.mapCupAllClubs[cupId] = allClubs;
+      state.mapCupTeamCount[cupId] = teamCount;
+      state.mapCupClasses[cupId] = classes;
       state.mapCupStatus[cupId] = "done";
       // renderTabs() alltid — kan avgöra om Karta-fliken ska visas/döljas nu
       // när vi vet säkert. render() (dyrare, ritar om hela sidan) bara om
@@ -4133,14 +4301,19 @@ window.HB = window.HB || {};
         HB.api.fetchClubDirectory(),
       ]).then(([data, directory]) => {
         const matches = (data && data.matches) || [];
-        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches));
-      }).catch(() => done({}, new Set()));
+        const { teamCount, classes } = teamsAndClassesFromMatches(matches);
+        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches), teamCount, classes);
+      }).catch(() => done({}, new Set(), 0, new Set()));
       return;
     }
     fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
       .then((r) => (r.ok ? r.json() : null))
-      .then((j) => done((j && j.clubs) || {}, allClubNamesFromMatches((j && j.matches) || [])))
-      .catch(() => done({}, new Set()));
+      .then((j) => {
+        const matches = (j && j.matches) || [];
+        const { teamCount, classes } = teamsAndClassesFromMatches(matches);
+        done((j && j.clubs) || {}, allClubNamesFromMatches(matches), teamCount, classes);
+      })
+      .catch(() => done({}, new Set(), 0, new Set()));
   }
 
   // Slår ihop klubbdata för flera valda cuper till en enda lista, med vilka
@@ -4293,7 +4466,8 @@ window.HB = window.HB || {};
       root.append(h("div", { class: "row trend-baseline-row" }, yearSelect, playBtn));
     }
 
-    let merged, allClubs;
+    let merged, allClubs, totalTeams;
+    const classSet = new Set();
     if (state.mapYear) {
       ensureClubDirectory();
       for (const id of selectedIds) ensureYearMatches(state.mapYear, id);
@@ -4307,9 +4481,14 @@ window.HB = window.HB || {};
       }
       merged = mergedClubGeoForYear(selectedIds, state.mapYear, clubDirectoryCache);
       allClubs = new Set();
+      totalTeams = 0;
       for (const id of selectedIds) {
         const ym = state.yearMatches[id + ":" + state.mapYear];
-        if (ym && ym.status === "done") for (const name of allClubNamesFromMatches(ym.matches)) allClubs.add(name);
+        if (!ym || ym.status !== "done") continue;
+        for (const name of allClubNamesFromMatches(ym.matches)) allClubs.add(name);
+        const tc = teamsAndClassesFromMatches(ym.matches);
+        totalTeams += tc.teamCount;
+        for (const c of tc.classes) classSet.add(c);
       }
     } else {
       for (const id of selectedIds) ensureCupClubGeo(id);
@@ -4319,8 +4498,11 @@ window.HB = window.HB || {};
       }
       merged = mergedClubGeo(selectedIds);
       allClubs = new Set();
+      totalTeams = 0;
       for (const id of selectedIds) {
         for (const name of (state.mapCupAllClubs[id] || [])) allClubs.add(name);
+        totalTeams += state.mapCupTeamCount[id] || 0;
+        for (const c of (state.mapCupClasses[id] || [])) classSet.add(c);
       }
     }
 
@@ -4338,10 +4520,12 @@ window.HB = window.HB || {};
     const cityCount = new Set(entries.map(([, info]) => info.city).filter(Boolean)).size;
     const countryCount = new Set(entries.map(([, info]) => info.country).filter(Boolean)).size;
     root.append(h("p", { class: "muted map-count" },
+      totalTeams + " lag · " +
       allClubs.size + " klubbar totalt" + (state.mapYear ? " (" + state.mapYear + ")" : "") + " · " +
       entries.length + " med känd adress (" +
       cityCount + " städer" + (countryCount > 1 ? " · " + countryCount + " länder" : "") + ")" +
-      (unknownNames.length ? " · " + unknownNames.length + " utan känd adress" : "")));
+      (unknownNames.length ? " · " + unknownNames.length + " utan känd adress" : "") +
+      " · " + classSet.size + " klasser"));
 
     // Flercupsläge: en färg per vald cup (MAP_CUP_COLORS, cykliskt) plus en
     // reserverad delad färg (MAP_SHARED_COLOR) för klubbar som spelat i
