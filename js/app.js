@@ -337,6 +337,14 @@ window.HB = window.HB || {};
     // per cup, exkl. innevarande år) behåller den här alla nyckeltal OCH
     // innevarande år, vilket Trend-fliken (renderTrendView) behöver.
     archiveIndex: null,
+    // Trend-fliken: eget filter, INTE state.cats/state.teams — de håller
+    // id:n som bara gäller innevarande upplaga (se allActiveMatches-
+    // kommentaren om att id:n aldrig är stabila mellan år), så Trend filtrerar
+    // i stället på KLASSNAMN (stabilt mellan år) och en fritextsökning på
+    // lag-/klubbnamn (samma delsträngsmatchning som Historikens "Jämför
+    // lag"). Session, sparas ej.
+    trendCats: new Set(),
+    trendTeamQuery: "",
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -2633,24 +2641,23 @@ window.HB = window.HB || {};
     return svg;
   }
 
-  // Egen toppnivåflik (bredvid Schema/Tabeller/Slutspel/Bana) för INNEVARANDE
-  // cup — flyttad hit från en Historik-modalflik 2026-07-24, då den kändes
-  // avskild från resten av appen (särskilt efter att fritt årsval byggdes in
-  // direkt i huvudvyn, se state.years/ensureYearMatches). Ingen egen
-  // cupväljare längre: byt cup som vanligt i headern, samma som alla andra
-  // flikar. state.archiveIndex laddas en gång vid appstart (se init()).
-  function renderTrendView(root) {
-    const idx = state.archiveIndex || {};
-    const entry = idx[state.cupId];
-    const editions = ((entry && entry.editions) || [])
-      .filter((e) => e.matches > 0)
-      .slice().sort((a, b) => a.edition.localeCompare(b.edition));
-    if (editions.length < 2) {
-      root.append(h("div", { class: "banner" },
-        cup().name + " har bara " + editions.length +
-        " arkiverat år — behöver minst två för att visa en formkurva."));
-      return;
-    }
+  // Klassnamn att erbjuda i Trend-filtrets klassväljare — ur INNEVARANDE
+  // (live) upplagas matcher, redan laddade utan extra kostnad. Äldre år kan
+  // ha haft klasser som bytt namn eller lagts ner sedan dess, men det är en
+  // rimlig avvägning: att i stället bygga listan ur ALLA arkiverade år
+  // skulle kräva att hämta hela deras matchlistor (flera MB per år för en
+  // stor cup) bara för att fylla en dropdown, se renderTrendView nedan.
+  function trendClassOptions() {
+    const set = new Set();
+    for (const m of state.matches) if (m.catName) set.add(m.catName);
+    return [...set].sort((a, b) => catSortKey(a) - catSortKey(b));
+  }
+
+  // Ritar själva SVG:n + legend + fotnot för en färdig lista {edition,
+  // matches,teams,classes,days}-objekt — delad av både snabbvägen (direkt
+  // ur index.json:s aggregat) och det filtrerade läget (omräknat från fulla
+  // matchlistor) i renderTrendView, eftersom formen är identisk i båda fallen.
+  function renderTrendChartBlock(root, editions) {
     const baseIdx = trendBaselineIndex(editions);
     const baseEd = editions[baseIdx];
     const lastEd = editions[editions.length - 1];
@@ -2677,6 +2684,111 @@ window.HB = window.HB || {};
         "Allt normerat mot " + baseEd.edition + " (= 100 %)" + skippedOutlier +
         ". Antal spelare visas inte — ingen av källorna (Cup Manager/ProCup) ger " +
         "spelardata, förutom Partilles trupplistor."));
+  }
+
+  // Egen toppnivåflik (bredvid Schema/Tabeller/Slutspel/Bana) för INNEVARANDE
+  // cup — flyttad hit från en Historik-modalflik 2026-07-24, då den kändes
+  // avskild från resten av appen (särskilt efter att fritt årsval byggdes in
+  // direkt i huvudvyn, se state.years/ensureYearMatches). Ingen egen
+  // cupväljare längre: byt cup som vanligt i headern, samma som alla andra
+  // flikar. state.archiveIndex laddas en gång vid appstart (se init()).
+  //
+  // Klass-/lagfilter tillagt samma dag: index.json:s aggregat räcker för
+  // OFILTRERAD vy (snabbt, redan laddat), men ett filter kräver de FULLA
+  // matchlistorna per arkiverat år (klass-/lagtillhörighet finns bara där)
+  // — hämtas lat, bara när ett filter faktiskt är valt, via samma
+  // ensureYearMatches/state.yearMatches som årsväljaren i Schema redan
+  // använder (kan bli flera MB för en stor cup, se trendClassOptions ovan).
+  function renderTrendView(root) {
+    const idx = state.archiveIndex || {};
+    const entry = idx[state.cupId];
+    const editionsMeta = ((entry && entry.editions) || [])
+      .filter((e) => e.matches > 0)
+      .slice().sort((a, b) => a.edition.localeCompare(b.edition));
+    if (editionsMeta.length < 2) {
+      root.append(h("div", { class: "banner" },
+        cup().name + " har bara " + editionsMeta.length +
+        " arkiverat år — behöver minst två för att visa en formkurva."));
+      return;
+    }
+
+    const classOptions = trendClassOptions();
+    const classPicker = classOptions.length ? buildPicker({
+      items: classOptions.map((name) => ({
+        id: name, label: name, sortKey: catSortKey(name), sortName: name,
+      })),
+      selected: state.trendCats,
+      emptyLabel: "Alla klasser",
+      countLabel: (n) => "Klasser (" + n + ")",
+      searchPlaceholder: "Sök klass …",
+      genderQuickSelect: true,
+      onChange: () => renderContent(),
+    }) : null;
+
+    const teamInput = h("input", {
+      class: "search", type: "text", placeholder: "Lag/klubb, t.ex. Alingsås HK",
+      title: "Stöder & (och) och / eller , (eller), t.ex. Alingsås&Blå",
+    });
+    teamInput.value = state.trendTeamQuery;
+    const applyTeamQuery = () => { state.trendTeamQuery = teamInput.value; renderContent(); };
+    teamInput.addEventListener("change", applyTeamQuery);
+    teamInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyTeamQuery(); }
+    });
+    const teamWrap = h("div", { class: "trend-team-search" },
+      withClearButton(teamInput, () => { state.trendTeamQuery = ""; renderContent(); }));
+
+    root.append(h("div", { class: "history-controls" }, classPicker, teamWrap));
+
+    const chartHost = h("div", { class: "trend-chart-host" });
+    root.append(chartHost);
+
+    const hasFilter = state.trendCats.size > 0 || !!state.trendTeamQuery.trim();
+    if (!hasFilter) {
+      renderTrendChartBlock(chartHost, editionsMeta);
+      return;
+    }
+
+    for (const em of editionsMeta) ensureYearMatches(em.edition);
+    const loaded = editionsMeta.map((em) =>
+      ({ meta: em, ym: state.yearMatches[state.cupId + ":" + em.edition] }));
+    if (loaded.some(({ ym }) => !ym || ym.status === "loading")) {
+      chartHost.append(h("p", { class: "muted" }, "Hämtar arkiverade år för filtrering …"));
+      return;
+    }
+    const teamQuery = state.trendTeamQuery.trim();
+    const computed = loaded.map(({ meta, ym }) => {
+      let matches = (ym && ym.matches) || [];
+      if (state.trendCats.size) matches = matches.filter((m) => state.trendCats.has(m.catName));
+      if (teamQuery) matches = matches.filter((m) =>
+        matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery) ||
+        matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery));
+      const teams = new Set(), classes = new Set(), days = new Set();
+      for (const m of matches) {
+        // Utan lag-/klubbfilter: räkna båda lagen som vanligt (alla lag i
+        // urvalet). MED filter: "Lag" ska betyda "hur många av VÅRA lag
+        // deltog" (deltagande, se användarens exempel "Alingsås HK över
+        // tid") — inte antalet motståndare de råkat möta, så bara den sida
+        // vars namn faktiskt matchar sökningen räknas in.
+        const homeIsUs = !teamQuery || matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery);
+        const awayIsUs = !teamQuery || matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
+        if (homeIsUs && m.home.id != null) teams.add(m.home.id);
+        if (awayIsUs && m.away.id != null) teams.add(m.away.id);
+        if (m.catName) classes.add(m.catName);
+        if (m.start) days.add(Math.floor(m.start / 86400000));
+      }
+      return {
+        edition: meta.edition, matches: matches.length,
+        teams: teams.size, classes: classes.size, days: days.size,
+      };
+    });
+    if (computed.every((e) => e.matches === 0)) {
+      chartHost.append(h("p", { class: "muted" },
+        "Inga arkiverade matcher matchar filtret" +
+        (teamQuery ? ' "' + teamQuery + '"' : "") + "."));
+      return;
+    }
+    renderTrendChartBlock(chartHost, computed);
   }
 
   function renderBrowseMode(root, idx, cupIds) {

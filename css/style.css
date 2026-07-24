@@ -1475,6 +1475,7 @@ dialog.history-dialog {
 
 .history-controls select { flex: 0 0 auto; }
 .history-controls .autocomplete-wrap { flex: 1 1 200px; min-width: 160px; }
+.history-controls .trend-team-search { flex: 1 1 200px; min-width: 160px; }
 .history-controls input { width: 100%; }
 
 .history-mode-body { margin-top: 14px; }
