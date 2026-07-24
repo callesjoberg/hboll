@@ -105,13 +105,20 @@ def main():
                 print(f"  {cup['id']} {year} (tid {tid}): HOPPAR ÖVER ({e})")
                 continue
             matches = normalize(store)
-            if not matches:
-                print(f"  {cup['id']} {year}: 0 matcher — hoppar (inget publicerat den upplagan)")
-                continue
+            # Skriv ändå om matches är tom: till skillnad från den löpande
+            # skrapningen av INNEVARANDE år (där "inget publicerat än" bara
+            # betyder "kolla igen senare") vet vi HÄR redan att upplagan
+            # faktiskt existerat (Cup$editions listade den) — 0 matcher
+            # betyder alltså "aldrig något schema publicerat", troligen en
+            # inställd upplaga (t.ex. corona 2021). Mer informativt att visa
+            # den som en riktig nollpunkt i Trend än att tyst hoppa över den.
             dest.write_text(json.dumps({
                 "cupId": cup["id"], "cupName": cup["name"], "edition": year,
                 "ts": int(time.time() * 1000), "matches": matches,
             }, ensure_ascii=False), encoding="utf-8")
+            if not matches:
+                print(f"  {cup['id']} {year}: 0 matcher — skrev ändå (troligen inställd upplaga)")
+                continue
             print(f"  skrev {dest.name} ({len(matches)} matcher, {time.time()-t0:.0f}s)")
 
 

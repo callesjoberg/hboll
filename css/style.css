@@ -1528,6 +1528,8 @@ dialog.history-dialog {
 
 /* "Trend" ------------------------------------------------------------------ */
 
+.trend-baseline-row { margin-bottom: 10px; }
+
 .trend-chart-box {
   background: var(--card);
   border: 1px solid var(--line);

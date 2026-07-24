@@ -351,6 +351,9 @@ window.HB = window.HB || {};
     // formkurvan som vanligt, flera + ett klubbnamn ger cup-listläget i
     // stället (se renderTrendCupList). Session, sparas ej.
     trendCupIds: new Set(),
+    // Trend-fliken (enskild cup): manuellt valt baslinjeår (100 %-ankaret
+    // i formkurvan), null = auto (se trendBaselineIndex). Session, sparas ej.
+    trendBaselineYear: null,
     // Karta-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
     // fylls i vid första besöket i renderMapView). mapCupStatus håller reda
     // på lata hämtningar av ANDRA cupers klubbdata (se ensureCupClubGeo) så
@@ -2668,7 +2671,15 @@ window.HB = window.HB || {};
   // trycker ihop alla andra linjer nära botten. Väljer i stället första året
   // som når minst 40 % av cupens STÖRSTA matchantal som ankare; onormalt små
   // tidiga år visas fortfarande som punkter på kurvan, men styr inte skalan.
-  function trendBaselineIndex(editions) {
+  //
+  // overrideYear: användarens egna val (state.trendBaselineYear, se
+  // renderTrendView) vinner alltid över auto-heuristiken ovan när det
+  // matchar ett av de faktiskt visade åren.
+  function trendBaselineIndex(editions, overrideYear) {
+    if (overrideYear) {
+      const i = editions.findIndex((e) => e.edition === overrideYear);
+      if (i !== -1) return i;
+    }
     const maxMatches = Math.max(...editions.map((e) => e.matches || 0));
     const threshold = maxMatches * 0.4;
     const i = editions.findIndex((e) => (e.matches || 0) >= threshold);
@@ -2750,15 +2761,17 @@ window.HB = window.HB || {};
   // matches,teams,classes,days}-objekt — delad av både snabbvägen (direkt
   // ur index.json:s aggregat) och det filtrerade läget (omräknat från fulla
   // matchlistor) i renderTrendView, eftersom formen är identisk i båda fallen.
-  function renderTrendChartBlock(root, editions) {
-    // "Klubbar" kräver att ALLA visade år faktiskt skrapats med det rena
+  function renderTrendChartBlock(root, editions, overrideYear) {
+    // "Klubbar" kräver att ALLA visade SPELADE år (matches > 0 — en
+    // inställd upplaga har äkta noll oavsett skrapstatus, se
+    // backfill_cupmanager_years.py) faktiskt skrapats med det rena
     // klubbnamnsfältet (home/away.club, tillkom 2026-07-24) — annars skulle
     // äldre, ännu inte omskrapade år visa en missvisande rak nedgång till 0
     // i stället för "okänt". Göms helt tills historiken hunnit skrapas om
     // (sker automatiskt i bakgrunden, se archive_results.py/build_index()).
     const metrics = TREND_METRICS.filter(([key]) =>
-      key !== "clubs" || editions.every((e) => (e[key] || 0) > 0));
-    const baseIdx = trendBaselineIndex(editions);
+      key !== "clubs" || editions.every((e) => e.matches === 0 || (e[key] || 0) > 0));
+    const baseIdx = trendBaselineIndex(editions, overrideYear);
     const baseEd = editions[baseIdx];
     const lastEd = editions[editions.length - 1];
     const legend = h("div", { class: "trend-legend" },
@@ -2773,9 +2786,16 @@ window.HB = window.HB || {};
             { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
             (pct > 0 ? "+" : "") + pct + " %"));
       }));
+    // Skriv bara ut corona-motiveringen när baslinjen faktiskt kommer från
+    // auto-heuristiken — säger man "hoppas över ... troligen corona" om år
+    // användaren själv aktivt valt bort (genom att peka på ett SENARE år)
+    // blir det bara missvisande.
+    const isManualBaseline = overrideYear && baseEd.edition === overrideYear;
     const skippedOutlier = baseIdx > 0
-      ? " (" + editions.slice(0, baseIdx).map((e) => e.edition).join(", ") +
-        " hoppas över som baslinje — ovanligt liten upplaga, troligen corona-neddragen)"
+      ? isManualBaseline
+        ? " (valt manuellt)"
+        : " (" + editions.slice(0, baseIdx).map((e) => e.edition).join(", ") +
+          " hoppas över som baslinje — ovanligt liten upplaga, troligen corona-neddragen)"
       : "";
     root.append(
       h("div", { class: "trend-chart-box" }, buildTrendSvg(editions, baseIdx, metrics)),
@@ -2957,23 +2977,50 @@ window.HB = window.HB || {};
     }
 
     // En cup vald: formkurva, samma som tidigare men för VALFRI vald cup.
+    // Editions med 0 matcher (t.ex. en inställd corona-upplaga, se
+    // backfill_cupmanager_years.py) TAS MED här, till skillnad från
+    // tidigare — mer informativt att visa dem som en riktig nollpunkt i
+    // grafen än att tyst hoppa över dem. "Minst två år"-spärren nedan
+    // räknar ändå bara RIKTIGA (spelade) år, annars skulle en cup med ett
+    // enda spelat år plus flera inställda felaktigt räknas som redo.
     const trendCupId = selectedCupIds[0];
     const idx = state.archiveIndex || {};
     const entry = idx[trendCupId];
     const editionsMeta = ((entry && entry.editions) || [])
-      .filter((e) => e.matches > 0)
       .slice().sort((a, b) => a.edition.localeCompare(b.edition));
     const trendCupName = (HB.allCups().find((c) => c.id === trendCupId) || {}).name || trendCupId;
-    if (editionsMeta.length < 2) {
+    const realYears = editionsMeta.filter((e) => e.matches > 0).length;
+    if (realYears < 2) {
       chartHost.append(h("p", { class: "muted" },
-        trendCupName + " har bara " + editionsMeta.length +
-        " arkiverat år — behöver minst två för att visa en formkurva."));
+        trendCupName + " har bara " + realYears +
+        " spelat arkiverat år — behöver minst två för att visa en formkurva."));
       return;
     }
 
+    // Manuellt baslinjeår — vinner över auto-heuristiken i
+    // trendBaselineIndex när det matchar ett av de faktiskt spelade åren.
+    // Byggs av RIKTIGA år bara (en inställd 0-upplaga vore ett meningslöst
+    // 100 %-ankare). Om det sparade valet inte längre finns bland årets
+    // alternativ (t.ex. efter cupbyte) faller väljaren tillbaka till Auto
+    // utan att krascha — trendBaselineIndex gör samma sak.
+    const baselineOptions = editionsMeta.filter((e) => e.matches > 0);
+    const baselineValue = baselineOptions.some((e) => e.edition === state.trendBaselineYear)
+      ? state.trendBaselineYear : "";
+    const baselineSelect = h("select", { class: "select", "aria-label": "Baslinjeår" },
+      h("option", { value: "" }, "Baslinje: auto"),
+      baselineOptions.map((e) => h("option",
+        { value: e.edition, ...(e.edition === baselineValue ? { selected: "" } : {}) },
+        "Baslinje: " + e.edition)));
+    baselineSelect.value = baselineValue;
+    baselineSelect.addEventListener("change", () => {
+      state.trendBaselineYear = baselineSelect.value || null;
+      renderContent();
+    });
+    chartHost.append(h("div", { class: "row trend-baseline-row" }, baselineSelect));
+
     const hasFilter = state.trendCats.size > 0 || !!teamQuery;
     if (!hasFilter) {
-      renderTrendChartBlock(chartHost, editionsMeta);
+      renderTrendChartBlock(chartHost, editionsMeta, baselineValue);
       return;
     }
 
@@ -3018,7 +3065,7 @@ window.HB = window.HB || {};
         (teamQuery ? ' "' + teamQuery + '"' : "") + "."));
       return;
     }
-    renderTrendChartBlock(chartHost, computed);
+    renderTrendChartBlock(chartHost, computed, baselineValue);
   }
 
   function renderBrowseMode(root, idx, cupIds) {
