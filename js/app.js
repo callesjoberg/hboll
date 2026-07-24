@@ -569,7 +569,13 @@ window.HB = window.HB || {};
       // Karta-vyns klubbadresser hänger med i samma cache-post (se
       // writeCache i api.js) — utan den här raden skulle kartan vara tom
       // tills nästa live-/inkrementella hämtning råkar skriva över den.
-      HB.api.clubGeo[c.id] = cached.clubs || {};
+      // ÄLDRE cache-poster (skrivna innan clubs-fältet infördes) saknar
+      // den helt — sätt då INTE clubGeo till {} (ensureCupClubGeo ser en
+      // redan satt, om än tom, post som "redan känt" och hämtar aldrig om,
+      // så Karta-fliken skulle permanent se ut att sakna data tills cachen
+      // en dag naturligt förnyas). Lämna clubGeo osatt i stället, så
+      // ensureCupClubGeo hämtar riktig geodata från snapshotten.
+      if (cached.clubs) HB.api.clubGeo[c.id] = cached.clubs;
     } else if (!c.dataUrl) {
       // Ingen lokal cache: starta från CI-byggd snapshot i repot,
       // så att förstabesöket slipper vänta på cupmanager-API:t.
