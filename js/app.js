@@ -1179,7 +1179,11 @@ window.HB = window.HB || {};
       title: "Stöder & (och) och / eller , (eller), t.ex. 2011&flickor/2013",
     });
 
-    let sortMode = "klass";
+    // sortToggle: false — listor utan ett naturligt "klass"-begrepp (t.ex.
+    // cupväljarna på Karta/Trend) har bara namnsortering, ingen växlingsrad.
+    // sortKey/catkey blir då aldrig meningsfullt ifyllt av anroparen, men
+    // det spelar ingen roll eftersom "klass"-jämförelsen aldrig körs.
+    let sortMode = opts.sortToggle === false ? "namn" : "klass";
     const sortBtns = {};
     const applySort = () => {
       const cmp = sortMode === "namn"
@@ -1188,7 +1192,7 @@ window.HB = window.HB || {};
             a.dataset.name.localeCompare(b.dataset.name, "sv");
       [...list.children].sort(cmp).forEach((el) => list.append(el));
     };
-    const sortRow = h("div", { class: "team-picker-sort-row" },
+    const sortRow = opts.sortToggle === false ? null : h("div", { class: "team-picker-sort-row" },
       ["klass", "namn"].map((key) => {
         const b = h("button", {
           class: "chip small" + (key === sortMode ? " on" : ""),
@@ -2864,6 +2868,7 @@ window.HB = window.HB || {};
       emptyLabel: "Välj cup(er)",
       countLabel: (n) => n + " cuper",
       searchPlaceholder: "Sök cup …",
+      sortToggle: false, // cuper har inget "klass"-begrepp — bara namnsortering
       onChange: () => renderContent(),
     });
 
@@ -3731,6 +3736,7 @@ window.HB = window.HB || {};
       emptyLabel: "Välj cup(er)",
       countLabel: (n) => n + " cuper",
       searchPlaceholder: "Sök cup …",
+      sortToggle: false, // cuper har inget "klass"-begrepp — bara namnsortering
       onChange: () => renderContent(),
     });
     root.append(h("div", { class: "history-controls" }, cupPicker));
