@@ -4230,7 +4230,7 @@ window.HB = window.HB || {};
   // tillkommit/försvunnit, annars går det inte att visuellt följa vad som
   // faktiskt ändrats mellan åren (precis det "Spela upp" är till för).
   let currentMapMarkerByKey = new Map();
-  let currentUnknownMarker = null; // den enskilda grå "okänd adress"-nålen (rörs bara om listan ändras)
+  let currentUnknownMarkerByKey = new Map(); // klubbnamn -> marker, samma diff-princip som currentMapMarkerByKey ovan
   let mapBoxEl = null;          // DOM-noden kartan bor i — sparas modulnivå (INTE i renderMapView)
                                  // så samma nod kan flyttas in i det nya innehållet varje
                                  // omritning i stället för att byggas om från grunden; annars
@@ -4394,10 +4394,31 @@ window.HB = window.HB || {};
     });
   }
 
-  // Fast referenspunkt (Nordsjön, mellan Norge/Danmark/Storbritannien) för
-  // "okänd adress"-nålen — ett symboliskt hav-läge i stället för att gissa
-  // en riktig plats, gott om utrymme där ingen verklig klubb råkar hamna.
-  const UNKNOWN_CLUB_MARKER_LNGLAT = [6, 58.5];
+  // "Okända" klubbar (ingen adress att slå upp) plottas var för sig i ett
+  // rutnät långt ute i Atlanten — mitt-Atlanten (inte Nordsjön som förut)
+  // för att garanterat inte råka överlappa någon verklig klubbs nål ens
+  // vid ett stort rutnät. Ger ett direkt visuellt mått på HUR STOR andel
+  // av klubbarna som saknar känd adress, i stället för en enda samlad nål
+  // med en textlista i popupen.
+  const UNKNOWN_GRID_ORIGIN = [-30, 45]; // mitt-Atlanten, sydväst om Portugal
+  const UNKNOWN_GRID_COLS = 20;
+  const UNKNOWN_GRID_SPACING = [0.5, 0.3]; // [lng, lat] grader mellan rutnätspunkter
+
+  // Varje klubbnamn får en STABIL rutnätsplats (tilldelas EN gång, sedan
+  // aldrig omtilldelad) — annars skulle en helt orelaterad klubbs nål
+  // hoppa till en ny position bara för att någon ANNAN klubb försvann ur
+  // listan (indexbaserad placering skulle skifta alla efterföljande),
+  // vilket precis som paintMapMarkers ovan skulle se ut som att kartan
+  // "blinkar" vid varje årsbyte.
+  let unknownGridSlotByName = new Map();
+  function unknownGridLngLat(name) {
+    if (!unknownGridSlotByName.has(name)) unknownGridSlotByName.set(name, unknownGridSlotByName.size);
+    const slot = unknownGridSlotByName.get(name);
+    const col = slot % UNKNOWN_GRID_COLS;
+    const row = Math.floor(slot / UNKNOWN_GRID_COLS);
+    return [UNKNOWN_GRID_ORIGIN[0] + col * UNKNOWN_GRID_SPACING[0],
+            UNKNOWN_GRID_ORIGIN[1] + row * UNKNOWN_GRID_SPACING[1]];
+  }
 
   function clubPopupBody(name, info) {
     return h("div", { class: "map-popup" },
@@ -4440,32 +4461,28 @@ window.HB = window.HB || {};
         .addTo(currentMap);
       currentMapMarkerByKey.set(name, { marker, color });
     }
-    if (unknownNames && unknownNames.length) {
-      const cap = 60;
-      const popupBody = h("div", { class: "map-popup map-popup-wide" },
-        h("strong", null, unknownNames.length + " klubbar utan känd adress"),
-        h("p", { class: "muted" },
-          "Ingen av dem har (ännu) spelat i en cup där adressen gick att slå upp."),
-        h("div", { class: "map-unknown-list" },
-          unknownNames.slice(0, cap).join(", ") + (unknownNames.length > cap ? " …" : "")));
-      if (currentUnknownMarker) {
-        currentUnknownMarker.setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody));
-      } else {
-        currentUnknownMarker = new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer den från klubbnålarna
-          .setLngLat(UNKNOWN_CLUB_MARKER_LNGLAT)
-          .setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody))
-          .addTo(currentMap);
-      }
-    } else if (currentUnknownMarker) {
-      currentUnknownMarker.remove();
-      currentUnknownMarker = null;
+    const nextUnknown = new Set(unknownNames || []);
+    for (const [name, marker] of currentUnknownMarkerByKey) {
+      if (!nextUnknown.has(name)) { marker.remove(); currentUnknownMarkerByKey.delete(name); }
+    }
+    for (const name of nextUnknown) {
+      if (currentUnknownMarkerByKey.has(name)) continue; // redan där, samma stabila rutnätsplats — rör inte
+      const popupBody = h("div", { class: "map-popup" },
+        h("strong", null, name),
+        h("br"),
+        h("span", { class: "muted" }, "Ingen känd adress"));
+      const marker = new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer klubbarna utan känd adress från de med
+        .setLngLat(unknownGridLngLat(name))
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(popupBody))
+        .addTo(currentMap);
+      currentUnknownMarkerByKey.set(name, marker);
     }
   }
 
   function createMap(maplibregl, container, geo, unknownNames, cupColorForClub) {
     if (currentMap) { currentMap.remove(); currentMap = null; }
     currentMapMarkerByKey = new Map();
-    currentUnknownMarker = null;
+    currentUnknownMarkerByKey = new Map();
     currentMap = new maplibregl.Map({
       container,
       style: "https://tiles.openfreemap.org/styles/liberty",
@@ -4474,9 +4491,13 @@ window.HB = window.HB || {};
     });
     currentMap.addControl(new maplibregl.NavigationControl(), "top-right");
     paintMapMarkers(maplibregl, geo, unknownNames, cupColorForClub);
+    // Bara EN representativ punkt (rutnätets ursprung, inte varenda
+    // enskild rutnätsmarkör) räknas in i den automatiska inzoomningen —
+    // annars skulle ett stort rutnät (många klubbar utan adress) dominera
+    // och klämma ihop de riktiga (kända) markörerna i ett hörn.
     const bounds = new maplibregl.LngLatBounds();
     for (const info of Object.values(geo)) bounds.extend([info.lng, info.lat]);
-    if (unknownNames && unknownNames.length) bounds.extend(UNKNOWN_CLUB_MARKER_LNGLAT);
+    if (unknownNames && unknownNames.length) bounds.extend(UNKNOWN_GRID_ORIGIN);
     if (!bounds.isEmpty()) currentMap.fitBounds(bounds, { padding: 40, maxZoom: 10 });
   }
 

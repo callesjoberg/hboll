@@ -650,9 +650,7 @@ input[type="search"]::-webkit-search-cancel-button {
 .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--card); }
 .maplibregl-popup-close-button { color: var(--ink-soft); }
 .map-popup { font-size: 13px; line-height: 1.5; }
-.map-popup-wide { max-width: 260px; }
 .map-popup p { margin: 4px 0; }
-.map-unknown-list { max-height: 160px; overflow-y: auto; font-size: 12px; }
 
 /* hero: nästa match */
 
