@@ -435,6 +435,8 @@ header.top {
   overflow-y: auto;
 }
 
+.team-picker-hint { margin: 4px 0; }
+
 .team-picker-item {
   display: flex;
   align-items: center;
@@ -613,6 +615,32 @@ input[type="search"]::-webkit-search-cancel-button {
 .banner.error { border-color: var(--live); }
 .banner .btn { margin-top: 8px; }
 .banner p { margin: 0 0 4px; }
+
+/* Karta ------------------------------------------------------------------ */
+
+.map-count { margin: 0 0 8px; }
+
+.map-box {
+  height: 70vh;
+  min-height: 320px;
+  max-height: 640px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* MapLibres popup-standardstil är vit/mörk text oavsett tema — anpassa den
+   till klubbens egna färgtokens så den inte skär sig mot appens dark mode. */
+.maplibregl-popup-content {
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--card); }
+.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--card); }
+.maplibregl-popup-close-button { color: var(--ink-soft); }
+.map-popup { font-size: 13px; line-height: 1.5; }
 
 /* hero: nästa match */
 
@@ -1475,8 +1503,19 @@ dialog.history-dialog {
 
 .history-controls select { flex: 0 0 auto; }
 .history-controls .autocomplete-wrap { flex: 1 1 200px; min-width: 160px; }
-.history-controls .trend-team-search { flex: 1 1 200px; min-width: 160px; }
-.history-controls input { width: 100%; }
+/* flex: 0 1 (inte 1 1) — samma mönster som huvudverktygsradens egen
+   sökruta (.tools-row .search-wrap) — växer INTE för att fylla ut resten
+   av raden, bara krymper vid platsbrist. En ensam smal cupväljarchip
+   bredvid gjorde annars sökrutan orimligt bred. */
+.history-controls .trend-team-search { flex: 0 1 240px; min-width: 160px; }
+/* Chippen (t.ex. Kartans cupväljare) hade annars 2px lägre padding än
+   sökrutan bredvid (.chip: 4px, .search: 6px) — märktes som en synlig
+   höjdskillnad i samma rad. */
+.history-controls .team-picker-summary { padding-top: 6px; padding-bottom: 6px; }
+/* :not([type="checkbox"]) — annars sträcks kryssrutorna INUTI en
+   buildPicker()-dropdown (t.ex. Kartans cupväljare) ut till 230px breda av
+   samma regel, vilket tryckte deras etikettext helt utanför synligt område. */
+.history-controls input:not([type="checkbox"]) { width: 100%; }
 
 .history-mode-body { margin-top: 14px; }
 
@@ -1525,6 +1564,19 @@ dialog.history-dialog {
 .trend-delta.down { color: var(--live); }
 
 .trend-note { margin-top: 10px; font-size: 12px; }
+
+.trend-cup-list {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+}
+
+.trend-cup-list-row {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.trend-cup-list-row:last-child { border-bottom: none; }
 
 /* "Bläddra i ett år" ----------------------------------------------------- */
 

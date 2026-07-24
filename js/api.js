@@ -64,13 +64,20 @@ window.HB = window.HB || {};
     return store[typeof ref === "string" ? ref : ref.href] || null;
   }
 
+  // club:{address:...} ger klubbens registrerade postadress (stad+
+  // koordinater+land), gratis att hänga med här eftersom store:n redan
+  // deduplicerar per NameClub-entitet oavsett hur många lag/matcher som
+  // refererar samma klubb (se clubGeoFromStore). Används av Karta-vyn.
+  const TEAM_FIELDS =
+    "{club:{address:{address:{city:{},lat:{},lng:{},nation:{name:{},code:{}}}}}}";
+
   function matchQuery(cup, limit, offset) {
     return (
       "MatchWindow({limit:" + limit + ",offset:" + offset +
       ",tournamentId:" + cup.tournamentId + "})" +
       "{matches:[{... on Match:{start:{},arena:{},round:{}," +
-      "away:{team:{}},division:{category:{},name:{}}," +
-      "home:{team:{}},result:{}}}]}"
+      "away:{team:" + TEAM_FIELDS + "},division:{category:{},name:{}}," +
+      "home:{team:" + TEAM_FIELDS + "},result:{}}}]}"
     );
   }
 
@@ -162,6 +169,35 @@ window.HB = window.HB || {};
     return matches;
   }
 
+  // cupId -> {klubbnamn: {city, lat, lng}} — Karta-vyn i app.js läser
+  // direkt ur det här (delat, muterbart) objektet. Fylls antingen här
+  // (live/inkrementell hämtning, se nedan) eller direkt av app.js:s
+  // loadCup() när en CI-byggd snapshot redan har fältet färdigt.
+  const clubGeo = {};
+
+  // {klubbnamn: {city, lat, lng, country}} — bara klubbar med en ifylld
+  // adress (saknas för enstaka lag utan klubbadress). Två hopp: NameClub.
+  // address är en referens till en NameClub$NameClubAddress-wrapper vars
+  // EGET address-fält pekar på den riktiga Address-entiteten (samma
+  // indirektion som scripts/fetch_cupmanager.py:s clubs_from_store — håll
+  // dem i synk). country: landskoden (t.ex. "SE") — stabil oavsett språk,
+  // till skillnad från nationens översatta namn.
+  function clubGeoFromStore(store) {
+    const geo = {};
+    for (const e of Object.values(store)) {
+      if (e.__typename !== "NameClub" || !e.name) continue;
+      const wrap = storeGet(store, e.address);
+      const addr = wrap && storeGet(store, wrap.address);
+      if (!addr || addr.lat == null || addr.lng == null) continue;
+      const nation = storeGet(store, addr.nation) || {};
+      geo[e.name] = {
+        city: addr.city || "", lat: addr.lat, lng: addr.lng,
+        country: nation.code || "",
+      };
+    }
+    return geo;
+  }
+
   // --- förhämtad data (ProCup-cuper utan API/CORS) -----------------------
 
   const localTables = {};   // cupId -> {divId: rows}
@@ -193,8 +229,8 @@ window.HB = window.HB || {};
   // enskilda Match({id})-anrop och den stora fönsterfrågan strukturellt
   // identiska så normalize() kan användas rakt av på båda.
   function singleMatchFields() {
-    return "{start:{},arena:{},round:{},away:{team:{}}," +
-      "division:{category:{},name:{}},home:{team:{}},result:{}}";
+    return "{start:{},arena:{},round:{},away:{team:" + TEAM_FIELDS + "}," +
+      "division:{category:{},name:{}},home:{team:" + TEAM_FIELDS + "},result:{}}";
   }
 
   // Cup Managers API stödjer inte att slå ihop flera Match({id})-frågor i
@@ -229,12 +265,18 @@ window.HB = window.HB || {};
     const freshById = new Map(normalize(combinedStore).map((m) => [m.id, m]));
     const merged = cachedMatches.map((m) => freshById.get(m.id) || m);
     merged.sort((a, b) => a.start - b.start || a.arena.localeCompare(b.arena, "sv"));
+    // Slå ihop (inte ersätt): combinedStore täcker bara de OSPELADE
+    // matchernas lag/klubbar — att skriva över hela clubGeo[cup.id] här
+    // skulle tappa alla klubbar från redan avgjorda matcher.
+    Object.assign(clubGeo[cup.id] = clubGeo[cup.id] || {}, clubGeoFromStore(combinedStore));
     return merged;
   }
 
   async function fetchMatches(cup, onProgress) {
     if (cup.dataUrl) return fetchLocal(cup);
-    return normalize(await fetchStore(cup, onProgress));
+    const store = await fetchStore(cup, onProgress);
+    clubGeo[cup.id] = clubGeoFromStore(store);
+    return normalize(store);
   }
 
   // --- tabeller ---------------------------------------------------------
@@ -436,7 +478,11 @@ window.HB = window.HB || {};
   }
 
   function writeCache(cup, matches, ts) {
-    const payload = JSON.stringify({ ts: ts || Date.now(), matches });
+    // clubs (Karta-vyns adressdata) hänger med i samma cache-post — den
+    // fylls redan (live/inkrementellt eller från snapshotten) i
+    // clubGeo[cup.id] innan writeCache() anropas, se fetchMatches/
+    // fetchIncremental ovan och loadCup() i app.js.
+    const payload = JSON.stringify({ ts: ts || Date.now(), matches, clubs: clubGeo[cup.id] });
     try {
       localStorage.setItem(cacheKey(cup), payload);
     } catch {
@@ -516,6 +562,6 @@ window.HB = window.HB || {};
 
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
-             readCache, writeCache, localDataTs,
+             readCache, writeCache, localDataTs, clubGeo,
              fetchArchiveIndex, fetchArchiveEdition };
 })();

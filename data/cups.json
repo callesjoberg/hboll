@@ -254,6 +254,18 @@
       "beach": true,
       "lat": 57.7646,
       "lon": 11.8006
+    },
+    {
+      "id": "goteborgfotboll",
+      "name": "Göteborg Cup Fotboll",
+      "place": "Göteborg",
+      "edition": "2026",
+      "host": "goteborgcupfotboll.cupmanager.net",
+      "tournamentId": 69886549,
+      "sport": "fotboll",
+      "beach": false,
+      "lat": 57.7089,
+      "lon": 11.9746
     }
   ]
 }

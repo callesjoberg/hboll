@@ -48,11 +48,18 @@ def match_query(tid, limit, offset):
     # rita slutspelsträd (samma fält som playoffQuery i js/api.js) — hämtas
     # nu för ALLA matcher (inte bara slutspel) så en enda MatchWindow-fråga
     # räcker; grupp-matcher får bara tomma/irrelevanta värden för dem.
+    #
+    # club:{address:...} ger klubbens registrerade postadress (stad+
+    # koordinater+land) — helt gratis att hänga med här eftersom store:n
+    # redan deduplicerar per NameClub-entitet oavsett hur många lag/matcher
+    # som refererar samma klubb (se clubs_from_store). Används av
+    # Karta-fliken i js/app.js.
+    team_fields = "{club:{address:{address:{city:{},lat:{},lng:{},nation:{name:{},code:{}}}}}}"
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
             "{matches:[{... on Match:{start:{},arena:{},round:{},roundRank:{},"
             "nextMatchWinner:{},nextMatchLoser:{},"
-            "away:{team:{}},division:{category:{},name:{}},"
-            "home:{team:{}},result:{}}}]}")
+            f"away:{{team:{team_fields}}},division:{{category:{{}},name:{{}}}},"
+            f"home:{{team:{team_fields}}},result:{{}}}}}}]}}")
 
 
 def ref_id(node):
@@ -166,13 +173,47 @@ def normalize(store):
     return matches
 
 
+def clubs_from_store(store):
+    """{klubbnamn: {city, lat, lng, country}} — bara klubbar med en ifylld
+    adress (saknas för enstaka lag som registrerats utan klubbadress). Två
+    hopp: NameClub.address är en referens till en NameClub$NameClubAddress-
+    wrapper vars EGET address-fält pekar på den riktiga Address-entiteten
+    (samma indirektion oavsett sport/cup, verifierad mot både handbolls-
+    och fotbollscuper på Cup Manager). country: landskoden (t.ex. "SE"),
+    stabil oavsett språk till skillnad från nationens översatta namn."""
+    def get(ref):
+        if isinstance(ref, dict):
+            return store.get(ref.get("href"), {}) or {}
+        return {}
+
+    clubs = {}
+    for e in store.values():
+        if e.get("__typename") != "NameClub":
+            continue
+        name = e.get("name")
+        if not name:
+            continue
+        addr = get(get(e.get("address")).get("address"))
+        if addr.get("lat") is None or addr.get("lng") is None:
+            continue
+        nation = get(addr.get("nation"))
+        clubs[name] = {"city": addr.get("city") or "",
+                        "lat": addr["lat"], "lng": addr["lng"],
+                        "country": nation.get("code") or ""}
+    return clubs
+
+
 def write_if_changed(path, data, old=None):
     if old is None and path.exists():
         try:
             old = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             old = None
-    if old and old.get("matches") == data["matches"]:
+    # "clubs" tillkom 2026-07-24 — old.get("clubs") is None fångar ÄLDRE
+    # snapshottar som redan har identiska matcher (och annars aldrig skulle
+    # skrivas om) så de får sin klubbdata efterhand utan att man manuellt
+    # måste radera filerna.
+    if old and old.get("matches") == data["matches"] and old.get("clubs") is not None:
         print(f"{path.name}: oförändrad — skriver inte om")
         return
     ok, reason = check_plausible(old, data)
@@ -207,8 +248,12 @@ def main():
             print(f"{cup['id']}: HOPPAR ÖVER ({e})")
             continue
         matches = normalize(store)
-        print(f"{cup['id']}: {len(matches)} matcher på {time.time()-t0:.0f}s")
-        write_if_changed(snapshot_path, {"ts": int(time.time() * 1000), "matches": matches}, old=old)
+        clubs = clubs_from_store(store)
+        print(f"{cup['id']}: {len(matches)} matcher, {len(clubs)} klubbar med adress "
+              f"på {time.time()-t0:.0f}s")
+        write_if_changed(snapshot_path,
+                          {"ts": int(time.time() * 1000), "matches": matches, "clubs": clubs},
+                          old=old)
 
 
 if __name__ == "__main__":
