@@ -1107,14 +1107,16 @@ window.HB = window.HB || {};
     const trendSupported = ((archiveEntry && archiveEntry.editions) || [])
       .filter((e) => e.matches > 0).length >= 2;
     if (state.archiveIndex && !trendSupported && state.view === "trend") state.view = "schema";
-    // Karta kräver klubbadresser, som bara klassiska Cup Manager-cuper har
-    // (varken ProCup eller Gothia exponerar dem, se HB.api.clubGeo/
-    // renderMapView) — till skillnad från Trend ovan vet vi det HÄR direkt
-    // (cup().dataUrl är synkront känt), så det är säkert att nollställa
-    // state.view direkt i stället för att vänta på något laddat.
-    if (cup().dataUrl && state.view === "karta") state.view = "schema";
-    const mapSupported = !cup().dataUrl &&
-      Object.keys(HB.api.clubGeo[state.cupId] || {}).length > 0;
+    // Karta kräver klubbadresser: klassiska Cup Manager-cuper har egen
+    // sådan direkt, ProCup/Gothia-cuper gissar sin via klubbkatalogen (se
+    // clubGeoFromMatches/ensureCupClubGeo) — båda vägarna är asynkrona
+    // (till skillnad från tidigare då bara cup().dataUrl avgjorde direkt),
+    // så vänta som Trend ovan tills vi VET säkert (mapCupStatus "done")
+    // innan ett direktlänkat view=karta nollställs.
+    ensureCupClubGeo(state.cupId);
+    const mapKnown = state.mapCupStatus[state.cupId] === "done";
+    const mapSupported = Object.keys(HB.api.clubGeo[state.cupId] || {}).length > 0;
+    if (mapKnown && !mapSupported && state.view === "karta") state.view = "schema";
     $$("#viewTabs .tab").forEach((b) => {
       const isPlayoffTab = b.dataset.view === "slutspel";
       const isTrendTab = b.dataset.view === "trend";
@@ -3674,6 +3676,28 @@ window.HB = window.HB || {};
     return mapLibreLoadPromise;
   }
 
+  // {klubbnamn: {city,lat,lng,country}} — gissar adress åt cuper som INTE
+  // har egen adressdata (ProCup/Gothia) genom att slå upp deras lagnamn mot
+  // den samlade klubbkatalogen (scripts/build_club_directory.py, byggd ur
+  // ALLA klassiska Cup Manager-cupers riktiga adresser). Samma
+  // längst-prefix-matchning som clubTeamCounts — en klubb som ALDRIG spelat
+  // i någon klassisk Cup Manager-cup går inte att lösa upp, ingen adress
+  // för den då.
+  function clubGeoFromMatches(matches, directory) {
+    const dirNames = Object.keys(directory).sort((a, b) => b.length - a.length);
+    const geo = {};
+    const seenTeamNames = new Set();
+    for (const m of matches) {
+      for (const side of [m.home, m.away]) {
+        if (!side.name || seenTeamNames.has(side.name)) continue;
+        seenTeamNames.add(side.name);
+        const club = dirNames.find((c) => side.name.startsWith(c));
+        if (club) geo[club] = directory[club];
+      }
+    }
+    return geo;
+  }
+
   // Hämtar en ANNAN cups (inte nödvändigtvis den just nu aktiva) klubbdata
   // direkt ur dess CI-byggda snapshot — helt fristående från loadCup()/
   // huvudappens matchdata, så att Karta kan visa flera cuper samtidigt utan
@@ -3682,18 +3706,31 @@ window.HB = window.HB || {};
   function ensureCupClubGeo(cupId) {
     if (HB.api.clubGeo[cupId] || state.mapCupStatus[cupId]) return;
     state.mapCupStatus[cupId] = "loading";
+    const done = (geo) => {
+      HB.api.clubGeo[cupId] = geo;
+      state.mapCupStatus[cupId] = "done";
+      // renderTabs() alltid — kan avgöra om Karta-fliken ska visas/döljas nu
+      // när vi vet säkert. render() (dyrare, ritar om hela sidan) bara om
+      // man faktiskt står på Karta just nu.
+      renderTabs();
+      if (state.view === "karta") render();
+    };
+    const c = HB.allCups().find((x) => x.id === cupId);
+    if (c && c.dataUrl) {
+      // ProCup/Gothia: ingen egen adressdata alls — gissa via namnmatchning
+      // mot klubbkatalogen i stället för att bara visa en tom karta.
+      Promise.all([
+        fetch(c.dataUrl + "?_=" + Date.now().toString(36)).then((r) => (r.ok ? r.json() : null)),
+        HB.api.fetchClubDirectory(),
+      ]).then(([data, directory]) => {
+        done(clubGeoFromMatches((data && data.matches) || [], directory || {}));
+      }).catch(() => done({}));
+      return;
+    }
     fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
       .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        HB.api.clubGeo[cupId] = (j && j.clubs) || {};
-        state.mapCupStatus[cupId] = "done";
-        if (state.view === "karta") render();
-      })
-      .catch(() => {
-        HB.api.clubGeo[cupId] = {};
-        state.mapCupStatus[cupId] = "done";
-        if (state.view === "karta") render();
-      });
+      .then((j) => done((j && j.clubs) || {}))
+      .catch(() => done({}));
   }
 
   // Slår ihop klubbdata för flera valda cuper till en enda lista, med vilka
@@ -3720,11 +3757,11 @@ window.HB = window.HB || {};
                           // annars läcker en WebGL-kontext varje gång fliken öppnas igen
 
   function renderMapView(root) {
-    const mapCupOptions = HB.allCups().filter((c) => !c.dataUrl);
-    if (!mapCupOptions.length) {
-      root.append(h("div", { class: "banner" }, "Ingen cup med klubbdata tillgänglig."));
-      return;
-    }
+    // Alla cuper listas nu, inte bara klassiska Cup Manager-cuper —
+    // ProCup/Gothia-cuper kan också få (gissad) klubbdata, se
+    // ensureCupClubGeo/clubGeoFromMatches. En cup utan några träffar ger
+    // bara en tom karta för just den, inget att spärra bort i förväg.
+    const mapCupOptions = HB.allCups();
     // Förval: bara innevarande cup, en gång — renderTabs() garanterar redan
     // att man bara kan NÅ Karta-fliken när innevarande cup stödjer den, så
     // ingen ytterligare giltighetskoll behövs här.

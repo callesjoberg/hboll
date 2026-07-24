@@ -560,8 +560,23 @@ window.HB = window.HB || {};
     }
   }
 
+  // {klubbnamn: {city,lat,lng,country}} slagit ihop från ALLA klassiska Cup
+  // Manager-cupers klubbadresser (scripts/build_club_directory.py) — Karta-
+  // vyn i app.js slår upp ProCup/Gothia-cupernas lagnamn mot den här (de
+  // saknar egen adressdata helt) via samma prefixmatchning som clubTeamCounts.
+  let clubDirectoryPromise = null;
+
+  function fetchClubDirectory() {
+    if (!clubDirectoryPromise) {
+      clubDirectoryPromise = fetch("data/club-directory.json", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}));
+    }
+    return clubDirectoryPromise;
+  }
+
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              readCache, writeCache, localDataTs, clubGeo,
-             fetchArchiveIndex, fetchArchiveEdition };
+             fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory };
 })();
