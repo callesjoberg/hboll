@@ -211,6 +211,44 @@ def clubs_from_store(store):
     return clubs
 
 
+def sport_query(tid):
+    return f"Tournament({{id:{tid}}}){{subcup:{{sport:{{name:{{}}}}}}}}"
+
+
+# Cup Manager taggar varje turnering med en riktig Sport-entitet (nåbar via
+# dess SubCup) — "Handboll", "Beachhandboll", "Fotboll (7)" osv, upptäckt
+# genom att prova fältnamn mot API:t tills ett gav napp (se
+# Tournament({id})$subcup$sport). Grupperas hit till breda kategorier
+# (handboll/fotboll/...) som js/app.js:s sportväljare i Inställningar
+# separerar cuper efter — beachhandboll räknas som handboll HÄR (cup.beach
+# täcker den distinktionen separat, se data/cups.json), bara riktigt andra
+# sporter (fotboll m.fl.) ska särskiljas i sportväljaren.
+def normalize_sport(raw):
+    if not raw:
+        return None
+    low = raw.lower()
+    if "handboll" in low:
+        return "handboll"
+    if "fotboll" in low:
+        return "fotboll"
+    if "volleyboll" in low or "volleyball" in low:
+        return "volleyboll"
+    if "innebandy" in low:
+        return "innebandy"
+    if "basket" in low:
+        return "basket"
+    return low.strip()  # okänd sport — behåll normaliserat originalnamn i stället för att gissa fel
+
+
+def tournament_sport(host, tid):
+    resp = api_call(host, tid, sport_query(tid))
+    for v in (resp.get("responses") or {}).values():
+        ent = v.get("entity") if isinstance(v, dict) else None
+        if isinstance(ent, dict) and ent.get("__typename") == "Sport":
+            return normalize_sport(ent.get("name"))
+    return None
+
+
 def write_if_changed(path, data, old=None):
     if old is None and path.exists():
         try:
@@ -246,13 +284,31 @@ def main():
     args = p.parse_args()
     only = set(args.only.split(",")) if args.only else None
 
-    cups = json.loads((ROOT / "data" / "cups.json").read_text(
-        encoding="utf-8"))["cups"]
+    cups_path = ROOT / "data" / "cups.json"
+    cups_doc = json.loads(cups_path.read_text(encoding="utf-8"))
+    cups = cups_doc["cups"]
+    cups_changed = False
     for cup in cups:
         if not cup.get("tournamentId"):
             continue  # ProCup-cuper hanteras av fetch_procup.py
         if only and cup["id"] not in only:
             continue
+        # Sport-taggen är i praktiken evig för en given cup (byts aldrig
+        # mellan upplagor) — läser bara av den när den SAKNAS (ny cup via
+        # admin.html) eller vid --force, i stället för att slösa ett extra
+        # API-anrop i onödan på varje schemalagd körning.
+        if args.force or not cup.get("sport"):
+            try:
+                sport = tournament_sport(cup["host"], cup["tournamentId"])
+            except Exception as e:
+                sport = None
+                print(f"{cup['id']}: kunde inte läsa av sport ({e})")
+            if sport and sport != cup.get("sport"):
+                old_sport = cup.get("sport")
+                cup["sport"] = sport
+                cups_changed = True
+                print(f"{cup['id']}: sport → {sport}" +
+                      (f" (var {old_sport!r})" if old_sport else ""))
         snapshot_path = ROOT / "data" / f"snapshot-{cup['id']}.json"
         old = None
         if snapshot_path.exists():
@@ -276,6 +332,11 @@ def main():
         write_if_changed(snapshot_path,
                           {"ts": int(time.time() * 1000), "matches": matches, "clubs": clubs},
                           old=old)
+
+    if cups_changed:
+        cups_path.write_text(json.dumps(cups_doc, ensure_ascii=False, indent=2) + "\n",
+                              encoding="utf-8")
+        print("data/cups.json uppdaterad med avlästa sporter")
 
 
 if __name__ == "__main__":
