@@ -225,7 +225,20 @@ header.top {
   gap: 14px;
 }
 
-#viewTabs { display: flex; gap: 2px; }
+#viewTabs {
+  display: flex;
+  gap: 2px;
+  /* Fler flikar (Trend/Karta/Klubb/Lag) fick raden bredare än mobila
+     skärmar — utan min-width:0 krymper ett flex-item aldrig under sitt
+     eget innehålls bredd (samma gotcha som .bracket-box, se dess
+     kommentar), så flikarna sköt bara ut till höger om skärmen i stället
+     för att bli skrollbara. */
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+#viewTabs::-webkit-scrollbar { height: 6px; }
 
 .tab {
   background: none;

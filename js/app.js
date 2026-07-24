@@ -1113,7 +1113,12 @@ window.HB = window.HB || {};
       main.append(h("div", { class: "banner", id: "loadNote" }, "Hämtar schema …"));
       return;
     }
-    if (!state.matches.length && !state.loading && !state.error) {
+    // allActiveMatches() (inte bara state.matches) — en cup vars LIVE-
+    // upplaga saknar publicerat schema kan ändå ha arkiverade tidigare år
+    // ikryssade i årsväljaren (se renderToolbar); bannern ska bara visas
+    // om det inte finns NÅGOT att visa alls, inte bara att just innevarande
+    // upplaga råkar sakna schema än.
+    if (!allActiveMatches().length && !state.loading && !state.error) {
       main.append(h("div", { class: "banner" },
         cup().name + " har inte publicerat något spelschema ännu."));
       return;
@@ -1523,11 +1528,17 @@ window.HB = window.HB || {};
     // klass-/lagfilter (de filtrerar inte state.matches alls) —
     // verktygsraden vore bara missvisande brus där.
     if (state.view === "trend" || state.view === "karta" || state.view === "klubb") return;
-    if (!state.matches.length) return;
-    const clubTeamsList = clubTeams();
     ensureArchiveEditions();
     const archiveEntry = state.archiveEditions[state.cupId];
     const archiveYears = (archiveEntry && archiveEntry.editions) || [];
+    // Live-upplagan kan sakna publicerat schema (ny säsong, inget släppt
+    // än) men ändå ha arkiverade tidigare år att bläddra i — årsväljaren
+    // måste gå att nå ändå, annars sitter man fast på "inget schema
+    // publicerat"-bannern (se renderContent) utan något sätt att komma åt
+    // t.ex. förra årets data. Bara om det INTE finns något alls — varken
+    // live eller arkiverat — är verktygsraden meningslös att visa.
+    if (!state.matches.length && !archiveYears.length) return;
+    const clubTeamsList = clubTeams();
     // state.years (vilka extra år som ska blandas in) sparas i localStorage
     // och överlever en omladdning, men de FAKTISKA matcherna
     // (state.yearMatches) gör det medvetet inte (se state-kommentaren) —
