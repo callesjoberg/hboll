@@ -4223,8 +4223,14 @@ window.HB = window.HB || {};
 
   let currentMap = null;        // föregående kartinstans — måste .remove()'as explicit,
                                  // annars läcker en WebGL-kontext varje gång fliken byts bort
-  let currentMapMarkers = [];   // markörerna som sitter på currentMap just nu — måste rensas
-                                 // manuellt innan nya läggs dit (samma anledning som ovan)
+  // klubbnamn -> {marker, color}: EN karta för varje klubbnål som sitter på
+  // currentMap just nu. Diffas mot nästa urval i stället för att rensas och
+  // byggas om i sin helhet (se paintMapMarkers) — en klubb som finns kvar
+  // mellan två år ska INTE blinka till bara för att andra klubbar
+  // tillkommit/försvunnit, annars går det inte att visuellt följa vad som
+  // faktiskt ändrats mellan åren (precis det "Spela upp" är till för).
+  let currentMapMarkerByKey = new Map();
+  let currentUnknownMarker = null; // den enskilda grå "okänd adress"-nålen (rörs bara om listan ändras)
   let mapBoxEl = null;          // DOM-noden kartan bor i — sparas modulnivå (INTE i renderMapView)
                                  // så samma nod kan flyttas in i det nya innehållet varje
                                  // omritning i stället för att byggas om från grunden; annars
@@ -4393,26 +4399,46 @@ window.HB = window.HB || {};
   // en riktig plats, gott om utrymme där ingen verklig klubb råkar hamna.
   const UNKNOWN_CLUB_MARKER_LNGLAT = [6, 58.5];
 
-  // Rensar bort ALLA nuvarande markörer och lägger dit nya — men rör INTE
-  // kartans center/zoom (ingen fitBounds här), till skillnad från createMap
-  // nedan. Används både av createMap (efter en nyskapad karta, då följs
-  // det av en fitBounds) och fristående vid årsbyte/"Spela upp" på en
-  // redan befintlig karta (då ska vyn stå still, se renderMapView).
+  function clubPopupBody(name, info) {
+    return h("div", { class: "map-popup" },
+      h("strong", null, name),
+      h("br"),
+      info.city + (info.country ? ", " + info.country : ""),
+      // "Deltar i: ..." bara meningsfullt när fler än en cup är vald —
+      // annars bara upprepar den redan kända (aktuella) cupen i onödan.
+      info.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + info.cups.join(", ")) : null);
+  }
+
+  // Diffar mot markörerna som redan sitter på kartan i stället för att
+  // rensa och bygga om alla — en klubb som förekommer i BÅDA det gamla och
+  // nya urvalet (samma namn, oavsett om året eller cupvalet ändrats) rörs
+  // inte alls (bara popupen uppdateras om "Deltar i"-listan ändrats), så
+  // den INTE blinkar till. Bara faktiska tillägg/borttag ger en synlig
+  // förändring — det är själva poängen med "Spela upp": kunna FÖLJA vad
+  // som ändras mellan åren i stället för att hela kartan verkar blinka om.
+  // Rör INTE kartans center/zoom (ingen fitBounds här), till skillnad från
+  // createMap nedan.
   function paintMapMarkers(maplibregl, geo, unknownNames, cupColorForClub) {
-    for (const mk of currentMapMarkers) mk.remove();
-    currentMapMarkers = [];
+    const nextNames = new Set(Object.keys(geo));
+    for (const [name, entry] of currentMapMarkerByKey) {
+      if (!nextNames.has(name)) { entry.marker.remove(); currentMapMarkerByKey.delete(name); }
+    }
     for (const [name, info] of Object.entries(geo)) {
-      const popupBody = h("div", { class: "map-popup" },
-        h("strong", null, name),
-        h("br"),
-        info.city + (info.country ? ", " + info.country : ""),
-        // "Deltar i: ..." bara meningsfullt när fler än en cup är vald —
-        // annars bara upprepar den redan kända (aktuella) cupen i onödan.
-        info.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + info.cups.join(", ")) : null);
-      currentMapMarkers.push(new maplibregl.Marker({ color: cupColorForClub(info) })
+      const color = cupColorForClub(info);
+      const existing = currentMapMarkerByKey.get(name);
+      if (existing && existing.color === color) {
+        // Oförändrad position OCH färg — uppdatera bara popupinnehållet
+        // (kan skilja mellan år, t.ex. "Deltar i"-listan) utan att röra
+        // själva nålens DOM-element.
+        existing.marker.setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(clubPopupBody(name, info)));
+        continue;
+      }
+      if (existing) existing.marker.remove(); // färgen bytte (sällsynt, se cupColorForClub) — måste återskapas
+      const marker = new maplibregl.Marker({ color })
         .setLngLat([info.lng, info.lat])
-        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(popupBody))
-        .addTo(currentMap));
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(clubPopupBody(name, info)))
+        .addTo(currentMap);
+      currentMapMarkerByKey.set(name, { marker, color });
     }
     if (unknownNames && unknownNames.length) {
       const cap = 60;
@@ -4422,15 +4448,24 @@ window.HB = window.HB || {};
           "Ingen av dem har (ännu) spelat i en cup där adressen gick att slå upp."),
         h("div", { class: "map-unknown-list" },
           unknownNames.slice(0, cap).join(", ") + (unknownNames.length > cap ? " …" : "")));
-      currentMapMarkers.push(new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer den från klubbnålarna
-        .setLngLat(UNKNOWN_CLUB_MARKER_LNGLAT)
-        .setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody))
-        .addTo(currentMap));
+      if (currentUnknownMarker) {
+        currentUnknownMarker.setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody));
+      } else {
+        currentUnknownMarker = new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer den från klubbnålarna
+          .setLngLat(UNKNOWN_CLUB_MARKER_LNGLAT)
+          .setPopup(new maplibregl.Popup({ offset: 12, maxWidth: "280px" }).setDOMContent(popupBody))
+          .addTo(currentMap);
+      }
+    } else if (currentUnknownMarker) {
+      currentUnknownMarker.remove();
+      currentUnknownMarker = null;
     }
   }
 
   function createMap(maplibregl, container, geo, unknownNames, cupColorForClub) {
-    if (currentMap) { currentMap.remove(); currentMap = null; currentMapMarkers = []; }
+    if (currentMap) { currentMap.remove(); currentMap = null; }
+    currentMapMarkerByKey = new Map();
+    currentUnknownMarker = null;
     currentMap = new maplibregl.Map({
       container,
       style: "https://tiles.openfreemap.org/styles/liberty",
