@@ -86,8 +86,25 @@
 
 * { box-sizing: border-box; }
 
+/* overflow-x: hidden — säkerhetsnät mot att NÅGOT element (en bred
+   tabell, kartan, flikraden ...) råkar bli bredare än skärmen och gör
+   hela sidan sidledes skrollbar (kändes som att "hela vyn glider iväg
+   utanför mobilen" — samma klass av bugg som redan hittades och fixades
+   för #viewTabs, se dess kommentar). overscroll-behavior-y: none stänger
+   av Safaris "rubber band"-studs vid toppen/botten (annars känns sidan
+   alltid lite lös/webbsidig jämfört med en riktig app, även i
+   hemskärms-/standalone-läge, se manifest.json). touch-action:
+   manipulation slår av dubbeltrycks-zoom-fördröjningen (en vanlig källa
+   till att sidan "fastnar" inzoomad efter ett snabbt dubbeltryck). */
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
   background: var(--paper);
   color: var(--ink);
   font-family: "Barlow", system-ui, -apple-system, sans-serif;
