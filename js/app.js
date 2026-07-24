@@ -341,19 +341,23 @@ window.HB = window.HB || {};
     // Trend-fliken: eget filter, INTE state.cats/state.teams — de håller
     // id:n som bara gäller innevarande upplaga (se allActiveMatches-
     // kommentaren om att id:n aldrig är stabila mellan år), så Trend filtrerar
-    // i stället på KLASSNAMN (stabilt mellan år) och en fritextsökning på
-    // lag-/klubbnamn (samma delsträngsmatchning som Historikens "Jämför
-    // lag"). Session, sparas ej.
+    // i stället på KLASSNAMN (stabilt mellan år). Session, sparas ej.
     trendCats: new Set(),
-    trendTeamQuery: "",
     // Trend-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
-    // fylls i vid första besöket i renderTrendView) — en vald cup ger
-    // formkurvan som vanligt, flera + ett klubbnamn ger cup-listläget i
-    // stället (se renderTrendCupList). Session, sparas ej.
+    // fylls i vid första besöket i renderTrendView) — EN vald cup ger
+    // formkurvan som vanligt, FLERA ger en jämförelsegraf (alla cuper
+    // "ovanpå varandra", se renderTrendCompare). Session, sparas ej.
     trendCupIds: new Set(),
     // Trend-fliken (enskild cup): manuellt valt baslinjeår (100 %-ankaret
     // i formkurvan), null = auto (se trendBaselineIndex). Session, sparas ej.
     trendBaselineYear: null,
+    // Trend-fliken (flera cuper): vilket mått jämförelsegrafen visar — en av
+    // TREND_METRICS nycklarna. Session, sparas ej.
+    trendCompareMetric: "matches",
+    // Klubb/Lag-fliken: fritextsökning på lag-/klubbnamn, söker över ALLA
+    // cuper med arkiverad historik (till skillnad från Trend, som är
+    // avgränsad till valda cuper) — se renderClubView. Session, sparas ej.
+    clubQuery: "",
     // Karta-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
     // fylls i vid första besöket i renderMapView). mapCupStatus håller reda
     // på lata hämtningar av ANDRA cupers klubbdata (se ensureCupClubGeo) så
@@ -687,10 +691,11 @@ window.HB = window.HB || {};
   // (som måste räknas fram lokalt, se ensureTable/ensurePlayoffs) från
   // innevarande års live-hämtade (odefinierad .edition = live).
   //
-  // cupId (valfri, förval = innevarande cup): Trend-flikens klubb-över-
-  // cuper-lista (renderTrendCupList) behöver hämta arkiverade år för ANDRA
-  // cuper än den just nu aktiva — samma cache (state.yearMatches) återanvänds
-  // rakt av eftersom nyckeln redan är cupId-prefixad.
+  // cupId (valfri, förval = innevarande cup): Klubb/Lag-flikens klubb-över-
+  // cuper-lista (computeClubRows) och Trend-jämförelsegrafens klassfilter
+  // behöver hämta arkiverade år för ANDRA cuper än den just nu aktiva —
+  // samma cache (state.yearMatches) återanvänds rakt av eftersom nyckeln
+  // redan är cupId-prefixad.
   function ensureYearMatches(edition, cupId) {
     cupId = cupId || state.cupId;
     const key = cupId + ":" + edition;
@@ -1058,6 +1063,9 @@ window.HB = window.HB || {};
     // direkt — samma resonemang som Trend ovan, rendera innan schema-
     // bannern kan blockera den i onödan.
     if (state.view === "karta") { renderMapView(main); return; }
+    // Klubb/Lag söker över ALLA cupers arkiverade historik, oberoende av
+    // innevarande cups schema — samma resonemang som Trend/Karta ovan.
+    if (state.view === "klubb") { renderClubView(main); return; }
     if (state.error) {
       main.append(h("div", { class: "banner error" },
         h("p", null, state.error),
@@ -1124,12 +1132,20 @@ window.HB = window.HB || {};
     const mapKnown = state.mapCupStatus[state.cupId] === "done";
     const mapSupported = Object.keys(HB.api.clubGeo[state.cupId] || {}).length > 0;
     if (mapKnown && !mapSupported && state.view === "karta") state.view = "schema";
+    // Klubb/Lag söker över ALLA cupers arkiv (inte bara innevarande cup) —
+    // visas så fort NÅGON cup har minst ett spelat arkiverat år, oavsett
+    // vilken cup som just nu är vald. Samma "vänta tills vi vet säkert"-
+    // resonemang som Trend/Karta ovan (archiveIndex laddas asynkront).
+    const clubSupported = !!state.archiveIndex && Object.values(state.archiveIndex)
+      .some((c) => (c.editions || []).some((e) => e.matches > 0));
+    if (state.archiveIndex && !clubSupported && state.view === "klubb") state.view = "schema";
     $$("#viewTabs .tab").forEach((b) => {
       const isPlayoffTab = b.dataset.view === "slutspel";
       const isTrendTab = b.dataset.view === "trend";
       const isKartaTab = b.dataset.view === "karta";
+      const isKlubbTab = b.dataset.view === "klubb";
       b.hidden = (isPlayoffTab && !playoffsSupported) || (isTrendTab && !trendSupported) ||
-        (isKartaTab && !mapSupported);
+        (isKartaTab && !mapSupported) || (isKlubbTab && !clubSupported);
       b.classList.toggle("on", b.dataset.view === state.view);
       b.setAttribute("aria-selected", String(b.dataset.view === state.view));
     });
@@ -1231,7 +1247,27 @@ window.HB = window.HB || {};
           if (lazy && !e.target.checked) renderLazyList(search.value); // en avkryssad rad ska försvinna om den inte längre matchar sökningen
         },
       });
-      const row = h("label", { class: "team-picker-item" }, cb, it.label);
+      // soloClickable (bara cupväljarna, se renderTrendView/renderMapView):
+      // klick direkt på NAMNET väljer bara den raden (kryssar ur alla andra)
+      // — snabbt sätt att hoppa till "bara den här cupen". Klick på själva
+      // kryssrutan fortsätter fungera som vanligt av/på-flerval (bygger upp
+      // en jämförelse). preventDefault() stoppar <label>s inbyggda
+      // vidarebefordran av klicket till kryssrutan, annars skulle den även
+      // togglas av vår egen hantering.
+      const label = opts.soloClickable
+        ? h("span", {
+            class: "team-picker-item-text", title: "Klicka för att välja bara den här",
+            onclick: (e) => {
+              e.preventDefault();
+              opts.selected.clear();
+              opts.selected.add(it.id);
+              saveUi(); setSummary(); opts.onChange();
+              if (lazy) renderLazyList(search.value);
+              else for (const r of list.children) r._checkbox.checked = opts.selected.has(r._id);
+            },
+          }, it.label)
+        : it.label;
+      const row = h("label", { class: "team-picker-item" }, cb, label);
       row.dataset.name = it.sortName;
       row.dataset.catkey = String(it.sortKey);
       row.dataset.search = it.label.toLowerCase();
@@ -1420,10 +1456,10 @@ window.HB = window.HB || {};
   function renderToolbar() {
     const bar = $("#toolbar");
     bar.replaceChildren();
-    // Trend/Karta bygger på HELA arkivet/klubbregistret oavsett dag-/klass-/
-    // lagfilter (de filtrerar inte state.matches alls) — verktygsraden vore
-    // bara missvisande brus där.
-    if (state.view === "trend" || state.view === "karta") return;
+    // Trend/Karta/Klubb bygger på HELA arkivet/klubbregistret oavsett dag-/
+    // klass-/lagfilter (de filtrerar inte state.matches alls) —
+    // verktygsraden vore bara missvisande brus där.
+    if (state.view === "trend" || state.view === "karta" || state.view === "klubb") return;
     if (!state.matches.length) return;
     const clubTeamsList = clubTeams();
     ensureArchiveEditions();
@@ -2813,79 +2849,69 @@ window.HB = window.HB || {};
 
   // Återanvänder .table-box/.standings (samma stil som grupptabellerna i
   // Tabeller-vyn) i stället för att bygga en egen tabellstil från grunden.
-  function trendTable(editions, metrics) {
+  // Generisk sorterbar rådatatabell — klickbara kolumnrubriker (samma
+  // mönster/CSS som bracketTableBlock's headerCell, se .bracket-th-sort).
+  // sortState ({key, dir}, dir är 1/-1) ägs och hålls vid liv av
+  // ANROPAREN (modulnivå-variabler, se trendTableSort m.fl. nedan) så att
+  // vald sortering överlever omritningar. columns: [{key, label, align,
+  // get(row)->sträng|tal, defaultDir}]. rowTitle(row) är valfri — sätts som
+  // native tooltip på hela raden (t.ex. en fullständig klasslista).
+  function sortableTable(columns, rows, sortState, rowTitle) {
+    const sorted = rows.slice().sort((a, b) => {
+      const col = columns.find((c) => c.key === sortState.key) || columns[0];
+      const av = col.get(a), bv = col.get(b);
+      const cmp = typeof av === "number" && typeof bv === "number"
+        ? av - bv : String(av).localeCompare(String(bv), "sv", { numeric: true });
+      return sortState.dir * cmp;
+    });
+    const headerCell = (col) => {
+      const active = sortState.key === col.key;
+      return h("th", {
+        class: (col.align === "l" ? "l " : "") + "bracket-th-sort" + (active ? " on" : ""),
+        role: "button", tabindex: "0",
+        onclick: () => {
+          if (active) sortState.dir *= -1;
+          else { sortState.key = col.key; sortState.dir = col.defaultDir || -1; }
+          renderContent();
+        },
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },
+      }, col.label, active ? h("span", { class: "sort-arrow" }, sortState.dir > 0 ? " ▲" : " ▼") : null);
+    };
     return h("div", { class: "table-box" },
       h("table", { class: "standings" },
-        h("thead", null, h("tr", null,
-          h("th", { class: "l" }, "År"),
-          metrics.map(([, label]) => h("th", null, label)))),
-        h("tbody", null, editions.map((e) =>
-          h("tr", null,
-            h("th", { class: "l", scope: "row" }, e.edition),
-            metrics.map(([key]) => h("td", null, String(e[key] ?? 0))))))));
+        h("thead", null, h("tr", null, columns.map(headerCell))),
+        h("tbody", null, sorted.map((row) => h("tr", rowTitle ? { title: rowTitle(row) } : null,
+          columns.map((col, i) => h(i === 0 ? "th" : "td",
+            { class: col.align === "l" ? "l" : "", ...(i === 0 ? { scope: "row" } : {}) },
+            String(col.get(row)))))))));
   }
 
-  // Cup-över-cuper-läget (flera cuper + ett klubbnamn, se
-  // renderTrendCupList) behöver arkiverade år för ANDRA cuper än den
+  // Sorteringsval per tabell — modulnivå (inte state, sparas ej) så de
+  // överlever renderContent() men nollställs vid en full sidladdning,
+  // precis som bracketSort.
+  let trendTableSort = { key: "edition", dir: 1 };
+  let trendCompareTableSort = { key: "cupName", dir: 1 };
+  let clubTableSort = { key: "cupName", dir: 1 };
+
+  function trendTable(editions, metrics) {
+    const columns = [
+      { key: "edition", label: "År", align: "l", defaultDir: 1, get: (e) => e.edition },
+      ...metrics.map(([key, label]) => ({ key, label, defaultDir: -1, get: (e) => e[key] || 0 })),
+    ];
+    return sortableTable(columns, editions, trendTableSort);
+  }
+
+  // Cup-över-cuper-lägena (jämförelsegrafen nedan OCH Klubb/Lag-fliken,
+  // se renderClubView) behöver arkiverade år för ANDRA cuper än den
   // aktiva — bygger listan över VILKA cuper (av arkivindexets fulla lista)
   // som faktiskt har någon arkiverad historik alls, oavsett om de stödjer
   // formkurvans egna >=2-årskrav (ett enda deltagar-år är fortfarande
-  // relevant information för listan).
+  // relevant information).
   function trendCupOptions() {
     const idx = state.archiveIndex || {};
     return HB.allCups()
       .filter((c) => (idx[c.id] && idx[c.id].editions || []).some((e) => e.matches > 0))
       .map((c) => c.id);
-  }
-
-  // Listar, för ETT klubbnamn, vilka av de valda cuperna klubben förekommer
-  // i och vilka år — svarar direkt på "vilka cuper har den här klubben
-  // deltagit i?" (se användarens exempel "Alingsås HK över tid"). Kräver
-  // FULLA matchlistor per arkiverat år och cup (samma ensureYearMatches som
-  // formkurvan, nu bara även för andra cuper än den aktiva).
-  function renderTrendCupList(root, cupIds, classFilter, teamQuery) {
-    const idx = state.archiveIndex || {};
-    let pending = false;
-    const rows = [];
-    for (const cupId of cupIds) {
-      const editionsMeta = ((idx[cupId] && idx[cupId].editions) || [])
-        .filter((e) => e.matches > 0);
-      const years = [];
-      for (const em of editionsMeta) {
-        ensureYearMatches(em.edition, cupId);
-        const ym = state.yearMatches[cupId + ":" + em.edition];
-        if (!ym || ym.status === "loading") { pending = true; continue; }
-        if (ym.status !== "done") continue;
-        const teamIds = new Set();
-        for (const m of ym.matches) {
-          if (classFilter.size && !classFilter.has(m.catName)) continue;
-          if (matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery) && m.home.id != null) teamIds.add(m.home.id);
-          if (matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery) && m.away.id != null) teamIds.add(m.away.id);
-        }
-        if (teamIds.size) years.push({ edition: em.edition, teams: teamIds.size });
-      }
-      if (years.length) {
-        const cupObj = HB.allCups().find((c) => c.id === cupId);
-        rows.push({ cupName: (cupObj && cupObj.name) || cupId, years });
-      }
-    }
-    if (pending) {
-      root.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
-      return;
-    }
-    if (!rows.length) {
-      root.append(h("p", { class: "muted" },
-        'Inga arkiverade matcher matchar "' + teamQuery + '" i valda cuper.'));
-      return;
-    }
-    rows.sort((a, b) => a.cupName.localeCompare(b.cupName, "sv"));
-    root.append(h("div", { class: "trend-cup-list" }, rows.map((r) => {
-      const years = r.years.map((y) => y.edition).sort();
-      const totalTeams = r.years.reduce((s, y) => s + y.teams, 0);
-      return h("div", { class: "trend-cup-list-row" },
-        h("strong", null, r.cupName),
-        h("span", { class: "muted" }, " · " + years.join(", ") + " · " + totalTeams + " lag"));
-    })));
   }
 
   // Egen toppnivåflik (bredvid Schema/Tabeller/Slutspel/Bana) för INNEVARANDE
@@ -2897,16 +2923,21 @@ window.HB = window.HB || {};
   // Cupväljare tillagd senare samma dag: EN vald cup (förval, matchar
   // state.cupId) ger formkurvan som vanligt (nu för VALFRI cup, inte bara
   // den aktiva — byt cup i pickern utan att röra huvudappens headerval).
-  // FLERA valda cuper + ett klubbnamn i sökrutan byter i stället till en
-  // lista över vilka av dem klubben deltagit i (renderTrendCupList) — ett
-  // formkurvediagram med många linjer blir snabbt oläsligt, en lista är
-  // tydligare för just den frågan.
+  // FLERA valda cuper ger i stället en jämförelsegraf, alla ovanpå varandra
+  // (renderTrendCompare) — den tidigare fritextsökningen på lag/klubb
+  // (som krävdes för att visa NÅGOT alls med fler än en cup vald) togs
+  // bort 2026-07-24: en lista över EN klubbs historik hör hemma i sin
+  // egen Klubb/Lag-flik (renderClubView, söker dessutom över ALLA cuper,
+  // inte bara de som råkar vara valda här).
   //
   // Klass-/lagfilter: index.json:s aggregat räcker för OFILTRERAD
-  // formkurva (snabbt, redan laddat), men ett filter (eller cup-listläget)
-  // kräver de FULLA matchlistorna per arkiverat år — hämtas lat, bara när
-  // det faktiskt behövs, via ensureYearMatches (kan bli flera MB för en
-  // stor cup, se trendClassOptions).
+  // formkurva (snabbt, redan laddat), men ett filter kräver de FULLA
+  // matchlistorna per arkiverat år — hämtas lat, bara när det faktiskt
+  // behövs, via ensureYearMatches (kan bli flera MB för en stor cup, se
+  // trendClassOptions). Klassfiltret gäller bara enskild-cup-läget — ett
+  // klassnamn plockat ur INNEVARANDE cups live-matcher (trendClassOptions)
+  // vore ett obegripligt filter att applicera på andra cupers helt egna
+  // klassnamnsscheman i jämförelseläget.
   function renderTrendView(root) {
     const cupOptions = trendCupOptions();
     if (!cupOptions.length) {
@@ -2927,10 +2958,13 @@ window.HB = window.HB || {};
       countLabel: (n) => n + " cuper",
       searchPlaceholder: "Sök cup …",
       sortToggle: false, // cuper har inget "klass"-begrepp — bara namnsortering
+      soloClickable: true, // klick på cupnamnet väljer bara den cupen
       onChange: () => renderContent(),
     });
 
-    const classOptions = trendClassOptions();
+    const selectedCupIds = [...state.trendCupIds];
+    const showClassPicker = selectedCupIds.length === 1;
+    const classOptions = showClassPicker ? trendClassOptions() : [];
     const classPicker = classOptions.length ? buildPicker({
       items: classOptions.map((name) => ({
         id: name, label: name, sortKey: catSortKey(name), sortName: name,
@@ -2943,36 +2977,20 @@ window.HB = window.HB || {};
       onChange: () => renderContent(),
     }) : null;
 
-    const teamInput = h("input", {
-      class: "search", type: "text", placeholder: "Lag/klubb, t.ex. Alingsås HK",
-      title: "Stöder & (och) och / eller , (eller), t.ex. Alingsås&Blå",
-    });
-    teamInput.value = state.trendTeamQuery;
-    const applyTeamQuery = () => { state.trendTeamQuery = teamInput.value; renderContent(); };
-    teamInput.addEventListener("change", applyTeamQuery);
-    teamInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); applyTeamQuery(); }
-    });
-    const teamWrap = h("div", { class: "trend-team-search" },
-      withClearButton(teamInput, () => { state.trendTeamQuery = ""; renderContent(); }));
-
-    root.append(h("div", { class: "history-controls" }, cupPicker, classPicker, teamWrap));
+    root.append(h("div", { class: "history-controls" }, cupPicker, classPicker));
 
     const chartHost = h("div", { class: "trend-chart-host" });
     root.append(chartHost);
 
-    const selectedCupIds = [...state.trendCupIds];
-    const teamQuery = state.trendTeamQuery.trim();
+    if (!selectedCupIds.length) {
+      chartHost.append(h("p", { class: "muted" }, "Välj minst en cup ovan."));
+      return;
+    }
 
-    // Flera cuper valda: kräver ett klubbnamn (se motivering ovan) — utan
-    // det finns ingen entydig "lista" att visa.
+    // Flera cuper valda: jämförelsegraf, alla ovanpå varandra (normerade
+    // mot varsitt eget baslinjeår) — se renderTrendCompare.
     if (selectedCupIds.length > 1) {
-      if (!teamQuery) {
-        chartHost.append(h("p", { class: "muted" },
-          "Skriv ett lag-/klubbnamn ovan för att se vilka av de valda cuperna det deltagit i."));
-        return;
-      }
-      renderTrendCupList(chartHost, selectedCupIds, state.trendCats, teamQuery);
+      renderTrendCompare(chartHost, selectedCupIds);
       return;
     }
 
@@ -3018,8 +3036,7 @@ window.HB = window.HB || {};
     });
     chartHost.append(h("div", { class: "row trend-baseline-row" }, baselineSelect));
 
-    const hasFilter = state.trendCats.size > 0 || !!teamQuery;
-    if (!hasFilter) {
+    if (!state.trendCats.size) {
       renderTrendChartBlock(chartHost, editionsMeta, baselineValue);
       return;
     }
@@ -3032,25 +3049,13 @@ window.HB = window.HB || {};
       return;
     }
     const computed = loaded.map(({ meta, ym }) => {
-      let matches = (ym && ym.matches) || [];
-      if (state.trendCats.size) matches = matches.filter((m) => state.trendCats.has(m.catName));
-      if (teamQuery) matches = matches.filter((m) =>
-        matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery) ||
-        matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery));
+      const matches = ((ym && ym.matches) || []).filter((m) => state.trendCats.has(m.catName));
       const teams = new Set(), classes = new Set(), days = new Set(), clubs = new Set();
       for (const m of matches) {
-        // Utan lag-/klubbfilter: räkna båda lagen som vanligt (alla lag i
-        // urvalet). MED filter: "Lag"/"Klubbar" ska betyda "hur många av
-        // VÅRA lag/klubbar deltog" (deltagande, se användarens exempel
-        // "Alingsås HK över tid") — inte antalet motståndare de råkat
-        // möta, så bara den sida vars namn faktiskt matchar sökningen
-        // räknas in.
-        const homeIsUs = !teamQuery || matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery);
-        const awayIsUs = !teamQuery || matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
-        if (homeIsUs && m.home.id != null) teams.add(m.home.id);
-        if (awayIsUs && m.away.id != null) teams.add(m.away.id);
-        if (homeIsUs && m.home.club) clubs.add(m.home.club);
-        if (awayIsUs && m.away.club) clubs.add(m.away.club);
+        if (m.home.id != null) teams.add(m.home.id);
+        if (m.away.id != null) teams.add(m.away.id);
+        if (m.home.club) clubs.add(m.home.club);
+        if (m.away.club) clubs.add(m.away.club);
         if (m.catName) classes.add(m.catName);
         if (m.start) days.add(Math.floor(m.start / 86400000));
       }
@@ -3060,12 +3065,276 @@ window.HB = window.HB || {};
       };
     });
     if (computed.every((e) => e.matches === 0)) {
-      chartHost.append(h("p", { class: "muted" },
-        "Inga arkiverade matcher matchar filtret" +
-        (teamQuery ? ' "' + teamQuery + '"' : "") + "."));
+      chartHost.append(h("p", { class: "muted" }, "Inga arkiverade matcher matchar klassfiltret."));
       return;
     }
     renderTrendChartBlock(chartHost, computed, baselineValue);
+  }
+
+  // Jämförelsegraf: flera cuper "ovanpå varandra" i samma diagram, EN
+  // metric i taget (annars metric×cup-kombinationer snabbt oläsligt — upp
+  // till 5 mått × flera cuper). Varje cups linje normeras mot sitt EGET
+  // baslinjeår (samma 40%-heuristik som enskild-cup-läget, se
+  // trendBaselineIndex) — jämför alltså relativ UTVECKLING, inte absolut
+  // storlek, så en liten och en stor cup går att jämföra rakt av.
+  function renderTrendCompare(root, cupIds) {
+    const idx = state.archiveIndex || {};
+    const palette = ["var(--blue)", "var(--yellow)", "var(--orange)", "var(--won)",
+      "var(--purple)", "var(--lost)", "var(--live)"];
+    const cupsData = cupIds.map((id, i) => {
+      const entry = idx[id];
+      const editions = ((entry && entry.editions) || [])
+        .slice().sort((a, b) => a.edition.localeCompare(b.edition));
+      const name = (HB.allCups().find((c) => c.id === id) || {}).name || id;
+      return { cupId: id, cupName: name, editions, color: palette[i % palette.length] };
+    }).filter((c) => c.editions.some((e) => e.matches > 0));
+    if (!cupsData.length) {
+      root.append(h("p", { class: "muted" },
+        "Ingen av de valda cuperna har arkiverad historik med spelade matcher."));
+      return;
+    }
+
+    const metricSelect = h("select", { class: "select", "aria-label": "Mått" },
+      TREND_METRICS.map(([key, label]) => h("option",
+        { value: key, ...(key === state.trendCompareMetric ? { selected: "" } : {}) }, label)));
+    metricSelect.value = state.trendCompareMetric;
+    metricSelect.addEventListener("change", () => {
+      state.trendCompareMetric = metricSelect.value;
+      renderContent();
+    });
+    root.append(h("div", { class: "row trend-baseline-row" }, metricSelect));
+
+    const metricKey = state.trendCompareMetric;
+    const metricLabel = (TREND_METRICS.find(([k]) => k === metricKey) || [, metricKey])[1];
+    root.append(h("div", { class: "trend-chart-box" }, buildTrendCompareSvg(cupsData, metricKey)));
+
+    const legend = h("div", { class: "trend-legend" }, cupsData.map((c) => {
+      const played = c.editions.filter((e) => e.matches > 0);
+      const baseIdx = trendBaselineIndex(played);
+      const baseEd = played[baseIdx];
+      const lastEd = played[played.length - 1];
+      const base = baseEd[metricKey] || 0;
+      const last = lastEd[metricKey] || 0;
+      const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
+      return h("div", { class: "trend-legend-item" },
+        h("span", { class: "trend-swatch", style: "background:" + c.color }),
+        h("span", null, c.cupName + ": " + base + " (" + baseEd.edition + ") → " +
+          last + " (" + lastEd.edition + ")"),
+        pct == null || lastEd === baseEd ? null : h("span",
+          { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
+          (pct > 0 ? "+" : "") + pct + " %"));
+    }));
+    root.append(legend,
+      h("p", { class: "muted trend-note" },
+        "Varje cup normerad mot sitt eget baslinjeår (= 100 %) — jämför relativ " +
+        "utveckling, inte absolut storlek."),
+      trendCompareTable(cupsData, metricKey, metricLabel));
+  }
+
+  function buildTrendCompareSvg(cupsData, metricKey) {
+    const w = 640, h2 = 260, padL = 26, padR = 26, padT = 16, padB = 26;
+    const innerW = w - padL - padR, innerH = h2 - padT - padB;
+    const years = [...new Set(cupsData.flatMap((c) => c.editions.map((e) => e.edition)))].sort();
+    const n = years.length;
+    const x = (i) => padL + (n === 1 ? innerW / 2 : (innerW * i) / (n - 1));
+    const yearIndex = new Map(years.map((y, i) => [y, i]));
+
+    const series = cupsData.map((c) => {
+      const baseIdx = trendBaselineIndex(c.editions);
+      const base = c.editions[baseIdx][metricKey] || 0;
+      const points = c.editions
+        .map((e) => ({
+          i: yearIndex.get(e.edition), edition: e.edition, raw: e[metricKey] || 0,
+          v: base > 0 ? ((e[metricKey] || 0) / base) * 100 : ((e[metricKey] || 0) > 0 ? 100 : 0),
+        }))
+        .sort((a, b) => a.i - b.i);
+      return { cupName: c.cupName, color: c.color, points, baseEdition: c.editions[baseIdx].edition };
+    });
+    const allVals = series.flatMap((s) => s.points.map((p) => p.v));
+    const maxV = Math.max(100, ...allVals) * 1.1;
+    const y = (v) => padT + innerH - (v / (maxV || 1)) * innerH;
+
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "trend-svg");
+    svg.setAttribute("viewBox", "0 0 " + w + " " + h2);
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+    const baseline = document.createElementNS(NS, "line");
+    baseline.setAttribute("x1", String(padL)); baseline.setAttribute("x2", String(w - padR));
+    baseline.setAttribute("y1", String(y(100))); baseline.setAttribute("y2", String(y(100)));
+    baseline.setAttribute("class", "trend-baseline");
+    svg.appendChild(baseline);
+
+    years.forEach((yr, i) => {
+      const t = document.createElementNS(NS, "text");
+      t.setAttribute("x", String(x(i))); t.setAttribute("y", String(h2 - 6));
+      t.setAttribute("text-anchor", "middle"); t.setAttribute("class", "trend-axis-label");
+      t.textContent = yr;
+      svg.appendChild(t);
+    });
+
+    for (const s of series) {
+      // Bryter linjen i separata segment vid luckor (år cupen HELT saknar
+      // arkiverad data, till skillnad från en äkta inställd nollpunkt som
+      // fortfarande är en punkt på linjen) i stället för att dra en
+      // missvisande rak linje över dem.
+      let seg = [];
+      const flushSeg = () => {
+        if (seg.length > 1) {
+          const poly = document.createElementNS(NS, "polyline");
+          poly.setAttribute("points", seg.map((p) => x(p.i) + "," + y(p.v)).join(" "));
+          poly.setAttribute("class", "trend-line");
+          poly.setAttribute("style", "stroke:" + s.color);
+          svg.appendChild(poly);
+        }
+        seg = [];
+      };
+      let prevI = null;
+      for (const p of s.points) {
+        if (prevI != null && p.i !== prevI + 1) flushSeg();
+        seg.push(p);
+        prevI = p.i;
+      }
+      flushSeg();
+      for (const p of s.points) {
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", String(x(p.i))); c.setAttribute("cy", String(y(p.v))); c.setAttribute("r", "3.5");
+        c.setAttribute("class", "trend-dot");
+        c.setAttribute("style", "fill:" + s.color);
+        const title = document.createElementNS(NS, "title");
+        title.textContent = s.cupName + " " + p.edition + ": " + p.raw +
+          " (" + Math.round(p.v) + " % av " + s.baseEdition + ")";
+        c.appendChild(title);
+        svg.appendChild(c);
+      }
+    }
+    return svg;
+  }
+
+  function trendCompareTable(cupsData, metricKey, metricLabel) {
+    const rows = cupsData.flatMap((c) => c.editions.map((e) =>
+      ({ cupName: c.cupName, edition: e.edition, value: e[metricKey] || 0 })));
+    const columns = [
+      { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
+      { key: "edition", label: "År", align: "l", defaultDir: 1, get: (r) => r.edition },
+      { key: "value", label: metricLabel, defaultDir: -1, get: (r) => r.value },
+    ];
+    return sortableTable(columns, rows, trendCompareTableSort);
+  }
+
+  // Klubb/Lag-fliken: aggregerar EN sökterms (klubb-/lagnamn) historik över
+  // ALLA cuper med arkiverad data (till skillnad från Trend-jämförelsen
+  // ovan, som bara omfattar de cuper man själv valt). Kräver FULLA
+  // matchlistor per arkiverat år och cup (samma ensureYearMatches som
+  // formkurvan).
+  function computeClubRows(cupIds, teamQuery) {
+    const idx = state.archiveIndex || {};
+    let pending = false;
+    const rows = [];
+    for (const cupId of cupIds) {
+      const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+      const years = [];
+      let totalTeams = 0, totalMatches = 0;
+      const classes = new Set();
+      for (const em of editionsMeta) {
+        ensureYearMatches(em.edition, cupId);
+        const ym = state.yearMatches[cupId + ":" + em.edition];
+        if (!ym || ym.status === "loading") { pending = true; continue; }
+        if (ym.status !== "done") continue;
+        const teamIds = new Set();
+        let matchCount = 0;
+        for (const m of ym.matches) {
+          const homeIsUs = matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery);
+          const awayIsUs = matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
+          if (!homeIsUs && !awayIsUs) continue;
+          matchCount++;
+          if (homeIsUs && m.home.id != null) teamIds.add(m.home.id);
+          if (awayIsUs && m.away.id != null) teamIds.add(m.away.id);
+          if (m.catName) classes.add(m.catName);
+        }
+        if (teamIds.size) { years.push(em.edition); totalTeams += teamIds.size; totalMatches += matchCount; }
+      }
+      if (years.length) {
+        const cupObj = HB.allCups().find((c) => c.id === cupId);
+        rows.push({
+          cupId, cupName: (cupObj && cupObj.name) || cupId, years: years.sort(),
+          totalTeams, totalMatches, classes,
+        });
+      }
+    }
+    return { pending, rows };
+  }
+
+  let clubQuerySeeded = false;
+
+  // Egen toppnivåflik: "en klubbs/ett lags historik över alla cuper" —
+  // svarar direkt på "vilka cuper har t.ex. Alingsås HK deltagit i, med
+  // hur många lag, i vilka klasser?". Söker alltid över SAMTLIGA cuper med
+  // arkiverad historik (trendCupOptions), till skillnad från Trend-
+  // jämförelsen som är avgränsad till valda cuper — en klubbfråga är till
+  // sin natur global, inte cup-för-cup.
+  function renderClubView(root) {
+    // Förifyller sökrutan med den egna klubben EN gång (första besöket) —
+    // därefter rör vi den inte, annars skulle en tömd sökruta (t.ex. via
+    // krysset) omedelbart återfyllas nästa omritning.
+    if (!clubQuerySeeded) { clubQuerySeeded = true; state.clubQuery = state.favoriteClub || ""; }
+
+    const input = h("input", {
+      class: "search", type: "text", placeholder: "Lag/klubb, t.ex. Alingsås HK",
+      title: "Stöder & (och) och / eller , (eller), t.ex. Alingsås&Blå",
+    });
+    input.value = state.clubQuery;
+    const applyQuery = () => { state.clubQuery = input.value; renderContent(); };
+    input.addEventListener("change", applyQuery);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyQuery(); }
+    });
+    root.append(h("div", { class: "history-controls" },
+      h("div", { class: "trend-team-search" },
+        withClearButton(input, () => { state.clubQuery = ""; renderContent(); }))));
+
+    const resultHost = h("div", { class: "trend-chart-host" });
+    root.append(resultHost);
+
+    const query = state.clubQuery.trim();
+    if (!query) {
+      resultHost.append(h("p", { class: "muted" },
+        "Skriv ett lag-/klubbnamn ovan för att se dess historik över alla cuper."));
+      return;
+    }
+
+    const cupIds = trendCupOptions();
+    const { pending, rows } = computeClubRows(cupIds, query);
+    if (pending) {
+      resultHost.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
+      return;
+    }
+    if (!rows.length) {
+      resultHost.append(h("p", { class: "muted" },
+        'Inga arkiverade matcher matchar "' + query + '" i någon cup.'));
+      return;
+    }
+
+    const totalCups = rows.length;
+    const totalTeams = rows.reduce((s, r) => s + r.totalTeams, 0);
+    const totalMatches = rows.reduce((s, r) => s + r.totalMatches, 0);
+    const allClasses = new Set(rows.flatMap((r) => [...r.classes]));
+    const allYears = rows.flatMap((r) => r.years).sort();
+    resultHost.append(h("p", { class: "muted" },
+      totalCups + " cup" + (totalCups === 1 ? "" : "er") + " · " + totalTeams + " lag totalt · " +
+      totalMatches + " matcher · " + allClasses.size + " klasser · " +
+      allYears[0] + "–" + allYears[allYears.length - 1]));
+
+    const columns = [
+      { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
+      { key: "years", label: "År", align: "l", defaultDir: 1, get: (r) => r.years.join(", ") },
+      { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.totalTeams },
+      { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.totalMatches },
+      { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes.size },
+    ];
+    resultHost.append(sortableTable(columns, rows, clubTableSort,
+      (r) => [...r.classes].sort((a, b) => catSortKey(a) - catSortKey(b)).join(", ")));
   }
 
   function renderBrowseMode(root, idx, cupIds) {
@@ -3879,6 +4148,7 @@ window.HB = window.HB || {};
       countLabel: (n) => n + " cuper",
       searchPlaceholder: "Sök cup …",
       sortToggle: false, // cuper har inget "klass"-begrepp — bara namnsortering
+      soloClickable: true, // klick på cupnamnet väljer bara den cupen
       onChange: () => renderContent(),
     });
     root.append(h("div", { class: "history-controls" }, cupPicker));

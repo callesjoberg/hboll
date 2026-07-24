@@ -459,6 +459,11 @@ header.top {
 
 .team-picker-item input { flex-shrink: 0; }
 
+/* soloClickable-cupväljarna (Trend/Karta, se buildPicker): texten är en
+   egen klickyta (väljer bara den raden) — låt den fylla resten av raden
+   så hela namnet, inte bara kryssrutan, är ett bekvämt klickmål. */
+.team-picker-item-text { flex: 1 1 auto; }
+
 .export-dd .export-panel { width: 240px; max-width: calc(100vw - 40px); padding: 6px; gap: 2px; }
 /* Slutspel-exportens "Visad tabell"/"Samtliga tabeller"-väljare — kan bli
    trängre än de vanliga formatknapparna, får wrappa om panelen är smal. */
@@ -1573,19 +1578,6 @@ dialog.history-dialog {
 .trend-delta.down { color: var(--live); }
 
 .trend-note { margin-top: 10px; font-size: 12px; }
-
-.trend-cup-list {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  display: grid;
-}
-
-.trend-cup-list-row {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--line);
-}
-.trend-cup-list-row:last-child { border-bottom: none; }
 
 /* "Bläddra i ett år" ----------------------------------------------------- */
 
