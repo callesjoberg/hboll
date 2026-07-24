@@ -329,6 +329,7 @@ window.HB = window.HB || {};
     // huvudgränssnittet, bara via Historik-modalen.
     includeCurrentYear: true,
     yearMatches: {},         // "cupId:edition" -> {status, matches} (session, sparas ej)
+    yearRosters: {},         // "cupId:edition" -> {teamId: [{name,shirtNr,position,goals}]} (session, sparas ej)
     archiveEditions: {},     // cupId -> {status, editions: [årtal, nyast först]} (session, sparas ej)
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
@@ -654,11 +655,23 @@ window.HB = window.HB || {};
     HB.api.fetchArchiveEdition(state.cupId, edition).then((data) => {
       const matches = ((data && data.matches) || []).map((m) => ({ ...m, edition }));
       state.yearMatches[key] = { status: "done", matches };
+      state.yearRosters[key] = (data && data.rosters) || {};
       render();
     }).catch(() => {
       state.yearMatches[key] = { status: "error", matches: [] };
       render();
     });
+  }
+
+  // Truppdata för ETT lag — antingen innevarande år (via HB.api.fetchRoster,
+  // ur den redan hämtade dataUrl-filen) eller ett arkiverat år (ur
+  // state.yearRosters, se ensureYearMatches). `edition` kommer från
+  // matchens .edition-fält (odefinierad = innevarande år, se allActiveMatches).
+  function rosterFor(team, edition) {
+    if (!cup().hasRosters) return [];
+    if (!edition) return HB.api.fetchRoster(cup(), team.id);
+    const yr = state.yearRosters[state.cupId + ":" + edition];
+    return (yr && yr[team.id]) || [];
   }
 
   // Innevarande års live-matcher (state.matches) PLUS matcherna från varje
@@ -2020,10 +2033,9 @@ window.HB = window.HB || {};
   // Trupplista (om cupen har sådan data, se cup.hasRosters) — shirtnummer,
   // position, mål. Bara Partille/Gothia-cuper hittills, och bara för lag
   // som faktiskt matat in en trupp (de flesta yngre/mindre lag har ingen).
-  function rosterBlock(team) {
-    const c = cup();
-    if (!c.hasRosters) return null;
-    const players = HB.api.fetchRoster(c, team.id);
+  function rosterBlock(team, edition) {
+    if (!cup().hasRosters) return null;
+    const players = rosterFor(team, edition);
     if (!players.length) return null;
     const sorted = [...players].sort((a, b) =>
       (a.shirtNr == null ? 999 : a.shirtNr) - (b.shirtNr == null ? 999 : b.shirtNr));
@@ -2062,7 +2074,7 @@ window.HB = window.HB || {};
           class: "btn small", href: calUrl, target: "_blank", rel: "noopener",
           title: "Lägg till i din kalenderapp för att prenumerera — nya/ändrade matcher dyker upp automatiskt",
         }, "📅 Prenumerera") : null),
-      rosterBlock(team));
+      rosterBlock(team, m.edition));
 
     if (!m.divId) {
       statLine.textContent = "Ingen tabell tillgänglig för den här klassen.";

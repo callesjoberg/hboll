@@ -33,8 +33,8 @@ def write_if_changed(path, data):
     if path.exists():
         try:
             old = json.loads(path.read_text(encoding="utf-8"))
-            if (old.get("matches") == data.get("matches")
-                    and old.get("tables") == data.get("tables")):
+            if all(old.get(k) == data.get(k) for k in
+                   ("matches", "tables", "playoffs", "rosters")):
                 return False
         except Exception:
             pass
@@ -96,8 +96,14 @@ def main():
             "cupId": cup["id"], "cupName": cup["name"], "edition": edition,
             "ts": data.get("ts"), "matches": matches,
         }
-        if "tables" in data:
-            out["tables"] = data["tables"]
+        # Valfria fält som bara vissa skrapor bygger (tables: alla dataUrl-
+        # cuper, playoffs/rosters: bara Gothia hittills) — kopieras rakt av
+        # om de finns, i stället för att hårdkodas ett i taget och tyst
+        # tappas bort när en ny läggs till (hände playoffs/rosters innan
+        # den här kommentaren skrevs).
+        for key in ("tables", "playoffs", "rosters"):
+            if key in data:
+                out[key] = data[key]
         dest = ARCHIVE_DIR / f"{cup['id']}-{edition}.json"
         changed = write_if_changed(dest, out)
         print(f"{cup['id']} {edition}: {len(matches)} matcher"
