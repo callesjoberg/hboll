@@ -4,6 +4,52 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <!-- Global felfångst — ingen extern tjänst (t.ex. Sentry), bara en
+       vänlig "något gick fel"-ruta i stället för en tyst, trasig sida.
+       Placerad FÖRST i <head>, innan alla andra skript, så den fångar
+       fel även om t.ex. config.js/api.js skulle krascha vid inladdning
+       — inte bara fel som uppstår efter att appen redan startat. Ren
+       inline-stil (inget beroende av css/style.css, som kanske inte ens
+       hunnit laddas när felet inträffar). Fångar INTE redan hanterade
+       fel (appens egna try/catch och .catch()-kedjor når aldrig hit,
+       bara genuint ofångade fel/promise-rejections). ResizeObserver-
+       varningen är ett välkänt, ofarligt webbläsarbrus som INTE ska visa
+       rutan — allt annat gör det, hellre en gång för mycket än att en
+       verkligt trasig sida tiger still.-->
+  <script>
+    (function () {
+      var shown = false;
+      function ignore(msg) {
+        return typeof msg === "string" && msg.indexOf("ResizeObserver loop") !== -1;
+      }
+      function showBanner(msg) {
+        if (shown || ignore(msg)) return;
+        shown = true;
+        var el = document.createElement("div");
+        el.setAttribute("role", "alert");
+        el.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:99999;" +
+          "background:#16283f;color:#eef2f8;padding:12px 16px;" +
+          "font:15px/1.4 system-ui,-apple-system,sans-serif;display:flex;gap:12px;" +
+          "align-items:center;justify-content:center;flex-wrap:wrap;" +
+          "border-top:3px solid #f6c410;box-shadow:0 -2px 10px rgba(0,0,0,.3);";
+        var text = document.createElement("span");
+        text.textContent = "Något gick fel. Prova att ladda om sidan.";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "Ladda om";
+        btn.style.cssText = "background:#f6c410;color:#16283f;border:none;" +
+          "border-radius:8px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;";
+        btn.onclick = function () { location.reload(); };
+        el.appendChild(text);
+        el.appendChild(btn);
+        (document.body || document.documentElement).appendChild(el);
+      }
+      window.addEventListener("error", function (e) { showBanner(e.message); });
+      window.addEventListener("unhandledrejection", function (e) {
+        showBanner(e.reason && e.reason.message);
+      });
+    })();
+  </script>
   <title>Cupschema · Alingsås HK</title>
   <meta name="description" content="Spelschema, resultat och tabeller för Alingsås HK:s cuper — Åhus Beach, Potatiscupen, Hallbybollen med flera.">
   <link rel="icon" href="assets/ahk-logo.svg" type="image/svg+xml" id="faviconLink">
