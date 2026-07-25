@@ -407,6 +407,10 @@ window.HB = window.HB || {};
     // Karta-fliken: valt år (ett av arkivets, null = "Nu"/live data) —
     // se renderMapView/mergedClubGeoForYear. Session, sparas ej.
     mapYear: null,
+    // Karta-fliken: "Visa landshistorik"-kryssrutan (av som förval — kräver
+    // att ALLA arkiverade år för de valda cuperna laddas, inte bara det
+    // just synliga året, se countryYearSummary). Session, sparas ej.
+    mapCountryHistory: false,
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
@@ -4517,6 +4521,18 @@ window.HB = window.HB || {};
     const prefixHit = index.byPrefix.find(([normDir]) => normDir && normalized.startsWith(normDir));
     if (prefixHit) return prefixHit[1];
     let tokens = coreClubTokens(name);
+    // Tier 3 nekas för ett namn som ORDAGRANT bara är ett landsnamn (t.ex.
+    // "Croatia" i en landslagsklass, se scripts/fetch_*.py:s country-fält)
+    // — annars kolliderar det lätt med en RIKTIG klubb vars namn råkar
+    // sluta på ett stoppord ("Croatia BK" -> stopordet "BK" stryks, kärnan
+    // blir också bara "croatia"). Ett bredare försök (neka tier 3 varje
+    // gång INGET stoppord gick att stryka ur inkommande namn) testades
+    // först men gav 259 regressioner mot riktiga klubbar (t.ex. "Näset" ->
+    // "Näsets SK", "IFK Malmö" -> "IFK Malmö HF") — verifierat med ett
+    // Node-skript mot data/club-directory.json + samtliga lagnamn i data/
+    // archive. COUNTRY_NAME_WORDS (landsnamn på sv+en, se nedan) är
+    // tillräckligt smalt för att bara träffa den faktiska bug-klassen.
+    if (COUNTRY_NAME_WORDS.has(name.toLowerCase().trim())) return null;
     while (tokens.length) {
       const candidates = index.bySignature.get(clubSignature(tokens));
       if (candidates) {
@@ -4662,8 +4678,10 @@ window.HB = window.HB || {};
 
   // Slår ihop klubbdata för flera valda cuper till en enda lista, med vilka
   // AV DE VALDA cuperna varje klubb faktiskt förekommer i (visas i popupen
-  // — svarar direkt på "vilka cuper har den här klubben deltagit i?").
-  // Samma klubbnamn i flera cuper delar samma verkliga adress, så en enkel
+  // — svarar direkt på "vilka cuper har den här klubben deltagit i?"), som
+  // {id, name}-par (INTE bara namnet) så popupen kan länka rakt in i
+  // Schema/Tabeller/Slutspel för rätt cup (se clubDeepLinkUrl). Samma
+  // klubbnamn i flera cuper delar samma verkliga adress, så en enkel
   // namnnyckel räcker för att deduplicera pricken på kartan.
   function mergedClubGeo(cupIds) {
     const merged = {};
@@ -4674,7 +4692,7 @@ window.HB = window.HB || {};
       const cupName = (cupObj && cupObj.name) || cupId;
       for (const [name, info] of Object.entries(geo)) {
         if (!merged[name]) merged[name] = { ...info, cups: [] };
-        merged[name].cups.push(cupName);
+        merged[name].cups.push({ id: cupId, name: cupName });
       }
     }
     return merged;
@@ -4697,7 +4715,7 @@ window.HB = window.HB || {};
       for (const [name, code] of byClub) {
         if (merged[name]) continue;
         if (!result.has(name)) result.set(name, { code, cups: [] });
-        result.get(name).cups.push(cupName);
+        result.get(name).cups.push({ id: cupId, name: cupName });
       }
     }
     return result;
@@ -4721,7 +4739,7 @@ window.HB = window.HB || {};
       const cupName = (cupObj && cupObj.name) || cupId;
       for (const [name, info] of Object.entries(geo)) {
         if (!merged[name]) merged[name] = { ...info, cups: [] };
-        merged[name].cups.push(cupName);
+        merged[name].cups.push({ id: cupId, name: cupName });
       }
     }
     return merged;
@@ -4741,10 +4759,66 @@ window.HB = window.HB || {};
       for (const [name, code] of byClub) {
         if (merged[name]) continue;
         if (!result.has(name)) result.set(name, { code, cups: [] });
-        result.get(name).cups.push(cupName);
+        result.get(name).cups.push({ id: cupId, name: cupName });
       }
     }
     return result;
+  }
+
+  // "Visa landshistorik"-kryssrutan (state.mapCountryHistory): för VARJE
+  // land som någonsin haft en klubb i de valda cuperna — över ALLA
+  // arkiverade år PLUS innevarande upplaga, inte bara det år Karta just nu
+  // råkar visa — hur många distinkta klubbar och vilka år. Landskoden är
+  // inbäddad direkt på varje match (home/away.country, se js/api.js
+  // normalize()/scripts/fetch_*.py) så det spelar ingen roll om klubben
+  // också har en känd adress eller ej — adressens egen .country-fält
+  // (clubs_from_store/clubGeoFromStore) räknas här också, annars skulle
+  // Sverige (där de flesta klubbar HAR adress) se tomt ut trots att det är
+  // just Sverige användaren oftast vill se aggregerat (se ensureCountryHistory
+  // nedan för vilken data som måste vara laddad innan detta anropas).
+  function countryYearSummary(cupIds) {
+    const acc = new Map(); // landskod -> {clubs:Set(namn), years:Set(år)}
+    const add = (code, name, year) => {
+      if (!code || !name) return;
+      if (!acc.has(code)) acc.set(code, { clubs: new Set(), years: new Set() });
+      acc.get(code).clubs.add(name);
+      if (year) acc.get(code).years.add(year);
+    };
+    for (const cupId of cupIds) {
+      const cupObj = HB.allCups().find((c) => c.id === cupId);
+      const liveYear = cupObj && cupObj.edition;
+      for (const [name, code] of (state.mapCupCountryByClub[cupId] || new Map())) add(code, name, liveYear);
+      for (const [name, info] of Object.entries(HB.api.clubGeo[cupId] || {})) add(info.country, name, liveYear);
+      const editions = ((state.archiveIndex[cupId] && state.archiveIndex[cupId].editions) || [])
+        .filter((e) => e.matches > 0);
+      for (const em of editions) {
+        const ym = state.yearMatches[cupId + ":" + em.edition];
+        if (!ym || ym.status !== "done") continue;
+        for (const m of ym.matches) {
+          for (const side of [m.home, m.away]) add(side.country, side.club || side.name, em.edition);
+        }
+      }
+    }
+    return acc;
+  }
+
+  // Ser till att ALLA arkiverade år (inte bara det just synliga, se
+  // ensureYearMatches/state.mapYear) är laddade för de valda cuperna, så
+  // countryYearSummary ovan har fullständig data — bara körs när "Visa
+  // landshistorik" faktiskt är ikryssad (annars onödigt tungt, en cup med
+  // många år kan vara flera MB). true = klart, false = fortfarande laddar.
+  function ensureCountryHistory(cupIds) {
+    let allDone = true;
+    for (const cupId of cupIds) {
+      const editions = ((state.archiveIndex[cupId] && state.archiveIndex[cupId].editions) || [])
+        .filter((e) => e.matches > 0);
+      for (const em of editions) {
+        ensureYearMatches(em.edition, cupId);
+        const ym = state.yearMatches[cupId + ":" + em.edition];
+        if (!ym || ym.status !== "done") allDone = false;
+      }
+    }
+    return allDone;
   }
 
   // Klubbkatalogen (data/club-directory.json) behövs för årsläget oavsett
@@ -4792,6 +4866,7 @@ window.HB = window.HB || {};
   let currentMapMarkerByKey = new Map();
   let currentUnknownMarkerByKey = new Map(); // klubbnamn -> marker, samma diff-princip som currentMapMarkerByKey ovan
   let currentCountryMarkerByKey = new Map(); // klubbnamn -> {marker, color}, samma diff-princip, se paintMapMarkers
+  let currentHistoryMarkerByKey = new Map(); // landskod -> {marker, clubCount, yearsKey}, "Visa landshistorik"
   let mapBoxEl = null;          // DOM-noden kartan bor i — sparas modulnivå (INTE i renderMapView)
                                  // så samma nod kan flyttas in i det nya innehållet varje
                                  // omritning i stället för att byggas om från grunden; annars
@@ -4861,7 +4936,30 @@ window.HB = window.HB || {};
       root.append(h("div", { class: "row trend-baseline-row" }, yearSelect, playBtn));
     }
 
+    // "Visa landshistorik": extra lila markörer, en per land som NÅGONSIN
+    // haft en klubb i de valda cuperna (alla arkiverade år + innevarande
+    // upplaga, se countryYearSummary) — oberoende av vilket enskilt år
+    // (state.mapYear) Karta just nu råkar visa. Av som förval: kräver att
+    // ALLA arkiverade år laddas (kan vara flera MB för en cup med lång
+    // historik), inte bara det synliga året.
+    const historyToggle = h("label", { class: "map-history-toggle" },
+      h("input", {
+        type: "checkbox", ...(state.mapCountryHistory ? { checked: "" } : {}),
+        onchange: (e) => { state.mapCountryHistory = e.target.checked; renderContent(); },
+      }),
+      " Visa landshistorik (alla år, per land)");
+    root.append(h("div", { class: "row" }, historyToggle));
+
     let merged, countryMap, allClubs, totalTeams;
+    // klubbnamn -> [{id, name}, ...] (samma form som merged/countryMaps
+    // .cups) — bara till för "helt okänd"-nivåns popup-länkar
+    // (unknownPopupBody), som annars inte skulle veta vilken cup en
+    // adresslös/landslös klubb faktiskt hörde till.
+    const allClubCups = new Map();
+    const addClubCup = (name, cupId, cupName) => {
+      if (!allClubCups.has(name)) allClubCups.set(name, []);
+      allClubCups.get(name).push({ id: cupId, name: cupName });
+    };
     const classSet = new Set();
     if (state.mapYear) {
       ensureClubDirectory();
@@ -4881,7 +4979,8 @@ window.HB = window.HB || {};
       for (const id of selectedIds) {
         const ym = state.yearMatches[id + ":" + state.mapYear];
         if (!ym || ym.status !== "done") continue;
-        for (const name of allClubNamesFromMatches(ym.matches)) allClubs.add(name);
+        const cupName = (HB.allCups().find((c) => c.id === id) || {}).name || id;
+        for (const name of allClubNamesFromMatches(ym.matches)) { allClubs.add(name); addClubCup(name, id, cupName); }
         const tc = teamsAndClassesFromMatches(ym.matches);
         totalTeams += tc.teamCount;
         for (const c of tc.classes) classSet.add(c);
@@ -4897,7 +4996,8 @@ window.HB = window.HB || {};
       allClubs = new Set();
       totalTeams = 0;
       for (const id of selectedIds) {
-        for (const name of (state.mapCupAllClubs[id] || [])) allClubs.add(name);
+        const cupName = (HB.allCups().find((c) => c.id === id) || {}).name || id;
+        for (const name of (state.mapCupAllClubs[id] || [])) { allClubs.add(name); addClubCup(name, id, cupName); }
         totalTeams += state.mapCupTeamCount[id] || 0;
         for (const c of (state.mapCupClasses[id] || [])) classSet.add(c);
       }
@@ -4947,7 +5047,18 @@ window.HB = window.HB || {};
             h("span", null, "Flera av de valda cuperna")))));
     }
     const cupColorForClub = (info) => !showCups || info.cups.length > 1
-      ? MAP_SHARED_COLOR : (cupColorByName.get(info.cups[0]) || MAP_SHARED_COLOR);
+      ? MAP_SHARED_COLOR : (cupColorByName.get(info.cups[0].name) || MAP_SHARED_COLOR);
+
+    // countryHistory: null = avstängd ELLER fortfarande laddar (samma
+    // ensureYearMatches som årsväljaren ovan, men för ALLA år på en gång) —
+    // paintMapMarkers/createMap hoppar bara över den extra pin-nivån tills
+    // den är redo, resten av kartan renderas som vanligt under tiden.
+    let countryHistory = null;
+    if (state.mapCountryHistory) {
+      const ready = ensureCountryHistory(selectedIds);
+      if (ready) countryHistory = countryYearSummary(selectedIds);
+      else root.append(h("p", { class: "muted" }, "Laddar landshistorik …"));
+    }
 
     // Samma cupurval som senast (bara årtalet eller "spela upp" har ändrats)
     // → återanvänd den redan levande kartinstansen och byt bara ut
@@ -4968,10 +5079,12 @@ window.HB = window.HB || {};
       // CDN: box sitter inte kvar i dokumentet längre, rita inte i den.
       if (!document.body.contains(box)) return;
       if (needsNewMap) {
-        createMap(maplibregl, box, merged, countryMap, unknownNames, cupColorForClub);
+        createMap(maplibregl, box, merged, countryMap, unknownNames, cupColorForClub, state.mapYear, allClubCups,
+          countryHistory);
       } else {
         currentMap.resize(); // återfäst nod kan ha bytt storlek medan den var frånkopplad
-        paintMapMarkers(maplibregl, merged, countryMap, unknownNames, cupColorForClub);
+        paintMapMarkers(maplibregl, merged, countryMap, unknownNames, cupColorForClub, state.mapYear, allClubCups,
+          countryHistory);
       }
     }).catch((e) => {
       if (!document.body.contains(box)) return;
@@ -5032,6 +5145,27 @@ window.HB = window.HB || {};
     TW: [121.0, 23.7], MO: [113.5, 22.2],
   };
 
+  // Landsnamn (svenska OCH engelska, via Intl.DisplayNames) för samtliga
+  // koder i COUNTRY_CENTROIDS — används av matchClubName ovan för att
+  // neka en riskabel tier-3-gissning när ett lagnamn ORDAGRANT bara är ett
+  // landsnamn (landslagsklasser som EOC, se Gothias Team.nation). Byggs en
+  // gång vid modulladdning, inte per anrop.
+  const COUNTRY_NAME_WORDS = (() => {
+    const words = new Set();
+    for (const locale of ["sv", "en"]) {
+      let dn;
+      try { dn = new Intl.DisplayNames([locale], { type: "region" }); }
+      catch { continue; }
+      for (const code of Object.keys(COUNTRY_CENTROIDS)) {
+        try {
+          const n = dn.of(code);
+          if (n) words.add(n.toLowerCase());
+        } catch { /* okänd kod för denna Intl-version — hoppa */ }
+      }
+    }
+    return words;
+  })();
+
   // "Ungefärlig plats" — klubbar UTAN känd adress men med en känd landskod
   // klustras runt landets centroid i stället för att spridas ut i Atlanten
   // (se UNKNOWN_GRID nedan, den nivån är för klubbar helt UTAN varken
@@ -5045,6 +5179,11 @@ window.HB = window.HB || {};
   const COUNTRY_GRID_COLS = 4;
   const COUNTRY_GRID_SPACING = [0.4, 0.3]; // [lng, lat] grader mellan klustrets punkter
   let countryGridSlotByCode = new Map(); // landskod -> Map(klubbnamn -> slotindex)
+
+  // Hur långt norr om landets centroid "Visa landshistorik"-pinnen läggs
+  // (grader latitud) — se paintMapMarkers — bara till för att den aldrig
+  // ska hamna EXAKT ovanpå landsbollen/klubbnålarna på samma centroid.
+  const HISTORY_PIN_OFFSET = 0.9;
   function countryGridLngLat(name, code) {
     const centroid = COUNTRY_CENTROIDS[code];
     if (!centroid) return null; // okänd/orimlig landskod — bör inte hända, men failsafe
@@ -5087,14 +5226,45 @@ window.HB = window.HB || {};
             UNKNOWN_GRID_ORIGIN[1] + row * UNKNOWN_GRID_SPACING[1]];
   }
 
-  function clubPopupBody(name, info) {
+  // Länk rakt in i Schema (scope=all så den INTE begränsas till egna
+  // klubben, q=klubbnamnet som fritextsökning, samma matchning som
+  // sökrutan i verktygsraden — se matchesSearchQuery) för en given cup.
+  // mapYear: Kartans just nu valda år (state.mapYear, null = "Nu") — allt
+  // Karta visar just nu hör till EXAKT det året, så popupens länk ska visa
+  // SAMMA år, inte nödvändigtvis cupens live-upplaga. years+curYear=0
+  // isolerar till bara det arkiverade året (annars skulle live-upplagans
+  // matcher blandas in också, se allActiveMatches).
+  function clubDeepLinkUrl(clubName, cupId, mapYear) {
+    const p = new URLSearchParams();
+    p.set("cup", cupId);
+    p.set("view", "schema");
+    p.set("scope", "all");
+    p.set("q", clubName);
+    if (mapYear) { p.set("years", mapYear); p.set("curYear", "0"); }
+    return "?" + p.toString();
+  }
+
+  // Delad av alla tre popup-nivåerna (klubbPopupBody/countryPopupBody/
+  // unknownPopupBody) — en klubb kan förekomma i FLERA av de valda cuperna
+  // samtidigt (se .cups, {id,name}-par), då blir det en länk per cup.
+  // target=_blank så Kartans egen zoom/panorering/utfällda-länder-state
+  // inte går förlorad när man bara vill kika snabbt på en klubbs matcher.
+  function clubCupLinksBody(clubName, cups, mapYear) {
+    if (!cups || !cups.length) return null;
+    const kids = [];
+    cups.forEach((c, i) => {
+      if (i > 0) kids.push(", ");
+      kids.push(h("a", { href: clubDeepLinkUrl(clubName, c.id, mapYear), target: "_blank", rel: "noopener" }, c.name));
+    });
+    return h("div", { class: "muted map-popup-cups" }, "Visa matcher: ", ...kids);
+  }
+
+  function clubPopupBody(name, info, mapYear) {
     return h("div", { class: "map-popup" },
       h("strong", null, name),
       h("br"),
       info.city + (info.country ? ", " + info.country : ""),
-      // "Deltar i: ..." bara meningsfullt när fler än en cup är vald —
-      // annars bara upprepar den redan kända (aktuella) cupen i onödan.
-      info.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + info.cups.join(", ")) : null);
+      clubCupLinksBody(name, info.cups, mapYear));
   }
 
   // Intl.DisplayNames — inbyggd webbläsar-API för att slå upp landsnamn
@@ -5113,16 +5283,51 @@ window.HB = window.HB || {};
   // expandedCountryCodes) — en chip i popupen för att fälla ihop det igen,
   // annars finns inget sätt att komma tillbaka till bollen utan att byta
   // cup/år (som återställer allt) eller ladda om sidan.
-  function countryPopupBody(name, entry, collapseFn) {
+  function countryPopupBody(name, entry, collapseFn, mapYear) {
     return h("div", { class: "map-popup" },
       h("strong", null, name),
       h("br"),
       h("span", { class: "muted" }, "Ungefärlig plats — land: " + countryDisplayName(entry.code)),
-      entry.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + entry.cups.join(", ")) : null,
+      clubCupLinksBody(name, entry.cups, mapYear),
       collapseFn ? h("button", {
         class: "chip small", type: "button", style: "margin-top:6px",
         onclick: collapseFn,
       }, "← Gruppera " + countryDisplayName(entry.code) + " igen") : null);
+  }
+
+  // "Helt okänd"-nivåns popup (varken adress eller land, se
+  // unknownGridLngLat) — cups kommer från renderMapViews allClubCups
+  // (samma {id,name}-form som merged/countryMap, byggd separat eftersom
+  // allClubNamesFromMatches/state.mapCupAllClubs annars bara ger platta
+  // klubbnamn utan cup-koppling).
+  function unknownPopupBody(name, cups, mapYear) {
+    return h("div", { class: "map-popup" },
+      h("strong", null, name),
+      h("br"),
+      h("span", { class: "muted" }, "Ingen känd adress eller land"),
+      clubCupLinksBody(name, cups, mapYear));
+  }
+
+  // "Visa landshistorik"-pinnen: en lila RING (ihålig, INTE fylld som
+  // countryBubbleElement) med landskoden som text — medvetet en annan form
+  // OCH färg än både adressnivåns nålar och den (adresslösa) landsbollen,
+  // så de tre aldrig kan förväxlas när de visas samtidigt (historikpinnen
+  // är ett tillägg OVANPÅ resten av kartan, inte en ersättning för någon
+  // av de andra nivåerna).
+  function countryHistoryElement(code) {
+    const el = document.createElement("div");
+    el.className = "map-country-history-pin";
+    el.textContent = code;
+    return el;
+  }
+
+  function countryHistoryPopupBody(code, entry) {
+    const years = [...entry.years].sort();
+    return h("div", { class: "map-popup" },
+      h("strong", null, countryDisplayName(code)),
+      h("br"),
+      h("span", { class: "muted" }, entry.clubs.size + " klubbar/lag totalt"),
+      years.length ? h("div", { class: "muted" }, "Deltagit: " + years.join(", ")) : null);
   }
 
   // Landsklustrens boll (ihopfälld — se expandedCountryCodes): en cirkel
@@ -5162,7 +5367,7 @@ window.HB = window.HB || {};
   // som ändras mellan åren i stället för att hela kartan verkar blinka om.
   // Rör INTE kartans center/zoom (ingen fitBounds här), till skillnad från
   // createMap nedan.
-  function paintMapMarkers(maplibregl, geo, countryMap, unknownNames, cupColorForClub) {
+  function paintMapMarkers(maplibregl, geo, countryMap, unknownNames, cupColorForClub, mapYear, allClubCups, countryHistory) {
     const nextNames = new Set(Object.keys(geo));
     for (const [name, entry] of currentMapMarkerByKey) {
       if (!nextNames.has(name)) { entry.marker.remove(); currentMapMarkerByKey.delete(name); }
@@ -5174,13 +5379,13 @@ window.HB = window.HB || {};
         // Oförändrad position OCH färg — uppdatera bara popupinnehållet
         // (kan skilja mellan år, t.ex. "Deltar i"-listan) utan att röra
         // själva nålens DOM-element.
-        existing.marker.setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(clubPopupBody(name, info)));
+        existing.marker.setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(clubPopupBody(name, info, mapYear)));
         continue;
       }
       if (existing) existing.marker.remove(); // färgen bytte (sällsynt, se cupColorForClub) — måste återskapas
       const marker = new maplibregl.Marker({ color })
         .setLngLat([info.lng, info.lat])
-        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(clubPopupBody(name, info)))
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(clubPopupBody(name, info, mapYear)))
         .addTo(currentMap);
       currentMapMarkerByKey.set(name, { marker, color });
     }
@@ -5236,7 +5441,7 @@ window.HB = window.HB || {};
       const existing = currentCountryMarkerByKey.get(name);
       if (existing && existing.color === color) {
         existing.marker.setPopup(
-          new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo, collapseFn)));
+          new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo, collapseFn, mapYear)));
         continue;
       }
       if (existing) existing.marker.remove();
@@ -5244,7 +5449,7 @@ window.HB = window.HB || {};
       if (!lngLat) continue; // okänd landskod (borde inte hända) — hoppa hellre än att krascha
       const marker = new maplibregl.Marker({ color, scale: 0.7 })
         .setLngLat(lngLat)
-        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo, collapseFn)))
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo, collapseFn, mapYear)))
         .addTo(currentMap);
       currentCountryMarkerByKey.set(name, { marker, color });
     }
@@ -5254,24 +5459,48 @@ window.HB = window.HB || {};
     }
     for (const name of nextUnknown) {
       if (currentUnknownMarkerByKey.has(name)) continue; // redan där, samma stabila rutnätsplats — rör inte
-      const popupBody = h("div", { class: "map-popup" },
-        h("strong", null, name),
-        h("br"),
-        h("span", { class: "muted" }, "Ingen känd adress eller land"));
+      const cups = (allClubCups && allClubCups.get(name)) || [];
       const marker = new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer klubbarna utan känd adress från de med
         .setLngLat(unknownGridLngLat(name))
-        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(popupBody))
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(unknownPopupBody(name, cups, mapYear)))
         .addTo(currentMap);
       currentUnknownMarkerByKey.set(name, marker);
     }
+
+    // "Visa landshistorik": en lila ringpin per land, förskjuten en bit
+    // norr om landets centroid (HISTORY_PIN_OFFSET) så den aldrig hamnar
+    // exakt ovanpå den (adresslösa) landsbollen på samma centroid — de två
+    // ska gå att se och klicka på samtidigt. null = avstängd/ej redo,
+    // rensa alla eventuella kvarvarande pinnar från förra gången den VAR
+    // på (annars skulle de bli kvar efter att kryssrutan kryssats ur).
+    const nextHistoryCodes = new Set(countryHistory ? countryHistory.keys() : []);
+    for (const [code, entry] of currentHistoryMarkerByKey) {
+      if (!nextHistoryCodes.has(code)) { entry.marker.remove(); currentHistoryMarkerByKey.delete(code); }
+    }
+    for (const [code, hEntry] of (countryHistory || new Map())) {
+      const centroid = COUNTRY_CENTROIDS[code];
+      if (!centroid) continue;
+      const yearsKey = [...hEntry.years].sort().join(",");
+      const existing = currentHistoryMarkerByKey.get(code);
+      if (existing && existing.clubCount === hEntry.clubs.size && existing.yearsKey === yearsKey) continue;
+      if (existing) existing.marker.remove();
+      const el = countryHistoryElement(code);
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([centroid[0], centroid[1] + HISTORY_PIN_OFFSET])
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryHistoryPopupBody(code, hEntry)))
+        .addTo(currentMap);
+      currentHistoryMarkerByKey.set(code, { marker, clubCount: hEntry.clubs.size, yearsKey });
+    }
   }
 
-  function createMap(maplibregl, container, geo, countryMap, unknownNames, cupColorForClub) {
+  function createMap(maplibregl, container, geo, countryMap, unknownNames, cupColorForClub, mapYear, allClubCups,
+      countryHistory) {
     if (currentMap) { currentMap.remove(); currentMap = null; }
     currentMapMarkerByKey = new Map();
     currentUnknownMarkerByKey = new Map();
     currentCountryMarkerByKey = new Map();
     currentCountryBubbleByCode = new Map();
+    currentHistoryMarkerByKey = new Map();
     expandedCountryCodes = new Set(); // ny karta = börja ihopfällt igen
     currentMap = new maplibregl.Map({
       container,
@@ -5280,7 +5509,7 @@ window.HB = window.HB || {};
       zoom: 4,
     });
     currentMap.addControl(new maplibregl.NavigationControl(), "top-right");
-    paintMapMarkers(maplibregl, geo, countryMap, unknownNames, cupColorForClub);
+    paintMapMarkers(maplibregl, geo, countryMap, unknownNames, cupColorForClub, mapYear, allClubCups, countryHistory);
     // Landsnivåns markörer är RIKTIGA (om än ungefärliga) geografiska
     // positioner — till skillnad från Atlant-rutnätet (bara EN representativ
     // punkt räknas in där, se nedan) räknas VARJE lands centroid in i
@@ -5291,6 +5520,13 @@ window.HB = window.HB || {};
     for (const info of Object.values(geo)) bounds.extend([info.lng, info.lat]);
     for (const entry of (countryMap ? countryMap.values() : [])) {
       const centroid = COUNTRY_CENTROIDS[entry.code];
+      if (centroid) bounds.extend(centroid);
+    }
+    // Historikpinnar för länder som HAR haft klubbar tidigare men inte i
+    // det just nu visade läget (state.mapYear) skulle annars kunna hamna
+    // helt utanför den automatiska inzoomningen.
+    for (const code of (countryHistory ? countryHistory.keys() : [])) {
+      const centroid = COUNTRY_CENTROIDS[code];
       if (centroid) bounds.extend(centroid);
     }
     if (unknownNames && unknownNames.length) bounds.extend(UNKNOWN_GRID_ORIGIN);
