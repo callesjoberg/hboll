@@ -206,6 +206,7 @@ header.top {
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
   padding: 4px 0;
   scrollbar-width: thin;
 }
@@ -263,6 +264,7 @@ header.top {
      för att bli skrollbara. */
   min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
@@ -1158,6 +1160,19 @@ input[type="search"]::-webkit-search-cancel-button {
 
 /* tabeller */
 
+/* overflow-x: auto (bara vågrät scroll avsedd, för breda tabeller på
+   smala skärmar) — men CSS-specen tvingar den ANDRA axeln (overflow-y,
+   annars "visible") att räknas om till "auto" också så fort en axel är
+   satt till ett icke-visible-värde. Det gör .table-box till en OAVSIKTLIG
+   lodrät scrollbehållare, trots att den aldrig har egen lodrät
+   overflow — och i Chrome på macOS kunde en trackpad-gest som startar
+   OVANFÖR en sådan behållare (mitten av sidan, där tabellerna ligger)
+   sluka scrollen helt utan att den kedjas vidare till sidan, i stället
+   för att bara scrolla noll pixlar och lämna över till föräldern som
+   förväntat. Explicit overflow-y: hidden förhindrar att webbläsaren
+   någonsin gör den omtolkningen. Samma fix på #cupRow/#viewTabs/
+   .bracket-box nedan (samma mönster, overflow-x: auto utan uttryckligt
+   overflow-y). */
 .table-box {
   background: var(--card);
   border: 1px solid var(--line);
@@ -1165,6 +1180,7 @@ input[type="search"]::-webkit-search-cancel-button {
   padding: 10px 14px;
   margin-bottom: 12px;
   overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .table-box h3 {
@@ -1935,6 +1951,7 @@ dialog.history-dialog {
   border-radius: calc(var(--radius) + 2px);
   padding: 14px 16px;
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   box-shadow: 0 1px 2px rgba(22, 40, 63, 0.06);
   /* Flex-items krymper aldrig under sitt innehålls egen bredd som
