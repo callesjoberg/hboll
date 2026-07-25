@@ -1157,6 +1157,10 @@ window.HB = window.HB || {};
   function renderContent() {
     const main = $("#content");
     main.replaceChildren();
+    // Städa en eventuell övergiven kartinstans så fort vi INTE ska rita
+    // Karta just nu — se destroyMapIfLeavingKarta()s kommentar för varför
+    // (misstänkt Chrome-specifik scrollåsning på HELT andra flikar).
+    if (!(state.view === "stats" && state.statsView === "karta")) destroyMapIfLeavingKarta();
     // Stats (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper) bygger uteslutande
     // på det arkiverade data/archive/index.json (plus klubbadresser för
     // Karta) — beror INTE på om innevarande upplaga hunnit publicera ett
@@ -5900,6 +5904,35 @@ window.HB = window.HB || {};
         .addTo(currentMap);
       currentHistoryMarkerByKey.set(code, { marker, clubCount: hEntry.clubs.size, teamCount: hEntry.teams.size, yearsKey });
     }
+  }
+
+  // Städar upp en aktiv maplibregl.Map-instans när man lämnar Karta för en
+  // annan Stats-underflik (eller huvudflik) — createMap() nedan tar bara
+  // hand om det gamla instansen vid NÄSTA Karta-besök (currentMap.remove()
+  // precis innan en ny karta byggs), så en övergiven instans (kvarhållen
+  // WebGL-kontext + egen renderloop) kunde annars leva kvar i bakgrunden
+  // hur länge som helst, tills man råkade gå tillbaka till Karta. Misstänkt
+  // orsak till en rapporterad bugg: i Chrome (till skillnad från Safari,
+  // vars WebGL-/kompositorhantering verkar tåla en övergiven kontext
+  // bättre) kunde en sådan kvarglömd renderloop göra HELA sidans scroll
+  // trögstartad/låst på HELT ANDRA flikar (GPU-processen upptagen av en
+  // loop som aldrig fick städa sig själv), trots att varken CSS eller
+  // scroll-relaterad JS visade något fel. mapBoxEl/mapBoxKey nollställs
+  // också, så nästa Karta-besök bygger en helt ny container i stället för
+  // att försöka återansluta till en sedan länge bortkopplad nod.
+  function destroyMapIfLeavingKarta() {
+    if (!currentMap) return;
+    stopMapPlay();
+    currentMap.remove();
+    currentMap = null;
+    mapBoxEl = null;
+    mapBoxKey = null;
+    currentMapMarkerByKey = new Map();
+    currentUnknownMarkerByKey = new Map();
+    currentCountryMarkerByKey = new Map();
+    currentCountryBubbleByCode = new Map();
+    currentHistoryMarkerByKey = new Map();
+    expandedCountryCodes = new Set();
   }
 
   function createMap(maplibregl, container, geo, countryMap, unknownNames, cupColorForClub, mapYear, allClubCups,
