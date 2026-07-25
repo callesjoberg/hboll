@@ -298,6 +298,10 @@ window.HB = window.HB || {};
   const state = {
     cupId: localStorage.getItem("hb:cup") || (HB.allCups()[0] || {}).id,
     view: "schema",          // schema | tabeller
+    // Vilken underflik som visas under "Stats" (se STATS_TABS/renderStatsView)
+    // — trend | karta | klubb | klubbjamforelse | cuper. Sparas som en del av
+    // saveUi() precis som view, så en omladdning behåller vald underflik.
+    statsView: "trend",
     scope: "club",           // club | all
     days: new Set(),         // tom = alla dagar
     cats: new Set(),
@@ -375,6 +379,13 @@ window.HB = window.HB || {};
     // (clubQuery) — behålls medvetet när man byter sökterm, till skillnad
     // från nedborrningen ovan. Session, sparas ej.
     clubYears: new Set(),
+    // Cuper-fliken (under Stats): vald cup att visa år-för-år-nedbrytning
+    // för, null = visa översiktstabellen över alla cuper. Session, sparas ej.
+    statsCupDrill: null,
+    // Klubbjämförelse-fliken (under Stats): en klubb-/lagnamn per rad,
+    // jämförs sida vid sida (se renderClubCompareView/computeClubRows).
+    // Session, sparas ej.
+    compareQuery: "",
     // DELAD mellan Karta- och Trend-fliken (tom = bara innevarande, fylls i
     // vid första besöket i ENTINGEN renderMapView ELLER renderTrendView) —
     // samma cupurval hänger med när man växlar mellan de två flikarna i
@@ -492,7 +503,7 @@ window.HB = window.HB || {};
   function saveUi() {
     localStorage.setItem("hb:cup", state.cupId);
     localStorage.setItem(uiKey(), JSON.stringify({
-      view: state.view, scope: state.scope, days: [...state.days],
+      view: state.view, statsView: state.statsView, scope: state.scope, days: [...state.days],
       cats: [...state.cats], teams: [...state.teams], years: [...state.years],
       includeCurrentYear: state.includeCurrentYear,
       arena: state.arena, viewArena: state.viewArena,
@@ -511,6 +522,7 @@ window.HB = window.HB || {};
     const p = new URLSearchParams();
     p.set("cup", state.cupId);
     if (state.view !== "schema") p.set("view", state.view);
+    if (state.view === "stats" && state.statsView !== "trend") p.set("stats", state.statsView);
     if (state.scope !== "club") p.set("scope", state.scope);
     if (state.days.size) p.set("days", [...state.days].join(","));
     if (state.cats.size) p.set("cats", [...state.cats].join(","));
@@ -527,8 +539,20 @@ window.HB = window.HB || {};
     history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
   }
 
+  // Trend/Karta/Klubb-Lag var tidigare egna toppnivåflikar (state.view-
+  // värden) innan de 2026-07-25 slogs ihop till underflikar under en enda
+  // "Stats"-flik (se STATS_TABS/renderStatsView) — gamla sparade/delade
+  // länkar (view=trend/karta/klubb) ska ändå landa rätt i stället för att
+  // tyst falla tillbaka på Schema.
+  function normalizeStatsView() {
+    if (["trend", "karta", "klubb"].includes(state.view)) {
+      state.statsView = state.view;
+      state.view = "stats";
+    }
+  }
+
   function loadUi() {
-    state.view = "schema"; state.scope = "club"; state.days = new Set();
+    state.view = "schema"; state.statsView = "trend"; state.scope = "club"; state.days = new Set();
     state.cats = new Set(); state.teams = new Set(); state.years = new Set();
     state.includeCurrentYear = true;
     state.viewCats = new Set(); state.viewTeams = new Set();
@@ -537,6 +561,7 @@ window.HB = window.HB || {};
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
+      if (s.statsView) state.statsView = s.statsView;
       if (s.scope) state.scope = s.scope;
       if (Array.isArray(s.days)) state.days = new Set(s.days);
       else if (typeof s.day === "string" && s.day !== "all") state.days = new Set([s.day]); // migrera gammalt format
@@ -552,6 +577,7 @@ window.HB = window.HB || {};
       else if (s.played === false) state.matchFilter = "upcoming"; // migrera gammal boolean
       if (s.filterLocked) state.filterLocked = true;
     } catch { /* trasig state: kör default */ }
+    normalizeStatsView();
   }
 
   // --- datainläsning --------------------------------------------------------
@@ -1130,18 +1156,12 @@ window.HB = window.HB || {};
   function renderContent() {
     const main = $("#content");
     main.replaceChildren();
-    // Trend bygger uteslutande på det arkiverade data/archive/index.json —
-    // beror INTE på om innevarande upplaga hunnit publicera ett schema än,
-    // så den måste renderas innan bannern nedan ("inget schema publicerat")
-    // annars skulle blockera den i onödan.
-    if (state.view === "trend") { renderTrendView(main); return; }
-    // Karta bygger på klubbadresser (HB.api.clubGeo), inte state.matches
-    // direkt — samma resonemang som Trend ovan, rendera innan schema-
-    // bannern kan blockera den i onödan.
-    if (state.view === "karta") { renderMapView(main); return; }
-    // Klubb/Lag söker över ALLA cupers arkiverade historik, oberoende av
-    // innevarande cups schema — samma resonemang som Trend/Karta ovan.
-    if (state.view === "klubb") { renderClubView(main); return; }
+    // Stats (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper) bygger uteslutande
+    // på det arkiverade data/archive/index.json (plus klubbadresser för
+    // Karta) — beror INTE på om innevarande upplaga hunnit publicera ett
+    // schema än, så den måste renderas innan bannern nedan ("inget schema
+    // publicerat") annars skulle blockera den i onödan.
+    if (state.view === "stats") { renderStatsView(main); return; }
     if (state.error) {
       main.append(h("div", { class: "banner error" },
         h("p", null, state.error),
@@ -1222,44 +1242,56 @@ window.HB = window.HB || {};
     // Trend kräver minst två arkiverade år för INNEVARANDE cup (samma
     // tröskel som formkurvans "kan inte visas"-meddelande) — arkivindexet
     // laddas asynkront (se init()) och kan alltså vara null första gången
-    // renderTabs() körs. Nollställ INTE ett direktlänkat view=trend bara
-    // för att indexet inte hunnit svara än (trendSupported vore då alltid
-    // false) — vänta med att döma ut fliken tills vi vet säkert.
+    // renderTabs() körs.
     const archiveEntry = state.archiveIndex && state.archiveIndex[state.cupId];
     const trendSupported = ((archiveEntry && archiveEntry.editions) || [])
       .filter((e) => e.matches > 0).length >= 2;
-    if (state.archiveIndex && !trendSupported && state.view === "trend") state.view = "schema";
     // Karta kräver klubbadresser: klassiska Cup Manager-cuper har egen
     // sådan direkt, ProCup/Gothia-cuper gissar sin via klubbkatalogen (se
     // clubGeoFromMatches/ensureCupClubGeo) — båda vägarna är asynkrona
-    // (till skillnad från tidigare då bara cup().dataUrl avgjorde direkt),
-    // så vänta som Trend ovan tills vi VET säkert (mapCupStatus "done")
-    // innan ett direktlänkat view=karta nollställs. En cup vars INNEVARANDE
-    // upplaga ännu inte publicerat något (t.ex. Lundaspelen inför en ny
-    // säsong — se samma resonemang i renderToolbar/renderContent) kan ändå
-    // ha gott om arkiverad historik att visa via Kartans årsväljare — räcker
-    // därför att ANTINGEN live-data ELLER minst ett spelat arkiverat år
-    // finns, annars göms fliken helt i onödan trots att det finns massor
-    // att titta på.
+    // (till skillnad från tidigare då bara cup().dataUrl avgjorde direkt).
+    // En cup vars INNEVARANDE upplaga ännu inte publicerat något (t.ex.
+    // Lundaspelen inför en ny säsong — se samma resonemang i renderToolbar/
+    // renderContent) kan ändå ha gott om arkiverad historik att visa via
+    // Kartans årsväljare — räcker därför att ANTINGEN live-data ELLER minst
+    // ett spelat arkiverat år finns, annars göms fliken helt i onödan trots
+    // att det finns massor att titta på.
     ensureCupClubGeo(state.cupId);
     const mapKnown = state.mapCupStatus[state.cupId] === "done";
     const mapHasArchive = ((archiveEntry && archiveEntry.editions) || []).some((e) => e.matches > 0);
     const mapSupported = Object.keys(HB.api.clubGeo[state.cupId] || {}).length > 0 || mapHasArchive;
-    if (mapKnown && !mapSupported && state.view === "karta") state.view = "schema";
-    // Klubb/Lag söker över ALLA cupers arkiv (inte bara innevarande cup) —
-    // visas så fort NÅGON cup har minst ett spelat arkiverat år, oavsett
-    // vilken cup som just nu är vald. Samma "vänta tills vi vet säkert"-
-    // resonemang som Trend/Karta ovan (archiveIndex laddas asynkront).
+    // Klubb/Lag, Klubbjämförelse och Cuper kräver alla bara "NÅGON cup
+    // NÅGONSTANS har minst ett spelat arkiverat år" — samma villkor,
+    // eftersom alla tre bygger direkt på state.archiveIndex.
     const clubSupported = !!state.archiveIndex && Object.values(state.archiveIndex)
       .some((c) => (c.editions || []).some((e) => e.matches > 0));
-    if (state.archiveIndex && !clubSupported && state.view === "klubb") state.view = "schema";
+    // Stats samlar Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper som under-
+    // flikar (se STATS_TABS/renderStatsView) — sparas här så renderStatsView
+    // slipper räkna om samma (delvis asynkrona) stöd själv. Fliken syns så
+    // fort NÅGON underflik har stöd; själva underflikväxlingen/nedgraderingen
+    // (om just den valda underfliken blir ogiltig) sköts av renderStatsView.
+    state.statsSupport = {
+      trend: trendSupported, karta: mapSupported,
+      klubb: clubSupported, klubbjamforelse: clubSupported, cuper: clubSupported,
+    };
+    const statsSupported = trendSupported || mapSupported || clubSupported;
+    // Vänta tills BÅDA de asynkrona källorna (archiveIndex, mapCupStatus)
+    // svarat innan ett direktlänkat view=stats/underflik nollställs — samma
+    // "vänta tills vi vet säkert"-resonemang som Trend/Karta hade var för sig
+    // innan de slogs ihop. Klubbadressen (mapCupStatus) hinner ofta bli klar
+    // FÖRE arkivindexet (litet cup-specifikt snapshot-anrop vs det stora
+    // gemensamma index.json) — utan denna "known"-spärr skulle renderStatsView
+    // annars kunna hinna se "bara Karta stödd än så länge" under en enda
+    // mellanliggande omritning och permanent byta bort en direktlänkad/sparad
+    // underflik till Karta i onödan (se dess kommentar).
+    state.statsKnown = !!state.archiveIndex && mapKnown;
+    if (state.statsKnown && !statsSupported && state.view === "stats") {
+      state.view = "schema";
+    }
     $$("#viewTabs .tab").forEach((b) => {
       const isPlayoffTab = b.dataset.view === "slutspel";
-      const isTrendTab = b.dataset.view === "trend";
-      const isKartaTab = b.dataset.view === "karta";
-      const isKlubbTab = b.dataset.view === "klubb";
-      b.hidden = (isPlayoffTab && !playoffsSupported) || (isTrendTab && !trendSupported) ||
-        (isKartaTab && !mapSupported) || (isKlubbTab && !clubSupported);
+      const isStatsTab = b.dataset.view === "stats";
+      b.hidden = (isPlayoffTab && !playoffsSupported) || (isStatsTab && !statsSupported);
       b.classList.toggle("on", b.dataset.view === state.view);
       b.setAttribute("aria-selected", String(b.dataset.view === state.view));
     });
@@ -1570,10 +1602,10 @@ window.HB = window.HB || {};
   function renderToolbar() {
     const bar = $("#toolbar");
     bar.replaceChildren();
-    // Trend/Karta/Klubb bygger på HELA arkivet/klubbregistret oavsett dag-/
-    // klass-/lagfilter (de filtrerar inte state.matches alls) —
-    // verktygsraden vore bara missvisande brus där.
-    if (state.view === "trend" || state.view === "karta" || state.view === "klubb") return;
+    // Stats (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper) bygger på HELA
+    // arkivet/klubbregistret oavsett dag-/klass-/lagfilter (de filtrerar
+    // inte state.matches alls) — verktygsraden vore bara missvisande brus där.
+    if (state.view === "stats") return;
     ensureArchiveEditions();
     const archiveEntry = state.archiveEditions[state.cupId];
     const archiveYears = (archiveEntry && archiveEntry.editions) || [];
@@ -3703,6 +3735,194 @@ window.HB = window.HB || {};
     }
   }
 
+  // Klubbjämförelse-fliken (under Stats): samma computeClubRows som Klubb/
+  // Lag använder (en söktermsrad -> aggregat per cup), men i stället för
+  // att borra ner i EN klubb visas flera klubbars/lags aggregat sida vid
+  // sida i en tabell. Ett namn per rad i state.compareQuery (inte kommatecken
+  // — kommatecken/snedstreck är redan boolesk ELLER-syntax INOM en sökterm,
+  // se matchesBooleanQuery). Max 8 rader — fler skulle bara bli en orimligt
+  // bred/tung tabell (varje rad kräver ensureYearMatches över alla cuper).
+  let clubCompareTableSort = { key: "name", dir: 1 };
+
+  function renderClubCompareView(root) {
+    const textarea = h("textarea", {
+      class: "search", rows: "4",
+      placeholder: "En klubb/lag per rad, t.ex.\nAlingsås HK\nAranäs\nÖnnereds HK",
+    });
+    textarea.value = state.compareQuery;
+    const apply = () => { state.compareQuery = textarea.value; renderContent(); };
+    textarea.addEventListener("change", apply);
+    root.append(h("div", { class: "history-controls" }, textarea));
+
+    const names = [...new Set(state.compareQuery.split("\n").map((s) => s.trim()).filter(Boolean))]
+      .slice(0, 8);
+    const resultHost = h("div", { class: "trend-chart-host" });
+    root.append(resultHost);
+    if (!names.length) {
+      resultHost.append(h("p", { class: "muted" },
+        "Skriv minst en klubb/lag ovan (en per rad) för att jämföra deras historik över alla cuper."));
+      return;
+    }
+
+    const cupIds = trendCupOptions();
+    let pending = false;
+    const rows = names.map((name) => {
+      const res = computeClubRows(cupIds, name);
+      if (res.pending) pending = true;
+      const years = res.rows.flatMap((r) => r.years).sort();
+      return {
+        name,
+        cups: res.rows.length,
+        teams: res.rows.reduce((s, r) => s + r.totalTeams, 0),
+        matches: res.rows.reduce((s, r) => s + r.totalMatches, 0),
+        classes: new Set(res.rows.flatMap((r) => [...r.classes])).size,
+        yearsSpan: years.length ? (years[0] === years[years.length - 1]
+          ? years[0] : years[0] + "–" + years[years.length - 1]) : "–",
+      };
+    });
+    if (pending) {
+      resultHost.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
+      return;
+    }
+
+    const columns = [
+      { key: "name", label: "Klubb/lag", align: "l", defaultDir: 1, get: (r) => r.name },
+      { key: "cups", label: "Cuper", defaultDir: -1, get: (r) => r.cups },
+      { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.teams },
+      { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.matches },
+      { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes },
+      { key: "yearsSpan", label: "År", align: "l", defaultDir: 1, get: (r) => r.yearsSpan },
+    ];
+    resultHost.append(sortableTable(columns, rows, clubCompareTableSort));
+  }
+
+  // Cuper-fliken (under Stats): en översiktsrad per cup, byggd helt ur
+  // state.archiveIndex (redan hämtat via fetchArchiveIndex() i init(),
+  // se dess kommentar) — INGEN ensureYearMatches krävs, index.json:s
+  // per-upplaga-nyckeltal (matches/teams/classes/clubs/days) räcker. Klick
+  // på en rad borrar ner i den cupens egna år-för-år-historik.
+  let cupsOverviewSort = { key: "cupName", dir: 1 };
+  let cupsOverviewDetailSort = { key: "edition", dir: -1 };
+
+  function statsCupOverviewRows() {
+    const idx = state.archiveIndex || {};
+    return trendCupOptions().map((cupId) => {
+      const cupObj = HB.allCups().find((c) => c.id === cupId);
+      const editions = ((idx[cupId] && idx[cupId].editions) || [])
+        .filter((e) => e.matches > 0).slice().sort((a, b) => b.edition.localeCompare(a.edition));
+      const latest = editions[0];
+      return {
+        cupId, cupName: (cupObj && cupObj.name) || (idx[cupId] && idx[cupId].cupName) || cupId,
+        sport: (cupObj && cupObj.sport) || "handboll",
+        years: editions.length, latestEdition: latest.edition,
+        latestTeams: latest.teams || 0, latestMatches: latest.matches || 0,
+        latestClasses: latest.classes || 0, latestClubs: latest.clubs || 0,
+        editions,
+      };
+    });
+  }
+
+  function renderCupsOverviewView(root) {
+    if (state.statsCupDrill) { renderCupsOverviewDetail(root, state.statsCupDrill); return; }
+    const rows = statsCupOverviewRows();
+    if (!rows.length) {
+      root.append(h("p", { class: "muted" }, "Ingen cup har ännu någon arkiverad historik."));
+      return;
+    }
+    root.append(h("p", { class: "muted" },
+      rows.length + " cuper · senaste upplagans nyckeltal — klicka en rad för år-för-år."));
+    const columns = [
+      { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
+      { key: "sport", label: "Sport", align: "l", defaultDir: 1, get: (r) => SPORT_LABELS[r.sport] || r.sport },
+      { key: "years", label: "År", defaultDir: -1, get: (r) => r.years },
+      { key: "latestEdition", label: "Senaste", align: "l", defaultDir: -1, get: (r) => r.latestEdition },
+      { key: "latestTeams", label: "Lag", defaultDir: -1, get: (r) => r.latestTeams },
+      { key: "latestMatches", label: "Matcher", defaultDir: -1, get: (r) => r.latestMatches },
+      { key: "latestClasses", label: "Klasser", defaultDir: -1, get: (r) => r.latestClasses },
+      { key: "latestClubs", label: "Klubbar", defaultDir: -1, get: (r) => r.latestClubs },
+    ];
+    root.append(sortableTable(columns, rows, cupsOverviewSort, null,
+      (r) => { state.statsCupDrill = r.cupId; renderContent(); }));
+  }
+
+  function renderCupsOverviewDetail(root, cupId) {
+    const cupObj = HB.allCups().find((c) => c.id === cupId);
+    const idx = state.archiveIndex || {};
+    const cupName = (cupObj && cupObj.name) || (idx[cupId] && idx[cupId].cupName) || cupId;
+    root.append(h("div", { class: "row" },
+      h("button", {
+        class: "chip back-chip", type: "button",
+        onclick: () => { state.statsCupDrill = null; renderContent(); },
+      }, "← Tillbaka till alla cuper")));
+    root.append(h("h2", { class: "day-h" }, cupName));
+    const editions = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    if (!editions.length) {
+      root.append(h("p", { class: "muted" }, "Ingen arkiverad historik hittades."));
+      return;
+    }
+    const columns = [
+      { key: "edition", label: "År", align: "l", defaultDir: -1, get: (r) => r.edition },
+      { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.teams || 0 },
+      { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.matches || 0 },
+      { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes || 0 },
+      { key: "clubs", label: "Klubbar", defaultDir: -1, get: (r) => r.clubs || 0 },
+      { key: "days", label: "Speldagar", defaultDir: -1, get: (r) => r.days || 0 },
+    ];
+    root.append(sortableTable(columns, editions, cupsOverviewDetailSort));
+  }
+
+  // Stats: samlar Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper under EN
+  // toppnivåflik (index.html #viewTabs, state.view === "stats") i stället
+  // för fem separata — alla fem svarar på samma sorts "tvärs över cuper/år"-
+  // frågor, bara med olika linser, så en gemensam underflikrad (samma
+  // [key,label,renderFn]-mönster som HISTORY_TABS ovan, se renderBrowseMode)
+  // håller ihop dem utan att trycka undan Schema/Tabeller/Slutspel/Bana ur
+  // huvudnavigeringen.
+  const STATS_TABS = [
+    ["trend", "Trend", renderTrendView],
+    ["karta", "Karta", renderMapView],
+    ["klubb", "Klubb/Lag", renderClubView],
+    ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
+    ["cuper", "Cuper", renderCupsOverviewView],
+  ];
+
+  function renderStatsView(root) {
+    // state.statsSupport/statsKnown sätts av renderTabs() (körs alltid innan
+    // renderContent() i render(), se dess kommentar) — men kan saknas om
+    // renderContent() undantagsvis anropas direkt utan en föregående
+    // renderTabs() (några asynkrona callbacks gör det, se t.ex.
+    // ensureCupClubGeo/fetchArchiveIndex). Anta då att allt är stött hellre
+    // än att gömma hela vyn i onödan.
+    const support = state.statsSupport ||
+      { trend: true, karta: true, klubb: true, klubbjamforelse: true, cuper: true };
+    const visibleTabs = STATS_TABS.filter(([key]) => support[key]);
+    // Den valda underfliken kan ha blivit ogiltig sen sist (t.ex. Karta
+    // förlorade sitt stöd) — falla då tillbaka på den första som fortfarande
+    // finns kvar, i stället för att rendera en tom/dold flik. Görs BARA när
+    // vi vet säkert (state.statsKnown): Kartans klubbdata (litet, cup-
+    // specifikt anrop) hinner ofta svara FÖRE det stora gemensamma
+    // arkivindexet, så en mellanliggande omritning kan annars se ut som att
+    // bara Karta är stödd än så länge — utan spärren skulle det permanent
+    // knuffa bort en direktlänkad/sparad Trend-/Klubb-flik till Karta.
+    if (state.statsKnown && !visibleTabs.some(([v]) => v === state.statsView)) {
+      state.statsView = (visibleTabs[0] || STATS_TABS[0])[0];
+    }
+    // Visa alltid den just nu valda underfliken i listan, även om den ännu
+    // inte hunnit bekräftas stödd (se ovan) — annars skulle den kunna blinka
+    // bort ur fliklistan under en enda mellanliggande omritning.
+    const shownKeys = new Set([...visibleTabs.map(([v]) => v), state.statsView]);
+    const shownTabs = STATS_TABS.filter(([key]) => shownKeys.has(key));
+    const tabBar = h("nav", { class: "history-tabs", role: "tablist", "aria-label": "Stats" },
+      shownTabs.map(([v, label]) => h("button", {
+        class: "tab" + (state.statsView === v ? " on" : ""), role: "tab", type: "button",
+        onclick: () => { state.statsView = v; saveUi(); renderContent(); },
+      }, label)));
+    const content = h("div", { class: "history-viewer-body" });
+    root.append(tabBar, content);
+    const tabFn = (STATS_TABS.find(([v]) => v === state.statsView) || STATS_TABS[0])[2];
+    tabFn(content);
+  }
+
   function renderBrowseMode(root, idx, cupIds) {
     // hs = lokal, isolerad "state" för EN vald cup+edition — motsvarar
     // huvudappens state.matches/state.view men rör aldrig den riktiga
@@ -4700,11 +4920,11 @@ window.HB = window.HB || {};
       state.mapCupClasses[cupId] = classes;
       state.mapCupCountryByClub[cupId] = countryByClub;
       state.mapCupStatus[cupId] = "done";
-      // renderTabs() alltid — kan avgöra om Karta-fliken ska visas/döljas nu
+      // renderTabs() alltid — kan avgöra om Stats-fliken ska visas/döljas nu
       // när vi vet säkert. render() (dyrare, ritar om hela sidan) bara om
-      // man faktiskt står på Karta just nu.
+      // man faktiskt står på Karta-underfliken just nu.
       renderTabs();
-      if (state.view === "karta") render();
+      if (state.view === "stats" && state.statsView === "karta") render();
     };
     const c = HB.allCups().find((x) => x.id === cupId);
     if (c && c.dataUrl) {
@@ -4900,7 +5120,7 @@ window.HB = window.HB || {};
     if (clubDirectoryCache) return;
     HB.api.fetchClubDirectory().then((dir) => {
       clubDirectoryCache = dir || {};
-      if (state.view === "karta") render();
+      if (state.view === "stats" && state.statsView === "karta") render();
     });
   }
 
@@ -4916,7 +5136,7 @@ window.HB = window.HB || {};
   function toggleMapPlay(years) {
     if (mapPlayTimer) { stopMapPlay(); renderContent(); return; }
     mapPlayTimer = setInterval(() => {
-      if (state.view !== "karta") { stopMapPlay(); return; }
+      if (state.view !== "stats" || state.statsView !== "karta") { stopMapPlay(); return; }
       const cur = years.indexOf(state.mapYear);
       state.mapYear = years[cur === -1 || cur === years.length - 1 ? 0 : cur + 1];
       renderContent();
@@ -6726,7 +6946,7 @@ window.HB = window.HB || {};
     // Cup Manager-id:n är numeriska, ProCup-id:n är textsträngar (lagnamn) —
     // bevara rätt typ så Set.has()-jämförelser mot matchdatan funkar.
     const toId = (s) => (/^\d+$/.test(s) ? +s : s);
-    const hasUrlFilters = ["view", "scope", "days", "cats", "teams", "arena",
+    const hasUrlFilters = ["view", "stats", "scope", "days", "cats", "teams", "arena",
       "viewArena", "sort", "order", "mf", "q"].some((k) => params.has(k));
     $$("#viewTabs .tab").forEach((b) =>
       b.addEventListener("click", () => {
@@ -6750,6 +6970,8 @@ window.HB = window.HB || {};
     if (hasUrlFilters) {
       // En delad länk vinner över det som råkar ligga sparat i webbläsaren.
       if (params.get("view")) state.view = params.get("view");
+      if (params.get("stats")) state.statsView = params.get("stats");
+      normalizeStatsView();
       if (params.get("scope")) state.scope = params.get("scope");
       if (params.get("days")) state.days = new Set(params.get("days").split(","));
       if (params.get("cats")) state.cats = new Set(params.get("cats").split(",").map(toId));
@@ -6768,14 +6990,15 @@ window.HB = window.HB || {};
     }
     loadCup();
 
-    // Trend-fliken behöver arkivindexet för att veta om den ska visas alls
-    // (döljs annars om innevarande cup har färre än två arkiverade år) —
-    // hämtas en gång, oberoende av loadCup(), samma index.json som
-    // ensureArchiveEditions()/Historik redan använder.
+    // Stats-underflikarna Trend/Klubb-Lag/Klubbjämförelse/Cuper behöver
+    // arkivindexet för att veta om de ska visas alls (Trend döljs t.ex. om
+    // innevarande cup har färre än två arkiverade år) — hämtas en gång,
+    // oberoende av loadCup(), samma index.json som ensureArchiveEditions()/
+    // Historik redan använder.
     HB.api.fetchArchiveIndex().then((idx) => {
       state.archiveIndex = idx || {};
       renderTabs();
-      if (state.view === "trend") render();
+      if (state.view === "stats") render();
     }).catch(() => { state.archiveIndex = {}; renderTabs(); });
 
     // Auto-uppdatera var tredje minut — men bara cuper som faktiskt pågår.
