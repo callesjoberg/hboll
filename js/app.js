@@ -375,6 +375,11 @@ window.HB = window.HB || {};
     // nedborrningen obegriplig. Session, sparas ej.
     clubDrillCup: null,
     clubDrillClass: null,
+    // Klubb/Lag-fliken: valfritt årsfilter (tomma Set = alla år), gäller
+    // över alla tre nivåerna (se clubEditionsFor). Rör INTE sökningen
+    // (clubQuery) — behålls medvetet när man byter sökterm, till skillnad
+    // från nedborrningen ovan. Session, sparas ej.
+    clubYears: new Set(),
     // Karta-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
     // fylls i vid första besöket i renderMapView). mapCupStatus håller reda
     // på lata hämtningar av ANDRA cupers klubbdata (se ensureCupClubGeo) så
@@ -3360,17 +3365,41 @@ window.HB = window.HB || {};
     return sortableTable(columns, rows, trendCompareTableSort);
   }
 
+  // Klubb/Lag-fliken: en cups arkiverade upplagor, filtrerat mot ett
+  // ev. valt årsfilter (state.clubYears, tomt = alla år) — delad av alla
+  // tre nivåerna nedan så ett årsval även styr VILKA år som hämtas
+  // (ensureYearMatches), inte bara vad som till slut visas.
+  function clubEditionsFor(cupId) {
+    const idx = state.archiveIndex || {};
+    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    return state.clubYears.size ? editionsMeta.filter((e) => state.clubYears.has(e.edition)) : editionsMeta;
+  }
+
+  // Klubb/Lag-fliken: alla år som finns att välja mellan i årsfiltret —
+  // unionen över samtliga cuper med arkiverad historik (trendCupOptions),
+  // inte bara de som råkar matcha den aktuella sökningen, så filtret inte
+  // hoppar runt när man byter sökterm.
+  function clubYearOptions() {
+    const idx = state.archiveIndex || {};
+    const years = new Set();
+    for (const cupId of trendCupOptions()) {
+      for (const e of (idx[cupId] && idx[cupId].editions) || []) {
+        if (e.matches > 0) years.add(e.edition);
+      }
+    }
+    return [...years].sort().reverse();
+  }
+
   // Klubb/Lag-fliken: aggregerar EN sökterms (klubb-/lagnamn) historik över
   // ALLA cuper med arkiverad data (till skillnad från Trend-jämförelsen
   // ovan, som bara omfattar de cuper man själv valt). Kräver FULLA
   // matchlistor per arkiverat år och cup (samma ensureYearMatches som
   // formkurvan).
   function computeClubRows(cupIds, teamQuery) {
-    const idx = state.archiveIndex || {};
     let pending = false;
     const rows = [];
     for (const cupId of cupIds) {
-      const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+      const editionsMeta = clubEditionsFor(cupId);
       const years = [];
       let totalTeams = 0, totalMatches = 0;
       const classes = new Set();
@@ -3410,8 +3439,7 @@ window.HB = window.HB || {};
   // lag-id:n varje upplaga (se allActiveMatches-kommentaren), så samma
   // rådata-id kan i teorin återanvändas mellan år utan att vara samma lag.
   function computeClubCupDetail(cupId, teamQuery) {
-    const idx = state.archiveIndex || {};
-    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    const editionsMeta = clubEditionsFor(cupId);
     const byClass = new Map(); // klassnamn -> {teams:Set, matches:antal}
     const allTeams = new Set();
     const days = new Set();
@@ -3444,8 +3472,7 @@ window.HB = window.HB || {};
   // Ett lag som spelat BÅDE hemma och borta mot varandra "internt" (sällsynt,
   // t.ex. en klubbs egna lag möts) hamnar korrekt i BÅDA gruppernas listor.
   function computeClubClassGroups(cupId, className, teamQuery) {
-    const idx = state.archiveIndex || {};
-    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    const editionsMeta = clubEditionsFor(cupId);
     const groups = new Map(); // "edition|id" -> {teamId, teamName, edition, matches:[]}
     for (const em of editionsMeta) {
       const ym = state.yearMatches[cupId + ":" + em.edition];
@@ -3497,12 +3524,30 @@ window.HB = window.HB || {};
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); applyQuery(); }
     });
+
+    // Årsfilter (state.clubYears, tomt = alla år) — påverkar inte sökningen
+    // i sig, men en nedborrning gjord för ETT årsurval kan bli obegriplig
+    // (t.ex. en klass utan träffar) med ett annat, så nollställ den precis
+    // som vid en ny sökterm.
+    const yearOptions = clubYearOptions();
+    const yearPicker = yearOptions.length > 1 ? buildPicker({
+      items: yearOptions.map((y) => ({ id: y, label: y, sortKey: 0, sortName: y })),
+      selected: state.clubYears,
+      emptyLabel: "Alla år",
+      countLabel: (n) => (n === 1 ? "1 år" : n + " år"),
+      searchPlaceholder: "Sök år …",
+      sortToggle: false,
+      soloClickable: true,
+      onChange: () => { state.clubDrillCup = null; state.clubDrillClass = null; renderContent(); },
+    }) : null;
+
     root.append(h("div", { class: "history-controls" },
       h("div", { class: "trend-team-search" },
         withClearButton(input, () => {
           state.clubQuery = ""; state.clubDrillCup = null; state.clubDrillClass = null;
           renderContent();
-        }))));
+        })),
+      yearPicker));
 
     const resultHost = h("div", { class: "trend-chart-host" });
     root.append(resultHost);
@@ -3570,8 +3615,7 @@ window.HB = window.HB || {};
         onclick: () => { state.clubDrillCup = null; renderContent(); },
       }, "← Tillbaka till alla cuper")));
 
-    const idx = state.archiveIndex || {};
-    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    const editionsMeta = clubEditionsFor(cupId);
     for (const em of editionsMeta) ensureYearMatches(em.edition, cupId);
     const pending = editionsMeta.some((em) => {
       const ym = state.yearMatches[cupId + ":" + em.edition];
@@ -5717,6 +5761,17 @@ window.HB = window.HB || {};
     });
     document.addEventListener("pointermove", (e) => {
       if (!dragging) return;
+      // Självläkande: släpper man musknappen UTANFÖR webbläsarfönstret
+      // (t.ex. drar uppåt förbi fliksraden, eller alt-tabbar mitt i draget)
+      // når varken pointerup eller pointercancel någonsin document — dragging
+      // skulle annars fastna på true för gott, och VARJE senare musrörelse
+      // (på VILKEN flik som helst, detta är en global lyssnare) skulle då
+      // fortsätta tvinga scrollpositionen tillbaka till startScrollY-dy och
+      // e.preventDefault() — upplevs som att sidan "låst sig" och inte går
+      // att scrolla, även långt efter man lämnat slutspelsträdet. e.buttons
+      // === 0 (ingen knapp nertryckt) är den tillförlitliga signalen om att
+      // en pointerup missades, se window "blur" nedan för ett andra skydd.
+      if (e.buttons === 0) { endDrag(); return; }
       const dx = e.clientX - startX, dy = e.clientY - startY;
       if (!moved && Math.hypot(dx, dy) < 4) return;
       if (!moved) {
@@ -5732,20 +5787,27 @@ window.HB = window.HB || {};
       if (!dragging) return;
       dragging = false;
       document.documentElement.classList.remove("bracket-panning");
-      if (box) {
-        box.classList.remove("panning");
+      // b: lokal kopia — box nollställs längre ner INNAN setTimeout-callbacken
+      // hinner köra, annars kraschar den (box.removeEventListener på null).
+      const b = box;
+      if (b) {
+        b.classList.remove("panning");
         if (moved) {
           // Sväljer klicket efter en drag så matchkortet under muspekaren
           // inte öppnas som om man klickat det.
           const swallow = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
-          box.addEventListener("click", swallow, { capture: true, once: true });
-          setTimeout(() => box.removeEventListener("click", swallow, { capture: true }), 0);
+          b.addEventListener("click", swallow, { capture: true, once: true });
+          setTimeout(() => b.removeEventListener("click", swallow, { capture: true }), 0);
         }
       }
       box = null;
     }
     document.addEventListener("pointerup", endDrag);
     document.addEventListener("pointercancel", endDrag);
+    // Andra skyddsnätet: tappar webbläsarfönstret fokus mitt i ett drag
+    // (alt-tab, klick i ett annat program) utan att musen rört sig igen
+    // efteråt hinner e.buttons-kollen ovan aldrig triggas — blur täcker det.
+    window.addEventListener("blur", endDrag);
   }
 
   // --- lägg till cup ----------------------------------------------------------
