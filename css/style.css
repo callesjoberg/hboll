@@ -285,6 +285,22 @@ header.top {
   text-overflow: ellipsis;
 }
 
+/* Öppnar loggen över hämtade matcher (openMatchLogDialog) — samma tysta
+   textstil som #meta hade innan den blev klickbar, med en diskret
+   understrykning vid hover/fokus som enda ledtråd att den går att klicka. */
+.meta-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.meta-link:hover, .meta-link:focus-visible { color: var(--ink); text-decoration: underline; }
+
+.match-log-table { max-height: 60vh; overflow-y: auto; }
+.match-log-table th, .match-log-table td { white-space: nowrap; }
+
 /* --- verktygsrad ---------------------------------------------------------- */
 
 #toolbar {
@@ -294,6 +310,11 @@ header.top {
   display: grid;
   gap: 8px;
 }
+/* Stats-vyn (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper) har inget eget
+   filter (se renderToolbar) — bar.replaceChildren() lämnar den tom, men
+   utan detta skulle den ändå ta plats via sin egen padding, vilket gjorde
+   avståndet ner till Stats egen underflikrad (.history-tabs) onödigt stort. */
+#toolbar:empty { padding: 0; }
 
 /* Filter/sortering ligger i en expanderbar meny så den kan minimeras när
    man valt klart, i stället för att permanent ta plats i schemat. */

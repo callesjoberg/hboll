@@ -1308,16 +1308,23 @@ window.HB = window.HB || {};
       btn.textContent = state.loading ? "↻ Uppdaterar …" : "↻ Uppdatera";
     }
     const el = $("#meta");
-    if (!state.loadedAt) { el.textContent = ""; return; }
+    el.replaceChildren();
+    if (!state.loadedAt) return;
     const n = scoped().length;
     const dataTs = HB.api.localDataTs[state.cupId];
-    el.textContent = (dataTs
+    const label = (dataTs
       ? "Data hämtad " + new Intl.DateTimeFormat("sv-SE", {
           day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
         }).format(new Date(dataTs))
       : "Uppdaterad " + fmtClock.format(new Date(state.loadedAt))) +
-      " · " + n + " matcher" + (state.loading
-        ? " · hämtar nytt … (" + (loadProgress || "0") + ")" : "");
+      " · " + n + " matcher";
+    // Klickbar — öppnar en logg över exakt VILKA matcher som räknas in i
+    // antalet ovan (samma urval, scoped(), se openMatchLogDialog).
+    el.append(h("button", {
+      class: "meta-link", type: "button", title: "Visa hämtade matcher",
+      onclick: openMatchLogDialog,
+    }, label));
+    if (state.loading) el.append(" · hämtar nytt … (" + (loadProgress || "0") + ")");
   }
 
   // --- generisk sök-, filter- och sorterbar flervalsdropdown ------------------
@@ -4171,6 +4178,54 @@ window.HB = window.HB || {};
 
   function setupHistory() {
     $("#historyBtn").addEventListener("click", () => openHistoryDialog());
+  }
+
+  // Länken bakom "Data hämtad …"/"Uppdaterad …" i headern (#meta, se
+  // renderMeta) — en enkel logg över VILKA matcher som räknas in i det
+  // visade antalet. SAMMA urval som siffran (scoped(), dvs styrt av
+  // klubb-/hela cupen-läget precis som Schema) — svarar direkt på "stämmer
+  // det här antalet?"/"vilka matcher kom faktiskt med i hämtningen?". Klick
+  // på en rad öppnar samma matchdialog som Schema-kortens (openMatchDialog).
+  function openMatchLogDialog() {
+    const matches = scoped().slice().sort((a, b) => a.start - b.start);
+    const dataTs = HB.api.localDataTs[state.cupId];
+    const fetchedLabel = dataTs
+      ? "Data hämtad " + new Intl.DateTimeFormat("sv-SE", {
+          day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+        }).format(new Date(dataTs))
+      : "Uppdaterad " + fmtDayLong.format(new Date(state.loadedAt)) + " " + fmtClock.format(new Date(state.loadedAt));
+    const dlg = h("dialog", { class: "match-dialog history-dialog" });
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => dlg.remove());
+    document.body.append(dlg);
+    const openMatch = (m) => { dlg.close(); openMatchDialog(m); };
+    const rows = matches.map((m) => h("tr", {
+      class: "sortable-row-clickable", role: "button", tabindex: "0",
+      onclick: () => openMatch(m),
+      onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatch(m); } },
+    },
+      h("th", { class: "l", scope: "row" },
+        m.start ? fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)) : "–"),
+      h("td", { class: "l" }, HB.shortCat(m.catName)),
+      h("td", { class: "l" }, m.home.name),
+      h("td", { class: "l" }, m.away.name),
+      h("td", null, scoreText(m.res) || "–")));
+    dlg.append(
+      h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
+      h("div", { class: "match-dialog-head" },
+        h("span", { class: "cat" }, "Hämtade matcher"),
+        h("span", null, cup().name),
+        h("span", { class: "muted" }, fetchedLabel + " · " + matches.length + " matcher")),
+      matches.length
+        ? h("div", { class: "table-box match-log-table" },
+            h("table", { class: "standings" },
+              h("thead", null, h("tr", null,
+                h("th", { class: "l" }, "Tid"), h("th", { class: "l" }, "Klass"),
+                h("th", { class: "l" }, "Hemma"), h("th", { class: "l" }, "Borta"),
+                h("th", null, "Resultat"))),
+              h("tbody", null, rows)))
+        : h("p", { class: "muted" }, "Inga matcher hämtade ännu."));
+    dlg.showModal();
   }
 
   function openMatchDialog(m) {
