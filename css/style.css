@@ -1471,6 +1471,32 @@ dialog#settingsDialog { max-width: 380px; }
 
 .autocomplete-item:hover { background: var(--paper); }
 
+.compare-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+
+.compare-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 4px 4px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.compare-chip-x {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 999px;
+}
+.compare-chip-x:hover { color: var(--live); background: color-mix(in srgb, var(--live) 14%, transparent); }
+
 /* lagfärgprick på matchkort */
 
 .team-color-dot {
@@ -1636,6 +1662,7 @@ dialog.history-dialog {
    av raden, bara krymper vid platsbrist. En ensam smal cupväljarchip
    bredvid gjorde annars sökrutan orimligt bred. */
 .history-controls .trend-team-search { flex: 0 1 240px; min-width: 160px; }
+.history-controls .compare-search-wrap { flex: 0 1 260px; min-width: 160px; }
 /* Chippen (t.ex. Kartans cupväljare) hade annars 2px lägre padding än
    sökrutan bredvid (.chip: 4px, .search: 6px) — märktes som en synlig
    höjdskillnad i samma rad. */

@@ -382,10 +382,11 @@ window.HB = window.HB || {};
     // Cuper-fliken (under Stats): vald cup att visa år-för-år-nedbrytning
     // för, null = visa översiktstabellen över alla cuper. Session, sparas ej.
     statsCupDrill: null,
-    // Klubbjämförelse-fliken (under Stats): en klubb-/lagnamn per rad,
-    // jämförs sida vid sida (se renderClubCompareView/computeClubRows).
-    // Session, sparas ej.
-    compareQuery: "",
+    // Klubbjämförelse-fliken (under Stats): klubbar/lag tillagda via sökrutan
+    // med autocomplete (se renderClubCompareView), jämförs sida vid sida
+    // (computeClubRows). Ordning bevaras (senast tillagd sist). Session,
+    // sparas ej.
+    compareNames: [],
     // DELAD mellan Karta- och Trend-fliken (tom = bara innevarande, fylls i
     // vid första besöket i ENTINGEN renderMapView ELLER renderTrendView) —
     // samma cupurval hänger med när man växlar mellan de två flikarna i
@@ -3745,35 +3746,92 @@ window.HB = window.HB || {};
   // Klubbjämförelse-fliken (under Stats): samma computeClubRows som Klubb/
   // Lag använder (en söktermsrad -> aggregat per cup), men i stället för
   // att borra ner i EN klubb visas flera klubbars/lags aggregat sida vid
-  // sida i en tabell. Ett namn per rad i state.compareQuery (inte kommatecken
-  // — kommatecken/snedstreck är redan boolesk ELLER-syntax INOM en sökterm,
-  // se matchesBooleanQuery). Max 8 rader — fler skulle bara bli en orimligt
-  // bred/tung tabell (varje rad kräver ensureYearMatches över alla cuper).
+  // sida i en tabell. Klubbar läggs till en i taget via en sökruta med
+  // autocomplete (attachAutocomplete, minLen 2) — man skriver 2-3 bokstäver,
+  // klickar rätt klubb i förslagslistan (eller trycker Enter för ett namn
+  // som inte finns i förslagen), den hamnar som en chip i state.compareNames,
+  // och sökrutan töms/får fokus igen så man kan söka nästa direkt. Max 8 —
+  // fler skulle bara bli en orimligt bred/tung tabell (varje tillägg kräver
+  // ensureYearMatches över alla cuper).
   let clubCompareTableSort = { key: "name", dir: 1 };
+  const CLUB_COMPARE_MAX = 8;
+
+  // Förslagskällan är klubbkatalogen (data/club-directory.json) — samma
+  // katalog Karta använder för att gissa ProCup/Gothia-adresser — eftersom
+  // den redan är ett städat register över klubbnamn (utan lagsuffix som
+  // "Blå"/"Vit") tvärs över alla klassiska Cup Manager-cuper, och redan
+  // cachas av HB.api.fetchClubDirectory(). Ett namn som inte finns med där
+  // (t.ex. en klubb som bara spelat i Partille/ProCup) går ändå att lägga
+  // till manuellt via Enter — katalogen är bara ett hjälpmedel, inget krav.
+  let compareCandidates = null;
+  function ensureCompareCandidates() {
+    if (compareCandidates) return;
+    compareCandidates = [];
+    // INGEN renderContent() här när katalogen blir klar — attachAutocomplete
+    // läser getCandidates() på nytt vid varje tangenttryckning (ren closure,
+    // ingen snapshot), så nästa input-event ser automatiskt de färska
+    // kandidaterna. En omritning här skulle i stället kunna riva upp och
+    // ersätta sökrutan MITT I att någon skriver (katalogen hinner ofta bli
+    // klar under de första tangenttryckningarna), vilket tömmer det man just
+    // skrivit — värre än att förslagslistan helt enkelt är tom en bråkdel
+    // av en sekund vid allra första besöket.
+    HB.api.fetchClubDirectory().then((dir) => {
+      compareCandidates = Object.keys(dir || {}).sort((a, b) => a.localeCompare(b, "sv"));
+    });
+  }
 
   function renderClubCompareView(root) {
-    const textarea = h("textarea", {
-      class: "search", rows: "4",
-      placeholder: "En klubb/lag per rad, t.ex.\nAlingsås HK\nAranäs\nÖnnereds HK",
+    ensureCompareCandidates();
+    const atMax = state.compareNames.length >= CLUB_COMPARE_MAX;
+    const input = h("input", {
+      class: "search compare-search", type: "text",
+      placeholder: atMax ? "Max " + CLUB_COMPARE_MAX + " nådd" : "Sök klubb/lag …",
+      disabled: atMax ? "" : null,
     });
-    textarea.value = state.compareQuery;
-    const apply = () => { state.compareQuery = textarea.value; renderContent(); };
-    textarea.addEventListener("change", apply);
-    root.append(h("div", { class: "history-controls" }, textarea));
+    const options = h("div", { class: "autocomplete-list" });
+    options.hidden = true;
+    const addName = (raw) => {
+      const name = raw.trim();
+      if (!name || state.compareNames.length >= CLUB_COMPARE_MAX) return;
+      if (!state.compareNames.some((n) => n.toLowerCase() === name.toLowerCase())) {
+        state.compareNames = [...state.compareNames, name];
+      }
+      renderContent();
+      // Fokus tillbaka i sökrutan (den byggs om av renderContent() ovan) så
+      // man kan söka nästa klubb/lag direkt utan att klicka i fältet igen.
+      requestAnimationFrame(() => { const el = $(".compare-search"); if (el) el.focus(); });
+    };
+    attachAutocomplete(input, options, () => compareCandidates || [], addName, 2);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); addName(input.value); }
+    });
+    root.append(h("div", { class: "history-controls" },
+      h("div", { class: "autocomplete-wrap compare-search-wrap" }, input, options)));
 
-    const names = [...new Set(state.compareQuery.split("\n").map((s) => s.trim()).filter(Boolean))]
-      .slice(0, 8);
+    if (state.compareNames.length) {
+      root.append(h("div", { class: "compare-chip-row" },
+        state.compareNames.map((name) => h("span", { class: "compare-chip" },
+          name,
+          h("button", {
+            class: "compare-chip-x", type: "button", "aria-label": "Ta bort " + name,
+            onclick: () => {
+              state.compareNames = state.compareNames.filter((n) => n !== name);
+              renderContent();
+            },
+          }, "×")))));
+    }
+
     const resultHost = h("div", { class: "trend-chart-host" });
     root.append(resultHost);
-    if (!names.length) {
+    if (!state.compareNames.length) {
       resultHost.append(h("p", { class: "muted" },
-        "Skriv minst en klubb/lag ovan (en per rad) för att jämföra deras historik över alla cuper."));
+        "Sök och lägg till minst en klubb/lag ovan för att jämföra deras historik över alla cuper."));
       return;
     }
 
     const cupIds = trendCupOptions();
     let pending = false;
-    const rows = names.map((name) => {
+    const rows = state.compareNames.map((name) => {
       const res = computeClubRows(cupIds, name);
       if (res.pending) pending = true;
       const years = res.rows.flatMap((r) => r.years).sort();
@@ -6751,12 +6809,15 @@ window.HB = window.HB || {};
   // tillförlitligt för textfält på Safari/iOS (visar ofta inga förslag
   // alls), så inställningarnas fält bygger sin egen minimala dropdown.
   // getCandidates: () => string[], anropas vid varje input för att alltid
-  // spegla den cup som råkar vara laddad just då.
-  function attachAutocomplete(input, list, getCandidates, onPick) {
+  // spegla den cup som råkar vara laddad just då. minLen (valfri, default 1):
+  // hur många tecken som krävs innan förslag visas — Klubbjämförelsens
+  // sökruta (se renderClubCompareView) höjer den till 2 så listan (som
+  // spänner alla cupers klubbar) inte känns brusig efter bara en bokstav.
+  function attachAutocomplete(input, list, getCandidates, onPick, minLen = 1) {
     const hide = () => { list.hidden = true; list.replaceChildren(); };
     input.addEventListener("input", () => {
       const q = input.value.trim().toLowerCase();
-      if (!q) { hide(); return; }
+      if (q.length < minLen) { hide(); return; }
       const matches = getCandidates()
         .filter((c) => c.toLowerCase().includes(q))
         .slice(0, 8);
