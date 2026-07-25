@@ -4777,11 +4777,20 @@ window.HB = window.HB || {};
   // just Sverige användaren oftast vill se aggregerat (se ensureCountryHistory
   // nedan för vilken data som måste vara laddad innan detta anropas).
   function countryYearSummary(cupIds) {
-    const acc = new Map(); // landskod -> {clubs:Set(namn), years:Set(år)}
-    const add = (code, name, year) => {
+    // clubs: dedupat på klubbnamn (side.club), teams: dedupat på FULLT
+    // lagnamn (side.name, med åldersklass-/färgsuffix) — två olika, båda
+    // roliga tal ("X klubbar, Y lag", se countryHistoryPopupBody). Bara
+    // arkiverade år (ym.matches nedan) har kvar den fulla per-match-
+    // upplösningen — de förhämtade per-cup-aggregaten (mapCupCountryByClub/
+    // HB.api.clubGeo) är redan hopslagna till klubbnivå innan de når hit,
+    // så innevarande upplaga bidrar bara till klubb-räkningen, inte
+    // lag-räkningen (teamName utelämnad = ingen extra lag-post där).
+    const acc = new Map(); // landskod -> {clubs:Set(namn), teams:Set(lagnamn), years:Set(år)}
+    const add = (code, name, year, teamName) => {
       if (!code || !name) return;
-      if (!acc.has(code)) acc.set(code, { clubs: new Set(), years: new Set() });
+      if (!acc.has(code)) acc.set(code, { clubs: new Set(), teams: new Set(), years: new Set() });
       acc.get(code).clubs.add(name);
+      if (teamName) acc.get(code).teams.add(teamName);
       if (year) acc.get(code).years.add(year);
     };
     for (const cupId of cupIds) {
@@ -4795,7 +4804,9 @@ window.HB = window.HB || {};
         const ym = state.yearMatches[cupId + ":" + em.edition];
         if (!ym || ym.status !== "done") continue;
         for (const m of ym.matches) {
-          for (const side of [m.home, m.away]) add(side.country, side.club || side.name, em.edition);
+          for (const side of [m.home, m.away]) {
+            add(side.country, side.club || side.name, em.edition, side.name);
+          }
         }
       }
     }
@@ -5323,10 +5334,13 @@ window.HB = window.HB || {};
 
   function countryHistoryPopupBody(code, entry) {
     const years = [...entry.years].sort();
+    // entry.teams kan vara tomt (bara innevarande upplaga bidrog, se
+    // countryYearSummary) — visa då bara klubbantalet, ingen "0 lag".
+    const teamsPart = entry.teams.size ? ", " + entry.teams.size + " lag" : "";
     return h("div", { class: "map-popup" },
       h("strong", null, countryDisplayName(code)),
       h("br"),
-      h("span", { class: "muted" }, entry.clubs.size + " klubbar totalt"),
+      h("span", { class: "muted" }, entry.clubs.size + " klubbar" + teamsPart + " totalt"),
       years.length ? h("div", { class: "muted" }, "Deltagit: " + years.join(", ")) : null);
   }
 
@@ -5485,14 +5499,15 @@ window.HB = window.HB || {};
       if (!centroid) continue;
       const yearsKey = [...hEntry.years].sort().join(",");
       const existing = currentHistoryMarkerByKey.get(code);
-      if (existing && existing.clubCount === hEntry.clubs.size && existing.yearsKey === yearsKey) continue;
+      if (existing && existing.clubCount === hEntry.clubs.size && existing.teamCount === hEntry.teams.size &&
+          existing.yearsKey === yearsKey) continue;
       if (existing) existing.marker.remove();
       const el = countryHistoryElement(code);
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([centroid[0], centroid[1] + HISTORY_PIN_OFFSET])
         .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryHistoryPopupBody(code, hEntry)))
         .addTo(currentMap);
-      currentHistoryMarkerByKey.set(code, { marker, clubCount: hEntry.clubs.size, yearsKey });
+      currentHistoryMarkerByKey.set(code, { marker, clubCount: hEntry.clubs.size, teamCount: hEntry.teams.size, yearsKey });
     }
   }
 
