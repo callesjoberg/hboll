@@ -4613,11 +4613,24 @@ window.HB = window.HB || {};
   // Atlant-rutnätet som en ärlig "okänd". Definieras längre ner i filen,
   // men är redan initierad vid modulladdning innan denna funktion någonsin
   // anropas (samma closure-scope).
-  function clubCountryFromMatches(matches) {
+  //
+  // directory (valfri, samma som allClubNamesFromMatches): vissa ÄLDRE
+  // arkiverade år (t.ex. Hellton Cup 2025, upptäckt via en riktig
+  // avvikelse mellan klubbantal och landsplacerings-antal i Kartans
+  // sammanfattningsrad) saknar side.club HELT, trots att det är en
+  // klassisk Cup Manager-cup som normalt har fältet — troligen skrapade
+  // innan .club-fältet fanns i normalize(). Utan katalogslagningen skulle
+  // clubCountryFromMatches då nyckla på RÅA (ej hopslagna) lagnamn medan
+  // allClubNamesFromMatches/clubGeoFromMatches nycklar på det
+  // KATALOG-kanoniska namnet — två olika namnrymder för samma klubbar,
+  // som gjorde att antalet i "med ungefärlig landsplacering" kunde bli
+  // STÖRRE än antalet klubbar som ens fanns kvar att placera (94 mot en
+  // rimlig övre gräns på 25, sett live).
+  function clubCountryFromMatches(matches, directory) {
     const byClub = new Map();
     for (const m of matches) {
       for (const side of [m.home, m.away]) {
-        const name = side.club || side.name;
+        const name = side.club || (directory && matchClubName(side.name, directory)) || side.name;
         if (!name || byClub.has(name) || !side.country || !COUNTRY_CENTROIDS[side.country]) continue;
         byClub.set(name, side.country);
       }
@@ -4671,7 +4684,7 @@ window.HB = window.HB || {};
         const matches = (data && data.matches) || [];
         const { teamCount, classes } = teamsAndClassesFromMatches(matches);
         done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches, directory || {}),
-          teamCount, classes, clubCountryFromMatches(matches));
+          teamCount, classes, clubCountryFromMatches(matches, directory || {}));
       }).catch(() => done({}, new Set(), 0, new Set(), new Map()));
       return;
     }
@@ -4756,14 +4769,16 @@ window.HB = window.HB || {};
   }
 
   // mergedCountry ovan, för årsläget — landskoden är inbäddad direkt på de
-  // arkiverade matchernas home/away.country (se scripts/fetch_*.py), ingen
-  // klubbkatalog inblandad (till skillnad från mergedClubGeoForYear).
-  function mergedCountryForYear(cupIds, year, merged) {
+  // arkiverade matchernas home/away.country (se scripts/fetch_*.py).
+  // directory skickas vidare till clubCountryFromMatches — bara till för
+  // ÄLDRE arkiverade år som (till skillnad från vanliga klassiska
+  // Cup Manager-cuper) saknar side.club helt, se dess kommentar.
+  function mergedCountryForYear(cupIds, year, merged, directory) {
     const result = new Map();
     for (const cupId of cupIds) {
       const ym = state.yearMatches[cupId + ":" + year];
       if (!ym || ym.status !== "done") continue;
-      const byClub = clubCountryFromMatches(ym.matches);
+      const byClub = clubCountryFromMatches(ym.matches, directory);
       const cupObj = HB.allCups().find((c) => c.id === cupId);
       const cupName = (cupObj && cupObj.name) || cupId;
       for (const [name, code] of byClub) {
@@ -4994,7 +5009,7 @@ window.HB = window.HB || {};
         return;
       }
       merged = mergedClubGeoForYear(selectedIds, state.mapYear, clubDirectoryCache);
-      countryMap = mergedCountryForYear(selectedIds, state.mapYear, merged);
+      countryMap = mergedCountryForYear(selectedIds, state.mapYear, merged, clubDirectoryCache);
       allClubs = new Set();
       totalTeams = 0;
       for (const id of selectedIds) {
