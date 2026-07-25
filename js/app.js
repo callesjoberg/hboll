@@ -4518,7 +4518,27 @@ window.HB = window.HB || {};
   //    gemensam kärna. Riskerar att slå ihop olika sporters klubbar i
   //    samma ort (se pickUnambiguousClub) — därför sist, och bara om
   //    resultatet är entydigt.
+  // Memoiserad per katalog (WeakMap, samma mönster som clubDirIndexCache) —
+  // matchClubName är en REN funktion av (name, directory), men anropas nu
+  // (sedan clubGeoFromMatches/allClubNamesFromMatches/clubCountryFromMatches
+  // alla prioriterar den, se deras kommentarer om identitetskonsekvens) upp
+  // till 3 gånger för SAMMA lagnamn per omritning — uppmätt ~130ms per
+  // anropsomgång för Åhus Beachs största årgång (~15 000 matcher), alltså
+  // ~400ms totalt innan cachen. Cachen gör om det till en enda beräkning
+  // per unikt namn, ~140ms totalt. Rensas aldrig manuellt — precis som
+  // clubDirIndexCache lever den så länge katalog-objektet gör (en ny
+  // katalog, t.ex. efter en omladdning, får sin egen tomma cache).
+  const matchClubNameCache = new WeakMap(); // directory -> Map(name -> resultat)
   function matchClubName(name, directory) {
+    let cache = matchClubNameCache.get(directory);
+    if (!cache) { cache = new Map(); matchClubNameCache.set(directory, cache); }
+    if (cache.has(name)) return cache.get(name);
+    const result = matchClubNameUncached(name, directory);
+    cache.set(name, result);
+    return result;
+  }
+
+  function matchClubNameUncached(name, directory) {
     const index = clubDirIndex(directory);
     const exact = index.byExact.get(name.toLowerCase().trim());
     if (exact) return exact;
