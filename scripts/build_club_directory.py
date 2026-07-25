@@ -12,8 +12,25 @@ spelar ofta ÄVEN i klassiska Cup Manager-cuper. Karta-fliken i js/app.js
 katalogen här via tokenbaserad fuzzy-matchning för att gissa en adress
 ändå.
 
+data/club-directory-extra.json (valfri, om filen finns) slås ihop OVANPÅ
+snapshot-katalogen, med LÄGRE prioritet (snapshot-data vinner vid en
+eventuell namnkollision — den är alltid färskare). Fylld en gång via en
+manuell korsreferering: ProCup-cupernas KLUBBAR HELT UTAN geodata (varken
+adress ELLER land, ProCup saknar bägge API:erna helt) matchades mot
+lagnamn i ALLA klassiska cupers ARKIVERADE historik (inte bara nuvarande
+upplagor, som den vanliga katalogen ovan är begränsad till) — en klubb
+som en gång spelat i t.ex. Åhus Beach 2017 men inte gör det längre finns
+inte kvar i något NUVARANDE snapshot, men adressen går ändå att slå upp
+direkt mot Cup Manager via lagets gamla id (id:n är stabila, en cups
+NUVARANDE tournamentId fungerar för att slå upp GAMLA lag också,
+verifierat). Nyckelad på ProCup-cupens EGNA, rå lagnamn (inte katalogens
+kanoniska stavning) för en garanterad exakt tier-1-träff utan
+kollisionsrisk. Ingen automatisk uppdateringsmekanism för den här filen
+än — en ny manuell körning krävs om fler ProCup-klubbar ska läggas till.
+
 Körs sist i GitHub Actions-workflowet, efter fetch_cupmanager.py — ren
-stdlib, inget nätverksanrop, bara läser redan skrapad data."""
+stdlib, inget nätverksanrop, bara läser redan skrapad data (och den
+statiska extra-filen, om den finns)."""
 
 import json
 import re
@@ -58,6 +75,21 @@ def main():
             seen_punct_keys[key] = name
             directory[name] = info
 
+    extra_count = 0
+    extra_path = ROOT / "data" / "club-directory-extra.json"
+    if extra_path.exists():
+        try:
+            extra = json.loads(extra_path.read_text(encoding="utf-8"))
+        except Exception:
+            extra = {}
+        for name, info in extra.items():
+            # Snapshot-datan vinner alltid — extra-filen fyller bara i
+            # klubbar som INTE redan finns med färsk adress.
+            if name in directory:
+                continue
+            directory[name] = info
+            extra_count += 1
+
     out_path = ROOT / "data" / "club-directory.json"
     old = None
     if out_path.exists():
@@ -66,11 +98,12 @@ def main():
         except Exception:
             pass
     merged_note = f" ({merged_count} skiljetecken-dubbletter slogs ihop)" if merged_count else ""
+    extra_note = f" (+{extra_count} från club-directory-extra.json)" if extra_count else ""
     if old == directory:
-        print(f"club-directory.json: oförändrad ({len(directory)} klubbar){merged_note}")
+        print(f"club-directory.json: oförändrad ({len(directory)} klubbar){merged_note}{extra_note}")
         return
     out_path.write_text(json.dumps(directory, ensure_ascii=False), encoding="utf-8")
-    print(f"skrev club-directory.json: {len(directory)} klubbar{merged_note}")
+    print(f"skrev club-directory.json: {len(directory)} klubbar{merged_note}{extra_note}")
 
 
 if __name__ == "__main__":

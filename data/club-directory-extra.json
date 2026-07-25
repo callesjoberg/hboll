@@ -1,0 +1,686 @@
+{
+ "Ala IF": {
+  "city": "Ljusne",
+  "country": "SE",
+  "lat": 61.2112186,
+  "lng": 17.1296488
+ },
+ "Avesta Brovallen": {
+  "city": "Fors",
+  "country": "SE",
+  "lat": 60.20809079999999,
+  "lng": 16.3088141
+ },
+ "Avesta Brovallen HF": {
+  "city": "Fors",
+  "country": "SE",
+  "lat": 60.20809079999999,
+  "lng": 16.3088141
+ },
+ "Bjurslätt IF": {
+  "city": "Göteborg",
+  "country": "SE",
+  "lat": 57.71911890000001,
+  "lng": 11.9376674
+ },
+ "Bollebygds AFF": {
+  "city": "Bollebygd",
+  "country": "SE",
+  "lat": 57.6731128,
+  "lng": 12.574621
+ },
+ "Bromölla AIK": {
+  "city": "Bromölla",
+  "country": "SE",
+  "lat": 56.0743618,
+  "lng": 14.477659
+ },
+ "Forsbacka IK": {
+  "city": "Forsbaka",
+  "country": "SE",
+  "lat": 60.6076864,
+  "lng": 16.8968792
+ },
+ "Forshaga HK": {
+  "city": "Forshaga",
+  "country": "SE",
+  "lat": 59.5274497,
+  "lng": 13.489553
+ },
+ "Fristadens Hk F09/10": {
+  "city": "Eskilstuna",
+  "country": "SE",
+  "lat": 59.3302326,
+  "lng": 16.4399579
+ },
+ "GIK Wasaiterna U...": {
+  "city": "Angered",
+  "country": "SE",
+  "lat": 57.794471,
+  "lng": 12.0540594
+ },
+ "GW Landskrona": {
+  "city": "Häljarp",
+  "country": "SE",
+  "lat": 55.8485374,
+  "lng": 12.9174507
+ },
+ "GW Landskrona HK": {
+  "city": "Häljarp",
+  "country": "SE",
+  "lat": 55.8485374,
+  "lng": 12.9174507
+ },
+ "H43 1": {
+  "city": "Lund",
+  "country": "SE",
+  "lat": 55.6978528,
+  "lng": 13.1806305
+ },
+ "H43 2": {
+  "city": "Lund",
+  "country": "SE",
+  "lat": 55.6978528,
+  "lng": 13.1806305
+ },
+ "H43 blå": {
+  "city": "Lund",
+  "country": "SE",
+  "lat": 55.5653667,
+  "lng": 12.9771825
+ },
+ "H43 vit": {
+  "city": "Lund",
+  "country": "SE",
+  "lat": 55.5653667,
+  "lng": 12.9771825
+ },
+ "H78 Sölvesborg": {
+  "city": "Sölvesborg",
+  "country": "SE",
+  "lat": 56.0489044,
+  "lng": 14.5697027
+ },
+ "HK Brukspôjkera": {
+  "city": "Deje",
+  "country": "SE",
+  "lat": 59.61873070000001,
+  "lng": 13.4544372
+ },
+ "HK Laponia": {
+  "city": "Gällivare",
+  "country": "SE",
+  "lat": 67.1334773,
+  "lng": 20.6643274
+ },
+ "HK Ramunder 1": {
+  "city": "Söderköping",
+  "country": "SE",
+  "lat": 58.47103629999999,
+  "lng": 16.3502006
+ },
+ "HK Ramunder 2": {
+  "city": "Söderköping",
+  "country": "SE",
+  "lat": 58.47103629999999,
+  "lng": 16.3502006
+ },
+ "Hallstahammar SK HK": {
+  "city": "Hallstahammar",
+  "country": "SE",
+  "lat": 59.6132041,
+  "lng": 16.2294755
+ },
+ "Hallstahammars SK HK": {
+  "city": "Hallstahammar",
+  "country": "SE",
+  "lat": 59.6132041,
+  "lng": 16.2294755
+ },
+ "Hammarby": {
+  "city": "Stockholm",
+  "country": "SE",
+  "lat": 59.3104909,
+  "lng": 18.064198
+ },
+ "Hammarby 1": {
+  "city": "Stockholm",
+  "country": "SE",
+  "lat": 59.30974089999999,
+  "lng": 18.0627793
+ },
+ "Hammarby 2": {
+  "city": "Stockholm",
+  "country": "SE",
+  "lat": 59.30974089999999,
+  "lng": 18.0627793
+ },
+ "Hammarby Handboll": {
+  "city": "Stockholm",
+  "country": "SE",
+  "lat": 59.3104909,
+  "lng": 18.064198
+ },
+ "Hellton / Skåre": {
+  "city": "Karlstad",
+  "country": "SE",
+  "lat": 59.3783741,
+  "lng": 13.5208157
+ },
+ "Härnösands HK": {
+  "city": "Härnösand",
+  "country": "SE",
+  "lat": 62.6366987,
+  "lng": 17.9493638
+ },
+ "IFK Kristinehamn": {
+  "city": "Kristinehamn",
+  "country": "SE",
+  "lat": 59.31154489999999,
+  "lng": 14.0879009
+ },
+ "IFK NORA": {
+  "city": "Nora",
+  "country": "SE",
+  "lat": 59.5179041,
+  "lng": 15.0373506
+ },
+ "IFK Nora": {
+  "city": "Nora",
+  "country": "SE",
+  "lat": 59.5179041,
+  "lng": 15.0373506
+ },
+ "IFK Nora Handboll": {
+  "city": "Nora",
+  "country": "SE",
+  "lat": 59.5179041,
+  "lng": 15.0373506
+ },
+ "IFK Rättvik": {
+  "city": "Mora",
+  "country": "SE",
+  "lat": 60.99652569999999,
+  "lng": 14.5333935
+ },
+ "IFK Strängnäs": {
+  "city": "Strängnäs",
+  "country": "SE",
+  "lat": 59.37578739999999,
+  "lng": 17.0150898
+ },
+ "IFK Ystad": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4396433,
+  "lng": 13.8014193
+ },
+ "IFK Ystad 1": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "IFK Ystad 2": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "IFK Ystad röd": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "IFK Ystad svart": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "IK Lågan": {
+  "city": "Hörby",
+  "country": "SE",
+  "lat": 55.855847,
+  "lng": 13.6532232
+ },
+ "IK Lågan 1": {
+  "city": "Hörby",
+  "country": "SE",
+  "lat": 55.8552104,
+  "lng": 13.6489869
+ },
+ "IK Lågan 2": {
+  "city": "Hörby",
+  "country": "SE",
+  "lat": 55.8552104,
+  "lng": 13.6489869
+ },
+ "Karlskrona Handboll": {
+  "city": "Karlskrona",
+  "country": "SE",
+  "lat": 56.1629888,
+  "lng": 15.5759575
+ },
+ "Kohlswa HK": {
+  "city": "Kolsva",
+  "country": "SE",
+  "lat": 59.5940278,
+  "lng": 15.856392
+ },
+ "Kumla HF": {
+  "city": "Kumla",
+  "country": "SE",
+  "lat": 59.1212946,
+  "lng": 15.1335289
+ },
+ "LUGI vinröd": {
+  "city": "Lund",
+  "country": "SE",
+  "lat": 55.69613570000001,
+  "lng": 13.180649
+ },
+ "LVHK": {
+  "city": "Löddeköpinge",
+  "country": "SE",
+  "lat": 55.77065750000001,
+  "lng": 12.9924953
+ },
+ "LVHK röd": {
+  "city": "Löddeköpinge",
+  "country": "SE",
+  "lat": 55.7596705,
+  "lng": 13.0073627
+ },
+ "Ljunghusen ljusblå": {
+  "city": "Höllviken",
+  "country": "SE",
+  "lat": 55.4077007,
+  "lng": 12.960312
+ },
+ "Ljungsbro HF": {
+  "city": "Ljungsbro",
+  "country": "SE",
+  "lat": 58.5119667,
+  "lng": 15.5012203
+ },
+ "Lundagård": {
+  "city": "Lund",
+  "country": "SE",
+  "lat": 55.71317759999999,
+  "lng": 13.2454689
+ },
+ "Mantorp IF HF": {
+  "city": "Mantorp",
+  "country": "SE",
+  "lat": 58.35487750000001,
+  "lng": 15.278737
+ },
+ "Mantorps IF HF": {
+  "city": "Mantorp",
+  "country": "SE",
+  "lat": 58.35487750000001,
+  "lng": 15.278737
+ },
+ "Mantorps IF/HF": {
+  "city": "Mantorp",
+  "country": "SE",
+  "lat": 58.35487750000001,
+  "lng": 15.278737
+ },
+ "Mölndal": {
+  "city": "Mölndal",
+  "country": "SE",
+  "lat": 57.6562901,
+  "lng": 12.0063761
+ },
+ "Mölndal röd": {
+  "city": "Hovås",
+  "country": "SE",
+  "lat": 57.6107657,
+  "lng": 11.9383577
+ },
+ "Mölndal svart": {
+  "city": "Mölndal",
+  "country": "SE",
+  "lat": 57.65602979999999,
+  "lng": 12.0052969
+ },
+ "Mölndal/Nord": {
+  "city": "Mölndal",
+  "country": "SE",
+  "lat": 57.65602979999999,
+  "lng": 12.0052969
+ },
+ "Mölndal/Nord P05": {
+  "city": "Mölndal",
+  "country": "SE",
+  "lat": 57.6562029,
+  "lng": 12.0050123
+ },
+ "NAIS HF": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.60819040000001,
+  "lng": 16.1214872
+ },
+ "NAIS Handbollsfö...": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.60819040000001,
+  "lng": 16.1214872
+ },
+ "NKIK": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.58498590000001,
+  "lng": 16.200368
+ },
+ "NKIK 1": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.60948269999999,
+  "lng": 16.143011
+ },
+ "NKIK 2": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.60948269999999,
+  "lng": 16.143011
+ },
+ "NKiK": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.58498590000001,
+  "lng": 16.200368
+ },
+ "Norrköpings ...": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.5842597,
+  "lng": 16.2017066
+ },
+ "Norrköpings Kvinnliga IK": {
+  "city": "Norrköping",
+  "country": "SE",
+  "lat": 58.5849542,
+  "lng": 16.2004621
+ },
+ "Norrtulls SK": {
+  "city": "Stockholm",
+  "country": "SE",
+  "lat": 59.34253169999999,
+  "lng": 18.0508538
+ },
+ "RP IF": {
+  "city": "Linköping",
+  "country": "SE",
+  "lat": 58.4084671,
+  "lng": 15.6422818
+ },
+ "Ramunder HK": {
+  "city": "Kimstad",
+  "country": "SE",
+  "lat": 58.5505888,
+  "lng": 15.9622759
+ },
+ "Ramunder HK  1": {
+  "city": "Söderköping",
+  "country": "SE",
+  "lat": 58.47103629999999,
+  "lng": 16.3502006
+ },
+ "Ramunder HK  2": {
+  "city": "Söderköping",
+  "country": "SE",
+  "lat": 58.47103629999999,
+  "lng": 16.3502006
+ },
+ "Ramunder HK 1": {
+  "city": "Söderköping",
+  "country": "SE",
+  "lat": 58.47103629999999,
+  "lng": 16.3502006
+ },
+ "Ramunder HK 2": {
+  "city": "Söderköping",
+  "country": "SE",
+  "lat": 58.47103629999999,
+  "lng": 16.3502006
+ },
+ "SMÅ IF": {
+  "city": "Stora Mellösa",
+  "country": "SE",
+  "lat": 59.2111706,
+  "lng": 15.5016635
+ },
+ "Skurup Handboll": {
+  "city": "Skurup",
+  "country": "SE",
+  "lat": 55.48045,
+  "lng": 13.502349
+ },
+ "Skurups Handboll": {
+  "city": "Skurup",
+  "country": "SE",
+  "lat": 55.48045,
+  "lng": 13.502349
+ },
+ "Sundsvall Handboll": {
+  "city": "Sundsvall",
+  "country": "SE",
+  "lat": 62.38387150000001,
+  "lng": 17.2770463
+ },
+ "Sundsvall Handboll 1": {
+  "city": "Sundsvall",
+  "country": "SE",
+  "lat": 62.38441229999999,
+  "lng": 17.2753148
+ },
+ "Sundsvall Handboll 2": {
+  "city": "Sundsvall",
+  "country": "SE",
+  "lat": 62.38441229999999,
+  "lng": 17.2753148
+ },
+ "Sävsjö HK": {
+  "city": "Sävsjö",
+  "country": "SE",
+  "lat": 57.40532889999999,
+  "lng": 14.6630137
+ },
+ "Tillberga IK...": {
+  "city": "Västerås",
+  "country": "SE",
+  "lat": 59.6801907,
+  "lng": 16.6303258
+ },
+ "Torslanda blå": {
+  "city": "Torslanda",
+  "country": "SE",
+  "lat": 57.71796729999999,
+  "lng": 11.7570468
+ },
+ "Torslanda röd": {
+  "city": "Torslanda",
+  "country": "SE",
+  "lat": 57.71796729999999,
+  "lng": 11.7570468
+ },
+ "Tyresö 1": {
+  "city": "Tyresö",
+  "country": "SE",
+  "lat": 59.240841,
+  "lng": 18.2275753
+ },
+ "Tyresö 2": {
+  "city": "Tyresö",
+  "country": "SE",
+  "lat": 59.240841,
+  "lng": 18.2275753
+ },
+ "Tyresö HK": {
+  "city": "Tyresö",
+  "country": "SE",
+  "lat": 59.24085189999999,
+  "lng": 18.2276001
+ },
+ "Tyresö Röd": {
+  "city": "Tyresö",
+  "country": "SE",
+  "lat": 59.240841,
+  "lng": 18.2275753
+ },
+ "Tyresö Svart": {
+  "city": "Tyresö",
+  "country": "SE",
+  "lat": 59.240841,
+  "lng": 18.2275753
+ },
+ "VAKANT": {
+  "city": "Hör",
+  "country": "SE",
+  "lat": 55.9444627,
+  "lng": 13.3696392
+ },
+ "Vadstena HF": {
+  "city": "Vadstena",
+  "country": "SE",
+  "lat": 58.4456234,
+  "lng": 14.8986173
+ },
+ "Vadstena HF 1": {
+  "city": "Vadstena",
+  "country": "SE",
+  "lat": 58.44570199999999,
+  "lng": 14.9006503
+ },
+ "Vadstena HF 2": {
+  "city": "Vadstena",
+  "country": "SE",
+  "lat": 58.44570199999999,
+  "lng": 14.9006503
+ },
+ "Veberöds HK": {
+  "city": "Veberöd",
+  "country": "SE",
+  "lat": 55.6363631,
+  "lng": 13.5006052
+ },
+ "Visby IF Gute HK": {
+  "city": "Visby",
+  "country": "SE",
+  "lat": 57.6348,
+  "lng": 18.29484
+ },
+ "Ystad IF": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystad IF 1": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystad IF 2": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystad IF 3": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystad IF blå": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystad IF vit": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF 1": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF 2": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF 3": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF Blå": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF Vit": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF blå": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Ystads IF vit": {
+  "city": "Ystad",
+  "country": "SE",
+  "lat": 55.4295051,
+  "lng": 13.8200308
+ },
+ "Åhus Handbol...": {
+  "city": "Åhus",
+  "country": "SE",
+  "lat": 55.94300759999999,
+  "lng": 14.3014567
+ },
+ "Åstorp HF": {
+  "city": "Åstorp",
+  "country": "SE",
+  "lat": 56.1379831,
+  "lng": 12.950792
+ },
+ "Örebro SK": {
+  "city": "Örebro",
+  "country": "SE",
+  "lat": 59.2752626,
+  "lng": 15.2134105
+ },
+ "Örebro SK HK": {
+  "city": "Örebro",
+  "country": "SE",
+  "lat": 59.2752626,
+  "lng": 15.2134105
+ }
+}
