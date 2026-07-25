@@ -1717,8 +1717,15 @@ dialog.history-dialog {
   display: flex;
   gap: 2px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
+/* Lättare vikt än huvudnavigeringens .tab (samma klass, se #viewTabs) —
+   en underflikrad direkt under en full flikrad (Historik-modalen, och
+   Stats egen Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper, se
+   renderStatsView) ser annars ut som en andra likvärdig huvudmeny och
+   gör avståndet mellan raderna missvisande stort trots litet faktiskt
+   mellanrum. */
+.history-tabs .tab { padding: 6px 4px; margin-right: 10px; font-size: 14px; }
 
 .history-viewer-body { min-height: 40vh; }
 .history-tables-content { display: grid; gap: 4px; }
