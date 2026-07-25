@@ -1639,15 +1639,6 @@ dialog.history-dialog {
   }
 }
 
-.history-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
-}
-
-.history-head .cat { font-size: 16px; }
-
 .history-controls {
   display: flex;
   flex-wrap: wrap;
@@ -1671,8 +1662,6 @@ dialog.history-dialog {
    buildPicker()-dropdown (t.ex. Kartans cupväljare) ut till 230px breda av
    samma regel, vilket tryckte deras etikettext helt utanför synligt område. */
 .history-controls input:not([type="checkbox"]) { width: 100%; }
-
-.history-mode-body { margin-top: 14px; }
 
 /* "Trend" ------------------------------------------------------------------ */
 

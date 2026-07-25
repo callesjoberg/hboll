@@ -1274,6 +1274,7 @@ window.HB = window.HB || {};
     state.statsSupport = {
       trend: trendSupported, karta: mapSupported,
       klubb: clubSupported, klubbjamforelse: clubSupported, cuper: clubSupported,
+      historik: clubSupported,
     };
     const statsSupported = trendSupported || mapSupported || clubSupported;
     // Vänta tills BÅDA de asynkrona källorna (archiveIndex, mapCupStatus)
@@ -3949,6 +3950,7 @@ window.HB = window.HB || {};
     ["klubb", "Klubb/Lag", renderClubView],
     ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
     ["cuper", "Cuper", renderCupsOverviewView],
+    ["historik", "Historik", renderHistoryView],
   ];
 
   function renderStatsView(root) {
@@ -3959,7 +3961,7 @@ window.HB = window.HB || {};
     // ensureCupClubGeo/fetchArchiveIndex). Anta då att allt är stött hellre
     // än att gömma hela vyn i onödan.
     const support = state.statsSupport ||
-      { trend: true, karta: true, klubb: true, klubbjamforelse: true, cuper: true };
+      { trend: true, karta: true, klubb: true, klubbjamforelse: true, cuper: true, historik: true };
     const visibleTabs = STATS_TABS.filter(([key]) => support[key]);
     // Den valda underfliken kan ha blivit ogiltig sen sist (t.ex. Karta
     // förlorade sitt stöd) — falla då tillbaka på den första som fortfarande
@@ -4055,187 +4057,174 @@ window.HB = window.HB || {};
     renderPicker();
   }
 
-  async function openHistoryDialog() {
-    const idx = await HB.api.fetchArchiveIndex();
+  // Historik (under Stats): "Jämför lag" (renderCompareMode) och "Bläddra i
+  // ett år" (renderBrowseMode) var tidigare en fristående knapp+modal
+  // (#historyBtn/openHistoryDialog) — flyttad hit 2026-07-26 som en sjätte
+  // Stats-underflik, samma sorts "tvärs över cuper/år"-funktion som resten
+  // av Stats i stället för en egen dialog vid sidan om. historyMode hålls
+  // på modulnivå (INTE i state) så det överlever att man växlar till en
+  // annan Stats-underflik och tillbaka, men nollställs vid en full
+  // sidladdning — matchar hur läget redan fungerade som dialog (alltid
+  // samma startläge, "Jämför lag", varje gång man öppnade den).
+  let historyMode = "compare";
+
+  function renderHistoryView(root) {
+    const idx = state.archiveIndex;
+    if (!idx) { root.append(h("p", { class: "muted" }, "Hämtar arkivindex …")); return; }
     const cupIds = Object.keys(idx).filter((id) => (idx[id].editions || []).length)
       .sort((a, b) => idx[a].cupName.localeCompare(idx[b].cupName, "sv"));
-
-    const dlg = h("dialog", { class: "match-dialog history-dialog" });
-    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-    dlg.addEventListener("close", () => dlg.remove());
-    document.body.append(dlg);
-
     if (!cupIds.length) {
-      dlg.append(
-        h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
-        h("div", { class: "match-dialog-head" }, h("span", { class: "cat" }, "Historik")),
-        h("p", { class: "muted" },
-          "Ingen historik arkiverad än — byggs upp automatiskt allteftersom cuperna spelas."));
-      dlg.showModal();
+      root.append(h("p", { class: "muted" },
+        "Ingen historik arkiverad än — byggs upp automatiskt allteftersom cuperna spelas."));
       return;
     }
-
-    let mode = "compare"; // "compare" (jämför lag mellan år) | "browse" (bläddra i ett helt år)
-
-    function renderShell() {
-      dlg.replaceChildren(
-        h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
-        h("div", { class: "match-dialog-head history-head" },
-          h("span", { class: "cat" }, "Historik"),
-          h("div", { class: "seg", role: "group", "aria-label": "Historikläge" },
-            chip("Jämför lag", mode === "compare", () => { mode = "compare"; renderShell(); }),
-            chip("Bläddra i ett år", mode === "browse", () => { mode = "browse"; renderShell(); }))),
-        h("div", { class: "history-mode-body" }));
-      const modeBody = dlg.querySelector(".history-mode-body");
-      if (mode === "compare") renderCompareMode(modeBody);
-      else renderBrowseMode(modeBody, idx, cupIds);
-      if (!dlg.open) dlg.showModal();
-    }
-
-    function renderCompareMode(root) {
-      let selCup = cupIds.includes(state.cupId) ? state.cupId : cupIds[0];
-      let query = state.favoriteClub || "";
-      let classFilter = "";
-      let sortKey = "tid_desc";
-      let allTeamNames = [];
-      let editionsData = []; // [{edition, matches}] för selCup — hämtas bara vid cupbyte
-
-      const cupSel = h("select", { class: "select", "aria-label": "Välj cup" },
-        ...cupIds.map((id) => h("option", { value: id }, idx[id].cupName)));
-      cupSel.value = selCup;
-
-      const teamInput = h("input", {
-        type: "text", placeholder: "Lag/klubb, t.ex. Alingsås HK",
-      });
-      teamInput.value = query;
-      const teamOptions = h("div", { class: "autocomplete-list" });
-      teamOptions.hidden = true;
-      // teamInput.value läses bara i "change"/Enter-lyssnarna nedan (inte
-      // "input", för att inte söka om vid varje tangenttryckning) — ×-
-      // knappen skickar bara ett "input"-event, så onClear måste själv
-      // uppdatera query/renderFiltered i stället för att förlita sig på
-      // de vanliga lyssnarna.
-      const teamWrap = h("div", { class: "autocomplete-wrap" },
-        withClearButton(teamInput, () => { query = ""; classFilter = ""; renderFiltered(); }),
-        teamOptions);
-
-      const classSel = h("select", { class: "select", "aria-label": "Klass" },
-        h("option", { value: "" }, "Alla klasser"));
-      const sortSel = h("select", { class: "select", "aria-label": "Sortering" },
-        ARCHIVE_SORTS.map(([v, l]) => h("option",
-          { value: v, ...(v === sortKey ? { selected: "" } : {}) }, l)));
-
-      const body = h("div", { class: "history-body" });
-      root.replaceChildren(
-        h("div", { class: "history-controls" }, cupSel, teamWrap, classSel, sortSel),
-        body);
-
-      // Filtrerar/sorterar redan hämtad data — ingen ny nätverksfråga, så
-      // klass-/sorteringsbyten känns direkta.
-      function renderFiltered() {
-        if (!query.trim()) {
-          classSel.replaceChildren(h("option", { value: "" }, "Alla klasser"));
-          classSel.disabled = true;
-          body.replaceChildren(h("p", { class: "muted" },
-            "Skriv ett lag- eller klubbnamn ovan för att se resultat år för år."));
-          return;
-        }
-        classSel.disabled = false;
-        const rowsByYear = editionsData.map((d) =>
-          ({ edition: d.edition, rows: summarizeArchiveMatches(d.matches, query) }));
-
-        const classes = new Set();
-        rowsByYear.forEach((y) => y.rows.forEach((r) => { if (r.catName) classes.add(r.catName); }));
-        const classList = [...classes].sort((a, b) => catSortKey(a) - catSortKey(b));
-        if (!classList.includes(classFilter)) classFilter = "";
-        classSel.replaceChildren(
-          h("option", { value: "" }, "Alla klasser"),
-          ...classList.map((c) => h("option",
-            { value: c, ...(c === classFilter ? { selected: "" } : {}) }, HB.shortCat(c))));
-
-        const summaries = rowsByYear.map((y) => {
-          const filtered = classFilter ? y.rows.filter((r) => r.catName === classFilter) : y.rows;
-          const sorted = sortArchiveRows(filtered, sortKey);
-          return { edition: y.edition, rows: sorted, ...archiveStats(sorted) };
-        }).filter((s) => s.rows.length);
-
-        if (!summaries.length) {
-          body.replaceChildren(h("p", { class: "muted" },
-            'Inga matcher hittades för "' + query + '"' +
-            (classFilter ? " i " + HB.shortCat(classFilter) : "") +
-            " i " + idx[selCup].cupName + "."));
-          return;
-        }
-        body.replaceChildren(...summaries.map((s, i) => {
-          const children = [
-            h("summary", null,
-              h("span", { class: "history-year-label" }, s.edition),
-              h("span", { class: "history-year-stats" },
-                s.played + " sp · " + s.won + "V " + s.tied + "O " + s.lost +
-                "F · mål " + s.gf + "–" + s.ga)),
-            h("div", { class: "arena-quick-list" }, s.rows.map(archiveMatchRow)),
-          ];
-          // Slutspelsträd/tabeller kräver ALLA lag i klassen, inte bara den
-          // sökta klubbens — bara meningsfullt (och görligt att bygga rimligt
-          // brett) när man smalnat av till en enda klass.
-          let redraw = null;
-          if (classFilter) {
-            const yearMatches = (editionsData.find((d) => d.edition === s.edition) || {}).matches || [];
-            const extra = historicalExtras(yearMatches, classFilter);
-            if (extra.nodes.length) children.push(h("div", { class: "history-extra" }, extra.nodes));
-            redraw = extra.redraw;
-          }
-          const isOpen = i === 0;
-          const detailsEl = h("details", { class: "history-year", open: isOpen ? "" : null }, children);
-          if (redraw) {
-            if (isOpen) requestAnimationFrame(redraw);
-            // Stängda år ritas om (rätt mått) först när de faktiskt fälls ut.
-            detailsEl.addEventListener("toggle", () => { if (detailsEl.open) redraw(); });
-          }
-          return detailsEl;
-        }));
-      }
-
-      async function loadCupData() {
-        body.replaceChildren(h("p", { class: "muted" }, "Hämtar …"));
-        const editions = idx[selCup].editions.slice()
-          .sort((a, b) => b.edition.localeCompare(a.edition));
-        const loaded = await Promise.all(
-          editions.map((e) => HB.api.fetchArchiveEdition(selCup, e.edition)));
-        editionsData = editions.map((e, i) =>
-          ({ edition: e.edition, matches: (loaded[i] && loaded[i].matches) || [] }));
-        const names = new Set();
-        editionsData.forEach((d) => d.matches.forEach((m) => {
-          names.add(m.home.name); names.add(m.away.name);
-        }));
-        allTeamNames = [...names].sort((a, b) => a.localeCompare(b, "sv"));
-        classFilter = "";
-        renderFiltered();
-      }
-
-      attachAutocomplete(teamInput, teamOptions, () => allTeamNames, (name) => {
-        query = name; classFilter = ""; renderFiltered();
-      });
-      teamInput.addEventListener("change", () => {
-        query = teamInput.value; classFilter = ""; renderFiltered();
-      });
-      teamInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault(); query = teamInput.value; classFilter = ""; renderFiltered();
-        }
-      });
-      cupSel.addEventListener("change", () => { selCup = cupSel.value; loadCupData(); });
-      classSel.addEventListener("change", () => { classFilter = classSel.value; renderFiltered(); });
-      sortSel.addEventListener("change", () => { sortKey = sortSel.value; renderFiltered(); });
-
-      loadCupData();
-    }
-
-    renderShell();
+    root.append(h("div", { class: "row" },
+      h("div", { class: "seg", role: "group", "aria-label": "Historikläge" },
+        chip("Jämför lag", historyMode === "compare", () => { historyMode = "compare"; renderContent(); }),
+        chip("Bläddra i ett år", historyMode === "browse", () => { historyMode = "browse"; renderContent(); }))));
+    const body = h("div", null);
+    root.append(body);
+    if (historyMode === "compare") renderCompareMode(body, idx, cupIds);
+    else renderBrowseMode(body, idx, cupIds);
   }
 
-  function setupHistory() {
-    $("#historyBtn").addEventListener("click", () => openHistoryDialog());
+  function renderCompareMode(root, idx, cupIds) {
+    let selCup = cupIds.includes(state.cupId) ? state.cupId : cupIds[0];
+    let query = state.favoriteClub || "";
+    let classFilter = "";
+    let sortKey = "tid_desc";
+    let allTeamNames = [];
+    let editionsData = []; // [{edition, matches}] för selCup — hämtas bara vid cupbyte
+
+    const cupSel = h("select", { class: "select", "aria-label": "Välj cup" },
+      ...cupIds.map((id) => h("option", { value: id }, idx[id].cupName)));
+    cupSel.value = selCup;
+
+    const teamInput = h("input", {
+      type: "text", placeholder: "Lag/klubb, t.ex. Alingsås HK",
+    });
+    teamInput.value = query;
+    const teamOptions = h("div", { class: "autocomplete-list" });
+    teamOptions.hidden = true;
+    // teamInput.value läses bara i "change"/Enter-lyssnarna nedan (inte
+    // "input", för att inte söka om vid varje tangenttryckning) — ×-
+    // knappen skickar bara ett "input"-event, så onClear måste själv
+    // uppdatera query/renderFiltered i stället för att förlita sig på
+    // de vanliga lyssnarna.
+    const teamWrap = h("div", { class: "autocomplete-wrap" },
+      withClearButton(teamInput, () => { query = ""; classFilter = ""; renderFiltered(); }),
+      teamOptions);
+
+    const classSel = h("select", { class: "select", "aria-label": "Klass" },
+      h("option", { value: "" }, "Alla klasser"));
+    const sortSel = h("select", { class: "select", "aria-label": "Sortering" },
+      ARCHIVE_SORTS.map(([v, l]) => h("option",
+        { value: v, ...(v === sortKey ? { selected: "" } : {}) }, l)));
+
+    const body = h("div", { class: "history-body" });
+    root.replaceChildren(
+      h("div", { class: "history-controls" }, cupSel, teamWrap, classSel, sortSel),
+      body);
+
+    // Filtrerar/sorterar redan hämtad data — ingen ny nätverksfråga, så
+    // klass-/sorteringsbyten känns direkta.
+    function renderFiltered() {
+      if (!query.trim()) {
+        classSel.replaceChildren(h("option", { value: "" }, "Alla klasser"));
+        classSel.disabled = true;
+        body.replaceChildren(h("p", { class: "muted" },
+          "Skriv ett lag- eller klubbnamn ovan för att se resultat år för år."));
+        return;
+      }
+      classSel.disabled = false;
+      const rowsByYear = editionsData.map((d) =>
+        ({ edition: d.edition, rows: summarizeArchiveMatches(d.matches, query) }));
+
+      const classes = new Set();
+      rowsByYear.forEach((y) => y.rows.forEach((r) => { if (r.catName) classes.add(r.catName); }));
+      const classList = [...classes].sort((a, b) => catSortKey(a) - catSortKey(b));
+      if (!classList.includes(classFilter)) classFilter = "";
+      classSel.replaceChildren(
+        h("option", { value: "" }, "Alla klasser"),
+        ...classList.map((c) => h("option",
+          { value: c, ...(c === classFilter ? { selected: "" } : {}) }, HB.shortCat(c))));
+
+      const summaries = rowsByYear.map((y) => {
+        const filtered = classFilter ? y.rows.filter((r) => r.catName === classFilter) : y.rows;
+        const sorted = sortArchiveRows(filtered, sortKey);
+        return { edition: y.edition, rows: sorted, ...archiveStats(sorted) };
+      }).filter((s) => s.rows.length);
+
+      if (!summaries.length) {
+        body.replaceChildren(h("p", { class: "muted" },
+          'Inga matcher hittades för "' + query + '"' +
+          (classFilter ? " i " + HB.shortCat(classFilter) : "") +
+          " i " + idx[selCup].cupName + "."));
+        return;
+      }
+      body.replaceChildren(...summaries.map((s, i) => {
+        const children = [
+          h("summary", null,
+            h("span", { class: "history-year-label" }, s.edition),
+            h("span", { class: "history-year-stats" },
+              s.played + " sp · " + s.won + "V " + s.tied + "O " + s.lost +
+              "F · mål " + s.gf + "–" + s.ga)),
+          h("div", { class: "arena-quick-list" }, s.rows.map(archiveMatchRow)),
+        ];
+        // Slutspelsträd/tabeller kräver ALLA lag i klassen, inte bara den
+        // sökta klubbens — bara meningsfullt (och görligt att bygga rimligt
+        // brett) när man smalnat av till en enda klass.
+        let redraw = null;
+        if (classFilter) {
+          const yearMatches = (editionsData.find((d) => d.edition === s.edition) || {}).matches || [];
+          const extra = historicalExtras(yearMatches, classFilter);
+          if (extra.nodes.length) children.push(h("div", { class: "history-extra" }, extra.nodes));
+          redraw = extra.redraw;
+        }
+        const isOpen = i === 0;
+        const detailsEl = h("details", { class: "history-year", open: isOpen ? "" : null }, children);
+        if (redraw) {
+          if (isOpen) requestAnimationFrame(redraw);
+          // Stängda år ritas om (rätt mått) först när de faktiskt fälls ut.
+          detailsEl.addEventListener("toggle", () => { if (detailsEl.open) redraw(); });
+        }
+        return detailsEl;
+      }));
+    }
+
+    async function loadCupData() {
+      body.replaceChildren(h("p", { class: "muted" }, "Hämtar …"));
+      const editions = idx[selCup].editions.slice()
+        .sort((a, b) => b.edition.localeCompare(a.edition));
+      const loaded = await Promise.all(
+        editions.map((e) => HB.api.fetchArchiveEdition(selCup, e.edition)));
+      editionsData = editions.map((e, i) =>
+        ({ edition: e.edition, matches: (loaded[i] && loaded[i].matches) || [] }));
+      const names = new Set();
+      editionsData.forEach((d) => d.matches.forEach((m) => {
+        names.add(m.home.name); names.add(m.away.name);
+      }));
+      allTeamNames = [...names].sort((a, b) => a.localeCompare(b, "sv"));
+      classFilter = "";
+      renderFiltered();
+    }
+
+    attachAutocomplete(teamInput, teamOptions, () => allTeamNames, (name) => {
+      query = name; classFilter = ""; renderFiltered();
+    });
+    teamInput.addEventListener("change", () => {
+      query = teamInput.value; classFilter = ""; renderFiltered();
+    });
+    teamInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault(); query = teamInput.value; classFilter = ""; renderFiltered();
+      }
+    });
+    cupSel.addEventListener("change", () => { selCup = cupSel.value; loadCupData(); });
+    classSel.addEventListener("change", () => { classFilter = classSel.value; renderFiltered(); });
+    sortSel.addEventListener("change", () => { sortKey = sortSel.value; renderFiltered(); });
+
+    loadCupData();
   }
 
   // Länken bakom "Data hämtad …"/"Uppdaterad …" i headern (#meta, se
@@ -7071,7 +7060,6 @@ window.HB = window.HB || {};
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
     setupAddCup();
     setupSettings();
-    setupHistory();
     setupBracketPan();
 
     // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
