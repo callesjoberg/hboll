@@ -353,11 +353,6 @@ window.HB = window.HB || {};
     // kommentaren om att id:n aldrig är stabila mellan år), så Trend filtrerar
     // i stället på KLASSNAMN (stabilt mellan år). Session, sparas ej.
     trendCats: new Set(),
-    // Trend-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
-    // fylls i vid första besöket i renderTrendView) — EN vald cup ger
-    // formkurvan som vanligt, FLERA ger en jämförelsegraf (alla cuper
-    // "ovanpå varandra", se renderTrendCompare). Session, sparas ej.
-    trendCupIds: new Set(),
     // Trend-fliken (enskild cup): manuellt valt baslinjeår (100 %-ankaret
     // i formkurvan), null = auto (se trendBaselineIndex). Session, sparas ej.
     trendBaselineYear: null,
@@ -380,11 +375,19 @@ window.HB = window.HB || {};
     // (clubQuery) — behålls medvetet när man byter sökterm, till skillnad
     // från nedborrningen ovan. Session, sparas ej.
     clubYears: new Set(),
-    // Karta-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
-    // fylls i vid första besöket i renderMapView). mapCupStatus håller reda
-    // på lata hämtningar av ANDRA cupers klubbdata (se ensureCupClubGeo) så
-    // samma cup inte hämtas om flera gånger. Session, sparas ej.
-    mapCupIds: new Set(),
+    // DELAD mellan Karta- och Trend-fliken (tom = bara innevarande, fylls i
+    // vid första besöket i ENTINGEN renderMapView ELLER renderTrendView) —
+    // samma cupurval hänger med när man växlar mellan de två flikarna i
+    // stället för att varje flik glömmer det andra valde. EN vald cup ger
+    // Trends formkurva som vanligt, FLERA ger en jämförelsegraf i stället
+    // (se renderTrendCompare) — Karta bryr sig inte om antalet, bara VILKA.
+    // Varje flik prunar ändå bort cuper som inte är giltiga för just den
+    // (fel sport, eller för Trend: ingen arkiverad historik alls) innan den
+    // egna vyn ritas, så ett urval som blandar t.ex. en historielös cup
+    // stör bara Trend, inte Karta. mapCupStatus håller reda på lata
+    // hämtningar av ANDRA cupers klubbdata (se ensureCupClubGeo) så samma
+    // cup inte hämtas om flera gånger — bara Kartans eget, inte delat.
+    exploreCupIds: new Set(),
     mapCupStatus: {},
     // cupId -> Set(klubbnamn), ALLA deltagande klubbar (kända+okända
     // adress) — skiljer sig från HB.api.clubGeo som bara har de vars
@@ -3091,7 +3094,9 @@ window.HB = window.HB || {};
     // Bara cuper av SAMMA sport som innevarande cup — att jämföra t.ex.
     // matchantal mellan en handbolls- och en fotbollscup i samma graf är
     // meningslöst. Byt aktiv cup (Inställningar) för att jämföra fotbolls-
-    // cuper med varandra i stället.
+    // cuper med varandra i stället. state.exploreCupIds delas med Karta
+    // (se dess kommentar) — cupurvalet hänger alltså med om man växlar
+    // mellan de två flikarna.
     const cupOptions = trendCupOptions(cup().sport || "handboll");
     if (!cupOptions.length) {
       root.append(h("div", { class: "banner" },
@@ -3102,8 +3107,8 @@ window.HB = window.HB || {};
     // valde flera fotbollscuper och sedan bytte aktiv cup till en
     // handbollscup i Inställningar) — annars skulle den fortfarande
     // blandas in i jämförelsen trots att den inte ens syns i väljaren längre.
-    for (const id of [...state.trendCupIds]) if (!cupOptions.includes(id)) state.trendCupIds.delete(id);
-    if (!state.trendCupIds.size) state.trendCupIds.add(state.cupId);
+    for (const id of [...state.exploreCupIds]) if (!cupOptions.includes(id)) state.exploreCupIds.delete(id);
+    if (!state.exploreCupIds.size) state.exploreCupIds.add(state.cupId);
 
     const cupPicker = buildPicker({
       items: cupOptions.map((id) => {
@@ -3111,7 +3116,7 @@ window.HB = window.HB || {};
         const name = (c && c.name) || id;
         return { id, label: name, sortKey: 0, sortName: name };
       }),
-      selected: state.trendCupIds,
+      selected: state.exploreCupIds,
       emptyLabel: "Välj cup(er)",
       countLabel: (n) => n + " cuper",
       searchPlaceholder: "Sök cup …",
@@ -3120,7 +3125,7 @@ window.HB = window.HB || {};
       onChange: () => renderContent(),
     });
 
-    const selectedCupIds = [...state.trendCupIds];
+    const selectedCupIds = [...state.exploreCupIds];
     const showClassPicker = selectedCupIds.length === 1;
     const classOptions = showClassPicker ? trendClassOptions() : [];
     const classPicker = classOptions.length ? buildPicker({
@@ -4930,19 +4935,20 @@ window.HB = window.HB || {};
     // förvirrande snarare än informativt. Byt aktiv cup (Inställningar)
     // för att se fotbollscupernas klubbar i stället. En cup utan några
     // träffar ger bara en tom karta för just den, inget att spärra bort
-    // i förväg.
+    // i förväg. state.exploreCupIds delas med Trend (se dess kommentar) —
+    // cupurvalet hänger alltså med om man växlar mellan de två flikarna.
     const mapCupOptions = HB.allCups().filter((c) => (c.sport || "handboll") === (cup().sport || "handboll"));
     // Städa bort ev. kvarvarande urval från en ANNAN sport, se motsvarande
     // kommentar i renderTrendView.
-    for (const id of [...state.mapCupIds]) if (!mapCupOptions.some((c) => c.id === id)) state.mapCupIds.delete(id);
+    for (const id of [...state.exploreCupIds]) if (!mapCupOptions.some((c) => c.id === id)) state.exploreCupIds.delete(id);
     // Förval: bara innevarande cup, en gång — renderTabs() garanterar redan
     // att man bara kan NÅ Karta-fliken när innevarande cup stödjer den, så
     // ingen ytterligare giltighetskoll behövs här.
-    if (!state.mapCupIds.size) state.mapCupIds.add(state.cupId);
+    if (!state.exploreCupIds.size) state.exploreCupIds.add(state.cupId);
 
     const cupPicker = buildPicker({
       items: mapCupOptions.map((c) => ({ id: c.id, label: c.name, sortKey: 0, sortName: c.name })),
-      selected: state.mapCupIds,
+      selected: state.exploreCupIds,
       emptyLabel: "Välj cup(er)",
       countLabel: (n) => n + " cuper",
       searchPlaceholder: "Sök cup …",
@@ -4952,7 +4958,7 @@ window.HB = window.HB || {};
     });
     root.append(h("div", { class: "history-controls" }, cupPicker));
 
-    const selectedIds = [...state.mapCupIds];
+    const selectedIds = [...state.exploreCupIds];
 
     // År-väljare: union av arkiverade (spelade) år över VALDA cuper — "Nu"
     // (dagens live-data) är alltid ett alternativ, även utan arkivhistorik.
