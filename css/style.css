@@ -168,6 +168,8 @@ header.top {
   color: #eef2f8;
   padding: 5px 10px;
   font-size: 13px;
+  white-space: nowrap;
+  flex: none;
 }
 
 #refreshBtn:hover { border-color: var(--yellow); }
