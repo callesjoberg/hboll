@@ -4545,6 +4545,20 @@ window.HB = window.HB || {};
     return null;
   }
 
+  // En Levenshtein-baserad "tier 4" (fuzzy-matcha stavningsvarianter som
+  // "Baltikhov" mot katalogens "IK Baltichov") byggdes och testades här,
+  // men skrotades efter regressionstest mot alla riktiga lagnamn i data/
+  // archive: bara ~12 av 62 nya träffar var korrekta stavningsvarianter —
+  // resten var farliga sammanblandningar av HELT OLIKA, riktiga orter/
+  // klubbar som råkar ligga nära varandra i redigeringsavstånd (t.ex.
+  // "Kristiansund HK" (norskt) -> "Kristianstad HK" (svenskt), "Nacka HK"
+  // -> "Backa HK", "Vallentuna" -> "Sollentuna HK", "Hellerup" (danskt)
+  // -> "Melleruds HK" (svenskt), "Torslanda" -> det obegripliga
+  // "Korslagda"). Nordiska ortnamn är för korta och för många för att ett
+  // rent redigeringsavstånd ska vara säkert nog — en felaktig men
+  // självsäker adressnål är värre än en ärlig "okänd", se
+  // isStrippableSuffixToken-kommentaren ovan för samma resonemang.
+
   // {klubbnamn: {city,lat,lng,country}} — gissar adress åt cuper som INTE
   // har egen adressdata (ProCup/Gothia, samt ALLA cupers arkiverade år)
   // genom att slå upp deras lagnamn mot den samlade klubbkatalogen
@@ -4567,26 +4581,26 @@ window.HB = window.HB || {};
   }
 
   // ALLA distinkta klubbar (kända+okända adress) bland matchernas lag —
-  // .club (rent klubbnamn, se normalize() i fetch_cupmanager.py/
-  // fetch_gothia.py) används när det finns. ProCup saknar ett rent
-  // klubbnamnsfält helt — då slås samma katalog (directory, valfri
-  // parameter) upp som clubGeoFromMatches ANDÅ redan gör för adressen, så
-  // t.ex. "BK Heid Röd"/"BK Heid Vit"/"BK Heid 2" räknas som SAMMA klubb
-  // här också, i stället för tre olika. Utan denna normalisering (upptäckt
-  // via ett användarrapporterat Järnvägen Cup-fall: "Lidingö SK 2" m.fl.
-  // såg ut att sakna adress trots att "Lidingö SK" redan var korrekt
-  // matchad) skulle EN redan adressmatchad klubb ändå dyka upp i Kartans
-  // "helt okänd"-lista under sina osammanslagna lagnamnsvarianter — merged
-  // (clubGeoFromMatches) är nyckad på det KATALOG-kanoniska namnet, men
-  // utan den här uppslagningen skulle allClubs vara nyckad på RÅA lagnamn,
-  // två olika namnrymder som aldrig skulle matcha varandra i
-  // unknownNames-filtret (se renderMapView). Sista utvägen (side.name rakt
-  // av) är bara för klubbar som INTE går att slå upp alls.
+  // matchClubName(side.name, directory) FÖRST (samma anrop, samma
+  // resultat som clubGeoFromMatches redan använder för att bygga merged),
+  // annars side.club (rent klubbnamn, se normalize() i fetch_cupmanager.py/
+  // fetch_gothia.py), annars side.name som sista utväg. matchClubName
+  // FÖRE .club (inte bara som reserv när .club saknas) är medvetet:
+  // Cup Managers EGET .club-fält stämmer inte alltid ORDAGRANT överens med
+  // katalogens kanoniska stavning (upptäckt på Åhus Beach 2019 — bara 7
+  // klubbar av 270 räckte för att räkningen skulle gå upp i 277 i stället,
+  // samma sorts dubbelräkning som Hellton-fallet nedan, fast ovanligare).
+  // Genom att ALLTID föredra exakt samma matchClubName-resultat som merged
+  // nycklas på kan allClubs/countryMap (clubCountryFromMatches) ALDRIG
+  // hamna i en annan namnrymd än merged, oavsett vilken cup/källa det
+  // gäller — den enda vägen att helt eliminera den här buggklassen i
+  // stället för att lappa specialfall för specialfall (ProCups saknade
+  // .club, Hellton 2025:s saknade .club, Åhus 2019:s avvikande .club, …).
   function allClubNamesFromMatches(matches, directory) {
     const names = new Set();
     for (const m of matches) {
       for (const side of [m.home, m.away]) {
-        const name = side.club || (directory && matchClubName(side.name, directory)) || side.name;
+        const name = (directory && matchClubName(side.name, directory)) || side.club || side.name;
         if (name) names.add(name);
       }
     }
@@ -4614,23 +4628,17 @@ window.HB = window.HB || {};
   // men är redan initierad vid modulladdning innan denna funktion någonsin
   // anropas (samma closure-scope).
   //
-  // directory (valfri, samma som allClubNamesFromMatches): vissa ÄLDRE
-  // arkiverade år (t.ex. Hellton Cup 2025, upptäckt via en riktig
-  // avvikelse mellan klubbantal och landsplacerings-antal i Kartans
-  // sammanfattningsrad) saknar side.club HELT, trots att det är en
-  // klassisk Cup Manager-cup som normalt har fältet — troligen skrapade
-  // innan .club-fältet fanns i normalize(). Utan katalogslagningen skulle
-  // clubCountryFromMatches då nyckla på RÅA (ej hopslagna) lagnamn medan
-  // allClubNamesFromMatches/clubGeoFromMatches nycklar på det
-  // KATALOG-kanoniska namnet — två olika namnrymder för samma klubbar,
-  // som gjorde att antalet i "med ungefärlig landsplacering" kunde bli
-  // STÖRRE än antalet klubbar som ens fanns kvar att placera (94 mot en
-  // rimlig övre gräns på 25, sett live).
+  // directory (valfri): samma matchClubName-först-prioritering som
+  // allClubNamesFromMatches, se dess kommentar — garanterar att
+  // clubCountryFromMatches ALDRIG nycklar en klubb annorlunda än merged
+  // (clubGeoFromMatches), oavsett om orsaken är ett saknat .club-fält
+  // (äldre arkiv, t.ex. Hellton Cup 2025) eller bara en avvikande stavning
+  // i ett annars ifyllt .club-fält (t.ex. Åhus Beach 2019).
   function clubCountryFromMatches(matches, directory) {
     const byClub = new Map();
     for (const m of matches) {
       for (const side of [m.home, m.away]) {
-        const name = side.club || (directory && matchClubName(side.name, directory)) || side.name;
+        const name = (directory && matchClubName(side.name, directory)) || side.club || side.name;
         if (!name || byClub.has(name) || !side.country || !COUNTRY_CENTROIDS[side.country]) continue;
         byClub.set(name, side.country);
       }
@@ -5065,6 +5073,14 @@ window.HB = window.HB || {};
         approxCountryCount + " länder)" : "") +
       (unknownNames.length ? " · " + unknownNames.length + " helt okänd" : "") +
       " · " + classSet.size + " klasser"));
+    root.append(h("div", { class: "map-legend" },
+      h("span", { class: "map-legend-item" },
+        h("span", { class: "map-legend-dot", style: "background:" + MAP_SHARED_COLOR }), "Känd adress"),
+      countryMap.size ? h("span", { class: "map-legend-item" },
+        h("span", { class: "map-legend-dot", style: "background:" + MAP_SHARED_COLOR + ";opacity:.55" }),
+        "Ungefärlig landsplacering (boll = antal)") : null,
+      unknownNames.length ? h("span", { class: "map-legend-item" },
+        h("span", { class: "map-legend-dot", style: "background:#8a94a3" }), "Helt okänd (Atlanten)") : null));
 
     // Flercupsläge: en färg per vald cup (MAP_CUP_COLORS, cykliskt) plus en
     // reserverad delad färg (MAP_SHARED_COLOR) för klubbar som spelat i
