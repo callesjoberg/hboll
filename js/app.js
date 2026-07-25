@@ -4568,15 +4568,25 @@ window.HB = window.HB || {};
 
   // ALLA distinkta klubbar (kända+okända adress) bland matchernas lag —
   // .club (rent klubbnamn, se normalize() i fetch_cupmanager.py/
-  // fetch_gothia.py) används när det finns, annars faller den tillbaka på
-  // hela lagnamnet (ProCup saknar ett rent klubbnamnsfält helt — kan då
-  // överskatta antalet för klubbar med flera åldersklasslag, men bättre
-  // än att inte räkna med dem alls).
-  function allClubNamesFromMatches(matches) {
+  // fetch_gothia.py) används när det finns. ProCup saknar ett rent
+  // klubbnamnsfält helt — då slås samma katalog (directory, valfri
+  // parameter) upp som clubGeoFromMatches ANDÅ redan gör för adressen, så
+  // t.ex. "BK Heid Röd"/"BK Heid Vit"/"BK Heid 2" räknas som SAMMA klubb
+  // här också, i stället för tre olika. Utan denna normalisering (upptäckt
+  // via ett användarrapporterat Järnvägen Cup-fall: "Lidingö SK 2" m.fl.
+  // såg ut att sakna adress trots att "Lidingö SK" redan var korrekt
+  // matchad) skulle EN redan adressmatchad klubb ändå dyka upp i Kartans
+  // "helt okänd"-lista under sina osammanslagna lagnamnsvarianter — merged
+  // (clubGeoFromMatches) är nyckad på det KATALOG-kanoniska namnet, men
+  // utan den här uppslagningen skulle allClubs vara nyckad på RÅA lagnamn,
+  // två olika namnrymder som aldrig skulle matcha varandra i
+  // unknownNames-filtret (se renderMapView). Sista utvägen (side.name rakt
+  // av) är bara för klubbar som INTE går att slå upp alls.
+  function allClubNamesFromMatches(matches, directory) {
     const names = new Set();
     for (const m of matches) {
       for (const side of [m.home, m.away]) {
-        const name = side.club || side.name;
+        const name = side.club || (directory && matchClubName(side.name, directory)) || side.name;
         if (name) names.add(name);
       }
     }
@@ -4660,8 +4670,8 @@ window.HB = window.HB || {};
       ]).then(([data, directory]) => {
         const matches = (data && data.matches) || [];
         const { teamCount, classes } = teamsAndClassesFromMatches(matches);
-        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches), teamCount, classes,
-          clubCountryFromMatches(matches));
+        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches, directory || {}),
+          teamCount, classes, clubCountryFromMatches(matches));
       }).catch(() => done({}, new Set(), 0, new Set(), new Map()));
       return;
     }
@@ -4991,7 +5001,9 @@ window.HB = window.HB || {};
         const ym = state.yearMatches[id + ":" + state.mapYear];
         if (!ym || ym.status !== "done") continue;
         const cupName = (HB.allCups().find((c) => c.id === id) || {}).name || id;
-        for (const name of allClubNamesFromMatches(ym.matches)) { allClubs.add(name); addClubCup(name, id, cupName); }
+        for (const name of allClubNamesFromMatches(ym.matches, clubDirectoryCache)) {
+          allClubs.add(name); addClubCup(name, id, cupName);
+        }
         const tc = teamsAndClassesFromMatches(ym.matches);
         totalTeams += tc.teamCount;
         for (const c of tc.classes) classSet.add(c);
