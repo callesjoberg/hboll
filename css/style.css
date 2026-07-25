@@ -1144,6 +1144,10 @@ input[type="search"]::-webkit-search-cancel-button {
 .bracket-table-row:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
 .bracket-table .l .us { font-weight: 600; color: var(--blue-deep); }
 
+/* sortableTable() med onRowClick (t.ex. Klubb/Lag-flikens nedborrning) */
+.sortable-row-clickable { cursor: pointer; }
+.sortable-row-clickable:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
+
 .muted { color: var(--ink-soft); font-size: 13px; }
 
 /* scrolla till toppen */

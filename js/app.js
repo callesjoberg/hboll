@@ -271,6 +271,16 @@ window.HB = window.HB || {};
     return m.res.winner === referenceSide(m) ? "V" : "F";
   }
 
+  // Samma "V"/"O"/"F"-logik som outcomeLetter, men för ETT SPECIFIKT lag-id
+  // i stället för appens egen favoritklubb (referenceSide/isClubName) —
+  // Klubb/Lag-flikens nedborrning (renderClubClassDetail) kan gälla VILKEN
+  // klubb som helst, inte bara den man själv följer.
+  function clubOutcomeLetter(m, teamId) {
+    if (!(m.res && m.res.fin) || m.res.wo) return null;
+    if (!m.res.winner) return "O";
+    return (m.res.winner === "home") === (m.home.id === teamId) ? "V" : "F";
+  }
+
   // 0=vunnet, 1=oavgjort, 2=förlorat, 3=ospelat/ej relevant — för "Sortera: resultat".
   function outcomeRank(m) {
     if (!(m.res && m.res.fin)) return 3;
@@ -358,6 +368,13 @@ window.HB = window.HB || {};
     // cuper med arkiverad historik (till skillnad från Trend, som är
     // avgränsad till valda cuper) — se renderClubView. Session, sparas ej.
     clubQuery: "",
+    // Klubb/Lag-fliken: nedborrning i resultatlistan — null/null = visa
+    // listan över cuper, clubDrillCup satt = visa klassnedbrytning för den
+    // cupen, båda satta = visa lag/matcher för den klassen. Nollställs när
+    // sökningen ändras (se renderClubView) — en ny sökterm gör den gamla
+    // nedborrningen obegriplig. Session, sparas ej.
+    clubDrillCup: null,
+    clubDrillClass: null,
     // Karta-fliken: vilka cuper som visas samtidigt (tom = bara innevarande,
     // fylls i vid första besöket i renderMapView). mapCupStatus håller reda
     // på lata hämtningar av ANDRA cupers klubbdata (se ensureCupClubGeo) så
@@ -2950,7 +2967,10 @@ window.HB = window.HB || {};
   // vald sortering överlever omritningar. columns: [{key, label, align,
   // get(row)->sträng|tal, defaultDir}]. rowTitle(row) är valfri — sätts som
   // native tooltip på hela raden (t.ex. en fullständig klasslista).
-  function sortableTable(columns, rows, sortState, rowTitle) {
+  // onRowClick(row) är valfri — gör raderna klickbara (pekare-cursor,
+  // hover, tangentbordsnavigerbara) för nedborrning till mer detaljerad
+  // vy, se Klubb/Lag-flikens renderClubCupDetail/renderClubClassDetail.
+  function sortableTable(columns, rows, sortState, rowTitle, onRowClick) {
     const sorted = rows.slice().sort((a, b) => {
       const col = columns.find((c) => c.key === sortState.key) || columns[0];
       const av = col.get(a), bv = col.get(b);
@@ -2971,13 +2991,20 @@ window.HB = window.HB || {};
         onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },
       }, col.label, active ? h("span", { class: "sort-arrow" }, sortState.dir > 0 ? " ▲" : " ▼") : null);
     };
+    const bodyRow = (row) => h("tr", {
+      ...(rowTitle ? { title: rowTitle(row) } : {}),
+      ...(onRowClick ? {
+        class: "sortable-row-clickable", role: "button", tabindex: "0",
+        onclick: () => onRowClick(row),
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(row); } },
+      } : {}),
+    }, columns.map((col, i) => h(i === 0 ? "th" : "td",
+      { class: col.align === "l" ? "l" : "", ...(i === 0 ? { scope: "row" } : {}) },
+      String(col.get(row)))));
     return h("div", { class: "table-box" },
       h("table", { class: "standings" },
         h("thead", null, h("tr", null, columns.map(headerCell))),
-        h("tbody", null, sorted.map((row) => h("tr", rowTitle ? { title: rowTitle(row) } : null,
-          columns.map((col, i) => h(i === 0 ? "th" : "td",
-            { class: col.align === "l" ? "l" : "", ...(i === 0 ? { scope: "row" } : {}) },
-            String(col.get(row)))))))));
+        h("tbody", null, sorted.map(bodyRow))));
   }
 
   // Sorteringsval per tabell — modulnivå (inte state, sparas ej) så de
@@ -2986,6 +3013,7 @@ window.HB = window.HB || {};
   let trendTableSort = { key: "edition", dir: 1 };
   let trendCompareTableSort = { key: "cupName", dir: 1 };
   let clubTableSort = { key: "cupName", dir: 1 };
+  let clubClassTableSort = { key: "matches", dir: -1 };
 
   function trendTable(editions, metrics) {
     const columns = [
@@ -3375,6 +3403,69 @@ window.HB = window.HB || {};
     return { pending, rows };
   }
 
+  // Klubb/Lag-fliken, nedborrningsnivå 1 (en vald cup): samma matcher som
+  // computeClubRows redan laddat via ensureYearMatches, men brutna ner per
+  // KLASS i stället för aggregerade till en enda rad. "edition|id" som
+  // nyckel i lag-mängderna (inte bara id) — Cup Manager delar ut nya
+  // lag-id:n varje upplaga (se allActiveMatches-kommentaren), så samma
+  // rådata-id kan i teorin återanvändas mellan år utan att vara samma lag.
+  function computeClubCupDetail(cupId, teamQuery) {
+    const idx = state.archiveIndex || {};
+    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    const byClass = new Map(); // klassnamn -> {teams:Set, matches:antal}
+    const allTeams = new Set();
+    const days = new Set();
+    let totalMatches = 0;
+    for (const em of editionsMeta) {
+      const ym = state.yearMatches[cupId + ":" + em.edition];
+      if (!ym || ym.status !== "done") continue;
+      for (const m of ym.matches) {
+        const homeIsUs = matchesBooleanQuery(m.home.name.toLowerCase(), teamQuery);
+        const awayIsUs = matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
+        if (!homeIsUs && !awayIsUs) continue;
+        totalMatches++;
+        if (m.start) days.add(Math.floor(m.start / 86400000));
+        const cls = m.catName || "(okänd klass)";
+        if (!byClass.has(cls)) byClass.set(cls, { teams: new Set(), matches: 0 });
+        const entry = byClass.get(cls);
+        entry.matches++;
+        if (homeIsUs && m.home.id != null) { entry.teams.add(em.edition + "|" + m.home.id); allTeams.add(em.edition + "|" + m.home.id); }
+        if (awayIsUs && m.away.id != null) { entry.teams.add(em.edition + "|" + m.away.id); allTeams.add(em.edition + "|" + m.away.id); }
+      }
+    }
+    const classes = [...byClass.entries()].map(([className, e]) =>
+      ({ className, teamCount: e.teams.size, matchCount: e.matches }));
+    return { classes, totalTeams: allTeams.size, totalMatches, totalDays: days.size };
+  }
+
+  // Klubb/Lag-fliken, nedborrningsnivå 2 (en vald cup + klass): grupperar
+  // matcherna per LAG (edition+id, se kommentaren ovan) i stället för per
+  // klass — varje grupp blir en rubrik + matchkort i renderClubClassDetail.
+  // Ett lag som spelat BÅDE hemma och borta mot varandra "internt" (sällsynt,
+  // t.ex. en klubbs egna lag möts) hamnar korrekt i BÅDA gruppernas listor.
+  function computeClubClassGroups(cupId, className, teamQuery) {
+    const idx = state.archiveIndex || {};
+    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    const groups = new Map(); // "edition|id" -> {teamId, teamName, edition, matches:[]}
+    for (const em of editionsMeta) {
+      const ym = state.yearMatches[cupId + ":" + em.edition];
+      if (!ym || ym.status !== "done") continue;
+      for (const m of ym.matches) {
+        if ((m.catName || "(okänd klass)") !== className) continue;
+        for (const side of [m.home, m.away]) {
+          if (side.id == null || !matchesBooleanQuery(side.name.toLowerCase(), teamQuery)) continue;
+          const key = em.edition + "|" + side.id;
+          if (!groups.has(key)) {
+            groups.set(key, { teamId: side.id, teamName: side.name, edition: em.edition, matches: [] });
+          }
+          groups.get(key).matches.push(m);
+        }
+      }
+    }
+    return [...groups.values()].sort((a, b) =>
+      b.edition.localeCompare(a.edition) || b.matches.length - a.matches.length);
+  }
+
   let clubQuerySeeded = false;
 
   // Egen toppnivåflik: "en klubbs/ett lags historik över alla cuper" —
@@ -3394,14 +3485,24 @@ window.HB = window.HB || {};
       title: "Stöder & (och) och / eller , (eller), t.ex. Alingsås&Blå",
     });
     input.value = state.clubQuery;
-    const applyQuery = () => { state.clubQuery = input.value; renderContent(); };
+    // En ny sökning gör en pågående nedborrning (vald cup/klass, se
+    // state-kommentaren) obegriplig — en klass som fanns för förra
+    // sökningen betyder inget för den nya. Nollställ båda.
+    const applyQuery = () => {
+      state.clubQuery = input.value;
+      state.clubDrillCup = null; state.clubDrillClass = null;
+      renderContent();
+    };
     input.addEventListener("change", applyQuery);
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); applyQuery(); }
     });
     root.append(h("div", { class: "history-controls" },
       h("div", { class: "trend-team-search" },
-        withClearButton(input, () => { state.clubQuery = ""; renderContent(); }))));
+        withClearButton(input, () => {
+          state.clubQuery = ""; state.clubDrillCup = null; state.clubDrillClass = null;
+          renderContent();
+        }))));
 
     const resultHost = h("div", { class: "trend-chart-host" });
     root.append(resultHost);
@@ -3410,6 +3511,15 @@ window.HB = window.HB || {};
     if (!query) {
       resultHost.append(h("p", { class: "muted" },
         "Skriv ett lag-/klubbnamn ovan för att se dess historik över alla cuper."));
+      return;
+    }
+
+    if (state.clubDrillCup && state.clubDrillClass) {
+      renderClubClassDetail(resultHost, state.clubDrillCup, state.clubDrillClass, query);
+      return;
+    }
+    if (state.clubDrillCup) {
+      renderClubCupDetail(resultHost, state.clubDrillCup, query);
       return;
     }
 
@@ -3442,8 +3552,92 @@ window.HB = window.HB || {};
       { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.totalMatches },
       { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes.size },
     ];
+    // Klickbar rad (se sortableTable) — går ner en nivå till cupens egna
+    // klasser (renderClubCupDetail) i stället för att bara visa aggregatet.
     resultHost.append(sortableTable(columns, rows, clubTableSort,
-      (r) => [...r.classes].sort((a, b) => catSortKey(a) - catSortKey(b)).join(", ")));
+      (r) => [...r.classes].sort((a, b) => catSortKey(a) - catSortKey(b)).join(", "),
+      (r) => { state.clubDrillCup = r.cupId; renderContent(); }));
+  }
+
+  // Klubb/Lag, nedborrningsnivå 1: en vald cups klasser för sökningen —
+  // klickar man en klass går man vidare till renderClubClassDetail.
+  function renderClubCupDetail(root, cupId, query) {
+    const cupObj = HB.allCups().find((c) => c.id === cupId);
+    const cupName = (cupObj && cupObj.name) || cupId;
+    root.append(h("div", { class: "row" },
+      h("button", {
+        class: "chip back-chip", type: "button",
+        onclick: () => { state.clubDrillCup = null; renderContent(); },
+      }, "← Tillbaka till alla cuper")));
+
+    const idx = state.archiveIndex || {};
+    const editionsMeta = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches > 0);
+    for (const em of editionsMeta) ensureYearMatches(em.edition, cupId);
+    const pending = editionsMeta.some((em) => {
+      const ym = state.yearMatches[cupId + ":" + em.edition];
+      return !ym || ym.status === "loading";
+    });
+    if (pending) {
+      root.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
+      return;
+    }
+
+    const detail = computeClubCupDetail(cupId, query);
+    root.append(h("h2", { class: "day-h" }, cupName));
+    if (!detail.classes.length) {
+      root.append(h("p", { class: "muted" },
+        'Inga matcher matchar "' + query + '" i ' + cupName + '.'));
+      return;
+    }
+    root.append(h("p", { class: "muted" },
+      detail.totalTeams + " lag · " + detail.totalMatches + " matcher · " +
+      detail.totalDays + " speldagar · " + detail.classes.length + " klasser"));
+
+    const columns = [
+      { key: "className", label: "Klass", align: "l", defaultDir: 1, get: (r) => r.className },
+      { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.teamCount },
+      { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.matchCount },
+    ];
+    root.append(sortableTable(columns, detail.classes, clubClassTableSort, null,
+      (r) => { state.clubDrillClass = r.className; renderContent(); }));
+  }
+
+  // Klubb/Lag, nedborrningsnivå 2: en vald cup+klass — de faktiska lagen
+  // (ett per upplaga, se computeClubClassGroups) med sina riktiga matcher,
+  // återanvänder matchCard rakt av (samma kort som Schema-vyn). Tabell-
+  // placering/tidigare möten i matchdialogen (öppnas via matchCard) kan
+  // sakna data för matcher från ANDRA cuper än den just nu aktiva —
+  // de hämtas via cup()/state.cupId, inte cupId här — men det är en
+  // känd, ofarlig begränsning (samma sak gäller redan idag för arkiverade
+  // år i den vanliga Schema-vyn): dialogen visar bara "ingen tabell
+  // tillgänglig" i stället för fel data.
+  function renderClubClassDetail(root, cupId, className, query) {
+    const cupObj = HB.allCups().find((c) => c.id === cupId);
+    const cupName = (cupObj && cupObj.name) || cupId;
+    root.append(h("div", { class: "row" },
+      h("button", {
+        class: "chip back-chip", type: "button",
+        onclick: () => { state.clubDrillClass = null; renderContent(); },
+      }, "← Tillbaka till " + cupName)));
+    root.append(h("h2", { class: "day-h" }, cupName + " · " + className));
+
+    const groups = computeClubClassGroups(cupId, className, query);
+    if (!groups.length) {
+      root.append(h("p", { class: "muted" }, "Inga matcher hittades."));
+      return;
+    }
+    for (const g of groups) {
+      let w = 0, d = 0, l = 0;
+      for (const m of g.matches) {
+        const o = clubOutcomeLetter(m, g.teamId);
+        if (o === "V") w++; else if (o === "O") d++; else if (o === "F") l++;
+      }
+      root.append(h("h3", { class: "day-h" }, g.teamName + " (" + g.edition + ")"));
+      root.append(h("p", { class: "muted" },
+        g.matches.length + " matcher · " + w + " V, " + d + " O, " + l + " F"));
+      root.append(h("div", { class: "slot-matches" },
+        g.matches.slice().sort((a, b) => b.start - a.start).map((m) => matchCard(m))));
+    }
   }
 
   function renderBrowseMode(root, idx, cupIds) {
