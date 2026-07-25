@@ -1526,6 +1526,15 @@ dialog#settingsDialog { max-width: 380px; }
 }
 .compare-chip-x:hover { color: var(--live); background: color-mix(in srgb, var(--live) 14%, transparent); }
 
+/* Klubbjämförelsens radexpansion (clubCompareDetailBlock) — en cup-för-cup-
+   nedbrytning av klasser/lagnamn under den utfällda raden. */
+.compare-detail { margin-top: -4px; }
+.compare-detail-name { margin-bottom: 8px; }
+.compare-detail-cup { padding: 6px 0; border-top: 1px solid var(--line); }
+.compare-detail-cup:first-of-type { border-top: none; padding-top: 0; }
+.compare-detail-cup-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.compare-detail-cup p { margin: 2px 0; font-size: 13px; }
+
 /* lagfärgprick på matchkort */
 
 .team-color-dot {

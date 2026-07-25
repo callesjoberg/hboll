@@ -387,6 +387,11 @@ window.HB = window.HB || {};
     // (computeClubRows). Ordning bevaras (senast tillagd sist). Session,
     // sparas ej.
     compareNames: [],
+    // Klubbjämförelse-fliken: vilka rader (klubb-/lagnamn) som just nu är
+    // expanderade och visar sin cup-för-cup-detalj (klasser + rå lagnamn,
+    // se clubCompareDetailBlock) — en klubb/lag åt gången eller flera.
+    // Session, sparas ej.
+    compareExpanded: new Set(),
     // DELAD mellan Karta- och Trend-fliken (tom = bara innevarande, fylls i
     // vid första besöket i ENTINGEN renderMapView ELLER renderTrendView) —
     // samma cupurval hänger med när man växlar mellan de två flikarna i
@@ -3467,6 +3472,12 @@ window.HB = window.HB || {};
       const years = [];
       let totalTeams = 0, totalMatches = 0;
       const classes = new Set();
+      // Rå lagnamn (inte bara antal) som faktiskt matchade söktermen — låter
+      // Klubbjämförelsens radexpansion (se clubCompareDetailBlock) visa EXAKT
+      // vilka stavningsvarianter som räknats in, t.ex. "Önnereds HK" och
+      // "Önnered HK" (utan s) från olika cuper — ett sätt att själv avgöra om
+      // två liknande sökningar/namn råkar vara samma klubb i praktiken.
+      const names = new Set();
       for (const em of editionsMeta) {
         ensureYearMatches(em.edition, cupId);
         const ym = state.yearMatches[cupId + ":" + em.edition];
@@ -3479,8 +3490,8 @@ window.HB = window.HB || {};
           const awayIsUs = matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
           if (!homeIsUs && !awayIsUs) continue;
           matchCount++;
-          if (homeIsUs && m.home.id != null) teamIds.add(m.home.id);
-          if (awayIsUs && m.away.id != null) teamIds.add(m.away.id);
+          if (homeIsUs && m.home.id != null) { teamIds.add(m.home.id); names.add(m.home.name); }
+          if (awayIsUs && m.away.id != null) { teamIds.add(m.away.id); names.add(m.away.name); }
           if (m.catName) classes.add(m.catName);
         }
         if (teamIds.size) { years.push(em.edition); totalTeams += teamIds.size; totalMatches += matchCount; }
@@ -3489,7 +3500,7 @@ window.HB = window.HB || {};
         const cupObj = HB.allCups().find((c) => c.id === cupId);
         rows.push({
           cupId, cupName: (cupObj && cupObj.name) || cupId, years: years.sort(),
-          totalTeams, totalMatches, classes,
+          totalTeams, totalMatches, classes, names,
         });
       }
     }
@@ -3588,6 +3599,18 @@ window.HB = window.HB || {};
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); applyQuery(); }
     });
+    // Autocomplete (samma klubbkatalog/minLen som Klubbjämförelse, se
+    // ensureCompareCandidates) — fritextsökningen stödjer visserligen boolesk
+    // syntax (& och /) och funkar utan, men utan förslag var det lätt att
+    // skriva ett namn som inte matchar NÅGOT (fel stavning, saknat mellanslag)
+    // och bara få en tom träfflista utan att förstå varför.
+    ensureCompareCandidates();
+    const clubOptions = h("div", { class: "autocomplete-list" });
+    clubOptions.hidden = true;
+    attachAutocomplete(input, clubOptions, () => compareCandidates || [], (name) => {
+      state.clubQuery = name; state.clubDrillCup = null; state.clubDrillClass = null;
+      renderContent();
+    }, 2);
 
     // Årsfilter (state.clubYears, tomt = alla år) — påverkar inte sökningen
     // i sig, men en nedborrning gjord för ETT årsurval kan bli obegriplig
@@ -3606,11 +3629,12 @@ window.HB = window.HB || {};
     }) : null;
 
     root.append(h("div", { class: "history-controls" },
-      h("div", { class: "trend-team-search" },
+      h("div", { class: "autocomplete-wrap trend-team-search" },
         withClearButton(input, () => {
           state.clubQuery = ""; state.clubDrillCup = null; state.clubDrillClass = null;
           renderContent();
-        })),
+        }),
+        clubOptions),
       yearPicker));
 
     const resultHost = h("div", { class: "trend-chart-host" });
@@ -3848,6 +3872,7 @@ window.HB = window.HB || {};
         classes: new Set(res.rows.flatMap((r) => [...r.classes])).size,
         yearsSpan: years.length ? (years[0] === years[years.length - 1]
           ? years[0] : years[0] + "–" + years[years.length - 1]) : "–",
+        detailRows: res.rows,
       };
     });
     if (pending) {
@@ -3855,15 +3880,44 @@ window.HB = window.HB || {};
       return;
     }
 
+    // Namnkolumnen får en ▾/▸-pil (i stället för en egen kolumn) som enda
+    // visuella ledtråd om att raden går att fälla ut — sortableTable saknar
+    // en egen per-rad-styling-krok, se dess kommentar.
     const columns = [
-      { key: "name", label: "Klubb/lag", align: "l", defaultDir: 1, get: (r) => r.name },
+      { key: "name", label: "Klubb/lag", align: "l", defaultDir: 1,
+        get: (r) => (state.compareExpanded.has(r.name) ? "▾ " : "▸ ") + r.name },
       { key: "cups", label: "Cuper", defaultDir: -1, get: (r) => r.cups },
       { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.teams },
       { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.matches },
       { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes },
       { key: "yearsSpan", label: "År", align: "l", defaultDir: 1, get: (r) => r.yearsSpan },
     ];
-    resultHost.append(sortableTable(columns, rows, clubCompareTableSort));
+    resultHost.append(sortableTable(columns, rows, clubCompareTableSort, null, (r) => {
+      if (state.compareExpanded.has(r.name)) state.compareExpanded.delete(r.name);
+      else state.compareExpanded.add(r.name);
+      renderContent();
+    }));
+
+    for (const row of rows) {
+      if (state.compareExpanded.has(row.name)) resultHost.append(clubCompareDetailBlock(row));
+    }
+  }
+
+  // Klubbjämförelsens radexpansion (klicka en rad, se onRowClick ovan) —
+  // en cup-för-cup-nedbrytning av VILKA klasser och, viktigast, VILKA rå
+  // lagnamn som faktiskt matchade söktermen. Tänkt som en snabb egenkontroll
+  // när man undrar om två snarlika sökningar (t.ex. en stavning med/utan
+  // "s") råkar råka in på samma klubb i praktiken eller inte.
+  function clubCompareDetailBlock(row) {
+    return h("div", { class: "table-box compare-detail" },
+      h("h3", { class: "compare-detail-name" }, row.name),
+      row.detailRows.map((r) => h("div", { class: "compare-detail-cup" },
+        h("div", { class: "compare-detail-cup-head" },
+          h("strong", null, r.cupName), h("span", { class: "muted" }, r.years.join(", "))),
+        h("p", { class: "muted" },
+          "Klasser: " + [...r.classes].sort((a, b) => catSortKey(a) - catSortKey(b))
+            .map((c) => HB.shortCat(c)).join(", ")),
+        h("p", { class: "muted" }, "Lagnamn: " + [...r.names].sort((a, b) => a.localeCompare(b, "sv")).join(", ")))));
   }
 
   // Cuper-fliken (under Stats): en översiktsrad per cup, byggd helt ur
