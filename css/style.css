@@ -1772,6 +1772,13 @@ dialog.history-dialog {
   gap: 2px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 10px;
+  /* Stats sex underflikar (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper/
+     Historik) rymdes inte på en smal mobilskärm — utan scroll klipptes de
+     bortre flikarna bara av, oåtkomliga. Samma mönster som #viewTabs. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 /* Lättare vikt än huvudnavigeringens .tab (samma klass, se #viewTabs) —
    en underflikrad direkt under en full flikrad (Historik-modalen, och
