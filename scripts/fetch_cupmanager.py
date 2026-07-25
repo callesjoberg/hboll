@@ -55,7 +55,16 @@ def match_query(tid, limit, offset):
     # redan deduplicerar per NameClub-entitet oavsett hur många lag/matcher
     # som refererar samma klubb (se clubs_from_store). Används av
     # Karta-fliken i js/app.js.
-    team_fields = "{club:{address:{address:{city:{},lat:{},lng:{},nation:{name:{},code:{}}}}}}"
+    #
+    # club:{nation:...} (UTAN adress-hoppet) är ett andra, oberoende fält —
+    # en klubb kan sakna registrerad adress helt (vanligt för utländska lag)
+    # men ändå ha en nation ifylld direkt på NameClub-entiteten (verifierat
+    # mot t.ex. "Fjellhammer IL" i Bohus Cup: ingen adress, men
+    # club.nation.code -> "NO"). Ger en landskod på VARJE match (se home/
+    # away nedan) helt utan namnmatchning mot klubbkatalogen — Kartans
+    # "ungefärlig landsplacering"-nivå (mellan känd adress och helt okänd).
+    team_fields = ("{club:{address:{address:{city:{},lat:{},lng:{},"
+                   "nation:{name:{},code:{}}}},nation:{code:{}}}}")
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
             "{matches:[{... on Match:{start:{},arena:{},round:{},roundRank:{},"
             "nextMatchWinner:{},nextMatchLoser:{},"
@@ -132,6 +141,10 @@ def normalize(store):
             return store.get(ref.get("href"), {}) or {}
         return {}
 
+    def club_nation_code(side):
+        club = get(get(side.get("team")).get("club"))
+        return get(club.get("nation")).get("code") or None
+
     matches = []
     for e in store.values():
         if e.get("__typename") != "Match":
@@ -171,10 +184,12 @@ def normalize(store):
             # är redan hämtat för adressen, bara ett extra steg i store:n.
             "home": {"id": home.get("id") or ref_id(home.get("team")),
                      "name": name_of(home),
-                     "club": get(get(home.get("team")).get("club")).get("name")},
+                     "club": get(get(home.get("team")).get("club")).get("name"),
+                     "country": club_nation_code(home)},
             "away": {"id": away.get("id") or ref_id(away.get("team")),
                      "name": name_of(away),
-                     "club": get(get(away.get("team")).get("club")).get("name")},
+                     "club": get(get(away.get("team")).get("club")).get("name"),
+                     "country": club_nation_code(away)},
             "res": norm_result(get(e.get("result"))),
         })
     matches.sort(key=lambda m: (m["start"], m["arena"]))

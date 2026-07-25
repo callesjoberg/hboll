@@ -396,6 +396,14 @@ window.HB = window.HB || {};
     // som mapCupAllClubs hade). Session, sparas ej.
     mapCupTeamCount: {},
     mapCupClasses: {},
+    // cupId -> Map(klubbnamn -> landskod), OBEROENDE av om klubben även har
+    // en känd adress (avgörs vid slutlig sammanslagning i renderMapView, se
+    // clubCountryFromMatches) — Kartans mellannivå mellan "känd adress" och
+    // "helt okänd", landskoden är inbäddad direkt på varje match (home/away.
+    // country, se js/api.js normalize()/scripts/fetch_*.py), kräver alltså
+    // ingen namnmatchning mot klubbkatalogen. Fylls av ensureCupClubGeo (och
+    // loadCup(), samma ställen som mapCupAllClubs). Session, sparas ej.
+    mapCupCountryByClub: {},
     // Karta-fliken: valt år (ett av arkivets, null = "Nu"/live data) —
     // se renderMapView/mergedClubGeoForYear. Session, sparas ej.
     mapYear: null,
@@ -619,6 +627,7 @@ window.HB = window.HB || {};
       if (cached.clubs) {
         HB.api.clubGeo[c.id] = cached.clubs;
         state.mapCupAllClubs[c.id] = allClubNamesFromMatches(cached.matches);
+        state.mapCupCountryByClub[c.id] = clubCountryFromMatches(cached.matches);
         const tc = teamsAndClassesFromMatches(cached.matches);
         state.mapCupTeamCount[c.id] = tc.teamCount;
         state.mapCupClasses[c.id] = tc.classes;
@@ -637,6 +646,7 @@ window.HB = window.HB || {};
             state.loadedAt = j.ts || 0;
             HB.api.clubGeo[c.id] = j.clubs || {};
             state.mapCupAllClubs[c.id] = allClubNamesFromMatches(j.matches);
+            state.mapCupCountryByClub[c.id] = clubCountryFromMatches(j.matches);
             const tc = teamsAndClassesFromMatches(j.matches);
             state.mapCupTeamCount[c.id] = tc.teamCount;
             state.mapCupClasses[c.id] = tc.classes;
@@ -4557,6 +4567,38 @@ window.HB = window.HB || {};
     return names;
   }
 
+  // {klubbnamn: landskod} — landet är inbäddat direkt på varje matchsida
+  // (home/away.country, se js/api.js normalize() och scripts/fetch_*.py),
+  // så till skillnad från clubGeoFromMatches krävs INGEN namnmatchning mot
+  // klubbkatalogen: gäller lika bra för klubbar som aldrig spelat i någon
+  // klassisk Cup Manager-cup (och därför saknas helt ur data/
+  // club-directory.json), t.ex. de flesta utländska Partille-lagen.
+  // Oberoende av om klubben OCKSÅ har en känd adress — den avvägningen
+  // (adress vinner om båda finns) görs vid slutlig sammanslagning i
+  // renderMapView, inte här.
+  //
+  // COUNTRY_CENTROIDS[side.country]-kollen filtrerar bort koder som INTE är
+  // riktiga ISO 3166-1 alpha-2-koder — Gothia ger ibland Storbritanniens
+  // "home nations" som egna, gemena koder (t.ex. "en"/"ct" för engelska/
+  // skotska klubbar i Partille Cup) i stället för "GB". Utan filtret skulle
+  // en sådan klubb tyst falla ur BÅDA "ungefärlig landsplacering" (countryGridLngLat
+  // hittar ingen centroid, se paintMapMarkers) OCH "helt okänd" (den räknas
+  // ju som känd här) — osynlig på kartan i stället för att hamna i
+  // Atlant-rutnätet som en ärlig "okänd". Definieras längre ner i filen,
+  // men är redan initierad vid modulladdning innan denna funktion någonsin
+  // anropas (samma closure-scope).
+  function clubCountryFromMatches(matches) {
+    const byClub = new Map();
+    for (const m of matches) {
+      for (const side of [m.home, m.away]) {
+        const name = side.club || side.name;
+        if (!name || byClub.has(name) || !side.country || !COUNTRY_CENTROIDS[side.country]) continue;
+        byClub.set(name, side.country);
+      }
+    }
+    return byClub;
+  }
+
   // Antal DISTINKTA lag (id, inte klubbnamn — ett lag är en åldersklass-
   // trupp, en klubb kan ha flera) och Set(klassnamn) ur en matchlista —
   // till Kartans sammanfattningsrad ("X lag · Y klubbar totalt · ...").
@@ -4579,11 +4621,12 @@ window.HB = window.HB || {};
   function ensureCupClubGeo(cupId) {
     if (HB.api.clubGeo[cupId] || state.mapCupStatus[cupId]) return;
     state.mapCupStatus[cupId] = "loading";
-    const done = (geo, allClubs, teamCount, classes) => {
+    const done = (geo, allClubs, teamCount, classes, countryByClub) => {
       HB.api.clubGeo[cupId] = geo;
       state.mapCupAllClubs[cupId] = allClubs;
       state.mapCupTeamCount[cupId] = teamCount;
       state.mapCupClasses[cupId] = classes;
+      state.mapCupCountryByClub[cupId] = countryByClub;
       state.mapCupStatus[cupId] = "done";
       // renderTabs() alltid — kan avgöra om Karta-fliken ska visas/döljas nu
       // när vi vet säkert. render() (dyrare, ritar om hela sidan) bara om
@@ -4601,8 +4644,9 @@ window.HB = window.HB || {};
       ]).then(([data, directory]) => {
         const matches = (data && data.matches) || [];
         const { teamCount, classes } = teamsAndClassesFromMatches(matches);
-        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches), teamCount, classes);
-      }).catch(() => done({}, new Set(), 0, new Set()));
+        done(clubGeoFromMatches(matches, directory || {}), allClubNamesFromMatches(matches), teamCount, classes,
+          clubCountryFromMatches(matches));
+      }).catch(() => done({}, new Set(), 0, new Set(), new Map()));
       return;
     }
     fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
@@ -4610,9 +4654,10 @@ window.HB = window.HB || {};
       .then((j) => {
         const matches = (j && j.matches) || [];
         const { teamCount, classes } = teamsAndClassesFromMatches(matches);
-        done((j && j.clubs) || {}, allClubNamesFromMatches(matches), teamCount, classes);
+        done((j && j.clubs) || {}, allClubNamesFromMatches(matches), teamCount, classes,
+          clubCountryFromMatches(matches));
       })
-      .catch(() => done({}, new Set(), 0, new Set()));
+      .catch(() => done({}, new Set(), 0, new Set(), new Map()));
   }
 
   // Slår ihop klubbdata för flera valda cuper till en enda lista, med vilka
@@ -4633,6 +4678,29 @@ window.HB = window.HB || {};
       }
     }
     return merged;
+  }
+
+  // Kartans mellannivå (live-läge): klubbar UTAN känd adress (merged, se
+  // ovan — den vinner om en klubb har båda) men med en känd landskod,
+  // sammanslaget över de valda cuperna på samma sätt som mergedClubGeo.
+  // state.mapCupCountryByClub fylls av loadCup()/ensureCupClubGeo, se deras
+  // kommentarer — oberoende av merged, uteslutningen görs HÄR, inte vid
+  // insamlingen, så samma råa data kan användas oavsett vilka cuper som
+  // råkar vara valda just nu.
+  function mergedCountry(cupIds, merged) {
+    const result = new Map();
+    for (const cupId of cupIds) {
+      const byClub = state.mapCupCountryByClub[cupId];
+      if (!byClub) continue;
+      const cupObj = HB.allCups().find((c) => c.id === cupId);
+      const cupName = (cupObj && cupObj.name) || cupId;
+      for (const [name, code] of byClub) {
+        if (merged[name]) continue;
+        if (!result.has(name)) result.set(name, { code, cups: [] });
+        result.get(name).cups.push(cupName);
+      }
+    }
+    return result;
   }
 
   // Samma sammanslagning som mergedClubGeo, men för ETT specifikt arkiverat
@@ -4657,6 +4725,26 @@ window.HB = window.HB || {};
       }
     }
     return merged;
+  }
+
+  // mergedCountry ovan, för årsläget — landskoden är inbäddad direkt på de
+  // arkiverade matchernas home/away.country (se scripts/fetch_*.py), ingen
+  // klubbkatalog inblandad (till skillnad från mergedClubGeoForYear).
+  function mergedCountryForYear(cupIds, year, merged) {
+    const result = new Map();
+    for (const cupId of cupIds) {
+      const ym = state.yearMatches[cupId + ":" + year];
+      if (!ym || ym.status !== "done") continue;
+      const byClub = clubCountryFromMatches(ym.matches);
+      const cupObj = HB.allCups().find((c) => c.id === cupId);
+      const cupName = (cupObj && cupObj.name) || cupId;
+      for (const [name, code] of byClub) {
+        if (merged[name]) continue;
+        if (!result.has(name)) result.set(name, { code, cups: [] });
+        result.get(name).cups.push(cupName);
+      }
+    }
+    return result;
   }
 
   // Klubbkatalogen (data/club-directory.json) behövs för årsläget oavsett
@@ -4703,6 +4791,7 @@ window.HB = window.HB || {};
   // faktiskt ändrats mellan åren (precis det "Spela upp" är till för).
   let currentMapMarkerByKey = new Map();
   let currentUnknownMarkerByKey = new Map(); // klubbnamn -> marker, samma diff-princip som currentMapMarkerByKey ovan
+  let currentCountryMarkerByKey = new Map(); // klubbnamn -> {marker, color}, samma diff-princip, se paintMapMarkers
   let mapBoxEl = null;          // DOM-noden kartan bor i — sparas modulnivå (INTE i renderMapView)
                                  // så samma nod kan flyttas in i det nya innehållet varje
                                  // omritning i stället för att byggas om från grunden; annars
@@ -4772,7 +4861,7 @@ window.HB = window.HB || {};
       root.append(h("div", { class: "row trend-baseline-row" }, yearSelect, playBtn));
     }
 
-    let merged, allClubs, totalTeams;
+    let merged, countryMap, allClubs, totalTeams;
     const classSet = new Set();
     if (state.mapYear) {
       ensureClubDirectory();
@@ -4786,6 +4875,7 @@ window.HB = window.HB || {};
         return;
       }
       merged = mergedClubGeoForYear(selectedIds, state.mapYear, clubDirectoryCache);
+      countryMap = mergedCountryForYear(selectedIds, state.mapYear, merged);
       allClubs = new Set();
       totalTeams = 0;
       for (const id of selectedIds) {
@@ -4803,6 +4893,7 @@ window.HB = window.HB || {};
         return;
       }
       merged = mergedClubGeo(selectedIds);
+      countryMap = mergedCountry(selectedIds, merged);
       allClubs = new Set();
       totalTeams = 0;
       for (const id of selectedIds) {
@@ -4813,24 +4904,28 @@ window.HB = window.HB || {};
     }
 
     const entries = Object.entries(merged);
-    // Alla klubbar (kända+okända adress) i de valda cuperna, oavsett om vi
-    // lyckades placera dem på kartan — mängdskillnaden mot merged nedan ger
-    // hur många som saknar känd adress (många utländska klubbar, se
-    // allClubNamesFromMatches).
-    const unknownNames = [...allClubs].filter((name) => !merged[name]).sort((a, b) => a.localeCompare(b, "sv"));
-    if (!entries.length && !unknownNames.length) {
+    // Alla klubbar (känd adress, ungefärligt land, eller helt okänd) i de
+    // valda cuperna, oavsett om vi lyckades placera dem på kartan —
+    // mängdskillnaden mot merged/countryMap ger hur många som saknar
+    // BÅDE adress och land (helt okänd, Atlant-rutnätet nedan).
+    const unknownNames = [...allClubs].filter((name) => !merged[name] && !countryMap.has(name))
+      .sort((a, b) => a.localeCompare(b, "sv"));
+    if (!entries.length && !countryMap.size && !unknownNames.length) {
       root.append(h("p", { class: "muted" },
         "Ingen klubbdata i valda cuper" + (state.mapYear ? " för " + state.mapYear : "") + "."));
       return;
     }
     const cityCount = new Set(entries.map(([, info]) => info.city).filter(Boolean)).size;
     const countryCount = new Set(entries.map(([, info]) => info.country).filter(Boolean)).size;
+    const approxCountryCount = new Set([...countryMap.values()].map((v) => v.code)).size;
     root.append(h("p", { class: "muted map-count" },
       totalTeams + " lag · " +
       allClubs.size + " klubbar totalt" + (state.mapYear ? " (" + state.mapYear + ")" : "") + " · " +
       entries.length + " med känd adress (" +
       cityCount + " städer" + (countryCount > 1 ? " · " + countryCount + " länder" : "") + ")" +
-      (unknownNames.length ? " · " + unknownNames.length + " utan känd adress" : "") +
+      (countryMap.size ? " · " + countryMap.size + " med ungefärlig landsplacering (" +
+        approxCountryCount + " länder)" : "") +
+      (unknownNames.length ? " · " + unknownNames.length + " helt okänd" : "") +
       " · " + classSet.size + " klasser"));
 
     // Flercupsläge: en färg per vald cup (MAP_CUP_COLORS, cykliskt) plus en
@@ -4873,15 +4968,97 @@ window.HB = window.HB || {};
       // CDN: box sitter inte kvar i dokumentet längre, rita inte i den.
       if (!document.body.contains(box)) return;
       if (needsNewMap) {
-        createMap(maplibregl, box, merged, unknownNames, cupColorForClub);
+        createMap(maplibregl, box, merged, countryMap, unknownNames, cupColorForClub);
       } else {
         currentMap.resize(); // återfäst nod kan ha bytt storlek medan den var frånkopplad
-        paintMapMarkers(maplibregl, merged, unknownNames, cupColorForClub);
+        paintMapMarkers(maplibregl, merged, countryMap, unknownNames, cupColorForClub);
       }
     }).catch((e) => {
       if (!document.body.contains(box)) return;
       box.replaceChildren(h("p", { class: "muted" }, "Kunde inte ladda kartan: " + e.message));
     });
+  }
+
+  // ISO 3166-1 alpha-2 -> [lng, lat], ungefärlig geografisk mittpunkt (INTE
+  // huvudstaden — bättre för ett stort/avlångt land som t.ex. Norge eller
+  // Ryssland). Statisk referensdata, samma katalog oavsett cup — landskoden
+  // kommer från Cup Managers/Gothias egna Nation-entiteter (se home/away.
+  // country, js/api.js normalize()/scripts/fetch_*.py), bara centrumpunkten
+  // slås upp här. Bara koder som faktiskt kan förekomma i handbolls-/
+  // fotbollscuper är strikt nödvändiga, men en bred, världstäckande tabell
+  // kostar inget extra och slipper framtida håltäckning.
+  const COUNTRY_CENTROIDS = {
+    SE: [16.7, 62.2], NO: [10.5, 62.0], DK: [10.0, 56.1], FI: [26.0, 63.9],
+    IS: [-19.0, 65.0], FO: [-6.9, 62.0], GL: [-42.0, 72.0], AX: [19.9, 60.2],
+    DE: [10.3, 51.2], NL: [5.5, 52.2], BE: [4.5, 50.6],
+    LU: [6.1, 49.7], FR: [2.5, 46.6], GB: [-2.0, 54.0], IE: [-8.0, 53.4],
+    ES: [-3.7, 40.3], PT: [-8.2, 39.6], IT: [12.6, 42.8], CH: [8.2, 46.8],
+    AT: [14.6, 47.6], PL: [19.4, 52.0], CZ: [15.5, 49.8], SK: [19.5, 48.7],
+    HU: [19.5, 47.2], SI: [14.8, 46.1], HR: [16.4, 45.1], BA: [17.8, 44.2],
+    RS: [21.0, 44.0], ME: [19.3, 42.8], MK: [21.7, 41.6], AL: [20.2, 41.2],
+    BG: [25.5, 42.7], RO: [24.9, 45.9], GR: [22.9, 39.1], TR: [35.2, 39.0],
+    CY: [33.4, 35.1], MT: [14.4, 35.9], UA: [31.2, 48.4], BY: [27.9, 53.7],
+    LT: [23.9, 55.2], LV: [24.6, 56.9], EE: [25.0, 58.6], RU: [96.7, 61.5],
+    MD: [28.4, 47.2], LI: [9.5, 47.2], MC: [7.4, 43.7], AD: [1.6, 42.5],
+    SM: [12.4, 43.9], VA: [12.5, 41.9], XK: [20.9, 42.6],
+    US: [-98.6, 39.8], CA: [-106.3, 56.1], MX: [-102.5, 23.6],
+    BR: [-51.9, -10.8], AR: [-63.6, -38.4], CL: [-71.5, -35.7],
+    UY: [-56.0, -32.8], PY: [-58.4, -23.4], BO: [-63.6, -16.3],
+    PE: [-75.0, -9.2], EC: [-78.2, -1.8], CO: [-74.3, 4.6],
+    VE: [-66.6, 6.4], CR: [-84.1, 9.7], PA: [-80.0, 8.5],
+    CU: [-77.8, 21.5], DO: [-70.2, 18.7], JM: [-77.3, 18.1],
+    JP: [138.3, 36.2], CN: [104.2, 35.9], KR: [127.8, 36.0],
+    KP: [127.5, 40.3], IN: [78.9, 22.4], PK: [69.3, 30.4],
+    BD: [90.4, 23.7], LK: [80.8, 7.9], NP: [84.1, 28.4],
+    TH: [101.0, 15.9], VN: [108.3, 14.1], KH: [104.9, 12.6],
+    LA: [102.5, 19.9], MM: [95.9, 21.9], MY: [101.9, 4.2],
+    SG: [103.8, 1.35], ID: [113.9, -0.8], PH: [121.8, 12.9],
+    AU: [133.8, -25.3], NZ: [174.9, -40.9], FJ: [178.1, -17.7],
+    SA: [45.1, 23.9], AE: [54.3, 23.4], QA: [51.2, 25.4],
+    KW: [47.6, 29.3], BH: [50.6, 26.0], OM: [55.9, 21.5],
+    IL: [34.9, 31.0], PS: [35.2, 31.9], JO: [36.9, 30.6],
+    LB: [35.9, 33.9], SY: [38.9, 34.8], IQ: [43.7, 33.1],
+    IR: [53.7, 32.4], AF: [66.0, 33.9], EG: [30.8, 26.8],
+    MA: [-7.1, 31.8], DZ: [2.6, 28.0], TN: [9.5, 34.0],
+    LY: [17.2, 26.3], ZA: [24.7, -30.6], NG: [8.7, 9.1],
+    KE: [37.9, -0.0], ET: [40.5, 9.1], GH: [-1.0, 7.9],
+    CI: [-5.5, 7.5], SN: [-14.5, 14.5], TZ: [34.9, -6.4],
+    UG: [32.3, 1.4], ZW: [29.2, -19.0], ZM: [27.8, -13.1],
+    NA: [17.1, -22.1], BW: [24.7, -22.3], MZ: [35.5, -18.7],
+    CM: [12.7, 6.4], MG: [46.9, -18.8], GE: [43.4, 42.3],
+    AM: [45.0, 40.1], AZ: [47.6, 40.1], KZ: [66.9, 48.0],
+    UZ: [64.6, 41.4], KG: [74.8, 41.2], TJ: [71.3, 38.9],
+    TM: [59.6, 38.9], MN: [103.8, 46.9], HK: [114.2, 22.4],
+    TW: [121.0, 23.7], MO: [113.5, 22.2],
+  };
+
+  // "Ungefärlig plats" — klubbar UTAN känd adress men med en känd landskod
+  // klustras runt landets centroid i stället för att spridas ut i Atlanten
+  // (se UNKNOWN_GRID nedan, den nivån är för klubbar helt UTAN varken
+  // adress eller land). Samma stabila-slot-princip som UNKNOWN_GRID —
+  // slotet återanvänds ALDRIG, annars skulle en orelaterad klubb i samma
+  // land hoppa till en ny position bara för att en annan klubb i samma
+  // land försvann ur urvalet. Slotnumreringen är PER LAND (egen Map per
+  // landskod), inte global — annars skulle land #2 i tur och ordning börja
+  // sitt kluster mitt i land #1:s om många länder bara har en handfull
+  // klubbar var.
+  const COUNTRY_GRID_COLS = 4;
+  const COUNTRY_GRID_SPACING = [0.4, 0.3]; // [lng, lat] grader mellan klustrets punkter
+  let countryGridSlotByCode = new Map(); // landskod -> Map(klubbnamn -> slotindex)
+  function countryGridLngLat(name, code) {
+    const centroid = COUNTRY_CENTROIDS[code];
+    if (!centroid) return null; // okänd/orimlig landskod — bör inte hända, men failsafe
+    if (!countryGridSlotByCode.has(code)) countryGridSlotByCode.set(code, new Map());
+    const slots = countryGridSlotByCode.get(code);
+    if (!slots.has(name)) slots.set(name, slots.size);
+    const slot = slots.get(name);
+    const col = slot % COUNTRY_GRID_COLS;
+    const row = Math.floor(slot / COUNTRY_GRID_COLS);
+    // Centrerat kring centroid (inte startande FRÅN den) så klustret växer
+    // åt alla håll i stället för att bara skjuta ut söderut/österut.
+    const colOffset = col - (COUNTRY_GRID_COLS - 1) / 2;
+    return [centroid[0] + colOffset * COUNTRY_GRID_SPACING[0],
+            centroid[1] + row * COUNTRY_GRID_SPACING[1]];
   }
 
   // "Okända" klubbar (ingen adress att slå upp) plottas var för sig i ett
@@ -4920,6 +5097,26 @@ window.HB = window.HB || {};
       info.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + info.cups.join(", ")) : null);
   }
 
+  // Intl.DisplayNames — inbyggd webbläsar-API för att slå upp landsnamn
+  // ("NO" -> "Norge") ur en landskod, ingen egen namntabell behövs (till
+  // skillnad från COUNTRY_CENTROIDS, som bara kan hämtas ur koordinater).
+  const countryNameLookup = (() => {
+    try { return new Intl.DisplayNames(["sv"], { type: "region" }); }
+    catch { return null; }
+  })();
+  function countryDisplayName(code) {
+    try { return (countryNameLookup && countryNameLookup.of(code)) || code; }
+    catch { return code; }
+  }
+
+  function countryPopupBody(name, entry) {
+    return h("div", { class: "map-popup" },
+      h("strong", null, name),
+      h("br"),
+      h("span", { class: "muted" }, "Ungefärlig plats — land: " + countryDisplayName(entry.code)),
+      entry.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + entry.cups.join(", ")) : null);
+  }
+
   // Diffar mot markörerna som redan sitter på kartan i stället för att
   // rensa och bygga om alla — en klubb som förekommer i BÅDA det gamla och
   // nya urvalet (samma namn, oavsett om året eller cupvalet ändrats) rörs
@@ -4929,7 +5126,7 @@ window.HB = window.HB || {};
   // som ändras mellan åren i stället för att hela kartan verkar blinka om.
   // Rör INTE kartans center/zoom (ingen fitBounds här), till skillnad från
   // createMap nedan.
-  function paintMapMarkers(maplibregl, geo, unknownNames, cupColorForClub) {
+  function paintMapMarkers(maplibregl, geo, countryMap, unknownNames, cupColorForClub) {
     const nextNames = new Set(Object.keys(geo));
     for (const [name, entry] of currentMapMarkerByKey) {
       if (!nextNames.has(name)) { entry.marker.remove(); currentMapMarkerByKey.delete(name); }
@@ -4951,6 +5148,30 @@ window.HB = window.HB || {};
         .addTo(currentMap);
       currentMapMarkerByKey.set(name, { marker, color });
     }
+    // Mellannivån: känt land, okänd adress — samma diff-/färgprincip som
+    // huvudlistan ovan, men klustrat kring landets centroid (countryGridLngLat)
+    // i stället för en riktig koordinat, och en mindre nål (scale 0.7) så
+    // den läsbart skiljer sig från en äkta adressträff även vid samma färg.
+    const nextCountryNames = new Set(countryMap ? countryMap.keys() : []);
+    for (const [name, entry] of currentCountryMarkerByKey) {
+      if (!nextCountryNames.has(name)) { entry.marker.remove(); currentCountryMarkerByKey.delete(name); }
+    }
+    for (const [name, cInfo] of (countryMap || new Map())) {
+      const color = cupColorForClub(cInfo);
+      const existing = currentCountryMarkerByKey.get(name);
+      if (existing && existing.color === color) {
+        existing.marker.setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo)));
+        continue;
+      }
+      if (existing) existing.marker.remove();
+      const lngLat = countryGridLngLat(name, cInfo.code);
+      if (!lngLat) continue; // okänd landskod (borde inte hända) — hoppa hellre än att krascha
+      const marker = new maplibregl.Marker({ color, scale: 0.7 })
+        .setLngLat(lngLat)
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo)))
+        .addTo(currentMap);
+      currentCountryMarkerByKey.set(name, { marker, color });
+    }
     const nextUnknown = new Set(unknownNames || []);
     for (const [name, marker] of currentUnknownMarkerByKey) {
       if (!nextUnknown.has(name)) { marker.remove(); currentUnknownMarkerByKey.delete(name); }
@@ -4960,7 +5181,7 @@ window.HB = window.HB || {};
       const popupBody = h("div", { class: "map-popup" },
         h("strong", null, name),
         h("br"),
-        h("span", { class: "muted" }, "Ingen känd adress"));
+        h("span", { class: "muted" }, "Ingen känd adress eller land"));
       const marker = new maplibregl.Marker({ color: "#8a94a3" }) // grå — skiljer klubbarna utan känd adress från de med
         .setLngLat(unknownGridLngLat(name))
         .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(popupBody))
@@ -4969,10 +5190,11 @@ window.HB = window.HB || {};
     }
   }
 
-  function createMap(maplibregl, container, geo, unknownNames, cupColorForClub) {
+  function createMap(maplibregl, container, geo, countryMap, unknownNames, cupColorForClub) {
     if (currentMap) { currentMap.remove(); currentMap = null; }
     currentMapMarkerByKey = new Map();
     currentUnknownMarkerByKey = new Map();
+    currentCountryMarkerByKey = new Map();
     currentMap = new maplibregl.Map({
       container,
       style: "https://tiles.openfreemap.org/styles/liberty",
@@ -4980,13 +5202,19 @@ window.HB = window.HB || {};
       zoom: 4,
     });
     currentMap.addControl(new maplibregl.NavigationControl(), "top-right");
-    paintMapMarkers(maplibregl, geo, unknownNames, cupColorForClub);
-    // Bara EN representativ punkt (rutnätets ursprung, inte varenda
-    // enskild rutnätsmarkör) räknas in i den automatiska inzoomningen —
-    // annars skulle ett stort rutnät (många klubbar utan adress) dominera
-    // och klämma ihop de riktiga (kända) markörerna i ett hörn.
+    paintMapMarkers(maplibregl, geo, countryMap, unknownNames, cupColorForClub);
+    // Landsnivåns markörer är RIKTIGA (om än ungefärliga) geografiska
+    // positioner — till skillnad från Atlant-rutnätet (bara EN representativ
+    // punkt räknas in där, se nedan) räknas VARJE lands centroid in i
+    // inzoomningen, så t.ex. en internationell cup med lag från många länder
+    // faktiskt zoomar ut till hela Europa/världen i stället för att klämma
+    // ihop dem mot en enda punkt.
     const bounds = new maplibregl.LngLatBounds();
     for (const info of Object.values(geo)) bounds.extend([info.lng, info.lat]);
+    for (const entry of (countryMap ? countryMap.values() : [])) {
+      const centroid = COUNTRY_CENTROIDS[entry.code];
+      if (centroid) bounds.extend(centroid);
+    }
     if (unknownNames && unknownNames.length) bounds.extend(UNKNOWN_GRID_ORIGIN);
     if (!bounds.isEmpty()) currentMap.fitBounds(bounds, { padding: 40, maxZoom: 10 });
   }

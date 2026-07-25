@@ -62,6 +62,7 @@ query($cup: Int, $tournament: String, $cat: Int) {
     teams {
       id
       nameClubName
+      nation { code }
       publicPlayers {
         name
         shirtNr
@@ -159,7 +160,7 @@ def result_of(m):
     }
 
 
-def flat_match(m, cat_id, cat_name, div_type, club_by_team):
+def flat_match(m, cat_id, cat_name, div_type, club_by_team, nation_by_team):
     # zonedStartTime (INTE startTime) är den äkta UTC-epoken vars
     # Europe/Stockholm-formatering ger korrekt svensk lokaltid — verifierat
     # mot en känd matchtid (12:00) på results.partillecup.com: startTime
@@ -178,10 +179,18 @@ def flat_match(m, cat_id, cat_name, div_type, club_by_team):
         # fält, se scrape_category) — till skillnad från "name" (fullt
         # lagnamn, t.ex. "IK Sävehof Ö2") används det av Trends klubbräkning
         # och Kartans korsreferens, ingen gissning via prefixmatchning behövs.
+        # country: landskod direkt från Gothias eget Team.nation-fält (se
+        # scrape_category) — till skillnad från club (som bara täcker
+        # KLUBBNAMN, oberoende av adress) kräver den HELLER ingen
+        # namnmatchning mot klubbkatalogen: gäller lika bra för utländska
+        # lag som ALDRIG spelat i någon klassisk Cup Manager-cup (och
+        # därför saknas helt ur data/club-directory.json).
         "home": {"id": m["homeTeamId"], "name": m["homeTeamName"],
-                  "club": club_by_team.get(m["homeTeamId"])},
+                  "club": club_by_team.get(m["homeTeamId"]),
+                  "country": nation_by_team.get(m["homeTeamId"])},
         "away": {"id": m["awayTeamId"], "name": m["awayTeamName"],
-                  "club": club_by_team.get(m["awayTeamId"])},
+                  "club": club_by_team.get(m["awayTeamId"]),
+                  "country": nation_by_team.get(m["awayTeamId"])},
         "res": result_of(m),
     }
 
@@ -224,12 +233,15 @@ def scrape_category(cup_id, tournament_id, cat):
     playoff_divisions = []
     rosters = {}
     club_by_team = {}
+    nation_by_team = {}
     for t in category.get("teams") or []:
         # nameClubName: Gothias eget rena klubbnamn (utan lagsuffix) — täcker
         # ALLA lag, till skillnad från truppdatan nedan som bara finns för
         # lag med publicPlayers ifyllt.
         if t.get("nameClubName"):
             club_by_team[t["id"]] = t["nameClubName"]
+        if (t.get("nation") or {}).get("code"):
+            nation_by_team[t["id"]] = t["nation"]["code"]
         players = t.get("publicPlayers") or []
         if not players:
             continue  # de flesta yngre/mindre lag har ingen trupp inlagd
@@ -240,7 +252,7 @@ def scrape_category(cup_id, tournament_id, cat):
     for div in category["divisions"]:
         div_type = DIV_TYPE.get(div["type"], "Conference")
         for m in div["matches"]:
-            matches.append(flat_match(m, cat["id"], cat_name, div_type, club_by_team))
+            matches.append(flat_match(m, cat["id"], cat_name, div_type, club_by_team, nation_by_team))
         if div["type"] == "playoff":
             pmatches = [playoff_match(m, cat["id"], div["id"], div["name"]) for m in div["matches"]]
             if pmatches:

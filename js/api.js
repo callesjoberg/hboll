@@ -68,8 +68,14 @@ window.HB = window.HB || {};
   // koordinater+land), gratis att hänga med här eftersom store:n redan
   // deduplicerar per NameClub-entitet oavsett hur många lag/matcher som
   // refererar samma klubb (se clubGeoFromStore). Används av Karta-vyn.
+  //
+  // club:{nation:...} (UTAN adress-hoppet) är ett andra, oberoende fält —
+  // en klubb kan sakna registrerad adress helt (vanligt för utländska lag)
+  // men ändå ha en nation ifylld direkt på NameClub-entiteten. Ger en
+  // landskod på VARJE match (se normalize() nedan) helt utan namnmatchning
+  // mot klubbkatalogen — håll i synk med scripts/fetch_cupmanager.py.
   const TEAM_FIELDS =
-    "{club:{address:{address:{city:{},lat:{},lng:{},nation:{name:{},code:{}}}}}}";
+    "{club:{address:{address:{city:{},lat:{},lng:{},nation:{name:{},code:{}}}},nation:{code:{}}}}";
 
   function matchQuery(cup, limit, offset) {
     return (
@@ -135,6 +141,15 @@ window.HB = window.HB || {};
     };
   }
 
+  // Landskod direkt från en matchsidas (home/away) team.club.nation, utan
+  // att gå via adressen — samma tvåstegs-hopp som clubGeoFromStore (club ->
+  // nation), håll i synk med scripts/fetch_cupmanager.py:s club_nation_code.
+  function clubNationCode(store, side) {
+    const club = storeGet(store, (storeGet(store, side.team) || {}).club) || {};
+    const nation = storeGet(store, club.nation) || {};
+    return nation.code || null;
+  }
+
   function normalize(store) {
     const matches = [];
     for (const e of Object.values(store)) {
@@ -168,10 +183,12 @@ window.HB = window.HB || {};
         home: {
           id: home.id || refId(home.team), name: nameOf(home),
           club: (storeGet(store, (storeGet(store, home.team) || {}).club) || {}).name || null,
+          country: clubNationCode(store, home),
         },
         away: {
           id: away.id || refId(away.team), name: nameOf(away),
           club: (storeGet(store, (storeGet(store, away.team) || {}).club) || {}).name || null,
+          country: clubNationCode(store, away),
         },
         res: result,
       });
