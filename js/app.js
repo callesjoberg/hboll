@@ -5326,12 +5326,15 @@ window.HB = window.HB || {};
     return h("div", { class: "map-popup" },
       h("strong", null, countryDisplayName(code)),
       h("br"),
-      h("span", { class: "muted" }, entry.clubs.size + " klubbar/lag totalt"),
+      h("span", { class: "muted" }, entry.clubs.size + " klubbar totalt"),
       years.length ? h("div", { class: "muted" }, "Deltagit: " + years.join(", ")) : null);
   }
 
   // Landsklustrens boll (ihopfälld — se expandedCountryCodes): en cirkel
-  // med antalet klubbar/lag som text, storleken skalad (kvadratrot, inte
+  // med antalet klubbar som text (klubbnamn, INTE fullt lagnamn — se
+  // countryMap/clubCountryFromMatches, .club || .name men .club är alltid
+  // ifyllt för Cup Manager/Gothia, som är de enda källorna landsdata
+  // täcker just nu), storleken skalad (kvadratrot, inte
   // linjärt — annars skulle t.ex. 40 klubbar bli en orimligt stor cirkel
   // jämfört med 5) så den syns tydligt utzoomat utan att dominera kartan.
   // Ett vanligt maplibregl.Marker({color}) stödjer varken text inuti eller
@@ -5419,7 +5422,7 @@ window.HB = window.HB || {};
       if (existing) existing.marker.remove();
       const el = countryBubbleElement(clubs.length, color);
       el.title = countryDisplayName(code) + " — " + clubs.length +
-        " klubbar/lag utan känd adress. Klicka för att visa dem enskilt.";
+        " klubbar utan känd adress. Klicka för att visa dem enskilt.";
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         expandedCountryCodes.add(code);
