@@ -95,9 +95,18 @@
    alltid lite lös/webbsidig jämfört med en riktig app, även i
    hemskärms-/standalone-läge, se manifest.json). touch-action:
    manipulation slår av dubbeltrycks-zoom-fördröjningen (en vanlig källa
-   till att sidan "fastnar" inzoomad efter ett snabbt dubbeltryck). */
+   till att sidan "fastnar" inzoomad efter ett snabbt dubbeltryck).
+   overscroll-behavior-y satt BARA på body (inte html) gav Chrome på macOS
+   en tvetydig uppfattning om vilket element som äger sidans scroll —
+   <html>, inte <body>, är den faktiska "scrolling element" i standardläge
+   — och kunde få hela sidan att låsa sig (musen/track­paden scrollar inte
+   alls, fast rullisten syns) på långa listor, t.ex. Klubb/Lag-flikens
+   klasstabeller. Safari påverkades aldrig (svagt/inget stöd för
+   overscroll-behavior där, se ovan) vilket gjorde felet osynligt tills
+   någon testade i Chrome. Satt nu på BÅDA — rekommenderat mönster. */
 html {
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 body {
