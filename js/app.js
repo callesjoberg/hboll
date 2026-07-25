@@ -5109,13 +5109,49 @@ window.HB = window.HB || {};
     catch { return code; }
   }
 
-  function countryPopupBody(name, entry) {
+  // collapseFn: bara ifylld när landets kluster är UTFÄLLT (se
+  // expandedCountryCodes) — en chip i popupen för att fälla ihop det igen,
+  // annars finns inget sätt att komma tillbaka till bollen utan att byta
+  // cup/år (som återställer allt) eller ladda om sidan.
+  function countryPopupBody(name, entry, collapseFn) {
     return h("div", { class: "map-popup" },
       h("strong", null, name),
       h("br"),
       h("span", { class: "muted" }, "Ungefärlig plats — land: " + countryDisplayName(entry.code)),
-      entry.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + entry.cups.join(", ")) : null);
+      entry.cups.length > 1 ? h("div", { class: "muted" }, "Deltar i: " + entry.cups.join(", ")) : null,
+      collapseFn ? h("button", {
+        class: "chip small", type: "button", style: "margin-top:6px",
+        onclick: collapseFn,
+      }, "← Gruppera " + countryDisplayName(entry.code) + " igen") : null);
   }
+
+  // Landsklustrens boll (ihopfälld — se expandedCountryCodes): en cirkel
+  // med antalet klubbar/lag som text, storleken skalad (kvadratrot, inte
+  // linjärt — annars skulle t.ex. 40 klubbar bli en orimligt stor cirkel
+  // jämfört med 5) så den syns tydligt utzoomat utan att dominera kartan.
+  // Ett vanligt maplibregl.Marker({color}) stödjer varken text inuti eller
+  // dynamisk storlek — bygger därför ett eget DOM-element (stöds direkt av
+  // Marker via {element: ...}).
+  function countryBubbleElement(count, color) {
+    const size = Math.round(Math.min(56, Math.max(24, 16 + Math.sqrt(count) * 8)));
+    const el = document.createElement("div");
+    el.className = "map-country-bubble";
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.background = color;
+    el.style.fontSize = Math.max(10, Math.min(15, Math.round(size * 0.32))) + "px";
+    el.textContent = String(count);
+    return el;
+  }
+
+  // Vilka landskoder som just nu är "utfällda" till enskilda klubbnålar i
+  // stället för en samlad boll (se paintMapMarkers) — klick på en boll
+  // lägger till, popupens "Gruppera igen"-chip tar bort. Modulnivå (inte
+  // state) så den överlever renderContent()-anrop under en session, precis
+  // som countryGridSlotByCode — nollställs bara när kartan byggs om helt
+  // (createMap, ny cup-/årskombination).
+  let expandedCountryCodes = new Set();
+  let currentCountryBubbleByCode = new Map(); // landskod -> {marker, count, color}
 
   // Diffar mot markörerna som redan sitter på kartan i stället för att
   // rensa och bygga om alla — en klubb som förekommer i BÅDA det gamla och
@@ -5148,19 +5184,59 @@ window.HB = window.HB || {};
         .addTo(currentMap);
       currentMapMarkerByKey.set(name, { marker, color });
     }
-    // Mellannivån: känt land, okänd adress — samma diff-/färgprincip som
-    // huvudlistan ovan, men klustrat kring landets centroid (countryGridLngLat)
-    // i stället för en riktig koordinat, och en mindre nål (scale 0.7) så
-    // den läsbart skiljer sig från en äkta adressträff även vid samma färg.
-    const nextCountryNames = new Set(countryMap ? countryMap.keys() : []);
+    // Mellannivån: känt land, okänd adress — grupperas per land till EN
+    // "boll" (countryBubbleElement, storlek+siffra = antal klubbar) om
+    // landet inte är utfällt (expandedCountryCodes), annars enskilda
+    // klubbnålar precis som förut (countryGridLngLat, scale 0.7). Klick på
+    // en boll fäller ut den (se click-lyssnaren nedan), popupens "Gruppera
+    // igen"-chip (countryPopupBody) fäller ihop den igen.
+    const byCode = new Map(); // landskod -> [[klubbnamn, entry], ...]
+    for (const [name, entry] of (countryMap || new Map())) {
+      if (!byCode.has(entry.code)) byCode.set(entry.code, []);
+      byCode.get(entry.code).push([name, entry]);
+    }
+
+    const nextBubbleCodes = new Set([...byCode.keys()].filter((code) => !expandedCountryCodes.has(code)));
+    for (const [code, entry] of currentCountryBubbleByCode) {
+      if (!nextBubbleCodes.has(code)) { entry.marker.remove(); currentCountryBubbleByCode.delete(code); }
+    }
+    for (const code of nextBubbleCodes) {
+      const clubs = byCode.get(code);
+      const colors = new Set(clubs.map(([, e]) => cupColorForClub(e)));
+      // Bollen aggregerar FLERA klubbar — om de inte alla delar samma
+      // cupfärg (bara möjligt när flera cuper är valda, se cupColorForClub)
+      // används den delade färgen i stället för att godtyckligt välja en.
+      const color = colors.size === 1 ? [...colors][0] : MAP_SHARED_COLOR;
+      const centroid = COUNTRY_CENTROIDS[code];
+      if (!centroid) continue;
+      const existing = currentCountryBubbleByCode.get(code);
+      if (existing && existing.count === clubs.length && existing.color === color) continue; // oförändrad — rör inte
+      if (existing) existing.marker.remove();
+      const el = countryBubbleElement(clubs.length, color);
+      el.title = countryDisplayName(code) + " — " + clubs.length +
+        " klubbar/lag utan känd adress. Klicka för att visa dem enskilt.";
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        expandedCountryCodes.add(code);
+        renderContent();
+      });
+      const marker = new maplibregl.Marker({ element: el }).setLngLat(centroid).addTo(currentMap);
+      currentCountryBubbleByCode.set(code, { marker, count: clubs.length, color });
+    }
+
+    const nextCountryNames = new Set([...(countryMap ? countryMap.keys() : [])]
+      .filter((name) => expandedCountryCodes.has(countryMap.get(name).code)));
     for (const [name, entry] of currentCountryMarkerByKey) {
       if (!nextCountryNames.has(name)) { entry.marker.remove(); currentCountryMarkerByKey.delete(name); }
     }
-    for (const [name, cInfo] of (countryMap || new Map())) {
+    for (const name of nextCountryNames) {
+      const cInfo = countryMap.get(name);
       const color = cupColorForClub(cInfo);
+      const collapseFn = () => { expandedCountryCodes.delete(cInfo.code); renderContent(); };
       const existing = currentCountryMarkerByKey.get(name);
       if (existing && existing.color === color) {
-        existing.marker.setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo)));
+        existing.marker.setPopup(
+          new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo, collapseFn)));
         continue;
       }
       if (existing) existing.marker.remove();
@@ -5168,7 +5244,7 @@ window.HB = window.HB || {};
       if (!lngLat) continue; // okänd landskod (borde inte hända) — hoppa hellre än att krascha
       const marker = new maplibregl.Marker({ color, scale: 0.7 })
         .setLngLat(lngLat)
-        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo)))
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setDOMContent(countryPopupBody(name, cInfo, collapseFn)))
         .addTo(currentMap);
       currentCountryMarkerByKey.set(name, { marker, color });
     }
@@ -5195,6 +5271,8 @@ window.HB = window.HB || {};
     currentMapMarkerByKey = new Map();
     currentUnknownMarkerByKey = new Map();
     currentCountryMarkerByKey = new Map();
+    currentCountryBubbleByCode = new Map();
+    expandedCountryCodes = new Set(); // ny karta = börja ihopfällt igen
     currentMap = new maplibregl.Map({
       container,
       style: "https://tiles.openfreemap.org/styles/liberty",

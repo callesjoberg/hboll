@@ -682,6 +682,20 @@ input[type="search"]::-webkit-search-cancel-button {
 .map-popup { font-size: 13px; line-height: 1.5; }
 .map-popup p { margin: 4px 0; }
 
+/* Landsklustrens boll (countryBubbleElement i js/app.js) — bredd/höjd sätts
+   inline per boll (skalad efter antal klubbar), resten är delad stil. */
+.map-country-bubble {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 4px rgba(10, 18, 30, 0.35);
+  cursor: pointer;
+}
+
 /* hero: nästa match */
 
 .hero {
