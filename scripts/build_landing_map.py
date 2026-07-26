@@ -134,6 +134,35 @@ def latest_archive_file(cup_id, archive_index):
     return candidates[-1] if candidates else None
 
 
+def cup_countries(cup_id, archive_index, centroids):
+    # Distinkta landskoder (SE inräknat den här gången — till skillnad
+    # från points_from_teams handlar det här bara om att RÄKNA länder,
+    # inte om var på kartan ett enskilt lag hamnar) över ALLA spelade
+    # upplagor, inte bara den senaste — ett stabilare, mer representativt
+    # tal än om det bara byggde på ett enda års laguppsättning.
+    # `code in centroids` filtrerar bort skräpvärden källdatan ibland har
+    # ("--", "XX", gemena språkkoder som "en") — samma giltighetskoll som
+    # redan avgör om en kod duger till landsjitter i points_from_teams.
+    entry = archive_index.get(cup_id) or {}
+    codes = set()
+    for e in entry.get("editions", []):
+        if e.get("finished", 0) <= 0:
+            continue
+        f = ROOT / e["file"]
+        if not f.exists():
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        for m in data.get("matches", []):
+            for side in ("home", "away"):
+                code = (m.get(side) or {}).get("country")
+                if code and code in centroids:
+                    codes.add(code)
+    return codes
+
+
 def points_from_teams(cup_id, host_lat, host_lon, centroids, archive_index):
     f = latest_archive_file(cup_id, archive_index)
     if not f:
@@ -191,6 +220,7 @@ def main():
     archive_index = json.loads(archive_index_path.read_text(encoding="utf-8")) if archive_index_path.exists() else {}
 
     out = {}
+    all_countries = set()
     for c in cups:
         cup_id = c["id"]
         points = points_from_snapshot(cup_id)
@@ -201,11 +231,20 @@ def main():
         if points is None:
             points = [[c["lat"], c["lon"]]]
             source = "värdort"
-        out[cup_id] = {"name": c["name"], "count": len(points), "points": cap_points(points), "_src": source}
+        codes = cup_countries(cup_id, archive_index, centroids)
+        all_countries |= codes
+        out[cup_id] = {
+            "name": c["name"], "count": len(points), "countries": len(codes),
+            "points": cap_points(points), "_src": source,
+        }
 
     out_path = ROOT / "data" / "landing-map.json"
-    # _src är bara till för utskriften nedan — sparas inte i den faktiska filen
-    slim = {k: {"name": v["name"], "count": v["count"], "points": v["points"]} for k, v in out.items()}
+    # _src är bara till för utskriften nedan — sparas inte i den faktiska filen.
+    # _meta är INTE en cup — js/welcome.js hoppar uttryckligen över nycklar
+    # som börjar med "_" när den bygger listan över cuper att rulla igenom.
+    slim = {k: {"name": v["name"], "count": v["count"], "countries": v["countries"], "points": v["points"]}
+            for k, v in out.items()}
+    slim["_meta"] = {"totalCountries": len(all_countries)}
     old = None
     if out_path.exists():
         try:
@@ -218,11 +257,11 @@ def main():
     out_path.write_text(
         json.dumps(slim, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8")
-    total_points = sum(len(v["points"]) for v in slim.values())
+    total_points = sum(len(v["points"]) for k, v in slim.items() if k != "_meta")
     by_source = {}
     for v in out.values():
         by_source[v["_src"]] = by_source.get(v["_src"], 0) + 1
-    print(f"skrev landing-map.json: {len(slim)} cuper, {total_points} punkter "
+    print(f"skrev landing-map.json: {len(out)} cuper, {total_points} punkter "
           f"({', '.join(f'{k}: {n}' for k, n in by_source.items())})")
 
 

@@ -223,7 +223,9 @@ window.HB = window.HB || {};
   }
 
   async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState, onCupChange, cupPickerBtn, cupDropup, playPauseBtn) {
-    const cupIds = shuffleCupOrder(Object.keys(cupsData));
+    // "_meta" (se build_landing_map.py) är metadata om HELA filen, inte
+    // en cup — ska aldrig hamna i cykeln eller cup-väljaren.
+    const cupIds = shuffleCupOrder(Object.keys(cupsData).filter((id) => !id.startsWith("_")));
     if (!cupIds.length) return () => {};
 
     const maplibregl = await ensureMapLibre();
@@ -649,6 +651,7 @@ window.HB = window.HB || {};
     const statsHost = h("div", { class: "welcome-stats" }, statRefs.map((r) => r.el));
 
     let statsData = null;
+    let totalCountries = 0; // ur landing-map.json:s _meta, se fetch-anropet nedan
     function setOverallStats(s) {
       const vals = [
         [fmtNum(s.cups), s.cups === 1 ? "cup" : "cuper"],
@@ -668,12 +671,15 @@ window.HB = window.HB || {};
       const pc = statsData && statsData.perCup[cupId];
       if (!pc) { if (statsData) setOverallStats(statsData); return; } // saknar arkivdata för just den cupen — visa totalerna i stället
       const s = statsData;
+      // "år arkiverade" och "sedan X" var tidigare två separata kort —
+      // slagna ihop till ett (stort tal = antal år, undertext = sedan-år)
+      // för att göra plats åt LÄNDER-kortet nedan.
       const vals = [
         [pc.place || "–", "plats", fmtNum(s.cups) + " cuper totalt"],
         [fmtNum(cup.count || cup.points.length), "lag", "av " + fmtNum(s.teams) + " totalt"],
         [fmtNum(pc.matches), "matcher", "av " + fmtNum(s.matches) + " totalt"],
-        [pc.editions, pc.editions === 1 ? "år arkiverat" : "år arkiverade", "av " + fmtNum(s.totalYears) + " totalt"],
-        ["sedan " + pc.sinceYear, "historik", "hela sajten sedan " + (s.sinceYear || "–")],
+        [fmtNum(cup.countries || 0), "länder", "av " + fmtNum(totalCountries) + " totalt"],
+        [pc.editions + " år", "sedan " + pc.sinceYear, "av " + fmtNum(s.totalYears) + " totalt"],
       ];
       vals.forEach(([v, l, sm], i) => {
         statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; statRefs[i].small.textContent = sm;
@@ -720,6 +726,7 @@ window.HB = window.HB || {};
     fetch("data/landing-map.json")
       .then((r) => (r.ok ? r.json() : {}))
       .then((cupsData) => {
+        totalCountries = (cupsData && cupsData._meta && cupsData._meta.totalCountries) || 0;
         stopAnimationPromise = startMapAnimation(
           mapEl, dotCanvas, nameEl, cupsData || {}, animState, setCupStats,
           cupPickerBtn, cupDropup, playPauseBtn);
