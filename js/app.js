@@ -7269,6 +7269,14 @@ window.HB = window.HB || {};
     setupAddCup();
     setupSettings();
     setupBracketPan();
+    // Välkomstöverlägget (js/welcome.js) visar sig självt en gång för nya
+    // besökare — den här knappen (sidfoten) låter vem som helst öppna det
+    // igen när de vill. Null-koll (till skillnad från övriga $(...)-anrop
+    // här) — en gammal cachad index.html (t.ex. service worker-fallback
+    // under en pågående ny driftsättning) som saknar knappen ska aldrig få
+    // krascha HELA appens initiering för en så liten sak.
+    const welcomeBtn = $("#welcomeReopenBtn");
+    if (welcomeBtn) welcomeBtn.addEventListener("click", () => HB.openWelcome());
 
     // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
     // lyssnare (i stället för en per renderToolbar-anrop) hittar alltid

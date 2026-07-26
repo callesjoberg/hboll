@@ -18,6 +18,7 @@ const SHELL_FILES = [
   "./js/ics.js",
   "./js/export.js",
   "./js/weather.js",
+  "./js/welcome.js",
   "./js/app.js",
   "./manifest.json",
   "./assets/ahk-logo.svg",

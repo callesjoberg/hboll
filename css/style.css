@@ -2262,8 +2262,197 @@ dialog.history-dialog {
 
 .admin-field input { font-size: 14px; text-transform: none; letter-spacing: 0; }
 
+/* --- välkomstöverlägg (js/welcome.js) --------------------------------- */
+/* Medvetet FASTA mörka färger (samma #16283f/gult som header.top, se dess
+   kommentar) oavsett ljust/mörkt tema — en ljus välkomstskärm med
+   glödande kartprickar hade sett urvattnad ut, och headern har redan
+   samma "fast mörk" identitet, så det känns som EN sammanhängande
+   startupplevelse snarare än två olika stilar. */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #0f1723;
+  color: #eef2f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.welcome-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Mörk vinjett upptill/nedtill + en svag global dämpning — utan den
+   konkurrerade prickarna för mycket med texten om en klunga råkade hamna
+   bakom den. */
+.welcome-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 35, 0.55) 0%, rgba(15, 23, 35, 0.15) 22%,
+      rgba(15, 23, 35, 0.15) 60%, rgba(15, 23, 35, 0.75) 100%);
+  pointer-events: none;
+}
+
+.welcome-close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(238, 242, 248, 0.3);
+  background: rgba(15, 23, 35, 0.4);
+  color: #eef2f8;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.welcome-close:hover { background: rgba(15, 23, 35, 0.65); }
+
+.welcome-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: max(48px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
+  scrollbar-width: thin;
+}
+
+.welcome-kicker {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  text-align: center;
+}
+
+.welcome-title {
+  margin: 0 0 12px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 9vw, 64px);
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+}
+
+.welcome-lead {
+  margin: 0 auto 28px;
+  max-width: 520px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #c3ccdb;
+  text-align: center;
+}
+
+.welcome-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.welcome-stat {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-align: center;
+  backdrop-filter: blur(2px);
+}
+
+.welcome-stat strong {
+  display: block;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--yellow);
+}
+
+.welcome-stat span {
+  display: block;
+  font-size: 11px;
+  color: #a9b4c4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.welcome-features {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.welcome-feature {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.welcome-feature h3 {
+  margin: 0 0 4px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.01em;
+}
+.welcome-feature h3::before { content: attr(data-emoji) "  "; }
+
+.welcome-feature p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #b7c1d1;
+}
+
+.welcome-cta-row { display: flex; justify-content: center; }
+
+.welcome-cta {
+  background: var(--yellow);
+  color: #16283f;
+  border: none;
+  border-radius: 999px;
+  padding: 13px 32px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(246, 196, 16, 0.25);
+}
+.welcome-cta:hover { filter: brightness(1.06); }
+
+.welcome-reopen {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-cta, .welcome-close { transition: none; }
+}
+
 @media (max-width: 480px) {
   .brand h1 { font-size: 20px; }
   .slot { grid-template-columns: 44px 1fr; }
   #meta { display: none; }
+  .welcome-content { padding-left: 18px; padding-right: 18px; }
+  .welcome-stats { grid-template-columns: repeat(2, 1fr); }
 }
