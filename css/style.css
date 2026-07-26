@@ -2280,8 +2280,16 @@ dialog.history-dialog {
   overflow: hidden;
 }
 
-.welcome-map,
-.welcome-dots {
+/* Specificitet (.welcome-overlay .welcome-map, INTE bara .welcome-map)
+   är medveten: maplibre-gl.css lägger själv klassen "maplibregl-map" på
+   containern med en egen "position: relative"-regel av samma specificitet
+   som en ensam .welcome-map-selektor — och laddas EFTER style.css (se
+   ensureMapLibre i js/welcome.js), så den skulle annars vinna kaskaden
+   och göra kartan till ett vanligt flödande flex-element i stället för
+   en fullskärmsbakgrund (upptäckt som en oavsiktlig delad layout där
+   kartan bara tog upp en del av bredden och texten resten). */
+.welcome-overlay .welcome-map,
+.welcome-overlay .welcome-dots {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2311,17 +2319,43 @@ dialog.history-dialog {
 .welcome-overlay .maplibregl-ctrl-attrib a { color: #b7c2d0; }
 .welcome-overlay .maplibregl-ctrl-attrib-button { filter: invert(1) brightness(1.6); }
 
-.welcome-cup-name {
+.welcome-cup-controls {
   position: absolute;
   left: 16px;
   bottom: 14px;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.welcome-cup-name {
   font: 600 13px Barlow, sans-serif;
   color: #eef2f8;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   opacity: 0;
   pointer-events: none;
 }
+
+/* Egen play/paus-knapp för animationen — till skillnad från cupnamnet
+   (som tonas in/ut med cup-cykeln) håller den sig konstant synlig så den
+   alltid går att klicka. */
+.welcome-playpause {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(238, 242, 248, 0.35);
+  background: rgba(15, 23, 35, 0.45);
+  color: #eef2f8;
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+.welcome-playpause:hover { background: rgba(15, 23, 35, 0.72); }
 
 /* Mörk vinjett upptill/nedtill + en svag global dämpning — utan den
    konkurrerade prickarna för mycket med texten om en klunga råkade hamna

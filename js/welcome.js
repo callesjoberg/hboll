@@ -133,7 +133,21 @@ window.HB = window.HB || {};
     };
   }
 
-  async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData) {
+  // En del cuper representeras av EN enda punkt (bara värdortens läge,
+  // inga klubbadresser eller landslag i datan — se build_landing_map.py)
+  // — en sådan bbox har noll utbredning, vilket annars ger MapLibre en
+  // urartad (odefinierad zoom) ram. Ett golv på minSpan grader garanterar
+  // en rimlig, "stads-nära" inzoomning även för de cuperna.
+  function inflateBBox(bb, minSpan) {
+    const latPad = Math.max(0, (minSpan - (bb.maxLat - bb.minLat)) / 2);
+    const lngPad = Math.max(0, (minSpan - (bb.maxLng - bb.minLng)) / 2);
+    return {
+      minLat: bb.minLat - latPad, maxLat: bb.maxLat + latPad,
+      minLng: bb.minLng - lngPad, maxLng: bb.maxLng + lngPad,
+    };
+  }
+
+  async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState) {
     const cupIds = Object.keys(cupsData);
     if (!cupIds.length) return () => {};
 
@@ -169,7 +183,7 @@ window.HB = window.HB || {};
     const cupCam = {};
     for (const id of cupIds) {
       const pts = cupsData[id].points;
-      const bb = percentileBBox(pts, 0.1, 0.9);
+      const bb = inflateBBox(percentileBBox(pts, 0.1, 0.9), 0.4);
       const bounds = new maplibregl.LngLatBounds([bb.minLng, bb.minLat], [bb.maxLng, bb.maxLat]);
       const c = map.cameraForBounds(bounds, { padding: 70, maxZoom: baseZoom + 2.6 });
       cupCam[id] = {
@@ -198,7 +212,7 @@ window.HB = window.HB || {};
     // stegfri rörelse utan hopp) mot target, som byts till den aktuella
     // cupens läge varje gång cupIndex ändras.
     const cam = { lng: first.lng, lat: first.lat, zoom: baseZoom };
-    const CAM_TAU = 6500;
+    const CAM_TAU = 13000; // dubbelt så trög som första versionen — "hälften så fort" panorering
     map.jumpTo({ center: [cam.lng, cam.lat], zoom: cam.zoom });
 
     let cupIndex = 0;
@@ -206,9 +220,9 @@ window.HB = window.HB || {};
     let phaseStart = performance.now();
     const DUR = reduceMotion
       ? { in: 0, hold: 1e9, out: 0 } // still bild av första cupen, ingen cykling, ingen kamerarörelse
-      : { in: 1500, hold: 3000, out: 900 };
-    const STAGGER_MS = 1000; // hur mycket varje prick kan slumpas att dröja innan den börjar tändas — "0-1s"
-    const DOT_FADE_MS = 550; // hur lång tid en enskild prick tar att tändas, från sin egen starttid
+      : { in: 3200, hold: 3000, out: 1400 };
+    const STAGGER_MS = 2000; // hur mycket varje prick kan slumpas att dröja innan den börjar tändas — dubblat efter feedback
+    const DOT_FADE_MS = 1100; // hur lång tid en enskild prick tar att tändas, från sin egen starttid — dubblat
 
     // Slumpad, individuell tändningsfördröjning per prick — genereras om
     // varje gång vi går vidare till en ny cup.
@@ -219,6 +233,8 @@ window.HB = window.HB || {};
     function frame(now) {
       const dt = Math.min(100, now - lastNow); // hoppar aldrig kameran vid t ex en bakgrundsflik
       lastNow = now;
+
+      if (animState.paused) { rafId = requestAnimationFrame(frame); return; }
 
       const elapsed = now - phaseStart;
       if (!reduceMotion && elapsed > DUR[phase]) {
@@ -250,8 +266,8 @@ window.HB = window.HB || {};
       // period/fas så rörelsen inte känns som ett enkelt fram-och-tillbaka.
       // Liten amplitud med avsikt: ska kännas som att globen sakta
       // fortsätter snurra, inte konkurrera med cup-till-cup-panoreringen.
-      const driftLat = reduceMotion ? 0 : Math.sin(now / 71000 + 1.3) * 0.55;
-      const driftLng = reduceMotion ? 0 : Math.sin(now / 53000) * 0.9;
+      const driftLat = reduceMotion ? 0 : Math.sin(now / 142000 + 1.3) * 0.55;
+      const driftLng = reduceMotion ? 0 : Math.sin(now / 106000) * 0.9;
 
       map.jumpTo({ center: [cam.lng + driftLng, cam.lat + driftLat], zoom: cam.zoom });
 
@@ -329,12 +345,21 @@ window.HB = window.HB || {};
     const mapEl = h("div", { class: "welcome-map" });
     const dotCanvas = h("canvas", { class: "welcome-dots" });
     const nameEl = h("div", { class: "welcome-cup-name" });
+    const animState = { paused: false };
+    const playPauseBtn = h("button", {
+      class: "welcome-playpause", type: "button", "aria-label": "Pausa animationen",
+      onclick: () => {
+        animState.paused = !animState.paused;
+        playPauseBtn.textContent = animState.paused ? "▶" : "⏸";
+        playPauseBtn.setAttribute("aria-label", animState.paused ? "Fortsätt animationen" : "Pausa animationen");
+      },
+    }, "⏸");
     const statsHost = h("div", { class: "welcome-stats" },
       h("div", { class: "welcome-stat" }, h("strong", null, "…")));
     const overlay = h("div", { class: "welcome-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Välkommen" },
       mapEl,
       dotCanvas,
-      nameEl,
+      h("div", { class: "welcome-cup-controls" }, nameEl, playPauseBtn),
       h("div", { class: "welcome-scrim" }),
       h("button", {
         class: "welcome-close", type: "button", "aria-label": "Stäng",
@@ -368,7 +393,7 @@ window.HB = window.HB || {};
     fetch("data/landing-map.json")
       .then((r) => (r.ok ? r.json() : {}))
       .then((cupsData) => {
-        stopAnimationPromise = startMapAnimation(mapEl, dotCanvas, nameEl, cupsData || {});
+        stopAnimationPromise = startMapAnimation(mapEl, dotCanvas, nameEl, cupsData || {}, animState);
       })
       .catch(() => {});
 
