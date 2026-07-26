@@ -379,6 +379,11 @@ window.HB = window.HB || {};
     // (clubQuery) — behålls medvetet när man byter sökterm, till skillnad
     // från nedborrningen ovan. Session, sparas ej.
     clubYears: new Set(),
+    // Klubb/Lag-fliken: fyll ut "År"-kolumnen med de år cupen arkiverat men
+    // klubben INTE deltog i (röd text, se renderYearsWithGaps) — på som
+    // förval, men valfritt: en cup med gles historik kan annars dränka
+    // kolumnen i rött. Session, sparas ej.
+    clubShowGaps: true,
     // Cuper-fliken (under Stats): vald cup att visa år-för-år-nedbrytning
     // för, null = visa översiktstabellen över alla cuper. Session, sparas ej.
     statsCupDrill: null,
@@ -3725,11 +3730,18 @@ window.HB = window.HB || {};
       totalCups + " cup" + (totalCups === 1 ? "" : "er") + " · " + totalTeams + " lag totalt · " +
       totalMatches + " matcher · " + allClasses.size + " klasser · " +
       allYears[0] + "–" + allYears[allYears.length - 1]));
+    resultHost.append(h("div", { class: "row" },
+      h("label", { class: "inline-toggle" },
+        h("input", {
+          type: "checkbox", ...(state.clubShowGaps ? { checked: "" } : {}),
+          onchange: (e) => { state.clubShowGaps = e.target.checked; renderContent(); },
+        }),
+        " Markera missade år")));
 
     const columns = [
       { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
       { key: "years", label: "År", align: "l", defaultDir: 1, get: (r) => r.years.join(", "),
-        render: (r) => renderYearsWithGaps(r.cupId, r.years) },
+        ...(state.clubShowGaps ? { render: (r) => renderYearsWithGaps(r.cupId, r.years) } : {}) },
       { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.totalTeams },
       { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.totalMatches },
       { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes.size },
@@ -5443,7 +5455,7 @@ window.HB = window.HB || {};
     // (state.mapYear) Karta just nu råkar visa. Av som förval: kräver att
     // ALLA arkiverade år laddas (kan vara flera MB för en cup med lång
     // historik), inte bara det synliga året.
-    const historyToggle = h("label", { class: "map-history-toggle" },
+    const historyToggle = h("label", { class: "inline-toggle" },
       h("input", {
         type: "checkbox", ...(state.mapCountryHistory ? { checked: "" } : {}),
         onchange: (e) => { state.mapCountryHistory = e.target.checked; renderContent(); },
