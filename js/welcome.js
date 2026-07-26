@@ -369,6 +369,18 @@ window.HB = window.HB || {};
     // kameran tweenar från sitt NUVARANDE läge, inte ett hopp), plus en
     // automatisk paus så den valda cupen inte genast rullar vidare av
     // sig själv innan man hunnit titta på den.
+    //
+    // Pausar INTE direkt — det frös tidigare animationen mitt i själva
+    // växlingen (kameran hann bara halvvägs, prickarna bara delvis
+    // tända), vilket i praktiken såg ut som att "inget händer" förrän
+    // man själv tryckte play. animState.pauseAfterArrival flaggar i
+    // stället att pausen ska slå till FÖRST när både prick-intoningen
+    // och kamera-panoreringen faktiskt hunnit landa, se frame().
+    function syncPlayPauseButton() {
+      if (!playPauseBtn) return;
+      playPauseBtn.textContent = animState.paused ? "▶" : "⏸";
+      playPauseBtn.setAttribute("aria-label", animState.paused ? "Fortsätt animationen" : "Pausa animationen");
+    }
     function selectCup(id) {
       const idx = cupIds.indexOf(id);
       if (idx < 0) return;
@@ -379,11 +391,9 @@ window.HB = window.HB || {};
       camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
       panStart = performance.now();
       lastReportedCupId = null; // tvingar fram en onCupChange-uppdatering nästa bildruta
-      animState.paused = true;
-      if (playPauseBtn) {
-        playPauseBtn.textContent = "▶";
-        playPauseBtn.setAttribute("aria-label", "Fortsätt animationen");
-      }
+      animState.paused = false; // se till att en ev. redan aktiv paus inte fryser växlingen
+      animState.pauseAfterArrival = true;
+      syncPlayPauseButton();
       cupDropup.setAttribute("hidden", "");
       cupPickerBtn.setAttribute("aria-expanded", "false");
     }
@@ -456,6 +466,15 @@ window.HB = window.HB || {};
         cam.lng = camStart.lng + (target.lng - camStart.lng) * te;
         cam.lat = camStart.lat + (target.lat - camStart.lat) * te;
         cam.zoom = camStart.zoom + (target.zoom - camStart.zoom) * te;
+      }
+
+      // Manuellt vald cup (se selectCup ovan) — pausa FÖRST när kameran
+      // faktiskt hunnit landa (PAN_DURATION > IN_MS, så prickarna redan
+      // hunnit tändas klart vid den tidpunkten också).
+      if (animState.pauseAfterArrival && now - panStart >= PAN_DURATION) {
+        animState.pauseAfterArrival = false;
+        animState.paused = true;
+        syncPlayPauseButton();
       }
 
       // Långsam, avgränsad "jordglobs-drift" — två sinusar med olika
@@ -583,10 +602,15 @@ window.HB = window.HB || {};
     const mapEl = h("div", { class: "welcome-map" });
     const dotCanvas = h("canvas", { class: "welcome-dots" });
     const nameEl = h("div", { class: "welcome-cup-text" });
-    const animState = { paused: false };
+    const animState = { paused: false, pauseAfterArrival: false };
     const playPauseBtn = h("button", {
       class: "welcome-playpause", type: "button", "aria-label": "Pausa animationen",
       onclick: () => {
+        // Ett manuellt klick vinner alltid över en väntande auto-paus
+        // (se pauseAfterArrival i startMapAnimation/selectCup) — annars
+        // skulle en nyss vald cup kunna återpausas av sig själv strax
+        // efter att man själv tryckt play.
+        animState.pauseAfterArrival = false;
         animState.paused = !animState.paused;
         playPauseBtn.textContent = animState.paused ? "▶" : "⏸";
         playPauseBtn.setAttribute("aria-label", animState.paused ? "Fortsätt animationen" : "Pausa animationen");
