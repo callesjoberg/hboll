@@ -843,18 +843,23 @@ window.HB = window.HB || {};
       const copyBtn = h("button", {
         type: "button",
         onclick: () => {
-          const c = themeColors();
-          const theme = isDarkTheme() ? "mörkt" : "ljust";
+          const cols = (c) =>
+            `accent=${c.accent} ink=${c.ink} inkSoft=${c.inkSoft} ` +
+            `cardBg=${c.cardBg}@${c.cardBgA} border=${c.border}@${c.borderA} ` +
+            `mark0=${c.mark0} mark1=${c.mark1} mark2=${c.mark2}`;
+          // Rörelse/geometri delas mellan teman; kartstil/filter + färger
+          // är per tema — kopieras för BÅDA på en gång.
           const txt =
-            `tema=${theme} stil=${mapCfg().style} filter=${mapCfg().filter}\n` +
+            `# delas mellan teman (rörelse & markörgeometri)\n` +
             `drift=${TUNE.drift} driftZoom=${TUNE.driftZoom} panDuration=${TUNE.panDuration} ` +
             `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
             `igniteLead=${TUNE.igniteLead} igniteSpread=${TUNE.igniteSpread} dotFade=${TUNE.dotFade} ` +
             `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed} ` +
             `coreRadius=${TUNE.coreRadius} sizeZoom=${TUNE.sizeZoom} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost}\n` +
-            `accent=${c.accent} ink=${c.ink} inkSoft=${c.inkSoft} ` +
-            `cardBg=${c.cardBg}@${c.cardBgA} border=${c.border}@${c.borderA} ` +
-            `mark0=${c.mark0} mark1=${c.mark1} mark2=${c.mark2}`;
+            `# mörkt tema\n` +
+            `stil=${MAPCFG.dark.style} filter=${MAPCFG.dark.filter} ${cols(COLORS.dark)}\n` +
+            `# ljust tema\n` +
+            `stil=${MAPCFG.light.style} filter=${MAPCFG.light.filter} ${cols(COLORS.light)}`;
           navigator.clipboard.writeText(txt).then(
             () => { copyBtn.textContent = "kopierat! ✓"; setTimeout(() => (copyBtn.textContent = "kopiera inställningar"), 1500); },
             () => { copyBtn.textContent = "kunde ej kopiera"; });
