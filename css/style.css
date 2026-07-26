@@ -1535,6 +1535,26 @@ dialog#settingsDialog { max-width: 380px; }
 .compare-detail-cup-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .compare-detail-cup p { margin: 2px 0; font-size: 13px; }
 
+/* Förloppsindikator (archiveProgressBlock) för en pågående Klubb/Lag- eller
+   Klubbjämförelse-sökning — "X av Y hämtade" i stället för en obestämd
+   "Hämtar …" som annars lätt känns som att sidan hängt sig. */
+.archive-progress { margin: 8px 0; }
+.archive-progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin-top: 6px;
+  max-width: 320px;
+}
+.archive-progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
 /* lagfärgprick på matchkort */
 
 .team-color-dot {

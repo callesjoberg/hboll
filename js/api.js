@@ -561,8 +561,16 @@ window.HB = window.HB || {};
 
   // --- historik: arkiverade resultat från tidigare cupupplagor -------------
   // data/archive/index.json + data/archive/<cupId>-<edition>.json byggs av
-  // scripts/archive_results.py vid varje CI-körning. Ren statisk JSON, ingen
-  // egen cache behövs (webbläsaren HTTP-cachar filerna som allt annat).
+  // scripts/archive_results.py vid varje CI-körning. index.json är litet och
+  // ändras ofta (nya upplagor/pågående cuper) — hämtas alltid färskt, ingen
+  // egen cache. De enskilda upplagefilerna är däremot STORA (flera MB var,
+  // ~150 MB totalt över alla ~190 cup-år i skrivande stund) och en AVSLUTAD
+  // upplaga (entry.finished === entry.matches, dvs alla matcher klara) kan
+  // aldrig ändras igen — cachas därför permanent i en egen IndexedDB-databas
+  // (se archiveDbGet/Set nedan), INTE localStorage (för litet kvot-tak för
+  // såna här filstorlekar) eller webbläsarens vanliga HTTP-cache (GitHub
+  // Pages cache-control är bara 10 min, för kort för att lita på ensam). En
+  // PÅGÅENDE upplaga (innevarande säsong) hämtas alltid färskt.
 
   let archiveIndexPromise = null;
 
@@ -575,14 +583,85 @@ window.HB = window.HB || {};
     return archiveIndexPromise;
   }
 
+  // Minimal IndexedDB-wrapper — en enda "editions"-store, nyckel
+  // "cupId:edition". Faller tyst tillbaka till "ingen cache" (null) om
+  // IndexedDB saknas eller inte går att öppna (t.ex. privat läge i vissa
+  // äldre webbläsare) i stället för att krascha något.
+  const ARCHIVE_DB_NAME = "hboll-archive";
+  const ARCHIVE_DB_VERSION = 1;
+  const ARCHIVE_STORE = "editions";
+  let archiveDbPromise = null;
+
+  function openArchiveDb() {
+    if (!("indexedDB" in window)) return Promise.resolve(null);
+    if (!archiveDbPromise) {
+      archiveDbPromise = new Promise((resolve) => {
+        let req;
+        try {
+          req = indexedDB.open(ARCHIVE_DB_NAME, ARCHIVE_DB_VERSION);
+        } catch {
+          resolve(null);
+          return;
+        }
+        req.onupgradeneeded = () => req.result.createObjectStore(ARCHIVE_STORE);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+    return archiveDbPromise;
+  }
+
+  function archiveDbGet(key) {
+    return openArchiveDb().then((db) => {
+      if (!db) return null;
+      return new Promise((resolve) => {
+        try {
+          const req = db.transaction(ARCHIVE_STORE, "readonly").objectStore(ARCHIVE_STORE).get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } catch {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  function archiveDbSet(key, value) {
+    openArchiveDb().then((db) => {
+      if (!db) return;
+      try {
+        db.transaction(ARCHIVE_STORE, "readwrite").objectStore(ARCHIVE_STORE).put(value, key);
+      } catch { /* full kvot eller liknande — kör vidare utan att cacha just den här */ }
+    });
+  }
+
   async function fetchArchiveEdition(cupId, edition) {
     const idx = await fetchArchiveIndex();
     const entry = (idx[cupId] && idx[cupId].editions || [])
       .find((e) => e.edition === edition);
     if (!entry) return null;
+    // "Alla KÄNDA matcher är klara" räcker INTE ensamt — cupens EGEN, just
+    // nu pågående upplaga (HB.CUPS[].edition) kan fortfarande få NYA matcher
+    // tillagda av skraparen (nya klasser, sena anmälningar) även om allt som
+    // redan finns i filen råkar vara avgjort just i detta ögonblick. Uteslut
+    // den uttryckligen, annars skulle den kunna cachas permanent för tidigt
+    // och aldrig se de nya matcherna.
+    const cup = (HB.allCups() || []).find((c) => c.id === cupId);
+    const isLiveEdition = cup && String(cup.edition) === String(edition);
+    const finished = entry.matches > 0 && entry.finished === entry.matches && !isLiveEdition;
+    const dbKey = cupId + ":" + edition;
+    if (finished) {
+      const cached = await archiveDbGet(dbKey);
+      if (cached) return cached;
+    }
     try {
-      const r = await fetch(entry.file, { cache: "no-store" });
-      return r.ok ? r.json() : null;
+      // Ingen cache:"no-store" längre — en pågående upplaga får då åtminstone
+      // webbläsarens vanliga (kortlivade) HTTP-cache under en session.
+      const r = await fetch(entry.file);
+      if (!r.ok) return null;
+      const data = await r.json();
+      if (finished) archiveDbSet(dbKey, data);
+      return data;
     } catch {
       return null;
     }

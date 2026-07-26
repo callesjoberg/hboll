@@ -3444,6 +3444,21 @@ window.HB = window.HB || {};
     return state.clubYears.size ? editionsMeta.filter((e) => state.clubYears.has(e.edition)) : editionsMeta;
   }
 
+  // Riktig förloppsindikator för en pågående computeClubRows()-hämtning —
+  // en obestämd "Hämtar …" kändes som att sidan hängt sig på en sökning
+  // som (första gången, innan IndexedDB-cachen i fetchArchiveEdition hunnit
+  // fyllas på) kan behöva dra ner tiotals MB över nätet. Räknas om vid
+  // varje omritning (loadedCount/totalCount kommer från computeClubRows,
+  // som anropas på nytt varje gång) — fylls på i takt med att fler
+  // cup-år-filer svarar, ingen egen timer/polling behövs.
+  function archiveProgressBlock(loaded, total) {
+    const pct = total ? Math.round((loaded / total) * 100) : 0;
+    return h("div", { class: "archive-progress" },
+      h("p", { class: "muted" }, "Hämtar arkiverade år … (" + loaded + " av " + total + ")"),
+      h("div", { class: "archive-progress-bar" },
+        h("div", { class: "archive-progress-fill", style: "width:" + pct + "%" })));
+  }
+
   // Klubb/Lag-fliken: alla år som finns att välja mellan i årsfiltret —
   // unionen över samtliga cuper med arkiverad historik (trendCupOptions),
   // inte bara de som råkar matcha den aktuella sökningen, så filtret inte
@@ -3466,6 +3481,13 @@ window.HB = window.HB || {};
   // formkurvan).
   function computeClubRows(cupIds, teamQuery) {
     let pending = false;
+    // loadedCount/totalCount: hur många av de berörda cup-år-filerna som
+    // redan svarat (klart ELLER fel, bara inte "loading") — låter
+    // renderClubView visa en riktig förloppsindikator ("X av Y hämtade")
+    // i stället för en obestämd "Hämtar …"-text under en sökning som i
+    // värsta fall (ingen IndexedDB-cache än, se fetchArchiveEdition) drar
+    // ner tiotals MB över nätet.
+    let loadedCount = 0, totalCount = 0;
     const rows = [];
     for (const cupId of cupIds) {
       const editionsMeta = clubEditionsFor(cupId);
@@ -3479,9 +3501,11 @@ window.HB = window.HB || {};
       // två liknande sökningar/namn råkar vara samma klubb i praktiken.
       const names = new Set();
       for (const em of editionsMeta) {
+        totalCount++;
         ensureYearMatches(em.edition, cupId);
         const ym = state.yearMatches[cupId + ":" + em.edition];
         if (!ym || ym.status === "loading") { pending = true; continue; }
+        loadedCount++;
         if (ym.status !== "done") continue;
         const teamIds = new Set();
         let matchCount = 0;
@@ -3504,7 +3528,7 @@ window.HB = window.HB || {};
         });
       }
     }
-    return { pending, rows };
+    return { pending, rows, loadedCount, totalCount };
   }
 
   // Klubb/Lag-fliken, nedborrningsnivå 1 (en vald cup): samma matcher som
@@ -3657,9 +3681,9 @@ window.HB = window.HB || {};
     }
 
     const cupIds = trendCupOptions();
-    const { pending, rows } = computeClubRows(cupIds, query);
+    const { pending, rows, loadedCount, totalCount } = computeClubRows(cupIds, query);
     if (pending) {
-      resultHost.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
+      resultHost.append(archiveProgressBlock(loadedCount, totalCount));
       return;
     }
     if (!rows.length) {
@@ -3705,12 +3729,12 @@ window.HB = window.HB || {};
 
     const editionsMeta = clubEditionsFor(cupId);
     for (const em of editionsMeta) ensureYearMatches(em.edition, cupId);
-    const pending = editionsMeta.some((em) => {
+    const loadedCount = editionsMeta.filter((em) => {
       const ym = state.yearMatches[cupId + ":" + em.edition];
-      return !ym || ym.status === "loading";
-    });
-    if (pending) {
-      root.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
+      return ym && ym.status !== "loading";
+    }).length;
+    if (loadedCount < editionsMeta.length) {
+      root.append(archiveProgressBlock(loadedCount, editionsMeta.length));
       return;
     }
 
@@ -3860,9 +3884,11 @@ window.HB = window.HB || {};
 
     const cupIds = trendCupOptions();
     let pending = false;
+    let loadedCount = 0, totalCount = 0;
     const rows = state.compareNames.map((name) => {
       const res = computeClubRows(cupIds, name);
       if (res.pending) pending = true;
+      loadedCount += res.loadedCount; totalCount += res.totalCount;
       const years = res.rows.flatMap((r) => r.years).sort();
       return {
         name,
@@ -3876,7 +3902,7 @@ window.HB = window.HB || {};
       };
     });
     if (pending) {
-      resultHost.append(h("p", { class: "muted" }, "Hämtar arkiverade år …"));
+      resultHost.append(archiveProgressBlock(loadedCount, totalCount));
       return;
     }
 
