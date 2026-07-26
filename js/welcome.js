@@ -264,16 +264,28 @@ window.HB = window.HB || {};
     // åtskilda prickar. Ett lägre tak + mer padding ger mer "luft" runt
     // klustret oavsett hur tätt själva jittret (build_landing_map.py) är.
     const MAX_ZOOM_ABOVE_BASE = 1.4;
+    // Absolut lägsta zoom (ungefär "hela Europa/Nordatlanten ryms"). En
+    // genuint internationell cup (Partille: lag från ~67 länder) MÅSTE få
+    // zooma ut så här långt för att alla deltagarländer ska synas — den
+    // gamla golvnivån (baseZoom − 0.5, dvs ungefär Skandinavien) klippte
+    // bort hela den europeiska/globala spridningen.
+    const WORLD_MIN_ZOOM = 2.4;
     const cupCam = {};
     for (const id of cupIds) {
       const pts = cupsData[id].points;
-      const bb = inflateBBox(percentileBBox(pts, 0.1, 0.9), 0.6);
+      // Bredare percentil (0.02–0.98, inte 0.1–0.9) för själva ramen: för
+      // en cup där de allra flesta lag är svenska men hundratals kommer
+      // från övriga Europa/världen (Partille) trimmade 0.1–0.9 bort ALLA
+      // utländska lag och gav en ram stor som bara Skandinavien. 0.02–0.98
+      // behåller den internationella spridningen men kapar fortfarande en
+      // enstaka felgeokodad singelpunkt.
+      const bb = inflateBBox(percentileBBox(pts, 0.02, 0.98), 0.6);
       const bounds = new maplibregl.LngLatBounds([bb.minLng, bb.minLat], [bb.maxLng, bb.maxLat]);
       const c = map.cameraForBounds(bounds, { padding: 90, maxZoom: baseZoom + MAX_ZOOM_ABOVE_BASE });
       cupCam[id] = {
         lng: c ? c.center.lng : (bb.minLng + bb.maxLng) / 2,
         lat: c ? c.center.lat : (bb.minLat + bb.maxLat) / 2,
-        zoom: Math.max(baseZoom - 0.5, Math.min(baseZoom + MAX_ZOOM_ABOVE_BASE, c ? c.zoom : baseZoom)),
+        zoom: Math.max(WORLD_MIN_ZOOM, Math.min(baseZoom + MAX_ZOOM_ABOVE_BASE, c ? c.zoom : baseZoom)),
       };
     }
 
