@@ -26,6 +26,11 @@ data/archive/index.json — en cup vars nästa upplaga lagts upp men inte
 spelats faller tillbaka till föregående år, och rena slutspelsplatshållare
 som "Vinn. 06091905" filtreras bort, se PLACEHOLDER_NAME).
 
+En cup som helt saknar lag i databasen (t ex en ny cup vars enda upplaga
+ännu inte spelats/fått anmälningar, som Skurucupen och Norden Cup) tas
+HELT bort ur filen — den ska varken rulla i loopen eller gå att välja i
+cup-väljaren förrän den har riktig data.
+
 Körs sist i workflowet (ren stdlib, inget nätverksanrop, läser bara redan
 skrapad data) — bygger om automatiskt när en cup får nya/fler lag."""
 
@@ -215,20 +220,23 @@ def main():
 
     out = {}
     all_countries = set()
+    skipped = []
     for c in cups:
         cup_id = c["id"]
         teams = teams_of(cup_id, archive_index)
         points, countries = build_cup_points(cup_id, teams, idx, centroids)
-        source = "lag"
         if not points:
-            # Ingen laglista alls (t ex Skurucupen: tom snapshot, inget arkiv)
-            # — visa åtminstone värdorten som en ensam tier-2-punkt.
-            points = [[c["lat"], c["lon"], 2]]
-            source = "värdort"
+            # Cupen har inga lag i databasen än (t ex Skurucupen/Norden Cup:
+            # bara en framtida, ännu ospelad upplaga utan anmälda lag) — tas
+            # helt bort ur välkomstloopen och cup-väljaren i stället för att
+            # visas som en ensam, meningslös värdortsprick. Dyker upp av sig
+            # själv så fort riktiga lag/matcher finns.
+            skipped.append(cup_id)
+            continue
         all_countries |= countries
         out[cup_id] = {
-            "name": c["name"], "count": len(teams) or 1, "countries": len(countries),
-            "points": cap_points(points), "_src": source,
+            "name": c["name"], "count": len(teams), "countries": len(countries),
+            "points": cap_points(points), "_src": "lag",
         }
 
     out_path = ROOT / "data" / "landing-map.json"
@@ -255,8 +263,11 @@ def main():
             continue
         for p in v["points"]:
             tiers[p[2]] += 1
-    print(f"skrev landing-map.json: {len(out)} cuper, {total_points} punkter "
-          f"(adress: {tiers[0]}, land: {tiers[1]}, okänd: {tiers[2]})")
+    msg = (f"skrev landing-map.json: {len(out)} cuper, {total_points} punkter "
+           f"(adress: {tiers[0]}, land: {tiers[1]}, okänd: {tiers[2]})")
+    if skipped:
+        msg += f" | hoppade över utan lag: {', '.join(skipped)}"
+    print(msg)
 
 
 if __name__ == "__main__":
