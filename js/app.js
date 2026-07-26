@@ -3037,7 +3037,12 @@ window.HB = window.HB || {};
   // sortState ({key, dir}, dir är 1/-1) ägs och hålls vid liv av
   // ANROPAREN (modulnivå-variabler, se trendTableSort m.fl. nedan) så att
   // vald sortering överlever omritningar. columns: [{key, label, align,
-  // get(row)->sträng|tal, defaultDir}]. rowTitle(row) är valfri — sätts som
+  // get(row)->sträng|tal, defaultDir, render}]. get(row) avgör ALLTID
+  // sorteringen; render(row) (valfri) avgör vad cellen faktiskt VISAR —
+  // en DOM-nod/array av noder+text i stället för get(row) tvingat genom
+  // String(), se Klubb/Lags "År"-kolumn (renderYearsWithGaps) för ett
+  // exempel som färgmarkerar enskilda år inom en och samma cell.
+  // rowTitle(row) är valfri — sätts som
   // native tooltip på hela raden (t.ex. en fullständig klasslista).
   // onRowClick(row) är valfri — gör raderna klickbara (pekare-cursor,
   // hover, tangentbordsnavigerbara) för nedborrning till mer detaljerad
@@ -3072,7 +3077,7 @@ window.HB = window.HB || {};
       } : {}),
     }, columns.map((col, i) => h(i === 0 ? "th" : "td",
       { class: col.align === "l" ? "l" : "", ...(i === 0 ? { scope: "row" } : {}) },
-      String(col.get(row)))));
+      col.render ? col.render(row) : String(col.get(row)))));
     return h("div", { class: "table-box" },
       h("table", { class: "standings" },
         h("thead", null, h("tr", null, columns.map(headerCell))),
@@ -3444,6 +3449,25 @@ window.HB = window.HB || {};
     return state.clubYears.size ? editionsMeta.filter((e) => state.clubYears.has(e.edition)) : editionsMeta;
   }
 
+  // Klubb/Lag-flikens "År"-kolumn: fyller ut med de år CUPEN har arkiverad
+  // historik men klubben INTE deltog (dämpad/röd text) bredvid åren den
+  // faktiskt var med (vanlig text) — svarar direkt på "var vi med varje
+  // gång, eller missade vi något?" utan att behöva räkna själv eller borra
+  // ner i varje cup. Jämförs mot clubEditionsFor(cupId) — SAMMA årsmängd
+  // som redan styr vad som räknas in i raden ovanför (respekterar alltså
+  // ett ev. aktivt årsfilter, i stället för att dränka ett medvetet
+  // avgränsat urval i rött för alla bortvalda år).
+  function renderYearsWithGaps(cupId, participatedYears) {
+    const participated = new Set(participatedYears);
+    const allYears = clubEditionsFor(cupId).map((e) => e.edition).sort();
+    const nodes = [];
+    allYears.forEach((y, i) => {
+      nodes.push(h("span", participated.has(y) ? null : { class: "club-year-gap" }, y));
+      if (i < allYears.length - 1) nodes.push(", ");
+    });
+    return nodes;
+  }
+
   // Riktig förloppsindikator för en pågående computeClubRows()-hämtning —
   // en obestämd "Hämtar …" kändes som att sidan hängt sig på en sökning
   // som (första gången, innan IndexedDB-cachen i fetchArchiveEdition hunnit
@@ -3704,7 +3728,8 @@ window.HB = window.HB || {};
 
     const columns = [
       { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
-      { key: "years", label: "År", align: "l", defaultDir: 1, get: (r) => r.years.join(", ") },
+      { key: "years", label: "År", align: "l", defaultDir: 1, get: (r) => r.years.join(", "),
+        render: (r) => renderYearsWithGaps(r.cupId, r.years) },
       { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.totalTeams },
       { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.totalMatches },
       { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes.size },

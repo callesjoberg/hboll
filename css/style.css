@@ -1555,6 +1555,10 @@ dialog#settingsDialog { max-width: 380px; }
   transition: width 0.3s ease;
 }
 
+/* Klubb/Lags "År"-kolumn (renderYearsWithGaps) — ett år cupen arkiverat
+   men klubben INTE deltog i, blandat in bland åren de faktiskt var med. */
+.club-year-gap { color: var(--live); }
+
 /* lagfärgprick på matchkort */
 
 .team-color-dot {
