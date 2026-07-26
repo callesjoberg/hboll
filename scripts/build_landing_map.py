@@ -46,7 +46,11 @@ MAX_POINTS = 320  # var och en ritas med en egen glow varje bildruta — ett tak
 # på en måttlig mellannivå. Cirkelformad (inte fyrkantig) spridning så
 # ingen punkt hamnar i ett hörn längre bort än scale.
 COUNTRY_JITTER = (0.8, 1.2)  # grader lat/lng — sprider isär lag från samma land
-HOST_JITTER = (0.3, 0.45)    # grader lat/lng — stads-nära spridning kring cupens värdort
+# HOST_JITTER vidgad rejält (var 0.3/0.45) — en cups lag kommer i
+# verkligheten sällan bara från själva värdorten utan en hel region runt
+# den; en för tajt spridning såg ut som "71 lag mitt i Katrineholm",
+# orimligt för en ungdomscup som drar deltagare regionalt.
+HOST_JITTER = (0.9, 1.3)     # grader lat/lng — regional spridning kring cupens värdort
 
 
 def cap_points(points):
@@ -122,7 +126,13 @@ def points_from_teams(cup_id, host_lat, host_lon, centroids):
         return None
     points = []
     for tid, code in teams.items():
-        if code and code in centroids:
+        # code == "SE" utesluts MEDVETET från landsjittret: Cup Manager
+        # (till skillnad från ProCup) taggar även svenska hemmalag med
+        # country="SE", och Sveriges egen centroid ligger uppe kring
+        # Sundsvall/Örnsköldsvik — långt norr om t ex Göteborg. Ett
+        # svenskt lag utan känd adress hamnar bättre kring cupens EGEN
+        # värdort (som vi redan vet var den är) än "nånstans i Sverige".
+        if code and code != "SE" and code in centroids:
             base_lat, base_lng = centroids[code]
             lat_scale, lng_scale = COUNTRY_JITTER
         else:
