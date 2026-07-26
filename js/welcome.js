@@ -233,7 +233,7 @@ window.HB = window.HB || {};
 
     const map = new maplibregl.Map({
       container: mapEl,
-      style: "https://tiles.openfreemap.org/styles/liberty",
+      style: "https://tiles.openfreemap.org/styles/positron",
       center: [15, 62],
       zoom: 4,
       interactive: false, // dekorativ bakgrund, inte ett navigerbart kartverktyg
@@ -270,21 +270,27 @@ window.HB = window.HB || {};
     //   drift/driftZoom: jordglobsdriftens styrka, se frame().
     const isLocal = /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname) ||
       new URLSearchParams(location.search).has("tune");
+    // Baslinjevärden — kalibrerade i testreglaget (localhost) och sedan
+    // inbakade. Justera vidare där och kopiera in nya värden vid behov.
     const TUNE = {
       maxZoomAbove: 1.4, minZoom: 2.4, panDuration: 5200,
-      drift: 1, driftZoom: 0.7,
+      drift: 2, driftZoom: 0.7,
       // Markörernas livscykel (se frame): igniteLead = hur långt före
       // kamerans framkomst tändningen börjar; igniteSpread = slumpfönster
       // för när varje enskild prick tänds; dotFade = en pricks in-/uttonings-
       // tid; holdBase = "framme"-tid (skalas efter cup-storlek); outMs =
-      // släckningstid vid avfärd; pulseAmp = pulsstyrka (0 = ingen puls);
-      // pulseSpeed = pulshastighet.
-      igniteLead: 250, igniteSpread: 650, dotFade: 420, holdBase: 3600, outMs: 900,
-      pulseAmp: 0.3, pulseSpeed: 1,
+      // släckningstid (sker under panoreringen bort); pulseAmp = pulsstyrka
+      // (0 = ingen puls); pulseSpeed = pulshastighet.
+      igniteLead: 1000, igniteSpread: 2050, dotFade: 420, holdBase: 3600, outMs: 3050,
+      pulseAmp: 0.52, pulseSpeed: 0.5,
       // Glöd/bloom: glowRadius = varje glöds storlek (px); glowBoost =
       // hur starkt glöden läggs på (additivt, så täta klungor "blommar");
       // coreRadius = den skarpa mittprickens storlek (px).
-      glowRadius: 9, glowBoost: 1, coreRadius: 1.7,
+      glowRadius: 24, glowBoost: 0.4, coreRadius: 1.7,
+      // sizeZoom = hur mycket markörstorleken FÖLJER zoomnivån: 0 = fast
+      // pixelstorlek, högre = mindre prickar när kameran är utzoomad (hela
+      // Europa, Partille) och större när den är hårt inzoomad (en ort).
+      sizeZoom: 0.12,
     };
 
     // Färgkonfig PER TEMA (redigeras live i testpanelen på localhost, se
@@ -665,13 +671,20 @@ window.HB = window.HB || {};
         }
       }
 
+      // Markörstorleken följer zoomnivån (sizeZoom): en fast pixelstorlek
+      // som ser bra ut hårt inzoomad (en ort) blir klumpig utzoomad (hela
+      // Europa). Ritstorleken skalas därför per bildruta (sprites cachas
+      // fortfarande på sin BAS-radie — vi skalar bara drawImage-målet, så
+      // ingen cache-explosion). Klamrad så den aldrig blir absurd.
+      const sizeScale = Math.max(0.4, Math.min(1.8, 1 + (cam.zoom - baseZoom) * TUNE.sizeZoom));
+
       // Pass 1 — glöden, ADDITIVT (mörkt tema) / MULTIPLICERAT (ljust): så
       // överlappande glöd från närliggande markörer förstärker varandra och
       // täta klungor "blommar" upp till ett större, starkare sken.
       ctx.globalCompositeOperation = dark ? "lighter" : "multiply";
       for (const [x, y, a, tier] of vis) {
         const g = glowSprite(glowRgb[tier] || glowRgb[0]);
-        const gs = g._size;
+        const gs = g._size * sizeScale;
         ctx.globalAlpha = Math.min(1, a * TUNE.glowBoost);
         ctx.drawImage(g, x - gs / 2, y - gs / 2, gs, gs);
       }
@@ -679,7 +692,7 @@ window.HB = window.HB || {};
       ctx.globalCompositeOperation = "source-over";
       for (const [x, y, a, tier] of vis) {
         const cs = coreSprite(coreRgb[tier] || coreRgb[0]);
-        const s = cs._size;
+        const s = cs._size * sizeScale;
         ctx.globalAlpha = Math.min(1, a + 0.15);
         ctx.drawImage(cs, x - s / 2, y - s / 2, s, s);
       }
@@ -710,7 +723,7 @@ window.HB = window.HB || {};
     const OFM = "https://tiles.openfreemap.org/styles/";
     const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
     const DARK_FILTER = "invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85)";
-    let curStyle = "liberty";
+    let curStyle = "positron";
     let curFilter = "auto"; // auto = låt CSS-temavariabeln styra; on/off = tvinga
     function mapCanvas() { return mapEl.querySelector(".maplibregl-canvas"); }
     function applyFilter() {
@@ -726,7 +739,10 @@ window.HB = window.HB || {};
     function buildTunePanel() {
       const overlayEl = mapEl.closest(".welcome-overlay");
       const panel = h("div", { class: "welcome-tune" });
-      const syncers = []; // funktioner som läser om aktivt temas värden till widgetarna
+      const syncers = [];  // modell -> widget (t ex vid temaväxling / nollställ)
+      const adopters = []; // widget -> modell (adoptera ev. av Chrome återställda värden)
+      const defTUNE = { ...TUNE };
+      const defCOLORS = JSON.parse(JSON.stringify(COLORS));
 
       // Sätter CSS-variablerna för AKTIVT tema inline på överlägget (bara
       // localhost) — markörfärgerna läses direkt ur COLORS i frame().
@@ -747,6 +763,7 @@ window.HB = window.HB || {};
           oninput: (e) => { obj()[key] = parseFloat(e.target.value); val.textContent = e.target.value; if (after) after(); },
         });
         syncers.push(() => { input.value = String(obj()[key]); val.textContent = String(obj()[key]); });
+        adopters.push(() => { obj()[key] = parseFloat(input.value); val.textContent = String(obj()[key]); if (after) after(); });
         return h("label", { class: "welcome-tune-row" }, h("span", null, label), val, input);
       }
       function colorRow(key, label) {
@@ -755,6 +772,7 @@ window.HB = window.HB || {};
           oninput: (e) => { themeColors()[key] = e.target.value; applyColors(); },
         });
         syncers.push(() => { input.value = themeColors()[key]; });
+        adopters.push(() => { themeColors()[key] = input.value; applyColors(); });
         return h("label", { class: "welcome-tune-row" }, h("span", null, label), h("span", null, ""), input);
       }
 
@@ -773,9 +791,21 @@ window.HB = window.HB || {};
       // låt då KARTAN följa widgeten (behåll senaste val) i stället för att
       // de glider isär. Läses efter att widgetarna byggts.
       curStyle = styleSel.value;
-      if (curStyle !== "liberty") map.setStyle(OFM + curStyle);
+      if (curStyle !== "positron") map.setStyle(OFM + curStyle);
       curFilter = filterSel.value;
       applyFilter();
+
+      const resetBtn = h("button", {
+        type: "button", class: "welcome-tune-reset",
+        onclick: () => {
+          Object.assign(TUNE, defTUNE);
+          COLORS.dark = { ...defCOLORS.dark };
+          COLORS.light = { ...defCOLORS.light };
+          syncers.forEach((fn) => fn());
+          applyColors();
+          recomputeCupCam();
+        },
+      }, "nollställ");
 
       const copyBtn = h("button", {
         type: "button",
@@ -788,7 +818,7 @@ window.HB = window.HB || {};
             `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
             `igniteLead=${TUNE.igniteLead} igniteSpread=${TUNE.igniteSpread} dotFade=${TUNE.dotFade} ` +
             `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed} ` +
-            `coreRadius=${TUNE.coreRadius} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost}\n` +
+            `coreRadius=${TUNE.coreRadius} sizeZoom=${TUNE.sizeZoom} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost}\n` +
             `accent=${c.accent} ink=${c.ink} inkSoft=${c.inkSoft} ` +
             `cardBg=${c.cardBg}@${c.cardBgA} border=${c.border}@${c.borderA} ` +
             `mark0=${c.mark0} mark1=${c.mark1} mark2=${c.mark2}`;
@@ -803,19 +833,20 @@ window.HB = window.HB || {};
         h("div", { class: "welcome-tune-sub" }, "Rörelse & zoom"),
         numRow(tune, "drift", "Drift-styrka", 0, 4, 0.1),
         numRow(tune, "driftZoom", "Drift × inzoom", 0, 3, 0.1),
-        numRow(tune, "panDuration", "Panorering (ms)", 1000, 15000, 250),
+        numRow(tune, "panDuration", "Panorering (ms)", 1000, 15000, 100),
         numRow(tune, "maxZoomAbove", "Max inzoom", 0, 4, 0.1),
         numRow(tune, "minZoom", "Min utzoom", 1, 6, 0.1),
         h("div", { class: "welcome-tune-sub" }, "Markörer: tändning & puls"),
         numRow(tune, "igniteLead", "Tänd före framkomst (ms)", 0, 3000, 50),
         numRow(tune, "igniteSpread", "Tändnings-spridning (ms)", 0, 4000, 50),
-        numRow(tune, "dotFade", "Tonings­tid per prick (ms)", 50, 2000, 50),
+        numRow(tune, "dotFade", "Tonings­tid per prick (ms)", 50, 2000, 10),
         numRow(tune, "holdBase", "Framme-tid, bas (ms)", 800, 12000, 200),
         numRow(tune, "outMs", "Släcknings­tid (ms)", 100, 4000, 50),
-        numRow(tune, "pulseAmp", "Pulsstyrka", 0, 0.6, 0.02),
+        numRow(tune, "pulseAmp", "Pulsstyrka", 0, 1, 0.02),
         numRow(tune, "pulseSpeed", "Pulshastighet", 0.2, 4, 0.1),
         numRow(tune, "coreRadius", "Markörstorlek (px)", 0.5, 6, 0.1),
-        numRow(tune, "glowRadius", "Glöd-radie (px)", 3, 24, 0.5),
+        numRow(tune, "sizeZoom", "Storlek följer zoom", 0, 0.5, 0.02),
+        numRow(tune, "glowRadius", "Glöd-radie (px)", 3, 48, 0.5),
         numRow(tune, "glowBoost", "Glöd-styrka (bloom)", 0.2, 3, 0.1),
         h("div", { class: "welcome-tune-sub" }, "Karta"),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Kartstil"), h("span", null, ""), styleSel),
@@ -831,14 +862,19 @@ window.HB = window.HB || {};
         colorRow("mark0", "Markör adress"),
         colorRow("mark1", "Markör land"),
         colorRow("mark2", "Markör okänd"),
-        copyBtn);
+        h("div", { class: "welcome-tune-btns" }, copyBtn, resetBtn));
       mapEl.parentNode.append(panel);
       applyColors();
-      // Chrome kan återställa widget-värden (sliders/color) vid reload utan
-      // att våra modeller (TUNE/COLORS) ändras — tvinga tillbaka widgetarna
-      // till modellen så det som VISAS alltid = det som faktiskt tillämpas.
-      // I en rAF så det körs efter webbläsarens ev. återställning.
-      requestAnimationFrame(() => syncers.forEach((fn) => fn()));
+      // Chrome kan återställa widget-värden (sliders/color/select) vid reload
+      // utan att våra modeller ändras. Vi ADOPTERAR i stället widgetens
+      // (ev. återställda) värde som sanning en stund efter bygget — så det
+      // som VISAS alltid = det som TILLÄMPAS, och en pågående kalibrering
+      // överlever en sidladdning. "nollställ" tar tillbaka baslinjen.
+      setTimeout(() => {
+        adopters.forEach((fn) => fn());
+        if (curStyle !== styleSel.value) { curStyle = styleSel.value; map.setStyle(OFM + curStyle); }
+        curFilter = filterSel.value; applyFilter();
+      }, 350);
 
       // När temat växlas (temaknappen sätter data-theme på <html>) ska
       // panelen visa OCH tillämpa det nya temats färger.

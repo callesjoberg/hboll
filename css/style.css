@@ -2297,8 +2297,9 @@ dialog.history-dialog {
 .welcome-tune-row input[type="range"] { grid-column: 1 / -1; width: 100%; }
 .welcome-tune-row select { grid-column: 2; }
 .welcome-tune-val { font-variant-numeric: tabular-nums; opacity: 0.7; }
+.welcome-tune-btns { display: flex; gap: 6px; margin-top: 6px; }
 .welcome-tune button {
-  margin-top: 4px;
+  flex: 1;
   padding: 7px;
   border: none;
   border-radius: 8px;
@@ -2306,6 +2307,11 @@ dialog.history-dialog {
   color: #16283f;
   font-weight: 700;
   cursor: pointer;
+}
+.welcome-tune-reset {
+  flex: 0 0 auto !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #eef2f8 !important;
 }
 
 /* --- välkomstöverlägg (js/welcome.js) --------------------------------- */
