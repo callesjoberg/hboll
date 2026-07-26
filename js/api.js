@@ -652,7 +652,16 @@ window.HB = window.HB || {};
     const dbKey = cupId + ":" + edition;
     if (finished) {
       const cached = await archiveDbGet(dbKey);
-      if (cached) return cached;
+      // ts-jämförelse: entry.ts kommer från index.json och byts av
+      // scripts/archive_results.py varje gång FILEN faktiskt skrivs om —
+      // en cachad post vars ts inte matchar är inaktuell (t.ex. en
+      // efterhandsrättning av redan "avslutad" data, som
+      // landsbakåtskrapningen som redan hänt en gång i det här projektet)
+      // och ska hämtas om, INTE tas som god fast "finished" fortfarande
+      // stämmer. Gamla cacheposter (innan detta fält fanns) saknar .ts och
+      // räknas därför också som inaktuella — självläkande, ingen separat
+      // migrering behövs.
+      if (cached && cached.ts === entry.ts) return cached.data;
     }
     try {
       // Ingen cache:"no-store" längre — en pågående upplaga får då åtminstone
@@ -660,7 +669,7 @@ window.HB = window.HB || {};
       const r = await fetch(entry.file);
       if (!r.ok) return null;
       const data = await r.json();
-      if (finished) archiveDbSet(dbKey, data);
+      if (finished) archiveDbSet(dbKey, { ts: entry.ts, data });
       return data;
     } catch {
       return null;
