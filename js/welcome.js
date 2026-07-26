@@ -257,37 +257,77 @@ window.HB = window.HB || {};
     const baseCam = map.cameraForBounds(allBounds, { padding: 40, maxZoom: 6.5 });
     const baseZoom = baseCam ? baseCam.zoom : 4.5;
 
-    // MAX_ZOOM_ABOVE_BASE hölls först på +2.6 — för koncentrerade kluster
-    // (t ex Järnvägen Cups jitter kring en enda värdort) zoomade det in SÅ
-    // hårt att punkternas fasta pixelstorlek (se SPRITE_R nedan) fick dem
-    // att helt överlappa till en enda solid klump i stället för synligt
-    // åtskilda prickar. Ett lägre tak + mer padding ger mer "luft" runt
-    // klustret oavsett hur tätt själva jittret (build_landing_map.py) är.
-    const MAX_ZOOM_ABOVE_BASE = 1.4;
-    // Absolut lägsta zoom (ungefär "hela Europa/Nordatlanten ryms"). En
-    // genuint internationell cup (Partille: lag från ~67 länder) MÅSTE få
-    // zooma ut så här långt för att alla deltagarländer ska synas — den
-    // gamla golvnivån (baseZoom − 0.5, dvs ungefär Skandinavien) klippte
-    // bort hela den europeiska/globala spridningen.
-    const WORLD_MIN_ZOOM = 2.4;
-    const cupCam = {};
-    for (const id of cupIds) {
-      const pts = cupsData[id].points;
-      // Bredare percentil (0.02–0.98, inte 0.1–0.9) för själva ramen: för
-      // en cup där de allra flesta lag är svenska men hundratals kommer
-      // från övriga Europa/världen (Partille) trimmade 0.1–0.9 bort ALLA
-      // utländska lag och gav en ram stor som bara Skandinavien. 0.02–0.98
-      // behåller den internationella spridningen men kapar fortfarande en
-      // enstaka felgeokodad singelpunkt.
-      const bb = inflateBBox(percentileBBox(pts, 0.02, 0.98), 0.6);
-      const bounds = new maplibregl.LngLatBounds([bb.minLng, bb.minLat], [bb.maxLng, bb.maxLat]);
-      const c = map.cameraForBounds(bounds, { padding: 90, maxZoom: baseZoom + MAX_ZOOM_ABOVE_BASE });
-      cupCam[id] = {
-        lng: c ? c.center.lng : (bb.minLng + bb.maxLng) / 2,
-        lat: c ? c.center.lat : (bb.minLat + bb.maxLat) / 2,
-        zoom: Math.max(WORLD_MIN_ZOOM, Math.min(baseZoom + MAX_ZOOM_ABOVE_BASE, c ? c.zoom : baseZoom)),
-      };
+    // Live-justerbara parametrar. På localhost (eller med ?tune i URL:en)
+    // ritas en slider-panel som ändrar dessa i realtid, se buildTunePanel
+    // längst ner — så man kan känna sig fram till bra värden och kopiera
+    // dem hit. I produktion används bara defaultvärdena nedan.
+    //   maxZoomAbove: hur mycket mer än "hemvyns" zoom en koncentrerad cup
+    //     får zooma IN (för högt = prickar flyter ihop till en klump).
+    //   minZoom: absolut lägsta zoom — en internationell cup (Partille,
+    //     ~67 länder) måste få zooma UT så här långt för att alla länder
+    //     ska synas (annars klipps hela den europeiska spridningen bort).
+    //   panDuration: hur länge kameran glider mellan cuper (panorering).
+    //   drift/driftZoom: jordglobsdriftens styrka, se frame().
+    const isLocal = /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname) ||
+      new URLSearchParams(location.search).has("tune");
+    const TUNE = {
+      maxZoomAbove: 1.4, minZoom: 2.4, panDuration: 5200,
+      drift: 1, driftZoom: 0.7,
+    };
+
+    // Färgkonfig PER TEMA (redigeras live i testpanelen på localhost, se
+    // buildTunePanel). Defaultvärdena speglar EXAKT nuvarande CSS/markör-
+    // färger, så produktion (där panelen aldrig byggs) ser likadant ut.
+    // markN = markörens glödfärg för tier N; mittprickens färg härleds
+    // (deriveDot) mot vitt i mörkt tema, mot mörkt i ljust.
+    const COLORS = {
+      dark: {
+        accent: "#f6c410", ink: "#e8edf4", inkSoft: "#9fadbf",
+        cardBg: "#0c121c", cardBgA: 0.68, border: "#ffffff", borderA: 0.12,
+        mark0: "#f6c410", mark1: "#5ab4f0", mark2: "#96a0af",
+      },
+      light: {
+        accent: "#17417e", ink: "#16283f", inkSoft: "#4a5a70",
+        cardBg: "#ffffff", cardBgA: 0.82, border: "#16283f", borderA: 0.14,
+        mark0: "#d62f27", mark1: "#1e64c8", mark2: "#6e7888",
+      },
+    };
+    const themeColors = () => (isDarkTheme() ? COLORS.dark : COLORS.light);
+    function hexToRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
     }
+    function hexA(hex, a) {
+      return `rgba(${hexToRgb(hex)}, ${a})`;
+    }
+    function deriveDot(hex, dark) {
+      const n = parseInt(hex.slice(1), 16);
+      const t = dark ? 255 : 24, amt = 0.55;
+      const mix = (c) => Math.round(c + (t - c) * amt);
+      return `${mix((n >> 16) & 255)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)}`;
+    }
+
+    const cupCam = {};
+    function recomputeCupCam() {
+      for (const id of cupIds) {
+        const pts = cupsData[id].points;
+        // Bredare percentil (0.02–0.98, inte 0.1–0.9) för själva ramen: för
+        // en cup där de allra flesta lag är svenska men hundratals kommer
+        // från övriga Europa/världen (Partille) trimmade 0.1–0.9 bort ALLA
+        // utländska lag och gav en ram stor som bara Skandinavien. 0.02–0.98
+        // behåller den internationella spridningen men kapar fortfarande en
+        // enstaka felgeokodad singelpunkt.
+        const bb = inflateBBox(percentileBBox(pts, 0.02, 0.98), 0.6);
+        const bounds = new maplibregl.LngLatBounds([bb.minLng, bb.minLat], [bb.maxLng, bb.maxLat]);
+        const c = map.cameraForBounds(bounds, { padding: 90, maxZoom: baseZoom + TUNE.maxZoomAbove });
+        cupCam[id] = {
+          lng: c ? c.center.lng : (bb.minLng + bb.maxLng) / 2,
+          lat: c ? c.center.lat : (bb.minLat + bb.maxLat) / 2,
+          zoom: Math.max(TUNE.minZoom, Math.min(baseZoom + TUNE.maxZoomAbove, c ? c.zoom : baseZoom)),
+        };
+      }
+    }
+    recomputeCupCam();
 
     const ctx = dotCanvas.getContext("2d");
     let dw = 0, dh = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -337,14 +377,13 @@ window.HB = window.HB || {};
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const first = cupCam[cupIds[0]];
     // Kameran (cam) tweenas mellan camStart och den aktuella cupens läge
-    // över en FAST, garanterad tid (PAN_DURATION) — inte en öppen
+    // över en FAST, garanterad tid (TUNE.panDuration) — inte en öppen
     // exponentiell utjämning. Den första versionen (öppen, oändligt lång
     // tidskonstant) visade sig kunna hamna så långt efter att prickarna
     // för den "aktuella" cupen ritades helt utanför synligt läge när
     // kameran aldrig hann ikapp — en fast, easead varaktighet garanterar
     // i stället att kameran verkligen ANLÄNDER innan cupen byts igen.
     function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-    const PAN_DURATION = 5200;
     const cam = { lng: first.lng, lat: first.lat, zoom: baseZoom };
     let camStart = { lng: first.lng, lat: first.lat, zoom: baseZoom };
     let panStart = performance.now();
@@ -352,31 +391,36 @@ window.HB = window.HB || {};
 
     let cupIndex = 0;
     let lastReportedCupId = null;
-    let phase = "in";
-    let phaseStart = performance.now();
-    const IN_MS = 3200, OUT_MS = 1400;
-    const STAGGER_MS = 2000; // hur mycket varje prick kan slumpas att dröja innan den börjar tändas — dubblat efter feedback
-    const DOT_FADE_MS = 1100; // hur lång tid en enskild prick tar att tändas, från sin egen starttid — dubblat
 
-    // Hur länge en cup visas (hold-fasen) skalas efter hur MYCKET den har
-    // att visa — en cup med en enda punkt (inget klubbregister, bara
-    // värdorten, se build_landing_map.py) visas ungefär lika länge som
-    // innan den här skalningen fanns, en typisk cup ungefär dubbelt så
-    // länge, och de allra tätaste (Partille, Lundaspelen...) längst av
-    // alla — både för att kameran hinner panorera/zooma ordentligt OCH
-    // för att det helt enkelt är mer att titta på. Logaritmisk skala
-    // eftersom punktantalet spänner över två storleksordningar (1–320).
-    const BASE_TOTAL = IN_MS + 3800 + OUT_MS; // = det tidigare, oskalade cykel-taket
+    // --- prick-livscykeln, knuten till kamerans resa (inte egna timers) --
+    // Under panoreringen mellan cuper är prickarna SLÄCKTA. Först när
+    // kameran nästan är framme tänds de, individuellt och slumpat spritt
+    // över IGNITE_SPREAD ms; sedan pulserar var och en i sin EGEN takt
+    // under hela "framme"-tiden (holdFor, skalad efter cupens storlek);
+    // och SLÄCKS när kameran ska lämna cupen — varpå nästa panorering
+    // börjar med släckt karta igen.
+    const IGNITE_LEAD = 250;   // tänds så här långt (ms) före kamerans framkomst
+    const IGNITE_SPREAD = 650; // slumpfönster för när varje enskild prick tänds
+    const DOT_FADE = 420;      // hur länge en enskild pricks in-/uttoning tar
+    const OUT_MS = 900;        // hur länge släckningen (vid avfärd) tar
+    const HOLD_BASE = 3600;    // "framme"-tid för en liten cup; skalas upp för större
     const MAX_PTS = Math.max(2, ...cupIds.map((id) => cupsData[id].points.length));
     function holdFor(id) {
       const n = Math.max(1, cupsData[id].points.length);
       const mult = 1 + 1.4 * (Math.log(n) / Math.log(MAX_PTS));
-      return Math.max(1500, BASE_TOTAL * mult - IN_MS - OUT_MS);
+      return Math.max(1800, HOLD_BASE * mult);
     }
 
-    // Slumpad, individuell tändningsfördröjning per prick — genereras om
-    // varje gång vi går vidare till en ny cup.
-    let dotDelays = cupsData[cupIds[0]].points.map(() => Math.random() * STAGGER_MS);
+    // Per prick: eget tändnings-dröjsmål + egen pulstakt/-fas, så de
+    // varken tänds eller pulserar i takt. Genereras om vid varje cup-byte.
+    let dotDelays = [], dotRate = [], dotPhase = [];
+    function genDots(id) {
+      const pts = cupsData[id].points;
+      dotDelays = pts.map(() => Math.random() * IGNITE_SPREAD);
+      dotRate = pts.map(() => 0.0016 + Math.random() * 0.0028); // rad/ms ≈ en puls var 2–4 s
+      dotPhase = pts.map(() => Math.random() * Math.PI * 2);
+    }
+    genDots(cupIds[0]);
 
     // Manuellt val via dropupen (se cupPickerBtn/cupDropup i openWelcome)
     // — samma övergångsstart som en naturlig cup-växling (ny stagger,
@@ -399,14 +443,12 @@ window.HB = window.HB || {};
       const idx = cupIds.indexOf(id);
       if (idx < 0) return;
       cupIndex = idx;
-      phase = "in";
-      phaseStart = performance.now();
-      dotDelays = cupsData[id].points.map(() => Math.random() * STAGGER_MS);
       camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
-      panStart = performance.now();
+      panStart = performance.now(); // starta en normal panorering→tändning mot den valda cupen
+      genDots(id);
       lastReportedCupId = null; // tvingar fram en onCupChange-uppdatering nästa bildruta
       animState.paused = false; // se till att en ev. redan aktiv paus inte fryser växlingen
-      animState.pauseAfterArrival = true;
+      animState.pauseAfterArrival = true; // pausa när den hunnit tändas klart (se frame)
       syncPlayPauseButton();
       cupDropup.setAttribute("hidden", "");
       cupPickerBtn.setAttribute("aria-expanded", "false");
@@ -436,9 +478,6 @@ window.HB = window.HB || {};
     function frame(now) {
       const dt = Math.min(100, now - lastNow); // hoppar aldrig kameran vid t ex en bakgrundsflik
       lastNow = now;
-      const dur = reduceMotion
-        ? { in: 0, hold: 1e9, out: 0 } // still bild av första cupen, ingen cykling, ingen kamerarörelse
-        : { in: IN_MS, hold: holdFor(cupIds[cupIndex]), out: OUT_MS };
 
       const freezeTarget = animState.paused ? 1 : 0;
       const freezeStep = dt / FREEZE_MS;
@@ -446,61 +485,65 @@ window.HB = window.HB || {};
         ? Math.min(freezeTarget, freezeT + freezeStep)
         : Math.max(freezeTarget, freezeT - freezeStep);
 
-      // phaseStart/panStart skiftas framåt i proportion till hur "fryst"
-      // vi är just nu (0 vid full fart, hela dt vid full paus, nåt
-      // däremellan under in/ut-rampen) — cup-cykeln och kamera-tweenen
-      // (som båda mäts som now-minus-start) saktar då ner mjukt i stället
-      // för att hugga till. Jordglobs-driften längre ner räknas alltid på
-      // RÅ tid, oavsett frysgrad, så kartan aldrig blir helt livlös.
-      const frozenDt = dt * freezeT;
-      phaseStart += frozenDt;
-      panStart += frozenDt;
+      // Cykelklockan (panStart) skiftas framåt i takt med hur "fryst" vi är
+      // — så pan + prick-livscykeln saktar mjukt ner mot stillastående vid
+      // paus, medan driften och pulsen längre ner går på RÅ nu-tid och
+      // fortsätter oavsett (en paus känns levande, inte död).
+      panStart += dt * freezeT;
 
-      if (!reduceMotion) {
-        const elapsedCheck = now - phaseStart;
-        if (elapsedCheck > dur[phase]) {
-          if (phase === "in") phase = "hold";
-          else if (phase === "hold") phase = "out";
-          else {
-            phase = "in";
-            cupIndex = (cupIndex + 1) % cupIds.length;
-            dotDelays = cupsData[cupIds[cupIndex]].points.map(() => Math.random() * STAGGER_MS);
-            camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
-            panStart = now;
-          }
-          phaseStart = now;
-        }
-      }
-      const elapsed = now - phaseStart;
+      const panDur = TUNE.panDuration;
+      const holdMs = reduceMotion ? 1e9 : holdFor(cupIds[cupIndex]);
+      const igniteBase = Math.max(0, panDur - IGNITE_LEAD); // tändningen börjar strax före framkomst
+      const litAt = igniteBase + IGNITE_SPREAD + DOT_FADE;  // alla prickar helt tända
+      const outStart = litAt + holdMs;                      // släckningen börjar
+      const cycleEnd = outStart + OUT_MS;                   // dags för nästa cup
+      const tp = now - panStart; // tid sedan panoreringen mot denna cup började
 
+      // Kamerapanorering — bara medan tp < panDur; sedan sitter kameran
+      // still (bara driften nedan rör den).
       if (!reduceMotion) {
         const target = cupCam[cupIds[cupIndex]];
-        const te = easeInOutCubic(Math.min(1, (now - panStart) / PAN_DURATION));
+        const te = easeInOutCubic(Math.min(1, tp / panDur));
         cam.lng = camStart.lng + (target.lng - camStart.lng) * te;
         cam.lat = camStart.lat + (target.lat - camStart.lat) * te;
         cam.zoom = camStart.zoom + (target.zoom - camStart.zoom) * te;
       }
 
-      // Manuellt vald cup (se selectCup ovan) — pausa FÖRST när kameran
-      // faktiskt hunnit landa (PAN_DURATION > IN_MS, så prickarna redan
-      // hunnit tändas klart vid den tidpunkten också).
-      if (animState.pauseAfterArrival && now - panStart >= PAN_DURATION) {
+      // Manuellt vald cup (se selectCup) — pausa FÖRST när prickarna hunnit
+      // tändas helt, så man ser den färdigt upplysta cupen.
+      if (animState.pauseAfterArrival && tp >= litAt) {
         animState.pauseAfterArrival = false;
         animState.paused = true;
         syncPlayPauseButton();
       }
 
+      // Nästa cup — först när släckningen är klar (och vi inte är pausade).
+      if (!reduceMotion && !animState.paused && tp >= cycleEnd) {
+        cupIndex = (cupIndex + 1) % cupIds.length;
+        camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
+        panStart = now;
+        genDots(cupIds[cupIndex]);
+      }
+
       // Långsam, avgränsad "jordglobs-drift" — två sinusar med olika
       // period/fas så rörelsen inte känns som ett enkelt fram-och-tillbaka.
-      // Räknas alltid på RÅ tid (now), oavsett paus — se ovan.
-      // Amplituden skalas UPP ju mer inzoomad en cup är (driftFactor): en
-      // hårt inzoomad, koncentrerad cup kändes annars nästan stillastående,
-      // medan samma driftamplitud vid en utzoomad Europa-vy knappt syns.
-      const driftFactor = 1 + Math.max(0, cam.zoom - baseZoom) * 0.7;
+      // Räknas alltid på RÅ tid (now), oavsett paus. Amplituden skalas UPP
+      // ju mer inzoomad en cup är (driftFactor): en hårt inzoomad cup
+      // kändes annars nästan stillastående.
+      const driftFactor = TUNE.drift * (1 + Math.max(0, cam.zoom - baseZoom) * TUNE.driftZoom);
       const driftLat = reduceMotion ? 0 : Math.sin(now / 142000 + 1.3) * 0.55 * driftFactor;
       const driftLng = reduceMotion ? 0 : Math.sin(now / 106000) * 0.9 * driftFactor;
 
-      map.jumpTo({ center: [cam.lng + driftLng, cam.lat + driftLat], zoom: cam.zoom });
+      // Robust mot ogiltiga centrum: en uppskruvad drift (testreglagen kan
+      // gå högt) kan annars putta latituden utanför Web Mercators ±85 och
+      // få MapLibre att kasta. Klamra latitud, wrappa longitud, och fall
+      // tillbaka på ett säkert värde om något blivit NaN.
+      let clat = cam.lat + driftLat, clng = cam.lng + driftLng;
+      if (!Number.isFinite(clat)) clat = Number.isFinite(cam.lat) ? cam.lat : 60;
+      if (!Number.isFinite(clng)) clng = Number.isFinite(cam.lng) ? cam.lng : 15;
+      clat = Math.max(-85, Math.min(85, clat));
+      clng = ((clng + 180) % 360 + 360) % 360 - 180;
+      map.jumpTo({ center: [clng, clat], zoom: Number.isFinite(cam.zoom) ? cam.zoom : baseZoom });
 
       // Prickarna: EGET transparent lager ovanpå den riktiga kartan —
       // clearRect (inte en halvtransparent fyllning) så den underliggande
@@ -514,57 +557,72 @@ window.HB = window.HB || {};
       // mättade färger som syns mot en ljus, ofiltrerad karta; mörkt tema
       // ljusa glödande. Avläst live varje bildruta så en temaväxling (se
       // themeToggleBtn) slår igenom direkt även medan överlägget är öppet.
+      // På localhost styrs färgerna av testpanelens COLORS (live-justerbara);
+      // i produktion används samma värden fast hårdkodade (byte-identiskt).
       const dark = isDarkTheme();
-      const tierSprites = dark
-        ? [glowSprite("246, 196, 16", "255, 232, 150"),  // adress — guld
-           glowSprite("90, 180, 240", "190, 225, 255"),  // land — blå
-           glowSprite("150, 160, 175", "205, 212, 224")] // okänd — grå
-        : [glowSprite("214, 47, 39", "130, 18, 13"),      // adress — röd
-           glowSprite("30, 100, 200", "12, 45, 110"),     // land — blå
-           glowSprite("110, 120, 138", "70, 80, 96")];    // okänd — grå
+      let tierSprites;
+      if (isLocal) {
+        const c = themeColors();
+        tierSprites = [0, 1, 2].map((i) =>
+          glowSprite(hexToRgb(c["mark" + i]), deriveDot(c["mark" + i], dark)));
+      } else {
+        tierSprites = dark
+          ? [glowSprite("246, 196, 16", "255, 232, 150"),  // adress — guld
+             glowSprite("90, 180, 240", "190, 225, 255"),  // land — blå
+             glowSprite("150, 160, 175", "205, 212, 224")] // okänd — grå
+          : [glowSprite("214, 47, 39", "130, 18, 13"),      // adress — röd
+             glowSprite("30, 100, 200", "12, 45, 110"),     // land — blå
+             glowSprite("110, 120, 138", "70, 80, 96")];    // okänd — grå
+      }
 
       const cup = cupsData[cupIds[cupIndex]];
-      const inElapsed = phase === "in" ? elapsed : dur.in;
-      const outT = phase === "out" ? Math.min(1, elapsed / dur.out) : 0;
       const half = SPRITE_SIZE / 2;
+
+      // Cup-nivåns kuvert (samma tändnings-/släcknings-envelope men utan
+      // per-prick-stagger) — driver inforutans opacitet och när stat-korten
+      // uppdateras.
+      let cupAlpha;
+      if (reduceMotion) cupAlpha = 1;
+      else if (tp < igniteBase) cupAlpha = 0;
+      else if (tp >= outStart) cupAlpha = Math.max(0, 1 - (tp - outStart) / OUT_MS);
+      else cupAlpha = Math.min(1, (tp - igniteBase) / (IGNITE_SPREAD + DOT_FADE));
+
       cup.points.forEach(([lat, lng, tier], i) => {
         const p = map.project([lng, lat]);
         const x = p.x, y = p.y;
         if (x < -20 || y < -20 || x > dw + 20 || y > dh + 20) return; // utanför synligt läge
-        let alpha;
-        if (phase === "out") {
-          alpha = 1 - outT;
+        // Grund-opacitet ur pricken EGNA livscykel: släckt under
+        // panoreringen, tänds vid sitt egna (slumpade) dröjsmål nära
+        // framkomst, full under "framme", släcks vid avfärd.
+        let base;
+        if (reduceMotion) {
+          base = 1;
         } else {
-          const localT = reduceMotion ? DOT_FADE_MS : inElapsed - (dotDelays[i] || 0);
-          alpha = Math.max(0, Math.min(1, localT / DOT_FADE_MS));
+          const ig = igniteBase + (dotDelays[i] || 0);
+          if (tp < ig) base = 0;
+          else if (tp >= outStart) base = Math.max(0, 1 - (tp - outStart) / OUT_MS);
+          else base = Math.min(1, (tp - ig) / DOT_FADE);
         }
-        // Paus fryser annars ALLT — en stilla, pulserande glöd (fasförskjuten
-        // per prick för ett organiskt "tindrande" intryck i stället för att
-        // alla pulserar i exakt takt) gör att skärmen ändå känns levande.
-        // freezeT (inte den råa animState.paused) så pulsen glider in/ur i
-        // takt med samma in/ur-ramp som kameran/cup-cykeln (se ovan).
-        if (freezeT > 0.01) {
-          const pulse = 0.72 + 0.28 * Math.sin(now / 900 + i * 0.37);
-          alpha *= (1 - freezeT) + freezeT * pulse;
-        }
+        if (base <= 0.01) return;
+        // Egen pulstakt/-fas per prick (rå tid → pulsen fortsätter även vid
+        // paus), så de "tindrar" i otakt i stället för att andas synkront.
+        const pulse = reduceMotion ? 1 : 0.7 + 0.3 * Math.sin(now * dotRate[i] + dotPhase[i]);
+        const alpha = base * pulse;
         if (alpha <= 0.01) return;
         ctx.globalAlpha = alpha;
         ctx.drawImage(tierSprites[tier] || tierSprites[0], x - half, y - half, SPRITE_SIZE, SPRITE_SIZE);
       });
       ctx.globalAlpha = 1;
 
-      // Inforutan i hörnet — knyter animationen till "X cuper"-siffran och
-      // visar hur många lag just den här cupen faktiskt har (real.count,
-      // inte bara den renderade — och ibland nedcappade — punktmängden).
-      const nameAlpha = phase === "out" ? 1 - outT : Math.min(1, inElapsed / DOT_FADE_MS);
+      // Inforutan i hörnet — tonar in/ut med cupens kuvert.
       nameTitleEl.textContent = cup.name;
       nameCountEl.textContent = fmtNum(cup.count || cup.points.length) + " lag";
-      nameEl.style.opacity = String(0.85 * nameAlpha);
+      nameEl.style.opacity = String(0.85 * cupAlpha);
 
-      // Hero-texten och stat-korten uppdateras bara VID cup-byte (inte
-      // varje bildruta som ovan, som redan är fasförskjuten mot
-      // dot-tändningen) — en enkel, odramatisk textväxling räcker där.
-      if (onCupChange && lastReportedCupId !== cupIds[cupIndex]) {
+      // Hero-texten och stat-korten uppdateras när den nya cupen börjar
+      // tändas (inte redan när kameran lämnar den förra), så namn/siffror
+      // byts i takt med att prickarna dyker upp.
+      if (onCupChange && cupAlpha > 0 && lastReportedCupId !== cupIds[cupIndex]) {
         lastReportedCupId = cupIds[cupIndex];
         onCupChange(cup, cupIds[cupIndex]);
       }
@@ -573,9 +631,136 @@ window.HB = window.HB || {};
     }
     rafId = requestAnimationFrame(frame);
 
+    // --- utvecklar-panel (bara localhost / ?tune) ----------------------
+    // Live-reglage för att känna sig fram till bra värden på drift,
+    // panorering, zoom OCH färger + testa olika kartstilar/filter, med en
+    // knapp som kopierar de valda värdena så de kan klistras in och bakas
+    // in inför deploy. Byggs ALDRIG i produktion (isLocal, se ovan).
+    const OFM = "https://tiles.openfreemap.org/styles/";
+    const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
+    const DARK_FILTER = "invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85)";
+    let curStyle = "liberty";
+    let curFilter = "auto"; // auto = låt CSS-temavariabeln styra; on/off = tvinga
+    function mapCanvas() { return mapEl.querySelector(".maplibregl-canvas"); }
+    function applyFilter() {
+      const cv = mapCanvas();
+      if (!cv) return;
+      cv.style.filter = curFilter === "auto" ? "" : (curFilter === "on" ? DARK_FILTER : "none");
+    }
+    map.on("styledata", applyFilter);
+
+    let tuneCleanup = null;
+    if (isLocal) buildTunePanel();
+
+    function buildTunePanel() {
+      const overlayEl = mapEl.closest(".welcome-overlay");
+      const panel = h("div", { class: "welcome-tune" });
+      const syncers = []; // funktioner som läser om aktivt temas värden till widgetarna
+
+      // Sätter CSS-variablerna för AKTIVT tema inline på överlägget (bara
+      // localhost) — markörfärgerna läses direkt ur COLORS i frame().
+      function applyColors() {
+        const c = themeColors();
+        overlayEl.style.setProperty("--welcome-accent", c.accent);
+        overlayEl.style.setProperty("--ink", c.ink);
+        overlayEl.style.setProperty("--ink-soft", c.inkSoft);
+        overlayEl.style.setProperty("--welcome-card-bg", hexA(c.cardBg, c.cardBgA));
+        overlayEl.style.setProperty("--welcome-border", hexA(c.border, c.borderA));
+      }
+
+      function numRow(obj, key, label, min, max, step, after) {
+        const val = h("span", { class: "welcome-tune-val" }, String(obj()[key]));
+        const input = h("input", {
+          type: "range", min: String(min), max: String(max), step: String(step),
+          value: String(obj()[key]), autocomplete: "off",
+          oninput: (e) => { obj()[key] = parseFloat(e.target.value); val.textContent = e.target.value; if (after) after(); },
+        });
+        syncers.push(() => { input.value = String(obj()[key]); val.textContent = String(obj()[key]); });
+        return h("label", { class: "welcome-tune-row" }, h("span", null, label), val, input);
+      }
+      function colorRow(key, label) {
+        const input = h("input", {
+          type: "color", value: themeColors()[key], autocomplete: "off",
+          oninput: (e) => { themeColors()[key] = e.target.value; applyColors(); },
+        });
+        syncers.push(() => { input.value = themeColors()[key]; });
+        return h("label", { class: "welcome-tune-row" }, h("span", null, label), h("span", null, ""), input);
+      }
+
+      const tune = () => TUNE;
+      const styleSel = h("select", {
+        autocomplete: "off",
+        onchange: (e) => { curStyle = e.target.value; map.setStyle(OFM + curStyle); },
+      }, MAP_STYLES.map((s) => h("option", { value: s }, s)));
+      styleSel.value = curStyle; // undvik att Chrome återställer ett gammalt widget-val vid reload
+      const filterSel = h("select", {
+        autocomplete: "off",
+        onchange: (e) => { curFilter = e.target.value; applyFilter(); },
+      }, ["auto", "on", "off"].map((f) => h("option", { value: f }, "filter: " + f)));
+      filterSel.value = curFilter;
+      // Chrome kan återställa ett tidigare valt dropdown-värde vid reload —
+      // låt då KARTAN följa widgeten (behåll senaste val) i stället för att
+      // de glider isär. Läses efter att widgetarna byggts.
+      curStyle = styleSel.value;
+      if (curStyle !== "liberty") map.setStyle(OFM + curStyle);
+      curFilter = filterSel.value;
+      applyFilter();
+
+      const copyBtn = h("button", {
+        type: "button",
+        onclick: () => {
+          const c = themeColors();
+          const theme = isDarkTheme() ? "mörkt" : "ljust";
+          const txt =
+            `tema=${theme} stil=${curStyle} filter=${curFilter}\n` +
+            `drift=${TUNE.drift} driftZoom=${TUNE.driftZoom} panDuration=${TUNE.panDuration} ` +
+            `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
+            `accent=${c.accent} ink=${c.ink} inkSoft=${c.inkSoft} ` +
+            `cardBg=${c.cardBg}@${c.cardBgA} border=${c.border}@${c.borderA} ` +
+            `mark0=${c.mark0} mark1=${c.mark1} mark2=${c.mark2}`;
+          navigator.clipboard.writeText(txt).then(
+            () => { copyBtn.textContent = "kopierat! ✓"; setTimeout(() => (copyBtn.textContent = "kopiera inställningar"), 1500); },
+            () => { copyBtn.textContent = "kunde ej kopiera"; });
+        },
+      }, "kopiera inställningar");
+
+      panel.append(
+        h("div", { class: "welcome-tune-head" }, "⚙ testreglage (localhost)"),
+        h("div", { class: "welcome-tune-sub" }, "Rörelse & zoom"),
+        numRow(tune, "drift", "Drift-styrka", 0, 4, 0.1),
+        numRow(tune, "driftZoom", "Drift × inzoom", 0, 3, 0.1),
+        numRow(tune, "panDuration", "Panorering (ms)", 1000, 15000, 250),
+        numRow(tune, "maxZoomAbove", "Max inzoom", 0, 4, 0.1),
+        numRow(tune, "minZoom", "Min utzoom", 1, 6, 0.1),
+        h("div", { class: "welcome-tune-sub" }, "Karta"),
+        h("label", { class: "welcome-tune-row" }, h("span", null, "Kartstil"), h("span", null, ""), styleSel),
+        h("label", { class: "welcome-tune-row" }, h("span", null, "Mörkläggning"), h("span", null, ""), filterSel),
+        h("div", { class: "welcome-tune-sub" }, "Färger (aktivt tema)"),
+        colorRow("accent", "Accent (text)"),
+        colorRow("ink", "Rubriktext"),
+        colorRow("inkSoft", "Brödtext"),
+        colorRow("cardBg", "Kortbakgrund"),
+        numRow(themeColors, "cardBgA", "— genomskinl.", 0, 1, 0.02, applyColors),
+        colorRow("border", "Kortkant"),
+        numRow(themeColors, "borderA", "— genomskinl.", 0, 1, 0.02, applyColors),
+        colorRow("mark0", "Markör adress"),
+        colorRow("mark1", "Markör land"),
+        colorRow("mark2", "Markör okänd"),
+        copyBtn);
+      mapEl.parentNode.append(panel);
+      applyColors();
+
+      // När temat växlas (temaknappen sätter data-theme på <html>) ska
+      // panelen visa OCH tillämpa det nya temats färger.
+      const obs = new MutationObserver(() => { applyColors(); syncers.forEach((fn) => fn()); });
+      obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      tuneCleanup = () => obs.disconnect();
+    }
+
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
+      if (tuneCleanup) tuneCleanup();
       map.remove();
     };
   }
