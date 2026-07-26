@@ -205,16 +205,23 @@ window.HB = window.HB || {};
     const baseCam = map.cameraForBounds(allBounds, { padding: 40, maxZoom: 6.5 });
     const baseZoom = baseCam ? baseCam.zoom : 4.5;
 
+    // MAX_ZOOM_ABOVE_BASE hölls först på +2.6 — för koncentrerade kluster
+    // (t ex Järnvägen Cups jitter kring en enda värdort) zoomade det in SÅ
+    // hårt att punkternas fasta pixelstorlek (se SPRITE_R nedan) fick dem
+    // att helt överlappa till en enda solid klump i stället för synligt
+    // åtskilda prickar. Ett lägre tak + mer padding ger mer "luft" runt
+    // klustret oavsett hur tätt själva jittret (build_landing_map.py) är.
+    const MAX_ZOOM_ABOVE_BASE = 1.4;
     const cupCam = {};
     for (const id of cupIds) {
       const pts = cupsData[id].points;
-      const bb = inflateBBox(percentileBBox(pts, 0.1, 0.9), 0.4);
+      const bb = inflateBBox(percentileBBox(pts, 0.1, 0.9), 0.6);
       const bounds = new maplibregl.LngLatBounds([bb.minLng, bb.minLat], [bb.maxLng, bb.maxLat]);
-      const c = map.cameraForBounds(bounds, { padding: 70, maxZoom: baseZoom + 2.6 });
+      const c = map.cameraForBounds(bounds, { padding: 90, maxZoom: baseZoom + MAX_ZOOM_ABOVE_BASE });
       cupCam[id] = {
         lng: c ? c.center.lng : (bb.minLng + bb.maxLng) / 2,
         lat: c ? c.center.lat : (bb.minLat + bb.maxLat) / 2,
-        zoom: Math.max(baseZoom - 0.5, Math.min(baseZoom + 2.6, c ? c.zoom : baseZoom)),
+        zoom: Math.max(baseZoom - 0.5, Math.min(baseZoom + MAX_ZOOM_ABOVE_BASE, c ? c.zoom : baseZoom)),
       };
     }
 
@@ -238,7 +245,7 @@ window.HB = window.HB || {};
     // prickarnas slumpade tändning såg ut att ske på en gång (hela
     // in-fasen hann passera mellan två renderade rutor). Cachad per
     // temanyckel så en temaväxling bygger om spriten men inget annat.
-    const SPRITE_R = 9; // glödradie i css-px
+    const SPRITE_R = 6.5; // glödradie i css-px — mindre än förr så täta kluster (se MAX_ZOOM_ABOVE_BASE ovan) inte flyter ihop till en klump
     const SPRITE_SIZE = (SPRITE_R + 1) * 2;
     let spriteCache = {};
     function glowSprite(glowRgb, dotRgb) {
@@ -256,7 +263,7 @@ window.HB = window.HB || {};
       sc.fillStyle = g;
       sc.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
       sc.beginPath();
-      sc.arc(c, c, 2.3, 0, Math.PI * 2);
+      sc.arc(c, c, 1.7, 0, Math.PI * 2);
       sc.fillStyle = `rgb(${dotRgb})`;
       sc.fill();
       spriteCache[key] = s;

@@ -37,12 +37,16 @@ MAX_POINTS = 320  # var och en ritas med en egen glow varje bildruta — ett tak
                    # animationen mjuk även för proppfulla cuper (Partille, Lundaspelen).
                    # Det RIKTIGA antalet lag sparas separat (count) för visning.
 
-# Grader lat/lng — hölls först mycket större (±1.6/±2.6), men det spred ut
-# markörer ända ut i öppet hav för mindre/smalare länder. Tajtare radie +
-# en cirkelformad (inte fyrkantig) spridning håller klungan trovärdigt
-# nära landets/ortens faktiska läge.
-COUNTRY_JITTER = (0.55, 0.85)  # grader lat/lng — sprider isär lag från samma land
-HOST_JITTER = (0.16, 0.24)     # grader lat/lng — stads-nära spridning kring cupens värdort
+# Grader lat/lng. Höll först ±1.6/±2.6, vilket spred markörer ända ut i
+# öppet hav för mindre/smalare länder — tajtades ner, men det (kombinerat
+# med hur hårt kameran zoomade in på små kluster, se MAX_ZOOM_ABOVE_BASE
+# i js/welcome.js) fick i stället alla prickar att flyta ihop till en
+# enda solid klump. Den riktiga fixen var kamerans zoomtak (mindre
+# inzoomning ger klustret mer "luft" oavsett radie) — jittret ligger nu
+# på en måttlig mellannivå. Cirkelformad (inte fyrkantig) spridning så
+# ingen punkt hamnar i ett hörn längre bort än scale.
+COUNTRY_JITTER = (0.8, 1.2)  # grader lat/lng — sprider isär lag från samma land
+HOST_JITTER = (0.3, 0.45)    # grader lat/lng — stads-nära spridning kring cupens värdort
 
 
 def cap_points(points):
