@@ -281,6 +281,10 @@ window.HB = window.HB || {};
       // pulseSpeed = pulshastighet.
       igniteLead: 250, igniteSpread: 650, dotFade: 420, holdBase: 3600, outMs: 900,
       pulseAmp: 0.3, pulseSpeed: 1,
+      // Glöd/bloom: glowRadius = varje glöds storlek (px); glowBoost =
+      // hur starkt glöden läggs på (additivt, så täta klungor "blommar");
+      // coreRadius = den skarpa mittprickens storlek (px).
+      glowRadius: 9, glowBoost: 1, coreRadius: 1.7,
     };
 
     // Färgkonfig PER TEMA (redigeras live i testpanelen på localhost, se
@@ -349,34 +353,50 @@ window.HB = window.HB || {};
     resize();
     window.addEventListener("resize", resize);
 
-    // En förrenderad glöd-"sprite" per tema (glödgradient + mittprick) —
-    // ritas EN gång till en offscreen-canvas och kopieras sedan billigt med
-    // drawImage per prick, i stället för att bygga en ny createRadialGradient
-    // för var och en av upp till 320 prickar VARJE bildruta. Det senare var
-    // den stora flaskhalsen på mobil: bildrutor tappades så illa att
-    // prickarnas slumpade tändning såg ut att ske på en gång (hela
-    // in-fasen hann passera mellan två renderade rutor). Cachad per
-    // temanyckel så en temaväxling bygger om spriten men inget annat.
-    const SPRITE_R = 6.5; // glödradie i css-px — mindre än förr så täta kluster (se MAX_ZOOM_ABOVE_BASE ovan) inte flyter ihop till en klump
-    const SPRITE_SIZE = (SPRITE_R + 1) * 2;
+    // Förrenderade "sprites" (glöd + kärna SEPARAT) — ritas EN gång till en
+    // offscreen-canvas och kopieras sedan billigt med drawImage per prick,
+    // i stället för att bygga en ny createRadialGradient för var och en av
+    // upp till 320 prickar VARJE bildruta (den stora flaskhalsen på mobil).
+    //
+    // Att glöd och kärna är skilda åt är det som ger "kluster förstärker
+    // varandra": i frame() ritas ALLA glöd-sprites först med additiv
+    // blandning (globalCompositeOperation "lighter" i mörkt tema, "multiply"
+    // i ljust) så överlappande glöd SUMMERAS till ett större, starkare
+    // ljus kring täta klungor — sedan ritas de skarpa kärnorna ovanpå med
+    // vanlig blandning så de inte blir utblåsta. Cachas per färg+radie.
     let spriteCache = {};
-    function glowSprite(glowRgb, dotRgb) {
-      const key = glowRgb + "|" + dotRgb;
+    function glowSprite(rgb) {
+      const R = TUNE.glowRadius;
+      const size = Math.ceil((R + 1) * 2);
+      const key = "g|" + rgb + "|" + R;
       if (spriteCache[key]) return spriteCache[key];
       const s = document.createElement("canvas");
-      s.width = Math.round(SPRITE_SIZE * dpr);
-      s.height = Math.round(SPRITE_SIZE * dpr);
+      s.width = Math.round(size * dpr); s.height = Math.round(size * dpr);
+      s._size = size;
       const sc = s.getContext("2d");
       sc.scale(dpr, dpr);
-      const c = SPRITE_SIZE / 2;
-      const g = sc.createRadialGradient(c, c, 0, c, c, SPRITE_R);
-      g.addColorStop(0, `rgba(${glowRgb}, 0.6)`);
-      g.addColorStop(1, `rgba(${glowRgb}, 0)`);
+      const c = size / 2;
+      const g = sc.createRadialGradient(c, c, 0, c, c, R);
+      g.addColorStop(0, `rgba(${rgb}, 0.55)`);
+      g.addColorStop(1, `rgba(${rgb}, 0)`);
       sc.fillStyle = g;
-      sc.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+      sc.fillRect(0, 0, size, size);
+      spriteCache[key] = s;
+      return s;
+    }
+    function coreSprite(rgb) {
+      const r = TUNE.coreRadius;
+      const size = Math.ceil((r + 1) * 2);
+      const key = "c|" + rgb + "|" + r;
+      if (spriteCache[key]) return spriteCache[key];
+      const s = document.createElement("canvas");
+      s.width = Math.round(size * dpr); s.height = Math.round(size * dpr);
+      s._size = size;
+      const sc = s.getContext("2d");
+      sc.scale(dpr, dpr);
       sc.beginPath();
-      sc.arc(c, c, 1.7, 0, Math.PI * 2);
-      sc.fillStyle = `rgb(${dotRgb})`;
+      sc.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+      sc.fillStyle = `rgb(${rgb})`;
       sc.fill();
       spriteCache[key] = s;
       return s;
@@ -395,6 +415,10 @@ window.HB = window.HB || {};
     const cam = { lng: first.lng, lat: first.lat, zoom: baseZoom };
     let camStart = { lng: first.lng, lat: first.lat, zoom: baseZoom };
     let panStart = performance.now();
+    // Den cup som just lämnats: dess prickar tonas ut MEDAN kameran redan
+    // panorerar bort (de glider iväg och slocknar), i stället för att
+    // slockna stillastående före avfärd. { pts, at } sätts vid cup-byte.
+    let outgoing = null;
     map.jumpTo({ center: [cam.lng, cam.lat], zoom: cam.zoom });
 
     let cupIndex = 0;
@@ -503,8 +527,7 @@ window.HB = window.HB || {};
       const holdMs = reduceMotion ? 1e9 : holdFor(cupIds[cupIndex]);
       const igniteBase = Math.max(0, panDur - TUNE.igniteLead); // tändningen börjar strax före framkomst
       const litAt = igniteBase + TUNE.igniteSpread + TUNE.dotFade; // alla prickar helt tända
-      const outStart = litAt + holdMs;                      // släckningen börjar
-      const cycleEnd = outStart + TUNE.outMs;               // dags för nästa cup
+      const cycleEnd = litAt + holdMs; // efter "framme"-tiden lämnar vi cupen (släckningen sker UNDER panoreringen bort, se outgoing)
       const tp = now - panStart; // tid sedan panoreringen mot denna cup började
 
       // Kamerapanorering — bara medan tp < panDur; sedan sitter kameran
@@ -525,8 +548,11 @@ window.HB = window.HB || {};
         syncPlayPauseButton();
       }
 
-      // Nästa cup — först när släckningen är klar (och vi inte är pausade).
+      // Nästa cup — när "framme"-tiden är slut (och vi inte är pausade).
+      // Den lämnade cupens prickar överlämnas till outgoing och tonas ut
+      // under den påbörjade panoreringen bort (se renderingen nedan).
       if (!reduceMotion && !animState.paused && tp >= cycleEnd) {
+        outgoing = { pts: cupsData[cupIds[cupIndex]].points, at: now };
         cupIndex = (cupIndex + 1) % cupIds.length;
         camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
         panStart = now;
@@ -567,61 +593,96 @@ window.HB = window.HB || {};
       // themeToggleBtn) slår igenom direkt även medan överlägget är öppet.
       // På localhost styrs färgerna av testpanelens COLORS (live-justerbara);
       // i produktion används samma värden fast hårdkodade (byte-identiskt).
+      // Tre färger efter hur exakt en punkt är placerad (tredje talet i
+      // varje [lat,lng,tier], se build_landing_map.py): tier 0 = känd
+      // klubbadress, tier 1 = bara land känt, tier 2 = ingen geodata.
+      // Ljust tema behöver mörkare/mättade färger som syns mot en ljus
+      // karta; mörkt tema ljusa glödande. På localhost styrs färgerna av
+      // testpanelens COLORS; i produktion samma värden hårdkodade.
       const dark = isDarkTheme();
-      let tierSprites;
+      let glowRgb, coreRgb;
       if (isLocal) {
         const c = themeColors();
-        tierSprites = [0, 1, 2].map((i) =>
-          glowSprite(hexToRgb(c["mark" + i]), deriveDot(c["mark" + i], dark)));
+        glowRgb = [0, 1, 2].map((i) => hexToRgb(c["mark" + i]));
+        coreRgb = [0, 1, 2].map((i) => deriveDot(c["mark" + i], dark));
+      } else if (dark) {
+        glowRgb = ["246, 196, 16", "90, 180, 240", "150, 160, 175"];
+        coreRgb = ["255, 232, 150", "190, 225, 255", "205, 212, 224"];
       } else {
-        tierSprites = dark
-          ? [glowSprite("246, 196, 16", "255, 232, 150"),  // adress — guld
-             glowSprite("90, 180, 240", "190, 225, 255"),  // land — blå
-             glowSprite("150, 160, 175", "205, 212, 224")] // okänd — grå
-          : [glowSprite("214, 47, 39", "130, 18, 13"),      // adress — röd
-             glowSprite("30, 100, 200", "12, 45, 110"),     // land — blå
-             glowSprite("110, 120, 138", "70, 80, 96")];    // okänd — grå
+        glowRgb = ["214, 47, 39", "30, 100, 200", "110, 120, 138"];
+        coreRgb = ["130, 18, 13", "12, 45, 110", "70, 80, 96"];
       }
 
       const cup = cupsData[cupIds[cupIndex]];
-      const half = SPRITE_SIZE / 2;
 
-      // Cup-nivåns kuvert (samma tändnings-/släcknings-envelope men utan
-      // per-prick-stagger) — driver inforutans opacitet och när stat-korten
-      // uppdateras.
+      // Cup-nivåns kuvert (samma tändnings-envelope men utan per-prick-
+      // stagger) — driver inforutans opacitet och när stat-korten uppdateras.
       let cupAlpha;
       if (reduceMotion) cupAlpha = 1;
       else if (tp < igniteBase) cupAlpha = 0;
-      else if (tp >= outStart) cupAlpha = Math.max(0, 1 - (tp - outStart) / TUNE.outMs);
       else cupAlpha = Math.min(1, (tp - igniteBase) / (TUNE.igniteSpread + TUNE.dotFade));
 
+      // Samla synliga prickar (projicera bara de som faktiskt lyser).
+      const vis = [];
       cup.points.forEach(([lat, lng, tier], i) => {
-        const p = map.project([lng, lat]);
-        const x = p.x, y = p.y;
-        if (x < -20 || y < -20 || x > dw + 20 || y > dh + 20) return; // utanför synligt läge
         // Grund-opacitet ur pricken EGNA livscykel: släckt under
         // panoreringen, tänds vid sitt egna (slumpade) dröjsmål nära
-        // framkomst, full under "framme", släcks vid avfärd.
+        // framkomst, full under "framme". Släckningen sker inte här utan
+        // via outgoing (nedan) när cupen väl lämnats.
         let base;
         if (reduceMotion) {
           base = 1;
         } else {
           const ig = igniteBase + (dotDelays[i] || 0) * TUNE.igniteSpread;
-          if (tp < ig) base = 0;
-          else if (tp >= outStart) base = Math.max(0, 1 - (tp - outStart) / TUNE.outMs);
-          else base = Math.min(1, (tp - ig) / TUNE.dotFade);
+          base = tp < ig ? 0 : Math.min(1, (tp - ig) / TUNE.dotFade);
         }
         if (base <= 0.01) return;
         // Egen pulstakt/-fas per prick (rå tid → pulsen fortsätter även vid
         // paus), så de "tindrar" i otakt i stället för att andas synkront.
-        // pulseAmp styr styrkan (0 = ingen puls), pulseSpeed hastigheten.
         const pulse = reduceMotion ? 1
           : (1 - TUNE.pulseAmp) + TUNE.pulseAmp * Math.sin(now * dotRate[i] * TUNE.pulseSpeed + dotPhase[i]);
         const alpha = base * pulse;
         if (alpha <= 0.01) return;
-        ctx.globalAlpha = alpha;
-        ctx.drawImage(tierSprites[tier] || tierSprites[0], x - half, y - half, SPRITE_SIZE, SPRITE_SIZE);
+        const p = map.project([lng, lat]);
+        if (p.x < -20 || p.y < -20 || p.x > dw + 20 || p.y > dh + 20) return;
+        vis.push([p.x, p.y, alpha, tier]);
       });
+
+      // Den lämnade cupens prickar tonas ut MEDAN kameran panorerar bort —
+      // de glider iväg och slocknar (kollektiv uttoning över outMs), i
+      // stället för att slockna stillastående innan avfärd.
+      if (outgoing) {
+        const ot = now - outgoing.at;
+        if (ot >= TUNE.outMs) {
+          outgoing = null;
+        } else {
+          const fade = 1 - ot / TUNE.outMs;
+          for (const [lat, lng, tier] of outgoing.pts) {
+            const p = map.project([lng, lat]);
+            if (p.x < -20 || p.y < -20 || p.x > dw + 20 || p.y > dh + 20) continue;
+            vis.push([p.x, p.y, fade, tier]);
+          }
+        }
+      }
+
+      // Pass 1 — glöden, ADDITIVT (mörkt tema) / MULTIPLICERAT (ljust): så
+      // överlappande glöd från närliggande markörer förstärker varandra och
+      // täta klungor "blommar" upp till ett större, starkare sken.
+      ctx.globalCompositeOperation = dark ? "lighter" : "multiply";
+      for (const [x, y, a, tier] of vis) {
+        const g = glowSprite(glowRgb[tier] || glowRgb[0]);
+        const gs = g._size;
+        ctx.globalAlpha = Math.min(1, a * TUNE.glowBoost);
+        ctx.drawImage(g, x - gs / 2, y - gs / 2, gs, gs);
+      }
+      // Pass 2 — de skarpa kärnorna ovanpå, vanlig blandning så de inte blåses ut.
+      ctx.globalCompositeOperation = "source-over";
+      for (const [x, y, a, tier] of vis) {
+        const cs = coreSprite(coreRgb[tier] || coreRgb[0]);
+        const s = cs._size;
+        ctx.globalAlpha = Math.min(1, a + 0.15);
+        ctx.drawImage(cs, x - s / 2, y - s / 2, s, s);
+      }
       ctx.globalAlpha = 1;
 
       // Inforutan i hörnet — tonar in/ut med cupens kuvert.
@@ -726,7 +787,8 @@ window.HB = window.HB || {};
             `drift=${TUNE.drift} driftZoom=${TUNE.driftZoom} panDuration=${TUNE.panDuration} ` +
             `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
             `igniteLead=${TUNE.igniteLead} igniteSpread=${TUNE.igniteSpread} dotFade=${TUNE.dotFade} ` +
-            `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed}\n` +
+            `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed} ` +
+            `coreRadius=${TUNE.coreRadius} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost}\n` +
             `accent=${c.accent} ink=${c.ink} inkSoft=${c.inkSoft} ` +
             `cardBg=${c.cardBg}@${c.cardBgA} border=${c.border}@${c.borderA} ` +
             `mark0=${c.mark0} mark1=${c.mark1} mark2=${c.mark2}`;
@@ -752,6 +814,9 @@ window.HB = window.HB || {};
         numRow(tune, "outMs", "Släcknings­tid (ms)", 100, 4000, 50),
         numRow(tune, "pulseAmp", "Pulsstyrka", 0, 0.6, 0.02),
         numRow(tune, "pulseSpeed", "Pulshastighet", 0.2, 4, 0.1),
+        numRow(tune, "coreRadius", "Markörstorlek (px)", 0.5, 6, 0.1),
+        numRow(tune, "glowRadius", "Glöd-radie (px)", 3, 24, 0.5),
+        numRow(tune, "glowBoost", "Glöd-styrka (bloom)", 0.2, 3, 0.1),
         h("div", { class: "welcome-tune-sub" }, "Karta"),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Kartstil"), h("span", null, ""), styleSel),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Mörkläggning"), h("span", null, ""), filterSel),
@@ -769,6 +834,11 @@ window.HB = window.HB || {};
         copyBtn);
       mapEl.parentNode.append(panel);
       applyColors();
+      // Chrome kan återställa widget-värden (sliders/color) vid reload utan
+      // att våra modeller (TUNE/COLORS) ändras — tvinga tillbaka widgetarna
+      // till modellen så det som VISAS alltid = det som faktiskt tillämpas.
+      // I en rAF så det körs efter webbläsarens ev. återställning.
+      requestAnimationFrame(() => syncers.forEach((fn) => fn()));
 
       // När temat växlas (temaknappen sätter data-theme på <html>) ska
       // panelen visa OCH tillämpa det nya temats färger.
