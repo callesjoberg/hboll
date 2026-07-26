@@ -11,16 +11,20 @@ Fallande kvalitetsordning per cup:
 
   1. data/snapshot-<id>.json — klassiska Cup Manager-cuper har redan riktiga
      klubbadresser (clubs:{namn:{lat,lng,...}}, se fetch_cupmanager.py).
-  2. Annars: ett lag per unikt lag-id i senast arkiverade upplagan. Ett lag
-     med känd landskod (t ex Partille Cups "Poland", "Lithuania" — samma
-     COUNTRY_CENTROIDS-tabell som Kartan-fliken i js/app.js redan använder)
-     slumpas ut något kring landets centroid; ett lag helt utan adress
-     eller land (rena svenska ProCup-cuper som saknar geokodning) slumpas
-     i stället ut något kring cupens EGEN värdort. Deterministiskt seedad
-     på lag-id, så samma lag alltid hamnar på samma plats mellan körningar
-     (annars skulle skriptet "ändra" filen varje CI-körning i onödan).
-     Det här är bara en dekorativ bakgrundsanimation — riktiga adresser
-     används redan i den faktiska Kartan-fliken.
+  2. Annars: ett lag per unikt lag-id i den SENASTE upplaga som faktiskt
+     hunnit spelas (finished>0 i data/archive/index.json — en cup vars
+     nästa upplaga lagts upp men inte startat än faller tillbaka till
+     föregående år i stället för att visa outredda slutspelsplatshållare
+     som "lag", se PLACEHOLDER_NAME). Ett lag med känd landskod (t ex
+     Partille Cups "Poland", "Lithuania" — samma COUNTRY_CENTROIDS-tabell
+     som Kartan-fliken i js/app.js redan använder) slumpas ut något kring
+     landets centroid; ett lag helt utan adress eller land (rena svenska
+     ProCup-cuper som saknar geokodning) slumpas i stället ut något kring
+     cupens EGEN värdort. Deterministiskt seedad på lag-id, så samma lag
+     alltid hamnar på samma plats mellan körningar (annars skulle
+     skriptet "ändra" filen varje CI-körning i onödan). Det här är bara
+     en dekorativ bakgrundsanimation — riktiga adresser används redan i
+     den faktiska Kartan-fliken.
 
 Körs sist i workflowet (ren stdlib, inget nätverksanrop, läser bara redan
 skrapad data) — bygger om automatiskt när en cup får nya/fler klubbar/lag."""
@@ -54,6 +58,13 @@ HOST_JITTER = (0.9, 1.3)     # grader lat/lng — regional spridning kring cupen
 INTERNATIONAL_THRESHOLD = 5  # minst så här många OLIKA utländska länder innan landsspridning
                               # (COUNTRY_JITTER) används i stället för värdorts-jitter — se
                               # points_from_teams
+
+# Cup Manager/ProCup fyller i platshållarnamn för slutspelsplatser som
+# ännu inte avgjorts — "Vinn. 06091905" (vinnare av match X), "3:an i
+# Grupp B" osv. Det är inga riktiga lag och ska aldrig räknas eller
+# plottas som ett.
+PLACEHOLDER_NAME = re.compile(
+    r"^(vinn\.?|vinnare|\d+\s*:?an\s+i\s+grupp|winner|tbd|bye|förlorare|loser)\b", re.I)
 
 
 def cap_points(points):
@@ -105,13 +116,26 @@ def points_from_snapshot(cup_id):
     return points if len(points) >= MIN_POINTS else None
 
 
-def latest_archive_file(cup_id):
+def latest_archive_file(cup_id, archive_index):
+    # Föredrar den SENASTE upplagan som faktiskt hunnit spelas (finished>0)
+    # framför bara den senaste som EXISTERAR — annars visar animationen en
+    # cup vars 2026 inte ens startat än bara ännu-inte-avgjorda
+    # slutspelsplatshållare ("Vinn. XXXXX") som "lag", se PLACEHOLDER_NAME.
+    # Om ingen upplaga alls hunnit spelas (helt ny cup) används ändå bästa
+    # tillgängliga fil — bättre än inget alls.
+    entry = archive_index.get(cup_id) or {}
+    editions = sorted(entry.get("editions", []), key=lambda e: e.get("edition", ""))
+    for e in reversed(editions):
+        if e.get("finished", 0) > 0:
+            f = ROOT / e["file"]
+            if f.exists():
+                return f
     candidates = sorted((ROOT / "data" / "archive").glob(f"{cup_id}-*.json"))
     return candidates[-1] if candidates else None
 
 
-def points_from_teams(cup_id, host_lat, host_lon, centroids):
-    f = latest_archive_file(cup_id)
+def points_from_teams(cup_id, host_lat, host_lon, centroids, archive_index):
+    f = latest_archive_file(cup_id, archive_index)
     if not f:
         return None
     try:
@@ -122,8 +146,11 @@ def points_from_teams(cup_id, host_lat, host_lon, centroids):
     for m in data.get("matches", []):
         for side in ("home", "away"):
             info = m.get(side) or {}
-            tid = info.get("id") or info.get("name")
-            if tid is not None and tid not in teams:
+            name = (info.get("name") or "").strip()
+            if not name or PLACEHOLDER_NAME.match(name):
+                continue
+            tid = info.get("id") or name
+            if tid not in teams:
                 teams[tid] = info.get("country")
     if len(teams) < MIN_POINTS:
         return None
@@ -160,6 +187,8 @@ def points_from_teams(cup_id, host_lat, host_lon, centroids):
 def main():
     cups = json.loads((ROOT / "data" / "cups.json").read_text(encoding="utf-8"))["cups"]
     centroids = load_country_centroids()
+    archive_index_path = ROOT / "data" / "archive" / "index.json"
+    archive_index = json.loads(archive_index_path.read_text(encoding="utf-8")) if archive_index_path.exists() else {}
 
     out = {}
     for c in cups:
@@ -167,7 +196,7 @@ def main():
         points = points_from_snapshot(cup_id)
         source = "snapshot"
         if points is None:
-            points = points_from_teams(cup_id, c["lat"], c["lon"], centroids)
+            points = points_from_teams(cup_id, c["lat"], c["lon"], centroids, archive_index)
             source = "lag"
         if points is None:
             points = [[c["lat"], c["lon"]]]

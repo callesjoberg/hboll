@@ -94,15 +94,20 @@ window.HB = window.HB || {};
     const years = new Set();
     const perCup = {};
     for (const [cupId, entry] of Object.entries(idx)) {
-      const editions = (entry.editions || []).filter((e) => e.matches > 0);
+      // finished>0 (inte bara matches>0) — en upplaga vars matcher är
+      // schemalagda men inte spelade än (t ex en 2026-upplaga som just
+      // lagts upp) ska varken räknas som "arkiverad" eller bidra med
+      // sina ospelade matcher till totalen. Räknar bara faktiskt SPELADE
+      // matcher (e.finished, inte e.matches som även inkluderar kommande).
+      const editions = (entry.editions || []).filter((e) => e.finished > 0);
       if (!editions.length) continue;
       cups++;
       let cupMatches = 0;
       const cupYears = [];
       for (const e of editions) {
         teams += e.teams || 0;
-        matches += e.matches || 0;
-        cupMatches += e.matches || 0;
+        matches += e.finished || 0;
+        cupMatches += e.finished || 0;
         cupYears.push(e.edition);
         years.add(e.edition);
       }
