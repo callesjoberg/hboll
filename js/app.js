@@ -352,6 +352,13 @@ window.HB = window.HB || {};
     // per cup, exkl. innevarande år) behåller den här alla nyckeltal OCH
     // innevarande år, vilket Trend-fliken (renderTrendView) behöver.
     archiveIndex: null,
+    // {cupId: {edition: [rå lagnamn, ...]}}, byggd av scripts/build_team_
+    // index.py, laddas lat vid första Klubb/Lag-sökningen (se
+    // ensureTeamIndex/computeClubRows) — under 1 MB, till skillnad från de
+    // fulla arkivfilerna. Låter computeClubRows slå upp VILKA cup-år som
+    // ens KAN innehålla en sökning innan den hämtar de tunga filerna, i
+    // stället för att alltid hämta ALLA arkiverade upplagor av ALLA cuper.
+    teamIndex: null,
     // Trend-fliken: eget filter, INTE state.cats/state.teams — de håller
     // id:n som bara gäller innevarande upplaga (se allActiveMatches-
     // kommentaren om att id:n aldrig är stabila mellan år), så Trend filtrerar
@@ -3503,19 +3510,58 @@ window.HB = window.HB || {};
     return [...years].sort().reverse();
   }
 
+  // Lat, EN gång: se state.teamIndex-kommentaren. Modulnivå-flagga (inte
+  // state.teamIndex självt, som medvetet ska stanna på null tills datan
+  // faktiskt finns) förhindrar att computeClubRows startar om hämtningen
+  // vid varje omritning innan löftet hunnit lösa sig.
+  let teamIndexRequested = false;
+  function ensureTeamIndex() {
+    if (teamIndexRequested) return;
+    teamIndexRequested = true;
+    HB.api.fetchTeamIndex().then((idx) => {
+      state.teamIndex = idx || {};
+      renderContent();
+    });
+  }
+
+  // Avgör om en cup-upplaga ens KAN innehålla söktermen, enligt det redan
+  // laddade lagnamnsindexet — false = vet SÄKERT att den inte gör det (kan
+  // hoppas över helt, ingen nätverksfråga för den stora matchfilen). true
+  // betyder antingen att ett namn faktiskt matchar (måste hämtas för att
+  // räkna exakt) ELLER att upplagan saknas i indexet (t.ex. nyare än
+  // senaste indexbygget, se scripts/build_team_index.py) — då antas den
+  // kunna matcha, hellre missa optimeringen än missa en riktig träff.
+  function editionMightMatch(cupId, edition, teamQuery) {
+    const names = state.teamIndex[cupId] && state.teamIndex[cupId][edition];
+    if (!names) return true;
+    return names.some((n) => matchesBooleanQuery(n.toLowerCase(), teamQuery));
+  }
+
   // Klubb/Lag-fliken: aggregerar EN sökterms (klubb-/lagnamn) historik över
   // ALLA cuper med arkiverad data (till skillnad från Trend-jämförelsen
   // ovan, som bara omfattar de cuper man själv valt). Kräver FULLA
   // matchlistor per arkiverat år och cup (samma ensureYearMatches som
-  // formkurvan).
+  // formkurvan) — men bara för de upplagor som lagnamnsindexet (se ovan)
+  // inte redan kan avskriva helt. Man är sällan intresserad av mer än en
+  // handfull klubbar åt gången (en själv, ett par att jämföra med) — det
+  // finns ingen anledning att hämta ALLA ~190 arkiverade upplagor av ALLA
+  // cuper bara för att räkna ut EN sökning.
   function computeClubRows(cupIds, teamQuery) {
-    let pending = false;
+    ensureTeamIndex();
     // loadedCount/totalCount: hur många av de berörda cup-år-filerna som
     // redan svarat (klart ELLER fel, bara inte "loading") — låter
     // renderClubView visa en riktig förloppsindikator ("X av Y hämtade")
-    // i stället för en obestämd "Hämtar …"-text under en sökning som i
-    // värsta fall (ingen IndexedDB-cache än, se fetchArchiveEdition) drar
-    // ner tiotals MB över nätet.
+    // i stället för en obestämd "Hämtar …"-text. Väntar medvetet in HELA
+    // lagnamnsindexet (state.teamIndex) innan en enda stor matchfil ens
+    // beställs — annars hinner flera beställas i onödan under den korta
+    // stund (litet, snabbt anrop) indexet fortfarande laddar, vilket i
+    // praktiken skulle omintetgöra en stor del av optimeringen.
+    if (!state.teamIndex) {
+      let totalCount = 0;
+      for (const cupId of cupIds) totalCount += clubEditionsFor(cupId).length;
+      return { pending: true, rows: [], loadedCount: 0, totalCount };
+    }
+    let pending = false;
     let loadedCount = 0, totalCount = 0;
     const rows = [];
     for (const cupId of cupIds) {
@@ -3531,6 +3577,10 @@ window.HB = window.HB || {};
       const names = new Set();
       for (const em of editionsMeta) {
         totalCount++;
+        if (!editionMightMatch(cupId, em.edition, teamQuery)) {
+          loadedCount++; // känt resultat direkt av indexet — inget att vänta på
+          continue;
+        }
         ensureYearMatches(em.edition, cupId);
         const ym = state.yearMatches[cupId + ":" + em.edition];
         if (!ym || ym.status === "loading") { pending = true; continue; }
@@ -3764,14 +3814,22 @@ window.HB = window.HB || {};
         onclick: () => { state.clubDrillCup = null; renderContent(); },
       }, "← Tillbaka till alla cuper")));
 
+    // Samma lagnamnsindex-genväg som computeClubRows — bara de upplagor som
+    // faktiskt kan innehålla söktermen behöver hämtas här heller (indexet
+    // är i praktiken redan laddat vid det här laget, eftersom man alltid
+    // kommer hit via en sökning i toppnivåtabellen — men den saknade
+    // guarden om det inte skulle vara fallet).
     const editionsMeta = clubEditionsFor(cupId);
-    for (const em of editionsMeta) ensureYearMatches(em.edition, cupId);
-    const loadedCount = editionsMeta.filter((em) => {
+    const relevantEditions = state.teamIndex
+      ? editionsMeta.filter((em) => editionMightMatch(cupId, em.edition, query))
+      : editionsMeta;
+    for (const em of relevantEditions) ensureYearMatches(em.edition, cupId);
+    const loadedCount = relevantEditions.filter((em) => {
       const ym = state.yearMatches[cupId + ":" + em.edition];
       return ym && ym.status !== "loading";
     }).length;
-    if (loadedCount < editionsMeta.length) {
-      root.append(archiveProgressBlock(loadedCount, editionsMeta.length));
+    if (loadedCount < relevantEditions.length) {
+      root.append(archiveProgressBlock(loadedCount, relevantEditions.length));
       return;
     }
 

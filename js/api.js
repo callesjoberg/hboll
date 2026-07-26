@@ -583,6 +583,25 @@ window.HB = window.HB || {};
     return archiveIndexPromise;
   }
 
+  // {cupId: {edition: [rå lagnamn, ...]}}, byggd av scripts/build_team_
+  // index.py — under 1 MB (bara namn, ingen matchdata), till skillnad från
+  // de fulla arkivfilerna (flera MB var). Klubb/Lag (app.js: computeClubRows)
+  // slår upp den HÄR först för att avgöra vilka cup-år som ens KAN innehålla
+  // en sökning, i stället för att hämta ALLA arkiverade upplagor av ALLA
+  // cuper och filtrera efteråt. Cachas i sig via webbläsarens vanliga HTTP-
+  // cache (ingen no-store) — liten och ändras sällan (bara när en NY
+  // arkiverad upplaga tillkommer), så ingen egen IndexedDB-logik behövs.
+  let teamIndexPromise = null;
+
+  function fetchTeamIndex() {
+    if (!teamIndexPromise) {
+      teamIndexPromise = fetch("data/archive/team-index.json")
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}));
+    }
+    return teamIndexPromise;
+  }
+
   // Minimal IndexedDB-wrapper — en enda "editions"-store, nyckel
   // "cupId:edition". Faller tyst tillbaka till "ingen cache" (null) om
   // IndexedDB saknas eller inte går att öppna (t.ex. privat läge i vissa
@@ -694,5 +713,5 @@ window.HB = window.HB || {};
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              readCache, writeCache, localDataTs, clubGeo,
-             fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory };
+             fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory, fetchTeamIndex };
 })();
