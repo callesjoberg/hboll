@@ -425,7 +425,6 @@ window.HB = window.HB || {};
     const nameTitleEl = h("div", { class: "welcome-cup-title" });
     const nameCountEl = h("div", { class: "welcome-cup-count" });
     nameEl.append(nameTitleEl, nameCountEl);
-
     let rafId = null;
     let lastNow = performance.now();
     // 0 = full fart, 1 = helt fryst — glider mjukt mellan de två över
@@ -494,10 +493,12 @@ window.HB = window.HB || {};
       // Långsam, avgränsad "jordglobs-drift" — två sinusar med olika
       // period/fas så rörelsen inte känns som ett enkelt fram-och-tillbaka.
       // Räknas alltid på RÅ tid (now), oavsett paus — se ovan.
-      // Liten amplitud med avsikt: ska kännas som att globen sakta
-      // fortsätter snurra, inte konkurrera med cup-till-cup-panoreringen.
-      const driftLat = reduceMotion ? 0 : Math.sin(now / 142000 + 1.3) * 0.55;
-      const driftLng = reduceMotion ? 0 : Math.sin(now / 106000) * 0.9;
+      // Amplituden skalas UPP ju mer inzoomad en cup är (driftFactor): en
+      // hårt inzoomad, koncentrerad cup kändes annars nästan stillastående,
+      // medan samma driftamplitud vid en utzoomad Europa-vy knappt syns.
+      const driftFactor = 1 + Math.max(0, cam.zoom - baseZoom) * 0.7;
+      const driftLat = reduceMotion ? 0 : Math.sin(now / 142000 + 1.3) * 0.55 * driftFactor;
+      const driftLng = reduceMotion ? 0 : Math.sin(now / 106000) * 0.9 * driftFactor;
 
       map.jumpTo({ center: [cam.lng + driftLng, cam.lat + driftLat], zoom: cam.zoom });
 
@@ -506,22 +507,27 @@ window.HB = window.HB || {};
       // kartan aldrig tonas, och varje pricks tändning syns exakt som den är.
       ctx.clearRect(0, 0, dw, dh);
 
-      // Gula/gyllene markörer läses knappt mot en ljus, ofiltrerad karta
-      // (se --welcome-map-filter i css/style.css — bara mörkt tema
-      // mörklägger kartan) — röda markörer i ljust tema i stället, som
-      // syns tydligt mot både land och hav. Avläst live varje bildruta så
-      // en temaväxling (se themeToggleBtn) syns direkt även medan
-      // överlägget redan är öppet.
+      // Tre färger efter hur exakt en punkt är placerad (tredje talet i
+      // varje [lat,lng,tier], se build_landing_map.py): tier 0 = känd
+      // klubbadress, tier 1 = bara land känt (slumpad inom landet), tier 2
+      // = ingen geodata (grupperad nära övriga). Ljust tema behöver mörkare/
+      // mättade färger som syns mot en ljus, ofiltrerad karta; mörkt tema
+      // ljusa glödande. Avläst live varje bildruta så en temaväxling (se
+      // themeToggleBtn) slår igenom direkt även medan överlägget är öppet.
       const dark = isDarkTheme();
-      const sprite = dark
-        ? glowSprite("246, 196, 16", "255, 232, 150")
-        : glowSprite("214, 47, 39", "130, 18, 13");
+      const tierSprites = dark
+        ? [glowSprite("246, 196, 16", "255, 232, 150"),  // adress — guld
+           glowSprite("90, 180, 240", "190, 225, 255"),  // land — blå
+           glowSprite("150, 160, 175", "205, 212, 224")] // okänd — grå
+        : [glowSprite("214, 47, 39", "130, 18, 13"),      // adress — röd
+           glowSprite("30, 100, 200", "12, 45, 110"),     // land — blå
+           glowSprite("110, 120, 138", "70, 80, 96")];    // okänd — grå
 
       const cup = cupsData[cupIds[cupIndex]];
       const inElapsed = phase === "in" ? elapsed : dur.in;
       const outT = phase === "out" ? Math.min(1, elapsed / dur.out) : 0;
       const half = SPRITE_SIZE / 2;
-      cup.points.forEach(([lat, lng], i) => {
+      cup.points.forEach(([lat, lng, tier], i) => {
         const p = map.project([lng, lat]);
         const x = p.x, y = p.y;
         if (x < -20 || y < -20 || x > dw + 20 || y > dh + 20) return; // utanför synligt läge
@@ -543,7 +549,7 @@ window.HB = window.HB || {};
         }
         if (alpha <= 0.01) return;
         ctx.globalAlpha = alpha;
-        ctx.drawImage(sprite, x - half, y - half, SPRITE_SIZE, SPRITE_SIZE);
+        ctx.drawImage(tierSprites[tier] || tierSprites[0], x - half, y - half, SPRITE_SIZE, SPRITE_SIZE);
       });
       ctx.globalAlpha = 1;
 
