@@ -231,14 +231,28 @@ window.HB = window.HB || {};
     const maplibregl = await ensureMapLibre();
     if (!mapEl.isConnected) return () => {}; // stängdes medan biblioteket laddades
 
+    // Kart-stil OCH mörkläggningsfilter är PER TEMA (färgmarkörerna likaså,
+    // se COLORS). Mörkt: positron-basen mörkläggs via CSS-filtret. Ljust:
+    // den färgglada liberty-stilen utan filter. Testpanelen redigerar det
+    // aktiva temats värden; ett tema-byte växlar stil/filter (även i
+    // produktion, se temaObs längre ner).
+    const OFM = "https://tiles.openfreemap.org/styles/";
+    const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
+    const MAPCFG = {
+      dark: { style: "positron", filter: "auto" },
+      light: { style: "liberty", filter: "auto" },
+    };
+    const mapCfg = () => (isDarkTheme() ? MAPCFG.dark : MAPCFG.light);
+
     const map = new maplibregl.Map({
       container: mapEl,
-      style: "https://tiles.openfreemap.org/styles/positron",
+      style: OFM + mapCfg().style,
       center: [15, 62],
       zoom: 4,
       interactive: false, // dekorativ bakgrund, inte ett navigerbart kartverktyg
       attributionControl: { compact: true },
     });
+    let activeStyle = mapCfg().style; // vilken stil som faktiskt är laddad
 
     // Varje cups egen kamerainställning (centrum + zoom) räknas ut EN gång
     // via MapLibres egen cameraForBounds — mer träffsäkert än att själva
@@ -558,7 +572,13 @@ window.HB = window.HB || {};
       // Den lämnade cupens prickar överlämnas till outgoing och tonas ut
       // under den påbörjade panoreringen bort (se renderingen nedan).
       if (!reduceMotion && !animState.paused && tp >= cycleEnd) {
-        outgoing = { pts: cupsData[cupIds[cupIndex]].points, at: now };
+        const leaving = cupsData[cupIds[cupIndex]];
+        // Ta med prickarnas EGNA pulstakt/-fas (och namn/antal) — annars
+        // hoppade ljusstyrkan till från pulsvärdet till full när de blev
+        // "outgoing" (en flicker precis före bytet). Nu fortsätter de pulsera
+        // exakt som innan medan de tonas ut.
+        outgoing = { pts: leaving.points, at: now, rate: dotRate, phase: dotPhase,
+          name: leaving.name, count: leaving.count || leaving.points.length };
         cupIndex = (cupIndex + 1) % cupIds.length;
         camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
         panStart = now;
@@ -655,19 +675,21 @@ window.HB = window.HB || {};
       });
 
       // Den lämnade cupens prickar tonas ut MEDAN kameran panorerar bort —
-      // de glider iväg och slocknar (kollektiv uttoning över outMs), i
-      // stället för att slockna stillastående innan avfärd.
+      // de glider iväg och slocknar, med SAMMA puls som innan (ingen
+      // ljusstyrke-flicker vid bytet), i stället för att slockna stillastående.
+      let outFade = 0;
       if (outgoing) {
-        const ot = now - outgoing.at;
-        if (ot >= TUNE.outMs) {
+        outFade = Math.max(0, 1 - (now - outgoing.at) / TUNE.outMs);
+        if (outFade <= 0) {
           outgoing = null;
         } else {
-          const fade = 1 - ot / TUNE.outMs;
-          for (const [lat, lng, tier] of outgoing.pts) {
+          outgoing.pts.forEach(([lat, lng, tier], i) => {
             const p = map.project([lng, lat]);
-            if (p.x < -20 || p.y < -20 || p.x > dw + 20 || p.y > dh + 20) continue;
-            vis.push([p.x, p.y, fade, tier]);
-          }
+            if (p.x < -20 || p.y < -20 || p.x > dw + 20 || p.y > dh + 20) return;
+            const pulse = reduceMotion ? 1
+              : (1 - TUNE.pulseAmp) + TUNE.pulseAmp * Math.sin(now * (outgoing.rate[i] || 0.002) * TUNE.pulseSpeed + (outgoing.phase[i] || 0));
+            vis.push([p.x, p.y, outFade * pulse, tier]);
+          });
         }
       }
 
@@ -698,10 +720,14 @@ window.HB = window.HB || {};
       }
       ctx.globalAlpha = 1;
 
-      // Inforutan i hörnet — tonar in/ut med cupens kuvert.
-      nameTitleEl.textContent = cup.name;
-      nameCountEl.textContent = fmtNum(cup.count || cup.points.length) + " lag";
-      nameEl.style.opacity = String(0.85 * cupAlpha);
+      // Inforutan i hörnet — visar den cup som just nu är mest synlig (den
+      // utgående medan den tonas ut, annars den nuvarande) så namnet inte
+      // "poppar" bort vid bytet utan följer prickarna.
+      const showOut = outgoing && outFade > cupAlpha;
+      const shown = showOut ? outgoing : cup;
+      nameTitleEl.textContent = shown.name;
+      nameCountEl.textContent = fmtNum(shown.count || shown.points.length) + " lag";
+      nameEl.style.opacity = String(0.85 * Math.max(cupAlpha, outFade));
 
       // Hero-texten och stat-korten uppdateras när den nya cupen börjar
       // tändas (inte redan när kameran lämnar den förra), så namn/siffror
@@ -715,23 +741,30 @@ window.HB = window.HB || {};
     }
     rafId = requestAnimationFrame(frame);
 
-    // --- utvecklar-panel (bara localhost / ?tune) ----------------------
-    // Live-reglage för att känna sig fram till bra värden på drift,
-    // panorering, zoom OCH färger + testa olika kartstilar/filter, med en
-    // knapp som kopierar de valda värdena så de kan klistras in och bakas
-    // in inför deploy. Byggs ALDRIG i produktion (isLocal, se ovan).
-    const OFM = "https://tiles.openfreemap.org/styles/";
-    const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
+    // Mörkläggningsfilter: "auto" = låt CSS-temavariabeln styra (invert i
+    // mörkt, inget i ljust), "on"/"off" tvingar. Läses ur aktiva temats
+    // MAPCFG. applyFilter körs vid varje stilladdning (styledata).
     const DARK_FILTER = "invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85)";
-    let curStyle = "positron";
-    let curFilter = "auto"; // auto = låt CSS-temavariabeln styra; on/off = tvinga
     function mapCanvas() { return mapEl.querySelector(".maplibregl-canvas"); }
     function applyFilter() {
       const cv = mapCanvas();
       if (!cv) return;
-      cv.style.filter = curFilter === "auto" ? "" : (curFilter === "on" ? DARK_FILTER : "none");
+      const f = mapCfg().filter;
+      cv.style.filter = f === "auto" ? "" : (f === "on" ? DARK_FILTER : "none");
     }
     map.on("styledata", applyFilter);
+
+    // Byt kart-stil/filter när temat växlar (gäller ÄVEN produktion, inte
+    // bara testpanelen) — dark→positron, light→liberty osv.
+    function applyMapTheme() {
+      const want = mapCfg().style;
+      if (want !== activeStyle) { activeStyle = want; map.setStyle(OFM + want); }
+      applyFilter();
+    }
+    const themeObs = new MutationObserver(applyMapTheme);
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const themeMq = window.matchMedia("(prefers-color-scheme: dark)");
+    themeMq.addEventListener("change", applyMapTheme);
 
     let tuneCleanup = null;
     if (isLocal) buildTunePanel();
@@ -743,6 +776,7 @@ window.HB = window.HB || {};
       const adopters = []; // widget -> modell (adoptera ev. av Chrome återställda värden)
       const defTUNE = { ...TUNE };
       const defCOLORS = JSON.parse(JSON.stringify(COLORS));
+      const defMAPCFG = JSON.parse(JSON.stringify(MAPCFG));
 
       // Sätter CSS-variablerna för AKTIVT tema inline på överlägget (bara
       // localhost) — markörfärgerna läses direkt ur COLORS i frame().
@@ -777,23 +811,19 @@ window.HB = window.HB || {};
       }
 
       const tune = () => TUNE;
+      // Kart-stil/filter redigerar AKTIVA temats MAPCFG (per tema).
       const styleSel = h("select", {
         autocomplete: "off",
-        onchange: (e) => { curStyle = e.target.value; map.setStyle(OFM + curStyle); },
+        onchange: (e) => { mapCfg().style = e.target.value; applyMapTheme(); },
       }, MAP_STYLES.map((s) => h("option", { value: s }, s)));
-      styleSel.value = curStyle; // undvik att Chrome återställer ett gammalt widget-val vid reload
+      styleSel.value = mapCfg().style;
       const filterSel = h("select", {
         autocomplete: "off",
-        onchange: (e) => { curFilter = e.target.value; applyFilter(); },
+        onchange: (e) => { mapCfg().filter = e.target.value; applyFilter(); },
       }, ["auto", "on", "off"].map((f) => h("option", { value: f }, "filter: " + f)));
-      filterSel.value = curFilter;
-      // Chrome kan återställa ett tidigare valt dropdown-värde vid reload —
-      // låt då KARTAN följa widgeten (behåll senaste val) i stället för att
-      // de glider isär. Läses efter att widgetarna byggts.
-      curStyle = styleSel.value;
-      if (curStyle !== "positron") map.setStyle(OFM + curStyle);
-      curFilter = filterSel.value;
-      applyFilter();
+      filterSel.value = mapCfg().filter;
+      syncers.push(() => { styleSel.value = mapCfg().style; filterSel.value = mapCfg().filter; });
+      adopters.push(() => { mapCfg().style = styleSel.value; mapCfg().filter = filterSel.value; applyMapTheme(); });
 
       const resetBtn = h("button", {
         type: "button", class: "welcome-tune-reset",
@@ -801,8 +831,11 @@ window.HB = window.HB || {};
           Object.assign(TUNE, defTUNE);
           COLORS.dark = { ...defCOLORS.dark };
           COLORS.light = { ...defCOLORS.light };
+          MAPCFG.dark = { ...defMAPCFG.dark };
+          MAPCFG.light = { ...defMAPCFG.light };
           syncers.forEach((fn) => fn());
           applyColors();
+          applyMapTheme();
           recomputeCupCam();
         },
       }, "nollställ");
@@ -813,7 +846,7 @@ window.HB = window.HB || {};
           const c = themeColors();
           const theme = isDarkTheme() ? "mörkt" : "ljust";
           const txt =
-            `tema=${theme} stil=${curStyle} filter=${curFilter}\n` +
+            `tema=${theme} stil=${mapCfg().style} filter=${mapCfg().filter}\n` +
             `drift=${TUNE.drift} driftZoom=${TUNE.driftZoom} panDuration=${TUNE.panDuration} ` +
             `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
             `igniteLead=${TUNE.igniteLead} igniteSpread=${TUNE.igniteSpread} dotFade=${TUNE.dotFade} ` +
@@ -870,11 +903,7 @@ window.HB = window.HB || {};
       // (ev. återställda) värde som sanning en stund efter bygget — så det
       // som VISAS alltid = det som TILLÄMPAS, och en pågående kalibrering
       // överlever en sidladdning. "nollställ" tar tillbaka baslinjen.
-      setTimeout(() => {
-        adopters.forEach((fn) => fn());
-        if (curStyle !== styleSel.value) { curStyle = styleSel.value; map.setStyle(OFM + curStyle); }
-        curFilter = filterSel.value; applyFilter();
-      }, 350);
+      setTimeout(() => adopters.forEach((fn) => fn()), 350);
 
       // När temat växlas (temaknappen sätter data-theme på <html>) ska
       // panelen visa OCH tillämpa det nya temats färger.
@@ -886,6 +915,8 @@ window.HB = window.HB || {};
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
+      themeObs.disconnect();
+      themeMq.removeEventListener("change", applyMapTheme);
       if (tuneCleanup) tuneCleanup();
       map.remove();
     };
