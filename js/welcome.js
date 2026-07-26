@@ -119,18 +119,23 @@ window.HB = window.HB || {};
       cups, teams, matches,
       clubs: Object.keys(dir).length,
       sinceYear: sortedYears[0] || null,
+      totalYears: sortedYears.length,
       perCup,
     };
   }
 
-  // Skapar en stat-ruta vars strong/span går att uppdatera i efterhand
-  // (inte bygga om) — samma 5 rutor återanvänds för både de globala
-  // totalerna och (medan en cup rullar på kartbakgrunden) den cupens
-  // egna siffror, se setOverallStats/setCupStats i openWelcome.
+  // Skapar en stat-ruta vars strong/span/small går att uppdatera i
+  // efterhand (inte bygga om) — samma 5 rutor återanvänds för både de
+  // globala totalerna och (medan en cup rullar på kartbakgrunden) den
+  // cupens egna siffror, se setOverallStats/setCupStats i openWelcome.
+  // "small" (t ex "11 241 av 248 005 totalt") ger en känsla för aktuell
+  // cup i förhållande till hela sajten — tom i det globala baslägets kort,
+  // annars skulle den bara upprepa samma tal som redan står i strong.
   function statChipRef() {
     const strong = h("strong", null, "…");
     const span = h("span", null, "");
-    return { el: h("div", { class: "welcome-stat" }, strong, span), strong, span };
+    const small = h("small", null, "");
+    return { el: h("div", { class: "welcome-stat" }, strong, span, small), strong, span, small };
   }
 
   function feature(emoji, title, body) {
@@ -200,8 +205,20 @@ window.HB = window.HB || {};
     };
   }
 
+  // Börjar alltid med Alingsås HK:s egen cup (klubben sajten är byggd
+  // för) — resten slumpas om varje sidladdning, så det inte alltid är
+  // samma ordning/samma första intryck varje gång man ser skärmen.
+  function shuffleCupOrder(ids) {
+    const rest = ids.filter((id) => id !== "potatis");
+    for (let i = rest.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rest[i], rest[j]] = [rest[j], rest[i]];
+    }
+    return ids.includes("potatis") ? ["potatis", ...rest] : rest;
+  }
+
   async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState, onCupChange) {
-    const cupIds = Object.keys(cupsData);
+    const cupIds = shuffleCupOrder(Object.keys(cupsData));
     if (!cupIds.length) return () => {};
 
     const maplibregl = await ensureMapLibre();
@@ -549,20 +566,27 @@ window.HB = window.HB || {};
         [fmtNum(s.clubs), "klubbar"],
         ["sedan " + (s.sinceYear || "–"), "historik"],
       ];
-      vals.forEach(([v, l], i) => { statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; });
+      // Inget "small"-tal här — det globala baslägets kort ÄR redan
+      // totalerna, en repeterad rad skulle bara upprepa samma siffra.
+      vals.forEach(([v, l], i) => {
+        statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; statRefs[i].small.textContent = "";
+      });
     }
     function setCupStats(cup, cupId) {
       liveCupEl.textContent = "Visar just nu: " + cup.name;
       const pc = statsData && statsData.perCup[cupId];
       if (!pc) { if (statsData) setOverallStats(statsData); return; } // saknar arkivdata för just den cupen — visa totalerna i stället
+      const s = statsData;
       const vals = [
-        [pc.place || "–", "plats"],
-        [fmtNum(cup.count || cup.points.length), "lag"],
-        [fmtNum(pc.matches), "matcher"],
-        [pc.editions, pc.editions === 1 ? "år arkiverat" : "år arkiverade"],
-        ["sedan " + pc.sinceYear, "historik"],
+        [pc.place || "–", "plats", fmtNum(s.cups) + " cuper totalt"],
+        [fmtNum(cup.count || cup.points.length), "lag", "av " + fmtNum(s.teams) + " totalt"],
+        [fmtNum(pc.matches), "matcher", "av " + fmtNum(s.matches) + " totalt"],
+        [pc.editions, pc.editions === 1 ? "år arkiverat" : "år arkiverade", "av " + fmtNum(s.totalYears) + " totalt"],
+        ["sedan " + pc.sinceYear, "historik", "hela sajten sedan " + (s.sinceYear || "–")],
       ];
-      vals.forEach(([v, l], i) => { statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; });
+      vals.forEach(([v, l, sm], i) => {
+        statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; statRefs[i].small.textContent = sm;
+      });
     }
 
     const overlay = h("div", { class: "welcome-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Välkommen" },

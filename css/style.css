@@ -2565,6 +2565,18 @@ dialog.history-dialog {
   margin-top: 2px;
 }
 
+/* Ger en känsla för aktuell cup i förhållande till hela sajten (se
+   setCupStats i js/welcome.js) — tom (men med reserverad höjd, så
+   korten inte hoppar till i storlek) i det globala baslägets kort. */
+.welcome-stat small {
+  display: block;
+  min-height: 1.3em;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
 .welcome-features {
   display: grid;
   gap: 14px;
