@@ -207,22 +207,42 @@ window.HB = window.HB || {};
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const first = cupCam[cupIds[0]];
-    // Kameran (cam) är det faktiskt använda läget — glider mjukt (exponentiell
-    // utjämning, bildrutetakt-oberoende, LÅNG tidskonstant = långsam,
-    // stegfri rörelse utan hopp) mot target, som byts till den aktuella
-    // cupens läge varje gång cupIndex ändras.
+    // Kameran (cam) tweenas mellan camStart och den aktuella cupens läge
+    // över en FAST, garanterad tid (PAN_DURATION) — inte en öppen
+    // exponentiell utjämning. Den första versionen (öppen, oändligt lång
+    // tidskonstant) visade sig kunna hamna så långt efter att prickarna
+    // för den "aktuella" cupen ritades helt utanför synligt läge när
+    // kameran aldrig hann ikapp — en fast, easead varaktighet garanterar
+    // i stället att kameran verkligen ANLÄNDER innan cupen byts igen.
+    function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    const PAN_DURATION = 5200;
     const cam = { lng: first.lng, lat: first.lat, zoom: baseZoom };
-    const CAM_TAU = 13000; // dubbelt så trög som första versionen — "hälften så fort" panorering
+    let camStart = { lng: first.lng, lat: first.lat, zoom: baseZoom };
+    let panStart = performance.now();
     map.jumpTo({ center: [cam.lng, cam.lat], zoom: cam.zoom });
 
     let cupIndex = 0;
     let phase = "in";
     let phaseStart = performance.now();
-    const DUR = reduceMotion
-      ? { in: 0, hold: 1e9, out: 0 } // still bild av första cupen, ingen cykling, ingen kamerarörelse
-      : { in: 3200, hold: 3000, out: 1400 };
+    const IN_MS = 3200, OUT_MS = 1400;
     const STAGGER_MS = 2000; // hur mycket varje prick kan slumpas att dröja innan den börjar tändas — dubblat efter feedback
     const DOT_FADE_MS = 1100; // hur lång tid en enskild prick tar att tändas, från sin egen starttid — dubblat
+
+    // Hur länge en cup visas (hold-fasen) skalas efter hur MYCKET den har
+    // att visa — en cup med en enda punkt (inget klubbregister, bara
+    // värdorten, se build_landing_map.py) visas ungefär lika länge som
+    // innan den här skalningen fanns, en typisk cup ungefär dubbelt så
+    // länge, och de allra tätaste (Partille, Lundaspelen...) längst av
+    // alla — både för att kameran hinner panorera/zooma ordentligt OCH
+    // för att det helt enkelt är mer att titta på. Logaritmisk skala
+    // eftersom punktantalet spänner över två storleksordningar (1–320).
+    const BASE_TOTAL = IN_MS + 3800 + OUT_MS; // = det tidigare, oskalade cykel-taket
+    const MAX_PTS = Math.max(2, ...cupIds.map((id) => cupsData[id].points.length));
+    function holdFor(id) {
+      const n = Math.max(1, cupsData[id].points.length);
+      const mult = 1 + 1.4 * (Math.log(n) / Math.log(MAX_PTS));
+      return Math.max(1500, BASE_TOTAL * mult - IN_MS - OUT_MS);
+    }
 
     // Slumpad, individuell tändningsfördröjning per prick — genereras om
     // varje gång vi går vidare till en ny cup.
@@ -233,37 +253,46 @@ window.HB = window.HB || {};
     function frame(now) {
       const dt = Math.min(100, now - lastNow); // hoppar aldrig kameran vid t ex en bakgrundsflik
       lastNow = now;
+      const dur = reduceMotion
+        ? { in: 0, hold: 1e9, out: 0 } // still bild av första cupen, ingen cykling, ingen kamerarörelse
+        : { in: IN_MS, hold: holdFor(cupIds[cupIndex]), out: OUT_MS };
 
-      if (animState.paused) { rafId = requestAnimationFrame(frame); return; }
-
-      const elapsed = now - phaseStart;
-      if (!reduceMotion && elapsed > DUR[phase]) {
-        if (phase === "in") phase = "hold";
-        else if (phase === "hold") phase = "out";
-        else {
-          phase = "in";
-          cupIndex = (cupIndex + 1) % cupIds.length;
-          dotDelays = cupsData[cupIds[cupIndex]].points.map(() => Math.random() * STAGGER_MS);
+      if (animState.paused) {
+        // Cup-cykeln och kamerans mål-tween fryses helt (deras "start"-
+        // tider skiftas framåt i takt med klockan, så inget hoppar till
+        // när man återupptar) — men jordglobs-driften nedan räknas alltid
+        // på RÅ tid och fortsätter alltså oavsett, och markörerna får en
+        // egen puls-effekt längre ner. Så känns en paus aldrig helt död.
+        phaseStart += dt;
+        panStart += dt;
+      } else if (!reduceMotion) {
+        const elapsedCheck = now - phaseStart;
+        if (elapsedCheck > dur[phase]) {
+          if (phase === "in") phase = "hold";
+          else if (phase === "hold") phase = "out";
+          else {
+            phase = "in";
+            cupIndex = (cupIndex + 1) % cupIds.length;
+            dotDelays = cupsData[cupIds[cupIndex]].points.map(() => Math.random() * STAGGER_MS);
+            camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
+            panStart = now;
+          }
+          phaseStart = now;
         }
-        phaseStart = now;
       }
+      const elapsed = now - phaseStart;
 
-      // Mjuk, kontinuerlig glidning mot den aktuella cupens kameraläge —
-      // oberoende av in/hold/out (som bara styr prickarnas opacitet), så
-      // panoreringen och zoomningen aldrig hackar till vid cup-byten. Med
-      // en så lång tidskonstant hinner kameran sällan ända fram innan
-      // nästa cup redan blivit mål — en kontinuerlig, aldrig helt stilla-
-      // stående glidning, snarare än separata hopp mellan lägen.
       if (!reduceMotion) {
         const target = cupCam[cupIds[cupIndex]];
-        const k = 1 - Math.exp(-dt / CAM_TAU);
-        cam.lng += (target.lng - cam.lng) * k;
-        cam.lat += (target.lat - cam.lat) * k;
-        cam.zoom += (target.zoom - cam.zoom) * k;
+        const te = easeInOutCubic(Math.min(1, (now - panStart) / PAN_DURATION));
+        cam.lng = camStart.lng + (target.lng - camStart.lng) * te;
+        cam.lat = camStart.lat + (target.lat - camStart.lat) * te;
+        cam.zoom = camStart.zoom + (target.zoom - camStart.zoom) * te;
       }
 
       // Långsam, avgränsad "jordglobs-drift" — två sinusar med olika
       // period/fas så rörelsen inte känns som ett enkelt fram-och-tillbaka.
+      // Räknas alltid på RÅ tid (now), oavsett paus — se ovan.
       // Liten amplitud med avsikt: ska kännas som att globen sakta
       // fortsätter snurra, inte konkurrera med cup-till-cup-panoreringen.
       const driftLat = reduceMotion ? 0 : Math.sin(now / 142000 + 1.3) * 0.55;
@@ -277,8 +306,8 @@ window.HB = window.HB || {};
       ctx.clearRect(0, 0, dw, dh);
 
       const cup = cupsData[cupIds[cupIndex]];
-      const inElapsed = phase === "in" ? elapsed : DUR.in;
-      const outT = phase === "out" ? Math.min(1, elapsed / DUR.out) : 0;
+      const inElapsed = phase === "in" ? elapsed : dur.in;
+      const outT = phase === "out" ? Math.min(1, elapsed / dur.out) : 0;
       cup.points.forEach(([lat, lng], i) => {
         const p = map.project([lng, lat]);
         const x = p.x, y = p.y;
@@ -290,6 +319,10 @@ window.HB = window.HB || {};
           const localT = reduceMotion ? DOT_FADE_MS : inElapsed - (dotDelays[i] || 0);
           alpha = Math.max(0, Math.min(1, localT / DOT_FADE_MS));
         }
+        // Paus fryser annars ALLT — en stilla, pulserande glöd (fasförskjuten
+        // per prick för ett organiskt "tindrande" intryck i stället för att
+        // alla pulserar i exakt takt) gör att skärmen ändå känns levande.
+        if (animState.paused) alpha *= 0.72 + 0.28 * Math.sin(now / 900 + i * 0.37);
         if (alpha <= 0.01) return;
         const glow = ctx.createRadialGradient(x, y, 0, x, y, 9);
         glow.addColorStop(0, `rgba(246, 196, 16, ${0.6 * alpha})`);

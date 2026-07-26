@@ -2435,12 +2435,14 @@ dialog.history-dialog {
 }
 
 .welcome-stat {
-  background: rgba(255, 255, 255, 0.06);
+  /* Mörkare och mer täckande än ursprungsvärdet — en riktig, ibland ljus
+     karta lyser annars igenom för mycket för att texten ska bli lättläst. */
+  background: rgba(12, 18, 28, 0.68);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
   padding: 12px 8px;
   text-align: center;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(6px);
 }
 
 .welcome-stat strong {
@@ -2467,10 +2469,11 @@ dialog.history-dialog {
 }
 
 .welcome-feature {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(12, 18, 28, 0.68);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
   padding: 14px 16px;
+  backdrop-filter: blur(6px);
 }
 
 .welcome-feature h3 {
