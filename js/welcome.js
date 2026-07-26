@@ -273,6 +273,14 @@ window.HB = window.HB || {};
     const TUNE = {
       maxZoomAbove: 1.4, minZoom: 2.4, panDuration: 5200,
       drift: 1, driftZoom: 0.7,
+      // Markörernas livscykel (se frame): igniteLead = hur långt före
+      // kamerans framkomst tändningen börjar; igniteSpread = slumpfönster
+      // för när varje enskild prick tänds; dotFade = en pricks in-/uttonings-
+      // tid; holdBase = "framme"-tid (skalas efter cup-storlek); outMs =
+      // släckningstid vid avfärd; pulseAmp = pulsstyrka (0 = ingen puls);
+      // pulseSpeed = pulshastighet.
+      igniteLead: 250, igniteSpread: 650, dotFade: 420, holdBase: 3600, outMs: 900,
+      pulseAmp: 0.3, pulseSpeed: 1,
     };
 
     // Färgkonfig PER TEMA (redigeras live i testpanelen på localhost, se
@@ -399,24 +407,24 @@ window.HB = window.HB || {};
     // under hela "framme"-tiden (holdFor, skalad efter cupens storlek);
     // och SLÄCKS när kameran ska lämna cupen — varpå nästa panorering
     // börjar med släckt karta igen.
-    const IGNITE_LEAD = 250;   // tänds så här långt (ms) före kamerans framkomst
-    const IGNITE_SPREAD = 650; // slumpfönster för när varje enskild prick tänds
-    const DOT_FADE = 420;      // hur länge en enskild pricks in-/uttoning tar
-    const OUT_MS = 900;        // hur länge släckningen (vid avfärd) tar
-    const HOLD_BASE = 3600;    // "framme"-tid för en liten cup; skalas upp för större
+    // Tidskonstanterna för livscykeln bor i TUNE (live-justerbara på
+    // localhost, se buildTunePanel) — defaultvärdena är desamma som förr
+    // så produktion beter sig oförändrat.
     const MAX_PTS = Math.max(2, ...cupIds.map((id) => cupsData[id].points.length));
     function holdFor(id) {
       const n = Math.max(1, cupsData[id].points.length);
       const mult = 1 + 1.4 * (Math.log(n) / Math.log(MAX_PTS));
-      return Math.max(1800, HOLD_BASE * mult);
+      return Math.max(1800, TUNE.holdBase * mult);
     }
 
-    // Per prick: eget tändnings-dröjsmål + egen pulstakt/-fas, så de
-    // varken tänds eller pulserar i takt. Genereras om vid varje cup-byte.
+    // Per prick: eget tändnings-dröjsmål (0..igniteSpread) + egen pulstakt/
+    // -fas, så de varken tänds eller pulserar i takt. Dröjsmålen lagras som
+    // ANDEL (0..1) av igniteSpread så en live-ändring av spread slår igenom
+    // även på nuvarande cup. Genereras om vid varje cup-byte.
     let dotDelays = [], dotRate = [], dotPhase = [];
     function genDots(id) {
       const pts = cupsData[id].points;
-      dotDelays = pts.map(() => Math.random() * IGNITE_SPREAD);
+      dotDelays = pts.map(() => Math.random());               // andel av igniteSpread
       dotRate = pts.map(() => 0.0016 + Math.random() * 0.0028); // rad/ms ≈ en puls var 2–4 s
       dotPhase = pts.map(() => Math.random() * Math.PI * 2);
     }
@@ -493,10 +501,10 @@ window.HB = window.HB || {};
 
       const panDur = TUNE.panDuration;
       const holdMs = reduceMotion ? 1e9 : holdFor(cupIds[cupIndex]);
-      const igniteBase = Math.max(0, panDur - IGNITE_LEAD); // tändningen börjar strax före framkomst
-      const litAt = igniteBase + IGNITE_SPREAD + DOT_FADE;  // alla prickar helt tända
+      const igniteBase = Math.max(0, panDur - TUNE.igniteLead); // tändningen börjar strax före framkomst
+      const litAt = igniteBase + TUNE.igniteSpread + TUNE.dotFade; // alla prickar helt tända
       const outStart = litAt + holdMs;                      // släckningen börjar
-      const cycleEnd = outStart + OUT_MS;                   // dags för nästa cup
+      const cycleEnd = outStart + TUNE.outMs;               // dags för nästa cup
       const tp = now - panStart; // tid sedan panoreringen mot denna cup började
 
       // Kamerapanorering — bara medan tp < panDur; sedan sitter kameran
@@ -584,8 +592,8 @@ window.HB = window.HB || {};
       let cupAlpha;
       if (reduceMotion) cupAlpha = 1;
       else if (tp < igniteBase) cupAlpha = 0;
-      else if (tp >= outStart) cupAlpha = Math.max(0, 1 - (tp - outStart) / OUT_MS);
-      else cupAlpha = Math.min(1, (tp - igniteBase) / (IGNITE_SPREAD + DOT_FADE));
+      else if (tp >= outStart) cupAlpha = Math.max(0, 1 - (tp - outStart) / TUNE.outMs);
+      else cupAlpha = Math.min(1, (tp - igniteBase) / (TUNE.igniteSpread + TUNE.dotFade));
 
       cup.points.forEach(([lat, lng, tier], i) => {
         const p = map.project([lng, lat]);
@@ -598,15 +606,17 @@ window.HB = window.HB || {};
         if (reduceMotion) {
           base = 1;
         } else {
-          const ig = igniteBase + (dotDelays[i] || 0);
+          const ig = igniteBase + (dotDelays[i] || 0) * TUNE.igniteSpread;
           if (tp < ig) base = 0;
-          else if (tp >= outStart) base = Math.max(0, 1 - (tp - outStart) / OUT_MS);
-          else base = Math.min(1, (tp - ig) / DOT_FADE);
+          else if (tp >= outStart) base = Math.max(0, 1 - (tp - outStart) / TUNE.outMs);
+          else base = Math.min(1, (tp - ig) / TUNE.dotFade);
         }
         if (base <= 0.01) return;
         // Egen pulstakt/-fas per prick (rå tid → pulsen fortsätter även vid
         // paus), så de "tindrar" i otakt i stället för att andas synkront.
-        const pulse = reduceMotion ? 1 : 0.7 + 0.3 * Math.sin(now * dotRate[i] + dotPhase[i]);
+        // pulseAmp styr styrkan (0 = ingen puls), pulseSpeed hastigheten.
+        const pulse = reduceMotion ? 1
+          : (1 - TUNE.pulseAmp) + TUNE.pulseAmp * Math.sin(now * dotRate[i] * TUNE.pulseSpeed + dotPhase[i]);
         const alpha = base * pulse;
         if (alpha <= 0.01) return;
         ctx.globalAlpha = alpha;
@@ -715,6 +725,8 @@ window.HB = window.HB || {};
             `tema=${theme} stil=${curStyle} filter=${curFilter}\n` +
             `drift=${TUNE.drift} driftZoom=${TUNE.driftZoom} panDuration=${TUNE.panDuration} ` +
             `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
+            `igniteLead=${TUNE.igniteLead} igniteSpread=${TUNE.igniteSpread} dotFade=${TUNE.dotFade} ` +
+            `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed}\n` +
             `accent=${c.accent} ink=${c.ink} inkSoft=${c.inkSoft} ` +
             `cardBg=${c.cardBg}@${c.cardBgA} border=${c.border}@${c.borderA} ` +
             `mark0=${c.mark0} mark1=${c.mark1} mark2=${c.mark2}`;
@@ -732,6 +744,14 @@ window.HB = window.HB || {};
         numRow(tune, "panDuration", "Panorering (ms)", 1000, 15000, 250),
         numRow(tune, "maxZoomAbove", "Max inzoom", 0, 4, 0.1),
         numRow(tune, "minZoom", "Min utzoom", 1, 6, 0.1),
+        h("div", { class: "welcome-tune-sub" }, "Markörer: tändning & puls"),
+        numRow(tune, "igniteLead", "Tänd före framkomst (ms)", 0, 3000, 50),
+        numRow(tune, "igniteSpread", "Tändnings-spridning (ms)", 0, 4000, 50),
+        numRow(tune, "dotFade", "Tonings­tid per prick (ms)", 50, 2000, 50),
+        numRow(tune, "holdBase", "Framme-tid, bas (ms)", 800, 12000, 200),
+        numRow(tune, "outMs", "Släcknings­tid (ms)", 100, 4000, 50),
+        numRow(tune, "pulseAmp", "Pulsstyrka", 0, 0.6, 0.02),
+        numRow(tune, "pulseSpeed", "Pulshastighet", 0.2, 4, 0.1),
         h("div", { class: "welcome-tune-sub" }, "Karta"),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Kartstil"), h("span", null, ""), styleSel),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Mörkläggning"), h("span", null, ""), filterSel),

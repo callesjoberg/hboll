@@ -191,11 +191,16 @@ def build_cup_points(cup_id, teams, idx, centroids):
             deferred.append(name)
 
     placed = tier0 + tier1
-    # tier 2: nära tyngdpunkten av redan placerade punkter (så cupens
-    # storlek syns även för lag utan geodata, utan att hitta på geografi).
+    # tier 2: nära där DE FLESTA andra prickarna redan är, så lag utan
+    # geodata inte hamnar långt bort. MEDIANEN (inte medelvärdet) används:
+    # för en internationell cup (Partille — svensk tyngd men lag från hela
+    # världen) hamnar medelvärdet ute i havet mellan kontinenterna, medan
+    # medianen landar mitt i den täta svenska klungan där ögat ändå är.
     if placed:
-        clat = sum(p[0] for p in placed) / len(placed)
-        clng = sum(p[1] for p in placed) / len(placed)
+        lats = sorted(p[0] for p in placed)
+        lngs = sorted(p[1] for p in placed)
+        mid = len(placed) // 2
+        clat, clng = lats[mid], lngs[mid]
     else:
         clat = clng = None
     tier2 = []
