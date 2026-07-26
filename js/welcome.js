@@ -44,6 +44,31 @@ window.HB = window.HB || {};
     return n.toLocaleString("sv-SE");
   }
 
+  // Samma tre-lägessystem (ljust/mörkt/auto) och samma localStorage-nyckel
+  // som appens egna inställningsmeny (state.theme/applyTheme i app.js) —
+  // en växling här ska hänga kvar även efter man stängt välkomstskärmen.
+  const THEME_KEY = "hb:theme";
+
+  function currentThemeSetting() {
+    return localStorage.getItem(THEME_KEY) || "auto";
+  }
+
+  function isDarkTheme() {
+    const attr = document.documentElement.dataset.theme;
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  function applyThemeSetting(value) {
+    localStorage.setItem(THEME_KEY, value);
+    document.documentElement.dataset.theme = value === "auto" ? "" : value;
+  }
+
+  function themeIcon(value) {
+    return value === "light" ? "☀" : value === "dark" ? "🌙" : "🌓";
+  }
+
   // Räknar fram siffrorna att visa direkt ur det arkivindex/den
   // klubbkatalog som redan hämtas vid varje sidladdning (state i app.js
   // är inte åtkomlig härifrån — hämtar en egen, redan HTTP-cachad kopia)
@@ -248,8 +273,20 @@ window.HB = window.HB || {};
     // varje gång vi går vidare till en ny cup.
     let dotDelays = cupsData[cupIds[0]].points.map(() => Math.random() * STAGGER_MS);
 
+    // Inforutan (cupnamn + hur många lag som faktiskt visas) — byggs en
+    // gång, uppdateras sedan bara som textContent varje bildruta.
+    const nameTitleEl = h("div", { class: "welcome-cup-title" });
+    const nameCountEl = h("div", { class: "welcome-cup-count" });
+    nameEl.append(nameTitleEl, nameCountEl);
+
     let rafId = null;
     let lastNow = performance.now();
+    // 0 = full fart, 1 = helt fryst — glider mjukt mellan de två över
+    // FREEZE_MS i stället för att paus/play hoppar direkt mellan lägena,
+    // så en paus känns som att animationen SAKTAR NER till en stilla
+    // drift snarare än att den tvärstannar.
+    let freezeT = 0;
+    const FREEZE_MS = 320;
     function frame(now) {
       const dt = Math.min(100, now - lastNow); // hoppar aldrig kameran vid t ex en bakgrundsflik
       lastNow = now;
@@ -257,15 +294,23 @@ window.HB = window.HB || {};
         ? { in: 0, hold: 1e9, out: 0 } // still bild av första cupen, ingen cykling, ingen kamerarörelse
         : { in: IN_MS, hold: holdFor(cupIds[cupIndex]), out: OUT_MS };
 
-      if (animState.paused) {
-        // Cup-cykeln och kamerans mål-tween fryses helt (deras "start"-
-        // tider skiftas framåt i takt med klockan, så inget hoppar till
-        // när man återupptar) — men jordglobs-driften nedan räknas alltid
-        // på RÅ tid och fortsätter alltså oavsett, och markörerna får en
-        // egen puls-effekt längre ner. Så känns en paus aldrig helt död.
-        phaseStart += dt;
-        panStart += dt;
-      } else if (!reduceMotion) {
+      const freezeTarget = animState.paused ? 1 : 0;
+      const freezeStep = dt / FREEZE_MS;
+      freezeT = freezeTarget > freezeT
+        ? Math.min(freezeTarget, freezeT + freezeStep)
+        : Math.max(freezeTarget, freezeT - freezeStep);
+
+      // phaseStart/panStart skiftas framåt i proportion till hur "fryst"
+      // vi är just nu (0 vid full fart, hela dt vid full paus, nåt
+      // däremellan under in/ut-rampen) — cup-cykeln och kamera-tweenen
+      // (som båda mäts som now-minus-start) saktar då ner mjukt i stället
+      // för att hugga till. Jordglobs-driften längre ner räknas alltid på
+      // RÅ tid, oavsett frysgrad, så kartan aldrig blir helt livlös.
+      const frozenDt = dt * freezeT;
+      phaseStart += frozenDt;
+      panStart += frozenDt;
+
+      if (!reduceMotion) {
         const elapsedCheck = now - phaseStart;
         if (elapsedCheck > dur[phase]) {
           if (phase === "in") phase = "hold";
@@ -305,6 +350,15 @@ window.HB = window.HB || {};
       // kartan aldrig tonas, och varje pricks tändning syns exakt som den är.
       ctx.clearRect(0, 0, dw, dh);
 
+      // Gula/gyllene markörer läses knappt mot en ljus, ofiltrerad karta
+      // (se --welcome-map-filter i css/style.css — bara mörkt tema
+      // mörklägger kartan) — mörkblå markörer i ljust tema i stället,
+      // avläst live varje bildruta så en temaväxling (se themeToggleBtn)
+      // syns direkt även medan överlägget redan är öppet.
+      const dark = isDarkTheme();
+      const glowRgb = dark ? "246, 196, 16" : "23, 65, 126";
+      const dotRgb = dark ? "255, 232, 150" : "17, 40, 79";
+
       const cup = cupsData[cupIds[cupIndex]];
       const inElapsed = phase === "in" ? elapsed : dur.in;
       const outT = phase === "out" ? Math.min(1, elapsed / dur.out) : 0;
@@ -322,22 +376,30 @@ window.HB = window.HB || {};
         // Paus fryser annars ALLT — en stilla, pulserande glöd (fasförskjuten
         // per prick för ett organiskt "tindrande" intryck i stället för att
         // alla pulserar i exakt takt) gör att skärmen ändå känns levande.
-        if (animState.paused) alpha *= 0.72 + 0.28 * Math.sin(now / 900 + i * 0.37);
+        // freezeT (inte den råa animState.paused) så pulsen glider in/ur i
+        // takt med samma in/ur-ramp som kameran/cup-cykeln (se ovan).
+        if (freezeT > 0.01) {
+          const pulse = 0.72 + 0.28 * Math.sin(now / 900 + i * 0.37);
+          alpha *= (1 - freezeT) + freezeT * pulse;
+        }
         if (alpha <= 0.01) return;
         const glow = ctx.createRadialGradient(x, y, 0, x, y, 9);
-        glow.addColorStop(0, `rgba(246, 196, 16, ${0.6 * alpha})`);
-        glow.addColorStop(1, "rgba(246, 196, 16, 0)");
+        glow.addColorStop(0, `rgba(${glowRgb}, ${0.6 * alpha})`);
+        glow.addColorStop(1, `rgba(${glowRgb}, 0)`);
         ctx.fillStyle = glow;
         ctx.fillRect(x - 9, y - 9, 18, 18);
         ctx.beginPath();
         ctx.arc(x, y, 2.3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 232, 150, ${Math.min(1, alpha + 0.15)})`;
+        ctx.fillStyle = `rgba(${dotRgb}, ${Math.min(1, alpha + 0.15)})`;
         ctx.fill();
       });
 
-      // Cupnamnet i hörnet — knyter animationen till "X cuper"-siffran.
+      // Inforutan i hörnet — knyter animationen till "X cuper"-siffran och
+      // visar hur många lag just den här cupen faktiskt har (real.count,
+      // inte bara den renderade — och ibland nedcappade — punktmängden).
       const nameAlpha = phase === "out" ? 1 - outT : Math.min(1, inElapsed / DOT_FADE_MS);
-      nameEl.textContent = cup.name;
+      nameTitleEl.textContent = cup.name;
+      nameCountEl.textContent = fmtNum(cup.count || cup.points.length) + " lag";
       nameEl.style.opacity = String(0.85 * nameAlpha);
 
       rafId = requestAnimationFrame(frame);
@@ -377,7 +439,7 @@ window.HB = window.HB || {};
 
     const mapEl = h("div", { class: "welcome-map" });
     const dotCanvas = h("canvas", { class: "welcome-dots" });
-    const nameEl = h("div", { class: "welcome-cup-name" });
+    const nameEl = h("div", { class: "welcome-cup-text" });
     const animState = { paused: false };
     const playPauseBtn = h("button", {
       class: "welcome-playpause", type: "button", "aria-label": "Pausa animationen",
@@ -387,6 +449,15 @@ window.HB = window.HB || {};
         playPauseBtn.setAttribute("aria-label", animState.paused ? "Fortsätt animationen" : "Pausa animationen");
       },
     }, "⏸");
+    const themeToggleBtn = h("button", {
+      class: "welcome-theme-toggle", type: "button", "aria-label": "Byt färgtema",
+      onclick: () => {
+        const order = ["auto", "light", "dark"];
+        const next = order[(order.indexOf(currentThemeSetting()) + 1) % order.length];
+        applyThemeSetting(next);
+        themeToggleBtn.textContent = themeIcon(next);
+      },
+    }, themeIcon(currentThemeSetting()));
     const statsHost = h("div", { class: "welcome-stats" },
       h("div", { class: "welcome-stat" }, h("strong", null, "…")));
     const overlay = h("div", { class: "welcome-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Välkommen" },
@@ -394,6 +465,7 @@ window.HB = window.HB || {};
       dotCanvas,
       h("div", { class: "welcome-cup-controls" }, nameEl, playPauseBtn),
       h("div", { class: "welcome-scrim" }),
+      themeToggleBtn,
       h("button", {
         class: "welcome-close", type: "button", "aria-label": "Stäng",
         onclick: () => closeWelcome(overlay),

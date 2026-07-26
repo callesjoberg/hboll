@@ -2263,21 +2263,60 @@ dialog.history-dialog {
 .admin-field input { font-size: 14px; text-transform: none; letter-spacing: 0; }
 
 /* --- välkomstöverlägg (js/welcome.js) --------------------------------- */
-/* Medvetet FASTA mörka färger (samma #16283f/gult som header.top, se dess
-   kommentar) oavsett ljust/mörkt tema — en ljus välkomstskärm med
-   glödande kartprickar hade sett urvattnad ut, och headern har redan
-   samma "fast mörk" identitet, så det känns som EN sammanhängande
-   startupplevelse snarare än två olika stilar. */
+/* Följer appens vanliga ljust/mörkt-tema (samma --paper/--ink-tokensystem
+   som resten av sidan, se :root ovan) i stället för fasta färger — de
+   egna --welcome-*-tokenerna nedan är bara till för sådant som INTE
+   redan har en site-generell motsvarighet (kortens genomskinlighet mot
+   kartan, vinjettens gradientfärg, kartfiltret). Samma tre-stegs mönster
+   som resten av filen: :root-standard (ljust) -> @media prefers-color-
+   scheme (OS-preferens) -> :root[data-theme] (manuellt val, vinner alltid
+   via attributselektorns högre specificitet). */
 .welcome-overlay {
+  --welcome-card-bg: rgba(255, 255, 255, 0.72);
+  --welcome-border: rgba(22, 40, 63, 0.14);
+  --welcome-scrim-1: rgba(255, 255, 255, 0.6);
+  --welcome-scrim-2: rgba(255, 255, 255, 0.15);
+  --welcome-scrim-3: rgba(255, 255, 255, 0.72);
+  --welcome-text-shadow: rgba(255, 255, 255, 0.7);
+  --welcome-map-filter: none; /* OpenFreeMaps ljusa "liberty"-stil duger som den är i ljust tema */
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: #0f1723;
-  color: #eef2f8;
+  background: var(--paper);
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+@media (prefers-color-scheme: dark) {
+  .welcome-overlay {
+    --welcome-card-bg: rgba(12, 18, 28, 0.68);
+    --welcome-border: rgba(255, 255, 255, 0.12);
+    --welcome-scrim-1: rgba(15, 23, 35, 0.55);
+    --welcome-scrim-2: rgba(15, 23, 35, 0.15);
+    --welcome-scrim-3: rgba(15, 23, 35, 0.75);
+    --welcome-text-shadow: rgba(0, 0, 0, 0.6);
+    --welcome-map-filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85);
+  }
+}
+:root[data-theme="dark"] .welcome-overlay {
+  --welcome-card-bg: rgba(12, 18, 28, 0.68);
+  --welcome-border: rgba(255, 255, 255, 0.12);
+  --welcome-scrim-1: rgba(15, 23, 35, 0.55);
+  --welcome-scrim-2: rgba(15, 23, 35, 0.15);
+  --welcome-scrim-3: rgba(15, 23, 35, 0.75);
+  --welcome-text-shadow: rgba(0, 0, 0, 0.6);
+  --welcome-map-filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85);
+}
+:root[data-theme="light"] .welcome-overlay {
+  --welcome-card-bg: rgba(255, 255, 255, 0.72);
+  --welcome-border: rgba(22, 40, 63, 0.14);
+  --welcome-scrim-1: rgba(255, 255, 255, 0.6);
+  --welcome-scrim-2: rgba(255, 255, 255, 0.15);
+  --welcome-scrim-3: rgba(255, 255, 255, 0.72);
+  --welcome-text-shadow: rgba(255, 255, 255, 0.7);
+  --welcome-map-filter: none;
 }
 
 /* Specificitet (.welcome-overlay .welcome-map, INTE bara .welcome-map)
@@ -2300,25 +2339,34 @@ dialog.history-dialog {
 /* Kartlagret är dekorativt (interactive:false i js/welcome.js) — men
    maplibre-gl.css sätter ändå cursor:grab på sin canvas som standard.
    OpenFreeMap har ingen färdig mörk stil, så själva kartlagret (INTE
-   dess kontroller, se attributionen nedan) mörkläggs med ett CSS-filter
-   — ett välkänt "fattigmans-mörkt-läge"-knep som behåller en riktig
-   karta i stället för en handritad kontur. */
+   dess kontroller, se attributionen nedan) mörkläggs i mörkt tema med
+   ett CSS-filter (--welcome-map-filter, se .welcome-overlay ovan) — ett
+   välkänt "fattigmans-mörkt-läge"-knep; i ljust tema behövs inget filter,
+   OpenFreeMaps egen ljusa "liberty"-stil duger som den är. */
 .welcome-map .maplibregl-canvas {
   cursor: default;
-  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85);
+  filter: var(--welcome-map-filter);
 }
 .welcome-dots { pointer-events: none; }
 
 /* OpenFreeMap/OpenMapTiles kräver attribution — behålls, men färgsätts om
-   till samma fasta mörka identitet som resten av överlägget i stället för
-   maplibre-gl.css standardvita kontrollbakgrund. */
+   till samma temaanpassade kortfärg som resten av överlägget i stället
+   för maplibre-gl.css standardvita kontrollbakgrund. */
 .welcome-overlay .maplibregl-ctrl-attrib {
-  background: rgba(15, 23, 35, 0.55);
-  color: #b7c2d0;
+  background: var(--welcome-card-bg);
+  color: var(--ink-soft);
 }
-.welcome-overlay .maplibregl-ctrl-attrib a { color: #b7c2d0; }
-.welcome-overlay .maplibregl-ctrl-attrib-button { filter: invert(1) brightness(1.6); }
+.welcome-overlay .maplibregl-ctrl-attrib a { color: var(--ink-soft); }
+@media (prefers-color-scheme: dark) {
+  .welcome-overlay .maplibregl-ctrl-attrib-button { filter: invert(1) brightness(1.6); }
+}
+:root[data-theme="dark"] .welcome-overlay .maplibregl-ctrl-attrib-button { filter: invert(1) brightness(1.6); }
+:root[data-theme="light"] .welcome-overlay .maplibregl-ctrl-attrib-button { filter: none; }
 
+/* Inforutan för den just nu visade cupen — samma temaanpassade, blurrade
+   kortstil som .welcome-stat/.welcome-feature (se deras kommentar om
+   varför: en riktig, ibland kontrastrik karta lyser annars igenom för
+   mycket för att texten ska bli lättläst). */
 .welcome-cup-controls {
   position: absolute;
   left: 16px;
@@ -2327,26 +2375,39 @@ dialog.history-dialog {
   display: flex;
   align-items: center;
   gap: 10px;
+  background: var(--welcome-card-bg);
+  border: 1px solid var(--welcome-border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  backdrop-filter: blur(6px);
 }
 
-.welcome-cup-name {
-  font: 600 13px Barlow, sans-serif;
-  color: #eef2f8;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+.welcome-cup-text {
   opacity: 0;
   pointer-events: none;
 }
 
-/* Egen play/paus-knapp för animationen — till skillnad från cupnamnet
+.welcome-cup-title {
+  font: 600 13px Barlow, sans-serif;
+  color: var(--ink);
+}
+
+.welcome-cup-count {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+
+/* Egen play/paus-knapp för animationen — till skillnad från cuptexten
    (som tonas in/ut med cup-cykeln) håller den sig konstant synlig så den
    alltid går att klicka. */
 .welcome-playpause {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 1px solid rgba(238, 242, 248, 0.35);
-  background: rgba(15, 23, 35, 0.45);
-  color: #eef2f8;
+  border: 1px solid var(--welcome-border);
+  background: var(--welcome-card-bg);
+  color: var(--ink);
   font-size: 11px;
   line-height: 1;
   display: flex;
@@ -2355,17 +2416,18 @@ dialog.history-dialog {
   cursor: pointer;
   flex: none;
 }
-.welcome-playpause:hover { background: rgba(15, 23, 35, 0.72); }
+.welcome-playpause:hover { filter: brightness(1.15); }
 
-/* Mörk vinjett upptill/nedtill + en svag global dämpning — utan den
+/* Vinjett upptill/nedtill + en svag global dämpning — utan den
    konkurrerade prickarna för mycket med texten om en klunga råkade hamna
-   bakom den. */
+   bakom den. Färgen (--welcome-scrim-*) följer temat: mörk vinjett i
+   mörkt läge, ljus i ljust — se .welcome-overlay ovan. */
 .welcome-scrim {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(15, 23, 35, 0.55) 0%, rgba(15, 23, 35, 0.15) 22%,
-      rgba(15, 23, 35, 0.15) 60%, rgba(15, 23, 35, 0.75) 100%);
+    linear-gradient(180deg, var(--welcome-scrim-1) 0%, var(--welcome-scrim-2) 22%,
+      var(--welcome-scrim-2) 60%, var(--welcome-scrim-3) 100%);
   pointer-events: none;
 }
 
@@ -2377,14 +2439,35 @@ dialog.history-dialog {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(238, 242, 248, 0.3);
-  background: rgba(15, 23, 35, 0.4);
-  color: #eef2f8;
+  border: 1px solid var(--welcome-border);
+  background: var(--welcome-card-bg);
+  color: var(--ink);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
 }
-.welcome-close:hover { background: rgba(15, 23, 35, 0.65); }
+.welcome-close:hover { filter: brightness(1.15); }
+
+/* Temaväxlaren — samma runda knappstil som stängknappen, en aning till
+   vänster om den. Skriver till samma hb:theme-nyckel som appens egen
+   inställningsmeny (se applyTheme i js/app.js), så valet hänger kvar
+   även efter man stängt välkomstskärmen. */
+.welcome-theme-toggle {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: calc(max(14px, env(safe-area-inset-right)) + 46px);
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--welcome-border);
+  background: var(--welcome-card-bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.welcome-theme-toggle:hover { filter: brightness(1.15); }
 
 .welcome-content {
   position: relative;
@@ -2415,7 +2498,7 @@ dialog.history-dialog {
   font-size: clamp(40px, 9vw, 64px);
   letter-spacing: 0.01em;
   text-align: center;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 24px var(--welcome-text-shadow);
 }
 
 .welcome-lead {
@@ -2423,7 +2506,7 @@ dialog.history-dialog {
   max-width: 520px;
   font-size: 16px;
   line-height: 1.5;
-  color: #c3ccdb;
+  color: var(--ink-soft);
   text-align: center;
 }
 
@@ -2435,10 +2518,11 @@ dialog.history-dialog {
 }
 
 .welcome-stat {
-  /* Mörkare och mer täckande än ursprungsvärdet — en riktig, ibland ljus
-     karta lyser annars igenom för mycket för att texten ska bli lättläst. */
-  background: rgba(12, 18, 28, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  /* Täckande nog för att en riktig, ibland kontrastrik karta inte ska
+     lysa igenom för mycket och göra texten svårläst — se --welcome-card-bg
+     på .welcome-overlay ovan för hur den skiftar mellan ljust/mörkt tema. */
+  background: var(--welcome-card-bg);
+  border: 1px solid var(--welcome-border);
   border-radius: var(--radius);
   padding: 12px 8px;
   text-align: center;
@@ -2456,7 +2540,7 @@ dialog.history-dialog {
 .welcome-stat span {
   display: block;
   font-size: 11px;
-  color: #a9b4c4;
+  color: var(--ink-soft);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-top: 2px;
@@ -2469,8 +2553,8 @@ dialog.history-dialog {
 }
 
 .welcome-feature {
-  background: rgba(12, 18, 28, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--welcome-card-bg);
+  border: 1px solid var(--welcome-border);
   border-radius: var(--radius);
   padding: 14px 16px;
   backdrop-filter: blur(6px);
@@ -2489,7 +2573,7 @@ dialog.history-dialog {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.5;
-  color: #b7c1d1;
+  color: var(--ink-soft);
 }
 
 .welcome-cta-row { display: flex; justify-content: center; }
