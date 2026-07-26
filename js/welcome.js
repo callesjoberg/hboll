@@ -74,35 +74,63 @@ window.HB = window.HB || {};
   // är inte åtkomlig härifrån — hämtar en egen, redan HTTP-cachad kopia)
   // i stället för att hårdkoda tal som skulle bli inaktuella så fort
   // fler cuper/år arkiveras.
+  // perCup byggs ur SAMMA arkivindex som totalsumman (inget extra
+  // nätverksanrop för det) — används för att låta stat-korten visa den
+  // just nu rullande cupens EGNA siffror i stället för de globala
+  // totalerna (se startMapAnimation/onCupChange).
   async function computeStats() {
-    const [idxRes, dirRes] = await Promise.allSettled([
+    const [idxRes, dirRes, cupsRes] = await Promise.allSettled([
       fetch("data/archive/index.json").then((r) => (r.ok ? r.json() : {})),
       fetch("data/club-directory.json").then((r) => (r.ok ? r.json() : {})),
+      fetch("data/cups.json").then((r) => (r.ok ? r.json() : { cups: [] })),
     ]);
     const idx = idxRes.status === "fulfilled" ? idxRes.value : {};
     const dir = dirRes.status === "fulfilled" ? dirRes.value : {};
+    const placeByCup = {};
+    if (cupsRes.status === "fulfilled") {
+      for (const c of cupsRes.value.cups || []) placeByCup[c.id] = c.place;
+    }
     let cups = 0, teams = 0, matches = 0;
     const years = new Set();
-    for (const entry of Object.values(idx)) {
+    const perCup = {};
+    for (const [cupId, entry] of Object.entries(idx)) {
       const editions = (entry.editions || []).filter((e) => e.matches > 0);
       if (!editions.length) continue;
       cups++;
+      let cupMatches = 0;
+      const cupYears = [];
       for (const e of editions) {
         teams += e.teams || 0;
         matches += e.matches || 0;
+        cupMatches += e.matches || 0;
+        cupYears.push(e.edition);
         years.add(e.edition);
       }
+      cupYears.sort();
+      perCup[cupId] = {
+        matches: cupMatches,
+        editions: editions.length,
+        sinceYear: cupYears[0],
+        place: placeByCup[cupId] || null,
+      };
     }
     const sortedYears = [...years].sort();
     return {
       cups, teams, matches,
       clubs: Object.keys(dir).length,
       sinceYear: sortedYears[0] || null,
+      perCup,
     };
   }
 
-  function statChip(value, label) {
-    return h("div", { class: "welcome-stat" }, h("strong", null, value), h("span", null, label));
+  // Skapar en stat-ruta vars strong/span går att uppdatera i efterhand
+  // (inte bygga om) — samma 5 rutor återanvänds för både de globala
+  // totalerna och (medan en cup rullar på kartbakgrunden) den cupens
+  // egna siffror, se setOverallStats/setCupStats i openWelcome.
+  function statChipRef() {
+    const strong = h("strong", null, "…");
+    const span = h("span", null, "");
+    return { el: h("div", { class: "welcome-stat" }, strong, span), strong, span };
   }
 
   function feature(emoji, title, body) {
@@ -172,7 +200,7 @@ window.HB = window.HB || {};
     };
   }
 
-  async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState) {
+  async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState, onCupChange) {
     const cupIds = Object.keys(cupsData);
     if (!cupIds.length) return () => {};
 
@@ -287,6 +315,7 @@ window.HB = window.HB || {};
     map.jumpTo({ center: [cam.lng, cam.lat], zoom: cam.zoom });
 
     let cupIndex = 0;
+    let lastReportedCupId = null;
     let phase = "in";
     let phaseStart = performance.now();
     const IN_MS = 3200, OUT_MS = 1400;
@@ -439,6 +468,14 @@ window.HB = window.HB || {};
       nameCountEl.textContent = fmtNum(cup.count || cup.points.length) + " lag";
       nameEl.style.opacity = String(0.85 * nameAlpha);
 
+      // Hero-texten och stat-korten uppdateras bara VID cup-byte (inte
+      // varje bildruta som ovan, som redan är fasförskjuten mot
+      // dot-tändningen) — en enkel, odramatisk textväxling räcker där.
+      if (onCupChange && lastReportedCupId !== cupIds[cupIndex]) {
+        lastReportedCupId = cupIds[cupIndex];
+        onCupChange(cup, cupIds[cupIndex]);
+      }
+
       rafId = requestAnimationFrame(frame);
     }
     rafId = requestAnimationFrame(frame);
@@ -495,8 +532,39 @@ window.HB = window.HB || {};
         themeToggleBtn.textContent = themeIcon(next);
       },
     }, themeIcon(currentThemeSetting()));
-    const statsHost = h("div", { class: "welcome-stats" },
-      h("div", { class: "welcome-stat" }, h("strong", null, "…")));
+
+    // Cupnamnet under själva "Cupschema"-titeln + stat-korten nedanför
+    // knyts till kartanimationens aktuella cup (se onCupChange nedan) —
+    // samma 5 rutor återanvänds, bara siffrorna/etiketterna byts.
+    const liveCupEl = h("p", { class: "welcome-live-cup" });
+    const statRefs = [statChipRef(), statChipRef(), statChipRef(), statChipRef(), statChipRef()];
+    const statsHost = h("div", { class: "welcome-stats" }, statRefs.map((r) => r.el));
+
+    let statsData = null;
+    function setOverallStats(s) {
+      const vals = [
+        [fmtNum(s.cups), s.cups === 1 ? "cup" : "cuper"],
+        [fmtNum(s.teams) + "+", "lag genom åren"],
+        [fmtNum(s.matches) + "+", "matcher"],
+        [fmtNum(s.clubs), "klubbar"],
+        ["sedan " + (s.sinceYear || "–"), "historik"],
+      ];
+      vals.forEach(([v, l], i) => { statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; });
+    }
+    function setCupStats(cup, cupId) {
+      liveCupEl.textContent = "Visar just nu: " + cup.name;
+      const pc = statsData && statsData.perCup[cupId];
+      if (!pc) { if (statsData) setOverallStats(statsData); return; } // saknar arkivdata för just den cupen — visa totalerna i stället
+      const vals = [
+        [pc.place || "–", "plats"],
+        [fmtNum(cup.count || cup.points.length), "lag"],
+        [fmtNum(pc.matches), "matcher"],
+        [pc.editions, pc.editions === 1 ? "år arkiverat" : "år arkiverade"],
+        ["sedan " + pc.sinceYear, "historik"],
+      ];
+      vals.forEach(([v, l], i) => { statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; });
+    }
+
     const overlay = h("div", { class: "welcome-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Välkommen" },
       mapEl,
       dotCanvas,
@@ -511,6 +579,7 @@ window.HB = window.HB || {};
         h("div", { class: "welcome-scroll" },
           h("p", { class: "welcome-kicker" }, "Välkommen till"),
           h("h1", { class: "welcome-title" }, "Cupschema"),
+          liveCupEl,
           h("p", { class: "welcome-lead" },
             "Live-schema, resultat och ställning för handbollscuper — och över tio " +
             "års historik att gräva i när matchen är slut."),
@@ -535,17 +604,13 @@ window.HB = window.HB || {};
     fetch("data/landing-map.json")
       .then((r) => (r.ok ? r.json() : {}))
       .then((cupsData) => {
-        stopAnimationPromise = startMapAnimation(mapEl, dotCanvas, nameEl, cupsData || {}, animState);
+        stopAnimationPromise = startMapAnimation(mapEl, dotCanvas, nameEl, cupsData || {}, animState, setCupStats);
       })
       .catch(() => {});
 
     computeStats().then((s) => {
-      statsHost.replaceChildren(
-        statChip(fmtNum(s.cups), s.cups === 1 ? "cup" : "cuper"),
-        statChip(fmtNum(s.teams) + "+", "lag genom åren"),
-        statChip(fmtNum(s.matches) + "+", "matcher"),
-        statChip(fmtNum(s.clubs), "klubbar"),
-        statChip("sedan " + (s.sinceYear || "–"), "historik"));
+      statsData = s;
+      setOverallStats(s);
     }).catch(() => {});
   }
 

@@ -2499,13 +2499,25 @@ dialog.history-dialog {
 }
 
 .welcome-title {
-  margin: 0 0 12px;
+  margin: 0 0 4px;
   font-family: "Barlow Condensed", sans-serif;
   font-weight: 700;
   font-size: clamp(40px, 9vw, 64px);
   letter-spacing: 0.01em;
   text-align: center;
   text-shadow: 0 2px 24px var(--welcome-text-shadow);
+}
+
+/* Knyter hero-texten till kartanimationens aktuella cup (se onCupChange/
+   setCupStats i js/welcome.js) — tom (ingen höjd) tills första cupen
+   hunnit väljas, så det inte hoppar till när texten dyker upp. */
+.welcome-live-cup {
+  margin: 0 0 14px;
+  min-height: 1.3em;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--welcome-accent);
+  text-align: center;
 }
 
 .welcome-lead {
