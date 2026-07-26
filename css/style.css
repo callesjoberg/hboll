@@ -2280,12 +2280,47 @@ dialog.history-dialog {
   overflow: hidden;
 }
 
-.welcome-canvas {
+.welcome-map,
+.welcome-dots {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+}
+
+/* Kartlagret är dekorativt (interactive:false i js/welcome.js) — men
+   maplibre-gl.css sätter ändå cursor:grab på sin canvas som standard.
+   OpenFreeMap har ingen färdig mörk stil, så själva kartlagret (INTE
+   dess kontroller, se attributionen nedan) mörkläggs med ett CSS-filter
+   — ett välkänt "fattigmans-mörkt-läge"-knep som behåller en riktig
+   karta i stället för en handritad kontur. */
+.welcome-map .maplibregl-canvas {
+  cursor: default;
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85);
+}
+.welcome-dots { pointer-events: none; }
+
+/* OpenFreeMap/OpenMapTiles kräver attribution — behålls, men färgsätts om
+   till samma fasta mörka identitet som resten av överlägget i stället för
+   maplibre-gl.css standardvita kontrollbakgrund. */
+.welcome-overlay .maplibregl-ctrl-attrib {
+  background: rgba(15, 23, 35, 0.55);
+  color: #b7c2d0;
+}
+.welcome-overlay .maplibregl-ctrl-attrib a { color: #b7c2d0; }
+.welcome-overlay .maplibregl-ctrl-attrib-button { filter: invert(1) brightness(1.6); }
+
+.welcome-cup-name {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 1;
+  font: 600 13px Barlow, sans-serif;
+  color: #eef2f8;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Mörk vinjett upptill/nedtill + en svag global dämpning — utan den
