@@ -2272,13 +2272,17 @@ dialog.history-dialog {
    scheme (OS-preferens) -> :root[data-theme] (manuellt val, vinner alltid
    via attributselektorns högre specificitet). */
 .welcome-overlay {
-  --welcome-card-bg: rgba(255, 255, 255, 0.72);
+  --welcome-card-bg: rgba(255, 255, 255, 0.82);
   --welcome-border: rgba(22, 40, 63, 0.14);
   --welcome-scrim-1: rgba(255, 255, 255, 0.6);
   --welcome-scrim-2: rgba(255, 255, 255, 0.15);
   --welcome-scrim-3: rgba(255, 255, 255, 0.72);
   --welcome-text-shadow: rgba(255, 255, 255, 0.7);
   --welcome-map-filter: none; /* OpenFreeMaps ljusa "liberty"-stil duger som den är i ljust tema */
+  /* Accentfärg för kicker + statsiffror: gult syns bra mot en mörk karta
+     men blir närmast oläsligt (låg kontrast) mot ett ljust kort — djup
+     marinblå i ljust tema i stället. */
+  --welcome-accent: #17417e;
   position: fixed;
   inset: 0;
   z-index: 200;
@@ -2298,6 +2302,7 @@ dialog.history-dialog {
     --welcome-scrim-3: rgba(15, 23, 35, 0.75);
     --welcome-text-shadow: rgba(0, 0, 0, 0.6);
     --welcome-map-filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85);
+    --welcome-accent: var(--yellow);
   }
 }
 :root[data-theme="dark"] .welcome-overlay {
@@ -2308,15 +2313,17 @@ dialog.history-dialog {
   --welcome-scrim-3: rgba(15, 23, 35, 0.75);
   --welcome-text-shadow: rgba(0, 0, 0, 0.6);
   --welcome-map-filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85);
+  --welcome-accent: var(--yellow);
 }
 :root[data-theme="light"] .welcome-overlay {
-  --welcome-card-bg: rgba(255, 255, 255, 0.72);
+  --welcome-card-bg: rgba(255, 255, 255, 0.82);
   --welcome-border: rgba(22, 40, 63, 0.14);
   --welcome-scrim-1: rgba(255, 255, 255, 0.6);
   --welcome-scrim-2: rgba(255, 255, 255, 0.15);
   --welcome-scrim-3: rgba(255, 255, 255, 0.72);
   --welcome-text-shadow: rgba(255, 255, 255, 0.7);
   --welcome-map-filter: none;
+  --welcome-accent: #17417e;
 }
 
 /* Specificitet (.welcome-overlay .welcome-map, INTE bara .welcome-map)
@@ -2487,7 +2494,7 @@ dialog.history-dialog {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--yellow);
+  color: var(--welcome-accent);
   text-align: center;
 }
 
@@ -2534,7 +2541,7 @@ dialog.history-dialog {
   font-family: "Barlow Condensed", sans-serif;
   font-weight: 700;
   font-size: 22px;
-  color: var(--yellow);
+  color: var(--welcome-accent);
 }
 
 .welcome-stat span {

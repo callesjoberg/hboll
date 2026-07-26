@@ -230,6 +230,39 @@ window.HB = window.HB || {};
     resize();
     window.addEventListener("resize", resize);
 
+    // En förrenderad glöd-"sprite" per tema (glödgradient + mittprick) —
+    // ritas EN gång till en offscreen-canvas och kopieras sedan billigt med
+    // drawImage per prick, i stället för att bygga en ny createRadialGradient
+    // för var och en av upp till 320 prickar VARJE bildruta. Det senare var
+    // den stora flaskhalsen på mobil: bildrutor tappades så illa att
+    // prickarnas slumpade tändning såg ut att ske på en gång (hela
+    // in-fasen hann passera mellan två renderade rutor). Cachad per
+    // temanyckel så en temaväxling bygger om spriten men inget annat.
+    const SPRITE_R = 9; // glödradie i css-px
+    const SPRITE_SIZE = (SPRITE_R + 1) * 2;
+    let spriteCache = {};
+    function glowSprite(glowRgb, dotRgb) {
+      const key = glowRgb + "|" + dotRgb;
+      if (spriteCache[key]) return spriteCache[key];
+      const s = document.createElement("canvas");
+      s.width = Math.round(SPRITE_SIZE * dpr);
+      s.height = Math.round(SPRITE_SIZE * dpr);
+      const sc = s.getContext("2d");
+      sc.scale(dpr, dpr);
+      const c = SPRITE_SIZE / 2;
+      const g = sc.createRadialGradient(c, c, 0, c, c, SPRITE_R);
+      g.addColorStop(0, `rgba(${glowRgb}, 0.6)`);
+      g.addColorStop(1, `rgba(${glowRgb}, 0)`);
+      sc.fillStyle = g;
+      sc.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+      sc.beginPath();
+      sc.arc(c, c, 2.3, 0, Math.PI * 2);
+      sc.fillStyle = `rgb(${dotRgb})`;
+      sc.fill();
+      spriteCache[key] = s;
+      return s;
+    }
+
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const first = cupCam[cupIds[0]];
     // Kameran (cam) tweenas mellan camStart och den aktuella cupens läge
@@ -352,16 +385,19 @@ window.HB = window.HB || {};
 
       // Gula/gyllene markörer läses knappt mot en ljus, ofiltrerad karta
       // (se --welcome-map-filter i css/style.css — bara mörkt tema
-      // mörklägger kartan) — mörkblå markörer i ljust tema i stället,
-      // avläst live varje bildruta så en temaväxling (se themeToggleBtn)
-      // syns direkt även medan överlägget redan är öppet.
+      // mörklägger kartan) — röda markörer i ljust tema i stället, som
+      // syns tydligt mot både land och hav. Avläst live varje bildruta så
+      // en temaväxling (se themeToggleBtn) syns direkt även medan
+      // överlägget redan är öppet.
       const dark = isDarkTheme();
-      const glowRgb = dark ? "246, 196, 16" : "23, 65, 126";
-      const dotRgb = dark ? "255, 232, 150" : "17, 40, 79";
+      const sprite = dark
+        ? glowSprite("246, 196, 16", "255, 232, 150")
+        : glowSprite("214, 47, 39", "130, 18, 13");
 
       const cup = cupsData[cupIds[cupIndex]];
       const inElapsed = phase === "in" ? elapsed : dur.in;
       const outT = phase === "out" ? Math.min(1, elapsed / dur.out) : 0;
+      const half = SPRITE_SIZE / 2;
       cup.points.forEach(([lat, lng], i) => {
         const p = map.project([lng, lat]);
         const x = p.x, y = p.y;
@@ -383,16 +419,10 @@ window.HB = window.HB || {};
           alpha *= (1 - freezeT) + freezeT * pulse;
         }
         if (alpha <= 0.01) return;
-        const glow = ctx.createRadialGradient(x, y, 0, x, y, 9);
-        glow.addColorStop(0, `rgba(${glowRgb}, ${0.6 * alpha})`);
-        glow.addColorStop(1, `rgba(${glowRgb}, 0)`);
-        ctx.fillStyle = glow;
-        ctx.fillRect(x - 9, y - 9, 18, 18);
-        ctx.beginPath();
-        ctx.arc(x, y, 2.3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${dotRgb}, ${Math.min(1, alpha + 0.15)})`;
-        ctx.fill();
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(sprite, x - half, y - half, SPRITE_SIZE, SPRITE_SIZE);
       });
+      ctx.globalAlpha = 1;
 
       // Inforutan i hörnet — knyter animationen till "X cuper"-siffran och
       // visar hur många lag just den här cupen faktiskt har (real.count,
