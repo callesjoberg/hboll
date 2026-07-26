@@ -2405,6 +2405,60 @@ dialog.history-dialog {
   margin-top: 1px;
 }
 
+/* Klick öppnar dropupen (se .welcome-cup-dropup) där man själv kan välja
+   vilken cup som visas. Bara ett tunt klickbart hölje runt den redan
+   existerande cuptexten — ingen egen bakgrund, sitter redan i
+   .welcome-cup-controls kort. */
+.welcome-cup-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.welcome-cup-caret {
+  flex: none;
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+.welcome-cup-dropup {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin: 0 0 8px;
+  padding: 6px;
+  max-height: 260px;
+  min-width: 210px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--welcome-card-bg);
+  border: 1px solid var(--welcome-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(6px);
+  z-index: 2;
+}
+.welcome-cup-dropup li { margin: 0; }
+.welcome-cup-dropup button {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.welcome-cup-dropup button:hover,
+.welcome-cup-dropup button:focus-visible { background: var(--welcome-border); }
+
 /* Egen play/paus-knapp för animationen — till skillnad från cuptexten
    (som tonas in/ut med cup-cykeln) håller den sig konstant synlig så den
    alltid går att klicka. */

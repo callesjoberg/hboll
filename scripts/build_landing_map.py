@@ -51,6 +51,9 @@ COUNTRY_JITTER = (0.8, 1.2)  # grader lat/lng — sprider isär lag från samma 
 # den; en för tajt spridning såg ut som "71 lag mitt i Katrineholm",
 # orimligt för en ungdomscup som drar deltagare regionalt.
 HOST_JITTER = (0.9, 1.3)     # grader lat/lng — regional spridning kring cupens värdort
+INTERNATIONAL_THRESHOLD = 5  # minst så här många OLIKA utländska länder innan landsspridning
+                              # (COUNTRY_JITTER) används i stället för värdorts-jitter — se
+                              # points_from_teams
 
 
 def cap_points(points):
@@ -124,15 +127,26 @@ def points_from_teams(cup_id, host_lat, host_lon, centroids):
                 teams[tid] = info.get("country")
     if len(teams) < MIN_POINTS:
         return None
+
+    # Hur många OLIKA länder (utöver Sverige) finns representerade? En
+    # cup med bara ett fåtal (t ex Hellton Cup: bara Norge, några enstaka
+    # gränsnära lag) är rimligen en regional/gränscup — då ser det bättre
+    # (och mer realistiskt) ut att lägga de lagen nära cupens EGEN värdort
+    # i stället för utspridda över HELA grannlandet, vilket annars gav en
+    # udda, glesa "två öar"-vy (en tät klunga vid värdorten + en gles
+    # klunga utspridd över halva Norge). Först vid genuint många länder
+    # (Partille Cup: ~35) läses en spridning över respektive land som ett
+    # äkta, avsiktligt "internationellt"-intryck i stället för brus.
+    foreign_countries = {c for c in teams.values() if c and c != "SE" and c in centroids}
+    use_country_spread = len(foreign_countries) >= INTERNATIONAL_THRESHOLD
+
     points = []
     for tid, code in teams.items():
-        # code == "SE" utesluts MEDVETET från landsjittret: Cup Manager
+        # code == "SE" utesluts alltid ur landsjittret: Cup Manager
         # (till skillnad från ProCup) taggar även svenska hemmalag med
         # country="SE", och Sveriges egen centroid ligger uppe kring
-        # Sundsvall/Örnsköldsvik — långt norr om t ex Göteborg. Ett
-        # svenskt lag utan känd adress hamnar bättre kring cupens EGEN
-        # värdort (som vi redan vet var den är) än "nånstans i Sverige".
-        if code and code != "SE" and code in centroids:
+        # Sundsvall/Örnsköldsvik — långt norr om t ex Göteborg.
+        if use_country_spread and code and code != "SE" and code in centroids:
             base_lat, base_lng = centroids[code]
             lat_scale, lng_scale = COUNTRY_JITTER
         else:

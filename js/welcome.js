@@ -217,7 +217,7 @@ window.HB = window.HB || {};
     return ids.includes("potatis") ? ["potatis", ...rest] : rest;
   }
 
-  async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState, onCupChange) {
+  async function startMapAnimation(mapEl, dotCanvas, nameEl, cupsData, animState, onCupChange, cupPickerBtn, cupDropup, playPauseBtn) {
     const cupIds = shuffleCupOrder(Object.keys(cupsData));
     if (!cupIds.length) return () => {};
 
@@ -358,6 +358,38 @@ window.HB = window.HB || {};
     // Slumpad, individuell tändningsfördröjning per prick — genereras om
     // varje gång vi går vidare till en ny cup.
     let dotDelays = cupsData[cupIds[0]].points.map(() => Math.random() * STAGGER_MS);
+
+    // Manuellt val via dropupen (se cupPickerBtn/cupDropup i openWelcome)
+    // — samma övergångsstart som en naturlig cup-växling (ny stagger,
+    // kameran tweenar från sitt NUVARANDE läge, inte ett hopp), plus en
+    // automatisk paus så den valda cupen inte genast rullar vidare av
+    // sig själv innan man hunnit titta på den.
+    function selectCup(id) {
+      const idx = cupIds.indexOf(id);
+      if (idx < 0) return;
+      cupIndex = idx;
+      phase = "in";
+      phaseStart = performance.now();
+      dotDelays = cupsData[id].points.map(() => Math.random() * STAGGER_MS);
+      camStart = { lng: cam.lng, lat: cam.lat, zoom: cam.zoom };
+      panStart = performance.now();
+      lastReportedCupId = null; // tvingar fram en onCupChange-uppdatering nästa bildruta
+      animState.paused = true;
+      if (playPauseBtn) {
+        playPauseBtn.textContent = "▶";
+        playPauseBtn.setAttribute("aria-label", "Fortsätt animationen");
+      }
+      cupDropup.setAttribute("hidden", "");
+      cupPickerBtn.setAttribute("aria-expanded", "false");
+    }
+    if (cupDropup) {
+      // Alfabetisk ordning i listan (inte den slumpade visningsordningen)
+      // — mycket lättare att hitta en specifik cup i.
+      const sortedIds = [...cupIds].sort((a, b) => cupsData[a].name.localeCompare(cupsData[b].name, "sv"));
+      cupDropup.replaceChildren(...sortedIds.map((id) =>
+        h("li", { role: "presentation" },
+          h("button", { type: "button", role: "option", onclick: () => selectCup(id) }, cupsData[id].name))));
+    }
 
     // Inforutan (cupnamn + hur många lag som faktiskt visas) — byggs en
     // gång, uppdateras sedan bara som textContent varje bildruta.
@@ -516,12 +548,27 @@ window.HB = window.HB || {};
     }
     overlay.remove();
     document.removeEventListener("keydown", onKeydown);
+    document.removeEventListener("click", onOutsideClick);
   }
 
   function onKeydown(e) {
     if (e.key === "Escape") {
       const overlay = document.querySelector(".welcome-overlay");
       if (overlay) closeWelcome(overlay);
+    }
+  }
+
+  // Stänger cup-väljarens dropup vid klick utanför den — hittar den
+  // aktuella instansens element via querySelector (i stället för att
+  // stänga över en specifik instans) så samma modulnivå-lyssnare kan
+  // läggas på/tas bort en gång per öppning, precis som onKeydown ovan.
+  function onOutsideClick(e) {
+    const dropup = document.querySelector(".welcome-cup-dropup");
+    const picker = document.querySelector(".welcome-cup-picker");
+    if (!dropup || !picker) return;
+    if (!dropup.hasAttribute("hidden") && !picker.contains(e.target) && !dropup.contains(e.target)) {
+      dropup.setAttribute("hidden", "");
+      picker.setAttribute("aria-expanded", "false");
     }
   }
 
@@ -540,6 +587,21 @@ window.HB = window.HB || {};
         playPauseBtn.setAttribute("aria-label", animState.paused ? "Fortsätt animationen" : "Pausa animationen");
       },
     }, "⏸");
+
+    // Klick på cupnamnet öppnar en "dropup" (öppnas UPPÅT, inte neråt —
+    // rutan sitter redan längst ner i bilden) där man själv kan välja
+    // vilken cup som visas, i stället för att bara vänta på att den
+    // rullar förbi. Listan fylls i av startMapAnimation (som är den enda
+    // som känner till cupIds/cupsData när de väl laddats).
+    const cupDropup = h("ul", { class: "welcome-cup-dropup", role: "listbox", hidden: "" });
+    const cupPickerBtn = h("button", {
+      class: "welcome-cup-picker", type: "button", "aria-haspopup": "listbox", "aria-expanded": "false",
+      onclick: () => {
+        const open = cupDropup.hasAttribute("hidden");
+        if (open) cupDropup.removeAttribute("hidden"); else cupDropup.setAttribute("hidden", "");
+        cupPickerBtn.setAttribute("aria-expanded", String(open));
+      },
+    }, nameEl, h("span", { class: "welcome-cup-caret", "aria-hidden": "true" }, "▾"));
     const themeToggleBtn = h("button", {
       class: "welcome-theme-toggle", type: "button", "aria-label": "Byt färgtema",
       onclick: () => {
@@ -592,7 +654,7 @@ window.HB = window.HB || {};
     const overlay = h("div", { class: "welcome-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Välkommen" },
       mapEl,
       dotCanvas,
-      h("div", { class: "welcome-cup-controls" }, nameEl, playPauseBtn),
+      h("div", { class: "welcome-cup-controls" }, cupPickerBtn, playPauseBtn, cupDropup),
       h("div", { class: "welcome-scrim" }),
       themeToggleBtn,
       h("button", {
@@ -624,11 +686,14 @@ window.HB = window.HB || {};
 
     document.body.append(overlay);
     document.addEventListener("keydown", onKeydown);
+    document.addEventListener("click", onOutsideClick);
 
     fetch("data/landing-map.json")
       .then((r) => (r.ok ? r.json() : {}))
       .then((cupsData) => {
-        stopAnimationPromise = startMapAnimation(mapEl, dotCanvas, nameEl, cupsData || {}, animState, setCupStats);
+        stopAnimationPromise = startMapAnimation(
+          mapEl, dotCanvas, nameEl, cupsData || {}, animState, setCupStats,
+          cupPickerBtn, cupDropup, playPauseBtn);
       })
       .catch(() => {});
 
