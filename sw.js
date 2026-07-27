@@ -12,6 +12,7 @@ const CACHE_NAME = "hboll-shell-v1";
 const SHELL_FILES = [
   "./",
   "./index.html",
+  "./hjalp.html",
   "./css/style.css",
   "./js/config.js",
   "./js/api.js",

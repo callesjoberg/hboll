@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Hjälp &amp; manual · Cupschema</title>
+<meta name="description" content="Komplett guide till Cupschema för Alingsås HK — schema, tabeller, slutspel, bana, stats, filter, export och inställningar. Sökbar.">
+<link rel="icon" href="assets/ahk-logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<meta name="theme-color" content="#16283f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Tema-tokens ─────────────────────────────────────────────────────── */
+:root{
+  --navy:#16283f; --navy-2:#20364f; --gold:#f6c410; --blue:#1f5fbf;
+  --ink:#16283f; --ink-soft:#4a5a70; --muted:#6b7688;
+  --bg:#f4f6f9; --card:#ffffff; --line:#e2e7ee; --line-2:#eef1f6;
+  --good:#1f9d55; --good-bg:#e7f6ec; --warn:#b9770a; --warn-bg:#fdf3e1;
+  --lost:#d0342c; --tip-bg:#eef4ff; --code-bg:#eef1f6;
+  --shadow:0 1px 2px rgba(20,40,70,.06),0 8px 24px rgba(20,40,70,.08);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#e8edf4; --ink-soft:#aab6c6; --muted:#8695a8;
+    --bg:#0b1017; --card:#121a26; --line:#243244; --line-2:#1b2634;
+    --gold:#f6c410; --blue:#6db0f5;
+    --good:#4fd07f; --good-bg:#12291c; --warn:#e7b45a; --warn-bg:#2a2213;
+    --lost:#f0776f; --tip-bg:#12202f; --code-bg:#1a2432;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="light"]{
+  --ink:#16283f; --ink-soft:#4a5a70; --muted:#6b7688; --bg:#f4f6f9; --card:#fff;
+  --line:#e2e7ee; --line-2:#eef1f6; --blue:#1f5fbf; --good:#1f9d55; --good-bg:#e7f6ec;
+  --warn:#b9770a; --warn-bg:#fdf3e1; --lost:#d0342c; --tip-bg:#eef4ff; --code-bg:#eef1f6;
+  --shadow:0 1px 2px rgba(20,40,70,.06),0 8px 24px rgba(20,40,70,.08);
+}
+:root[data-theme="dark"]{
+  --ink:#e8edf4; --ink-soft:#aab6c6; --muted:#8695a8; --bg:#0b1017; --card:#121a26;
+  --line:#243244; --line-2:#1b2634; --blue:#6db0f5; --good:#4fd07f; --good-bg:#12291c;
+  --warn:#e7b45a; --warn-bg:#2a2213; --lost:#f0776f; --tip-bg:#12202f; --code-bg:#1a2432;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:150px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:400 17px/1.62 "Barlow",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;line-height:1.08;text-wrap:balance;letter-spacing:.2px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code-bg);padding:.12em .42em;border-radius:6px;font-size:.86em}
+::selection{background:var(--gold);color:#16283f}
+
+/* ── Topbar ──────────────────────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;background:var(--navy);color:#eaf0f8;
+  border-bottom:3px solid var(--gold);
+}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:11px 20px;display:flex;align-items:center;gap:14px}
+.tb-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:#fff;flex:0 0 auto}
+.tb-brand img{width:30px;height:34px;display:block}
+.tb-brand b{font-family:"Barlow Condensed";font-weight:700;font-size:22px;letter-spacing:.4px;line-height:1}
+.tb-brand small{display:block;font:600 10px/1 "Barlow";letter-spacing:1.6px;color:#9fb2cc;margin-top:3px;text-transform:uppercase}
+.tb-spacer{flex:1}
+.tb-search{position:relative;flex:1 1 340px;max-width:440px}
+.tb-search input{
+  width:100%;padding:9px 34px 9px 38px;border-radius:999px;border:1px solid #35506f;
+  background:#0f1d2e;color:#eef3f9;font:500 15px "Barlow";outline:none;
+}
+.tb-search input::placeholder{color:#7f93ac}
+.tb-search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(246,196,16,.22)}
+.tb-search .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.7;font-size:15px;pointer-events:none}
+.tb-search .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;cursor:pointer;font-size:18px;line-height:1;padding:2px 7px;border-radius:50%;background:#26405c;color:#dbe6f2;display:none}
+.tb-search .clr.on{display:block}
+.tb-btn{
+  flex:0 0 auto;border:1px solid #35506f;background:#0f1d2e;color:#e6eef8;cursor:pointer;
+  border-radius:999px;padding:8px 13px;font:600 14px "Barlow";display:inline-flex;gap:6px;align-items:center;
+}
+.tb-btn:hover{border-color:var(--gold)}
+@media (max-width:720px){
+  .tb-brand small{display:none}
+  .tb-btn.wide{display:none}
+  .topbar-inner{flex-wrap:wrap;gap:10px}
+  .tb-search{order:3;flex-basis:100%;max-width:none}
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────── */
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:236px 1fr;gap:40px;align-items:start}
+.toc{position:sticky;top:96px;align-self:start;max-height:calc(100vh - 120px);overflow:auto;padding:22px 0 40px;font-size:14.5px}
+.toc h4{font-family:"Barlow";font-weight:600;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.toc a{display:block;color:var(--ink-soft);padding:5px 12px 5px 13px;border-left:2px solid transparent;border-radius:0 6px 6px 0}
+.toc a:hover{color:var(--ink);background:var(--line-2);text-decoration:none}
+.toc a.active{color:var(--ink);border-left-color:var(--gold);background:var(--line-2);font-weight:600}
+.content{min-width:0;padding:28px 0 90px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:0}
+  .toc{position:static;max-height:none;overflow:visible;padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:10px}
+  .toc-cols{columns:2;column-gap:24px}
+  .toc h4:first-child{margin-top:4px}
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+.hero{position:relative;border-radius:var(--radius);overflow:hidden;margin:26px 0 8px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.hero img{width:100%;display:block;aspect-ratio:1440/560;object-fit:cover;object-position:center 42%}
+.hero-cap{position:absolute;left:0;right:0;bottom:0;padding:26px 26px 20px;background:linear-gradient(to top,rgba(11,17,23,.82),rgba(11,17,23,.15) 70%,transparent);color:#fff}
+.hero-cap .kick{font:600 12px/1 "Barlow";letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.hero-cap h1{font-size:clamp(30px,5vw,50px);color:#fff;margin:0 0 6px}
+.hero-cap p{margin:0;max-width:52ch;color:#dbe6f2;font-size:16px}
+
+/* ── Sektioner ───────────────────────────────────────────────────────── */
+.lead{font-size:19px;color:var(--ink-soft);max-width:66ch;margin:20px 0 8px}
+section.doc{scroll-margin-top:150px;padding:30px 0;border-top:1px solid var(--line)}
+section.doc:first-of-type{border-top:none}
+section.doc > h2{font-size:clamp(26px,3.4vw,36px);margin:0 0 4px;display:flex;align-items:baseline;gap:12px}
+section.doc > h2 .num{font-size:.62em;color:var(--gold);font-weight:700}
+.doc h3{font-size:22px;margin:26px 0 6px;color:var(--ink)}
+.doc h4{font-family:"Barlow";font-weight:600;font-size:16px;margin:18px 0 4px}
+.doc p{margin:10px 0;max-width:70ch}
+.doc ul,.doc ol{max-width:70ch;padding-left:22px;margin:10px 0}
+.doc li{margin:6px 0}
+.doc strong{font-weight:600}
+.muted{color:var(--muted)}
+
+/* Skärmbilder */
+figure.shot{margin:22px 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--card)}
+figure.shot img{width:100%;display:block}
+figure.shot.frame-top img{aspect-ratio:1440/440;object-fit:cover;object-position:top}
+figure.shot.frame-tall img{aspect-ratio:1440/900;object-fit:cover;object-position:top}
+figure.shot figcaption{padding:11px 15px;font-size:14px;color:var(--muted);border-top:1px solid var(--line);background:var(--card)}
+figure.shot figcaption b{color:var(--ink-soft);font-weight:600}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media (max-width:680px){.two-col{grid-template-columns:1fr}}
+
+/* Callouts */
+.note{border-radius:12px;padding:14px 16px 14px 15px;margin:18px 0;border:1px solid var(--line);background:var(--tip-bg);position:relative;font-size:15.5px}
+.note::before{content:attr(data-label);display:block;font:700 11px/1 "Barlow";letter-spacing:1.2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.note.tip{background:var(--tip-bg)}
+.note.tip::before{color:var(--blue)}
+.note.good{background:var(--good-bg);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.note.good::before{content:attr(data-label);color:var(--good)}
+.note.warn{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 34%,transparent)}
+.note.warn::before{content:attr(data-label);color:var(--warn)}
+.note p{margin:6px 0;max-width:none}
+.note p:first-of-type{margin-top:0}
+
+/* Legend/badge-chips */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.legend .item{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14.5px}
+.vof{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;color:#fff;font:700 12px/1 "Barlow";flex:0 0 auto}
+.vof.v{background:var(--good)}.vof.o{background:#8894a5}.vof.f{background:var(--lost)}
+.dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;border:1px solid rgba(0,0,0,.15)}
+
+/* "Nästa match"-figur (byggd i HTML) */
+.nm-fig{background:linear-gradient(135deg,#16283f,#20364f);border-radius:var(--radius);padding:26px;margin:22px 0;box-shadow:var(--shadow)}
+.nm-card{background:#fff;border-radius:12px;padding:16px 18px;max-width:430px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.35);color:#16283f;border-left:4px solid var(--gold)}
+.nm-top{display:flex;align-items:center;gap:8px;font:600 13px "Barlow";color:#6b7688;letter-spacing:.3px;margin-bottom:10px}
+.nm-live{width:9px;height:9px;border-radius:50%;background:#d0342c;box-shadow:0 0 0 0 rgba(208,52,44,.5);animation:pulse 1.6s infinite}
+@media (prefers-reduced-motion: reduce){.nm-live{animation:none}}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(208,52,44,0)}100%{box-shadow:0 0 0 0 rgba(208,52,44,0)}}
+.nm-count{margin-left:auto;color:#1f5fbf;font-weight:600}
+.nm-teams{display:flex;align-items:center;gap:10px;font-family:"Barlow Condensed";font-weight:700;font-size:21px}
+.nm-teams .t{flex:1}
+.nm-teams .t.us{color:#1f5fbf}
+.nm-teams .t.right{text-align:right}
+.nm-teams .vs{color:#8894a5;font-family:"Barlow";font-weight:500;font-size:14px}
+.nm-star{color:var(--gold)}
+.nm-meta{margin-top:10px;color:#6b7688;font-size:13.5px}
+.nm-ctrl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px}
+.nm-ctrl button{width:30px;height:30px;border-radius:50%;border:1px solid #d7deea;background:#f6f8fb;color:#16283f;font-size:16px;cursor:default}
+.nm-dots{display:flex;gap:6px}
+.nm-dots i{width:7px;height:7px;border-radius:50%;background:#cfd7e3}
+.nm-dots i.on{background:#1f5fbf}
+.nm-anno{color:#c9d6e8;font-size:13.5px;text-align:center;margin-top:14px;max-width:none}
+
+/* FAQ */
+details.faq{border:1px solid var(--line);border-radius:12px;margin:10px 0;background:var(--card);overflow:hidden}
+details.faq summary{padding:14px 16px;cursor:pointer;font-weight:600;font-size:16.5px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{content:"+";font-family:"Barlow Condensed";font-size:24px;color:var(--muted);line-height:1}
+details.faq[open] summary::after{content:"–"}
+details.faq .body{padding:0 16px 15px;color:var(--ink-soft);font-size:15.5px}
+details.faq .body p{margin:6px 0}
+
+/* Sök-status */
+.searchmsg{display:none;padding:16px 0;color:var(--muted);font-size:16px}
+.searchmsg.on{display:block}
+mark{background:var(--gold);color:#16283f;padding:0 2px;border-radius:3px}
+.hidden{display:none !important}
+
+footer.pagefoot{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 60px;color:var(--muted);font-size:14.5px;text-align:center}
+footer.pagefoot a{margin:0 8px}
+.backtop{position:fixed;right:20px;bottom:20px;width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--gold);border:none;font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s}
+.backtop.on{opacity:1;pointer-events:auto}
+kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:.82em}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="tb-brand" href="index.html" title="Till appen">
+      <img src="assets/ahk-logo.svg" alt="">
+      <span><b>Cupschema</b><small>Hjälp &amp; manual</small></span>
+    </a>
+    <div class="tb-search">
+      <span class="ic">🔍</span>
+      <input id="q" type="search" placeholder="Sök i manualen — t.ex. slutspel, favoritlag, export…" autocomplete="off" aria-label="Sök i manualen">
+      <button class="clr" id="qclr" aria-label="Rensa sökning">×</button>
+    </div>
+    <span class="tb-spacer"></span>
+    <button class="tb-btn" id="themeBtn" title="Byt tema" aria-label="Byt tema">🌗</button>
+    <a class="tb-btn wide" href="index.html">← Till appen</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" id="toc" aria-label="Innehåll"></nav>
+
+  <main class="content" id="content">
+
+    <div class="hero">
+      <img src="assets/help/welcome.png" alt="Cupschemas startvy med en levande karta där klubbarnas hemorter tänds upp cup för cup">
+      <div class="hero-cap">
+        <div class="kick">Välkommen till</div>
+        <h1>Allt om cupen — på ett ställe</h1>
+        <p>Spelschema, resultat, tabeller och slutspel för Alingsås HK:s cuper, live i din webbläsare. Den här guiden visar allt appen kan göra — sök ovan eller bläddra nedan.</p>
+      </div>
+    </div>
+
+    <div class="searchmsg" id="searchmsg"></div>
+
+    <!-- 1 -->
+    <section class="doc" id="intro" data-title="Vad är Cupschema?" data-group="Kom igång">
+      <h2><span class="num">01</span> Vad är Cupschema?</h2>
+      <p class="lead">Cupschema samlar spelschema, resultat, tabeller och slutspel för alla Alingsås HK:s cuper på ett och samma ställe — alltid uppdaterat, snyggt på mobilen och gjort för att du snabbt ska hitta <em>din</em> match.</p>
+      <p>Datan hämtas live från cupernas egna system (Cup Manager och ProCup), så du behöver aldrig leta runt på olika arrangörssajter. Du kan filtrera fram exakt de matcher du bryr dig om, prenumerera på dem i din kalender, följa tabeller och slutspelsträd, och till och med bläddra i över tio års cuphistorik.</p>
+      <ul>
+        <li><strong>Ingen inloggning</strong> — öppna länken och kör.</li>
+        <li><strong>Fungerar offline</strong> som app på hemskärmen (se <a href="#pwa">Installera</a>).</li>
+        <li><strong>Delbart</strong> — varje vy har en egen länk du kan skicka vidare.</li>
+      </ul>
+      <div class="note tip" data-label="Tips">
+        <p>Bråttom? Hoppa till <a href="#snabbstart">Snabbstart</a> — tre steg så följer appen just din klubb.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="doc" id="snabbstart" data-title="Snabbstart" data-group="Kom igång">
+      <h2><span class="num">02</span> Snabbstart</h2>
+      <p class="lead">Tre snabba steg och appen är inställd på dig.</p>
+      <ol>
+        <li><strong>Välj cup.</strong> Klicka på cup-knappen uppe till höger (t.ex. <em>Åhus Beach</em>) och välj den cup du är på. Byt när som helst.</li>
+        <li><strong>Sätt din favoritklubb.</strong> Öppna <strong>⚙ Inställningar</strong> och skriv in din klubb (t.ex. <em>Alingsås HK</em>). Nu markeras dina lag, du får en egen flik med klubbnamnet och ett <em>Nästa match</em>-kort.</li>
+        <li><strong>Filtrera fram dina matcher.</strong> I <strong>Filter och sortering</strong> väljer du en klass eller ett lag — så visas schemat. Vill du bara se ditt lag? Välj det under <em>Alla lag</em>.</li>
+      </ol>
+      <div class="note good" data-label="Klart">
+        <p>Appen kommer ihåg dina val till nästa gång — och adressfältet uppdateras så att du kan spara eller dela exakt den vyn.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="doc" id="granssnittet" data-title="Så funkar gränssnittet" data-group="Kom igång">
+      <h2><span class="num">03</span> Så funkar gränssnittet</h2>
+      <p class="lead">Tre delar att känna igen: rubriken högst upp, flikarna, och filterraden.</p>
+      <figure class="shot frame-top">
+        <img src="assets/help/hero.png" alt="Rubrik med cup-knapp, kugghjul och uppdatera, flikarna Schema/Tabeller/Slutspel/Bana/Stats, samt filterraden">
+        <figcaption><b>Rubrik + flikar + filter.</b> Cup-väljare, ⚙ inställningar och ↻ Uppdatera uppe till höger; flikarna under; filterraden överst i innehållet.</figcaption>
+      </figure>
+      <h3>Rubriken</h3>
+      <ul>
+        <li><strong>Cup-knappen</strong> (klubbnamn/cupnamn) — öppnar cup-väljaren.</li>
+        <li><strong>⚙ Inställningar</strong> — favoritklubb, tema, färger, matchlängd med mera.</li>
+        <li><strong>↻ Uppdatera</strong> — hämtar färskaste schemat direkt (visar <em>Uppdaterar …</em> under tiden).</li>
+      </ul>
+      <h3>Flikarna</h3>
+      <ul>
+        <li><strong>Schema</strong> — matchlistan med tidslinje och <em>Nästa match</em>.</li>
+        <li><strong>Tabeller</strong> — gruppställningar.</li>
+        <li><strong>Slutspel</strong> — slutspelsträd (A/B/C).</li>
+        <li><strong>Bana</strong> — allt som spelas på en vald plan.</li>
+        <li><strong>Stats</strong> — historik och statistik (dyker upp när cupen har historik att visa).</li>
+      </ul>
+      <p class="muted">Flikar som inte är relevanta för en viss cup döljs automatiskt — en ProCup-cup utan slutspelsdata visar t.ex. ingen Slutspel-flik.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="doc" id="nastamatch" data-title="Nästa match-kortet" data-group="Schema">
+      <h2><span class="num">04</span> Nästa match-kortet</h2>
+      <p class="lead">Högst upp i Schema visas din klubbs nästa match — med nedräkning, plan, klass och väder. Är flera på gång blir kortet en karusell.</p>
+      <div class="nm-fig">
+        <div class="nm-card">
+          <div class="nm-top"><span class="nm-live"></span> Pågår nu <span class="nm-count">om 15 min</span></div>
+          <div class="nm-teams">
+            <span class="t us">Alingsås HK 2 <span class="nm-star">★</span></span>
+            <span class="vs">mot</span>
+            <span class="t right">Lödde Vikings HK Svart 1</span>
+          </div>
+          <div class="nm-meta">tisdag 12:45 · Bana 4 · P14 Grupp 6 · ☀️ 24°</div>
+          <div class="nm-ctrl">
+            <button aria-hidden="true">‹</button>
+            <span class="nm-dots"><i class="on"></i><i></i><i></i><i></i><i></i></span>
+            <button aria-hidden="true">›</button>
+          </div>
+        </div>
+        <p class="nm-anno">Pilar ‹ › och prickarna bläddrar mellan upp till fem kommande matcher · svep på mobilen · kortet roterar även av sig självt var sjätte sekund</p>
+      </div>
+      <ul>
+        <li><strong>Nedräkning</strong> som tickar live: <em>om 15 min</em>, <em>om 1 h 20 min</em> …</li>
+        <li><strong>Pågår nu</strong> med en pulserande prick när matchen är igång.</li>
+        <li><strong>⭐</strong> bredvid ditt utvalda favoritlag (se <a href="#installningar">Inställningar</a>).</li>
+        <li>Klicka på kortet för full <a href="#matchlag">matchinfo</a>. Minimera det med triangeln om du vill.</li>
+      </ul>
+      <div class="note tip" data-label="Bra att veta">
+        <p>Kortet visar bara <em>kommande</em> klubbmatcher. När cupen är slutspelad finns inga fler att räkna ner till — då är kortet borta och hela fokus ligger på resultaten i tidslinjen.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="doc" id="tidslinjen" data-title="Tidslinjen &amp; NU-linjen" data-group="Schema">
+      <h2><span class="num">05</span> Tidslinjen &amp; NU-linjen</h2>
+      <p class="lead">Schemat är en tidslinje: matcher grupperade efter tid, med en röd <strong>NU-linje</strong> som visar var i dagen du är just nu.</p>
+      <figure class="shot">
+        <img src="assets/help/schema.png" alt="Tidslinje med matchkort i två kolumner, tider i vänsterkanten och en röd NU-linje som markerar aktuell tidpunkt">
+        <figcaption><b>NU-linjen</b> (”NU 12:30 · nästa match om 15 min”) delar spelade matcher ovanför från kommande nedanför. Appen scrollar automatiskt hit när du öppnar cupen.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Auto-scroll:</strong> vid öppning hamnar du direkt vid NU-linjen — mitt i händelsernas centrum. Det sker bara en gång, så det stör inte när du bläddrar sedan.</li>
+        <li><strong>Visa tidigare matcher:</strong> äldre matcher är hopfällda bakom knappar som <em>”↑ Visa 4 tidigare matcher (21 till)”</em> och <em>”Visa alla (21)”</em>. Hur många som visas per klick ställs in i <a href="#installningar">Inställningar</a>.</li>
+        <li><strong>Pausmarkering:</strong> slår du på det får du en <em>”🥤 … dags för mat/vätska”</em>-rad i luckor mellan matcher (se Inställningar).</li>
+        <li><strong>Ordning:</strong> chipen <em>↑ Äldst överst / ↓ Nyast överst</em> vänder listan.</li>
+      </ul>
+    </section>
+
+    <!-- 6 -->
+    <section class="doc" id="matchkort" data-title="Matchkorten" data-group="Schema">
+      <h2><span class="num">06</span> Matchkorten — läs dem på en sekund</h2>
+      <p class="lead">Varje kort är packat med snabb information. Så här tolkar du det:</p>
+      <div class="legend">
+        <span class="item"><span class="vof v">V</span> Vunnen match (ur ditt lags perspektiv)</span>
+        <span class="item"><span class="vof o">O</span> Oavgjord</span>
+        <span class="item"><span class="vof f">F</span> Förlorad</span>
+        <span class="item">✓ Vinnaren i matchen</span>
+        <span class="item"><span class="nm-star" style="color:var(--gold)">★</span> Ditt favoritlag</span>
+      </div>
+      <div class="legend">
+        <span class="item"><span class="dot" style="background:#2f6bd6"></span> Blå</span>
+        <span class="item"><span class="dot" style="background:#e11"></span> Röd</span>
+        <span class="item"><span class="dot" style="background:#f6c410"></span> Gul</span>
+        <span class="item"><span class="dot" style="background:#fff"></span> Vit</span>
+        <span class="item">☀️ ☁️ 🌧️ Väder för kommande matcher</span>
+      </div>
+      <ul>
+        <li><strong>Rubrikrad:</strong> klass (t.ex. <em>P14</em>), grupp/omgång, V/O/F-märket, väderikon för kommande matcher, och <strong>banan</strong> (klickbar — visar allt på den planen).</li>
+        <li><strong>Lagen:</strong> ditt lag är blåmarkerat; vinnaren får ✓; färgnamn (Blå/Röd/Gul/Vit) får en liten prick. Klicka ett lagnamn för en snabb <a href="#matchlag">lagvy</a>.</li>
+        <li><strong>Resultatrutan:</strong> live-resultat med <em>LIVE</em>-märke medan matchen spelas, annars slutresultat eller <em>”mot”</em> för kommande.</li>
+        <li>Klicka <strong>var som helst på kortet</strong> för fullständig matchinfo.</li>
+      </ul>
+      <div class="note tip" data-label="Färgknep">
+        <p>Har din klubb flera lag (Blå, Vit, Röd …)? Slå på färgkodning i <a href="#installningar">Inställningar</a> så syns de direkt — eller färglägg hela matchkortet i lagets färg.</p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="doc" id="filter" data-title="Filter &amp; sortering" data-group="Hitta rätt">
+      <h2><span class="num">07</span> Filter &amp; sortering</h2>
+      <p class="lead">Filterraden är nyckeln till att hitta exakt rätt matcher. Allt du väljer speglas i adressfältet så att vyn går att spara och dela.</p>
+      <figure class="shot frame-top">
+        <img src="assets/help/filter.png" alt="Filterraden med klubb/hela cupen, år, dagar, klasser, lag, status samt sökfält, planval, sortering och export">
+        <figcaption><b>Filter och sortering.</b> Klicka rubriken för att fälla ihop hela raden. <b>🔒 Lås</b> fryser dina val medan du utforskar vidare.</figcaption>
+      </figure>
+      <h3>Filtren</h3>
+      <ul>
+        <li><strong>Din klubb / Hela cupen</strong> — begränsa till dina lag eller se allt.</li>
+        <li><strong>Alla / Kommande / Spelade</strong> — matchstatus.</li>
+        <li><strong>Dagar</strong>, <strong>Klasser</strong> och <strong>Lag</strong> — sök- och flervalsbara listor (klasser har snabbval Flickor/Pojkar).</li>
+        <li><strong>Sök lag, plan, grupp …</strong> — fritextsök med förslag. Avancerat: <code>&amp;</code> = OCH, <code>/</code> eller <code>,</code> = ELLER.</li>
+        <li><strong>Alla planer</strong> — filtrera på en bana.</li>
+      </ul>
+      <h3>Sortering (i Schema)</h3>
+      <p>Välj <strong>Sortera: tid / klass / plan / resultat / mål</strong>. I tidsordning kan du dessutom vända listan med <em>Äldst/Nyast överst</em>.</p>
+      <div class="note tip" data-label="Lås-tipset">
+        <p><strong>🔒 Lås</strong> är smart när du t.ex. följer en hel klass men vill kika in på ett enskilt lag utan att tappa ditt grundfilter. Lås — utforska — klicka på chipen igen för att låsa upp.</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="doc" id="matchlag" data-title="Klicka på match &amp; lag" data-group="Hitta rätt">
+      <h2><span class="num">08</span> Klicka på en match — eller ett lag</h2>
+      <p class="lead">Ett klick öppnar djupare information: tabellplacering, form, tidigare möten och genvägar.</p>
+      <figure class="shot frame-tall">
+        <img src="assets/help/matchdialog.png" alt="Matchdialog med båda lagens tabellplacering, statistik, antal spelade och kommande matcher samt knappar för att prenumerera">
+        <figcaption><b>Matchdialogen.</b> För båda lagen: placering i gruppen, S/V–O–F, målskillnad och poäng, samt antal spelade och kommande matcher.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Klicka på hela kortet</strong> → matchdialogen med statistik för båda lagen, ev. trupp och <em>Tidigare möten</em>.</li>
+        <li><strong>Kommande / Spelade matcher</strong> → hoppar till en filtrerad schemavy för det laget.</li>
+        <li><strong>📅 Prenumerera</strong> → lägg lagets matcher i din egen kalender (uppdateras automatiskt för Cup Manager-cuper).</li>
+        <li><strong>Klicka bara på ett lagnamn</strong> (på kortet) → en lättviktig lagvy utan att öppna hela dialogen.</li>
+      </ul>
+      <div class="note good" data-label="Alltid tillbaka">
+        <p>När du hoppat iväg till ett lags matcher dyker chipen <strong>”← Tillbaka till din vy”</strong> upp — ett klick återställer exakt det filter du hade.</p>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="doc" id="tabeller" data-title="Tabeller" data-group="Vyer">
+      <h2><span class="num">09</span> Tabeller</h2>
+      <p class="lead">Gruppställningar med dina lag framhävda — och klickbara lagnamn.</p>
+      <figure class="shot">
+        <img src="assets/help/tabeller.png" alt="Två grupptabeller sida vid sida med kolumnerna nummer, lag, spelade, vunna, oavgjorda, förlorade, målskillnad och poäng">
+        <figcaption><b>Tabeller.</b> Kolumnerna är <b>S</b> spelade, <b>V</b> vunna, <b>O</b> oavgjorda, <b>F</b> förlorade, <b>+/–</b> målskillnad och <b>P</b> poäng. Dina lag är blåmarkerade.</figcaption>
+      </figure>
+      <ul>
+        <li>Välj en eller flera klasser i filtret för att visa deras grupper.</li>
+        <li><strong>Klicka ett lagnamn</strong> för att hoppa till lagets fullständiga schema.</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section class="doc" id="slutspel" data-title="Slutspel" data-group="Vyer">
+      <h2><span class="num">10</span> Slutspel</h2>
+      <p class="lead">Följ vägen till finalen i ett visuellt slutspelsträd — A-, B- och C-slutspel som flikar.</p>
+      <figure class="shot">
+        <img src="assets/help/slutspel.png" alt="Slutspelsträd med omgångarna 1/16-final till final, matchrutor med lag och resultat, vinnare grönmarkerade och kopplingslinjer mellan omgångar">
+        <figcaption><b>Slutspelsträdet.</b> Omgång för omgång från 1/16-final till final. Vinnaren i varje match är grönmarkerad med ✓, och linjerna visar vem som möter vem härnäst.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>A- / B- / C-Slutspel</strong> som flikar när det finns flera träd.</li>
+        <li><strong>Träd / Tabell</strong> — byt till en radbaserad tabell med tid och plan (kan även göras permanent i Inställningar).</li>
+        <li><strong>Zooma</strong> med <em>− 100% +</em>, och <strong>dra</strong> för att panorera i trädet.</li>
+        <li>Filtrerar du flera klasser dyker en <em>Välj klass</em>-meny upp så du tar en i taget.</li>
+      </ul>
+      <div class="note tip" data-label="Prognos">
+        <p>Slå på <strong>slutspelsprognos</strong> i Inställningar så fylls ännu ospelade platser i med ett kvalificerat gissning utifrån tabellläget — tydligt märkt som prognos, aldrig blandat med riktiga resultat.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="doc" id="bana" data-title="Bana" data-group="Vyer">
+      <h2><span class="num">11</span> Bana</h2>
+      <p class="lead">Sitter du vid en plan och vill veta vad som händer just där? Bana-fliken visar allt på en vald bana.</p>
+      <figure class="shot frame-tall">
+        <img src="assets/help/bana.png" alt="Bana-vyn med en rullgardin för att välja plan och en tidslinje med matcherna på just den banan">
+        <figcaption><b>Bana.</b> Välj plan i rullgardinen så listas dess matcher i tidsordning — perfekt när man sitter på läktaren vid en viss bana.</figcaption>
+      </figure>
+      <ul>
+        <li>Välj bana i <em>Välj bana …</em>-menyn.</li>
+        <li>Samma filter som resten av appen gäller (t.ex. bara din klubb, eller en viss klass).</li>
+        <li>De senast spelade matcherna visas alltid (antal ställs in i Inställningar), plus alla kommande.</li>
+      </ul>
+    </section>
+
+    <!-- 12 -->
+    <section class="doc" id="stats" data-title="Stats &amp; historik" data-group="Vyer">
+      <h2><span class="num">12</span> Stats &amp; historik</h2>
+      <p class="lead">Hela cuphistoriken på ett ställe — hur cupen vuxit, var lagen kommer ifrån, och hur din klubb gått genom åren.</p>
+      <figure class="shot">
+        <img src="assets/help/stats.png" alt="Stats-fliken med en tillväxtkurva över matcher, lag, klasser och speldagar från 2015 till 2026">
+        <figcaption><b>Trend.</b> Så har cupen växt över åren. Under-flikarna byter mellan olika vinklar på historiken.</figcaption>
+      </figure>
+      <p>Stats-fliken har flera under-vyer (dyker upp när det finns data att visa):</p>
+      <ul>
+        <li><strong>Trend</strong> — hur en cup vuxit över åren.</li>
+        <li><strong>Karta</strong> — var klubbarna kommer ifrån, på en riktig karta.</li>
+        <li><strong>Klubb/Lag</strong> — sök en klubbs resa genom alla cuper.</li>
+        <li><strong>Klubbjämförelse</strong> — ställ flera klubbar sida vid sida.</li>
+        <li><strong>Cuper</strong> — alla cuper i en jämförbar tabell.</li>
+        <li><strong>Historik</strong> — bläddra i ett gammalt år som om det vore idag.</li>
+      </ul>
+    </section>
+
+    <!-- 13 -->
+    <section class="doc" id="cuper" data-title="Byt &amp; lägg till cup" data-group="Cuper &amp; data">
+      <h2><span class="num">13</span> Byt cup — och lägg till egna</h2>
+      <p class="lead">Alla klubbens cuper finns i väljaren, och du kan lägga till fler själv.</p>
+      <figure class="shot frame-tall">
+        <img src="assets/help/settings.png" alt="Inställningsdialogen med sport-växlaren Handboll/Fotboll och en rad med valbara cuper överst">
+        <figcaption><b>Cup-väljaren</b> ligger överst i Inställningar (öppnas även med cup-knappen). Finns både handboll och fotboll visas en sport-växlare.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Byt cup:</strong> cup-knappen i rubriken, eller cup-raden i Inställningar.</li>
+        <li><strong>Lägg till en cup (för alla):</strong> via <em>Admin</em>-sidan (kräver lösenord + GitHub-token).</li>
+        <li><strong>Lägg till en cup (bara åt dig):</strong> <em>+ Lägg till cup</em> i sidfoten — klistra in värd och Tournament-ID från cupmanager.net. Sparas i din webbläsare.</li>
+      </ul>
+      <div class="note tip" data-label="Hitta Tournament-ID">
+        <p>Öppna cupens resultatsida på <code>cupmanager.net</code>, visa sidans källkod och sök efter <code>tournamentId</code> — ett åttasiffrigt tal.</p>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section class="doc" id="uppdatering" data-title="Uppdatering &amp; live" data-group="Cuper &amp; data">
+      <h2><span class="num">14</span> Uppdatering &amp; live</h2>
+      <p class="lead">Appen håller pågående cuper färska automatiskt — utan att slösa på avslutade eller ännu inte startade.</p>
+      <ul>
+        <li><strong>Pågående cup:</strong> uppdateras tyst ungefär var tredje minut medan fliken är öppen.</li>
+        <li><strong>Framtida cup:</strong> hämtas om då och då tills den drar igång.</li>
+        <li><strong>Avslutad cup:</strong> hämtas inte om i onödan — resultaten står ju fast.</li>
+        <li><strong>↻ Uppdatera</strong> tvingar alltid fram en färsk hämtning (kan ta 20–30 s för en riktigt stor cup).</li>
+      </ul>
+      <p class="muted">Texten <em>”Uppdaterad 12:10 · 441 matcher”</em> uppe till höger visar när datan senast hämtades. Klicka på den för att se exakt vilka matcher som räknas.</p>
+      <div class="note good" data-label="Snabbt även första gången">
+        <p>Appen sparar schemat i webbläsaren och använder även färdigbyggda ögonblicksbilder, så att även <em>förstabesöket</em> laddar direkt i stället för att vänta på cupens system.</p>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="doc" id="export" data-title="Exportera &amp; dela" data-group="Cuper &amp; data">
+      <h2><span class="num">15</span> Exportera &amp; dela</h2>
+      <p class="lead">Ta med dig schemat dit du vill — eller skicka exakt din vy till en lagkompis.</p>
+      <h3>Exportera</h3>
+      <p><strong>Exportera</strong>-knappen i filterraden sparar precis det du ser (filtrerat och sorterat):</p>
+      <ul>
+        <li><strong>📅 Kalender (.ics)</strong> — importera till Google/Apple/Outlook-kalendern. Matchlängden styrs i Inställningar.</li>
+        <li><strong>📊 Kalkylark (.xlsx)</strong> och <strong>CSV</strong> — öppnas i Excel/Sheets.</li>
+        <li><strong>JSON</strong> och <strong>XML</strong> för den som vill jobba vidare med datan.</li>
+      </ul>
+      <p class="muted">Vill du hellre <em>prenumerera</em> på ett enskilt lag (så kalendern uppdateras av sig själv)? Använd <strong>📅 Prenumerera</strong> i match-/lagdialogen.</p>
+      <h3>Dela din vy</h3>
+      <p>Adressfältet speglar alltid ditt filter och din sortering. Kopiera länken — mottagaren får <strong>exakt samma vy</strong>, ända ner till vald klass, lag, dag och ordning.</p>
+    </section>
+
+    <!-- 16 -->
+    <section class="doc" id="installningar" data-title="Inställningar" data-group="Personligt">
+      <h2><span class="num">16</span> Inställningar — gör appen till din</h2>
+      <p class="lead">Öppna med ⚙ i rubriken. Här skräddarsyr du appen efter dig och din klubb.</p>
+      <figure class="shot frame-tall">
+        <img src="assets/help/settings.png" alt="Inställningsdialogen med favoritklubb, favoritlag, tema, färgval, egna lagfärger och matchlängd">
+        <figcaption><b>Inställningar.</b> Allt sparas i din webbläsare och gäller nästa gång du öppnar appen.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Favoritklubb</strong> — styr vilka lag som är ”dina” (fliken, Nästa match, markeringar). Samma klubb heter olika i olika cuper — förslagen hjälper dig.</li>
+        <li><strong>Favoritlag</strong> — ett specifikt lag som får en ⭐ extra.</li>
+        <li><strong>Utseende</strong> — Ljust / Mörkt / Auto.</li>
+        <li><strong>Färgkoda lag</strong> — liten prick för Blå/Vit/Röd/Gul, eller <strong>hela matchkortet</strong> i lagets färg.</li>
+        <li><strong>Egna lagfärger</strong> — ge ett visst lag en fast färg oavsett namn.</li>
+        <li><strong>Slutspel som tabell</strong> och <strong>slutspelsprognos</strong> — se <a href="#slutspel">Slutspel</a>.</li>
+        <li><strong>Matchlängd</strong> — styr kalenderexport och pausmarkering.</li>
+        <li><strong>Pausmarkering</strong> — visa mat/vätska-luckor i tidslinjen.</li>
+        <li><strong>”Visa fler tidigare”-antal</strong> och <strong>senast spelade i Bana/slutspelstabell</strong> — finjustera hur mycket som visas.</li>
+      </ul>
+    </section>
+
+    <!-- 17 -->
+    <section class="doc" id="pwa" data-title="Installera som app" data-group="Personligt">
+      <h2><span class="num">17</span> Installera som app (PWA)</h2>
+      <p class="lead">Lägg Cupschema på hemskärmen så öppnas den som en riktig app — även offline för det du redan sett.</p>
+      <ul>
+        <li><strong>iPhone/iPad (Safari):</strong> Dela-knappen → <em>Lägg till på hemskärmen</em>.</li>
+        <li><strong>Android (Chrome):</strong> menyn ⋮ → <em>Installera app</em> / <em>Lägg till på startskärmen</em>.</li>
+        <li><strong>Dator (Chrome/Edge):</strong> installations-ikonen i adressfältet.</li>
+      </ul>
+      <p class="muted">Appskalet (design och kod) cachas för offline-bruk; själva matchdatan behöver förstås nät för att uppdateras.</p>
+    </section>
+
+    <!-- 18 -->
+    <section class="doc" id="faq" data-title="Vanliga frågor" data-group="Personligt">
+      <h2><span class="num">18</span> Vanliga frågor</h2>
+      <details class="faq"><summary>Varför ser jag inget schema?</summary><div class="body"><p>Schemat visas först när du valt något att titta på. Öppna <strong>Filter och sortering</strong> och välj en klass eller ett lag. Har din klubb inga matcher i cupen erbjuds knappen <em>Visa hela cupen</em>.</p></div></details>
+      <details class="faq"><summary>Mitt lag heter olika i olika cuper — spelar det roll?</summary><div class="body"><p>Nej. Sätt din <strong>favoritklubb</strong> så känner appen igen stavningsvarianter (AHK, Alingsås HK …). Förslagen i Inställningar är hämtade från den cup som är öppen.</p></div></details>
+      <details class="faq"><summary>Stämmer tiderna?</summary><div class="body"><p>Tiderna kommer direkt från arrangören och kan ändras med kort varsel. Appen visar alltid det senast hämtade — tryck <strong>↻ Uppdatera</strong> om du vill vara helt säker.</p></div></details>
+      <details class="faq"><summary>Kan jag följa flera lag samtidigt?</summary><div class="body"><p>Ja — välj flera lag i <em>Alla lag</em>-listan, eller håll dig i klubbläge så ser du alla dina lag. Ett enskilt <strong>favoritlag</strong> får dessutom en ⭐.</p></div></details>
+      <details class="faq"><summary>Är slutspelsprognosen ”riktig”?</summary><div class="body"><p>Nej, det är en kvalificerad gissning utifrån tabelläget för platser som ännu inte är avgjorda. Den är tydligt märkt som prognos och blandas aldrig ihop med spelade resultat.</p></div></details>
+      <details class="faq"><summary>Kostar det något / behöver jag logga in?</summary><div class="body"><p>Nej och nej. Cupschema är gratis och kräver ingen inloggning.</p></div></details>
+    </section>
+
+    <footer class="pagefoot">
+      <p>Cupschema · Alingsås HK — data hämtas live från cupmanager.net.</p>
+      <p><a href="index.html">Öppna appen</a> · <a href="#intro">Till toppen</a></p>
+    </footer>
+
+  </main>
+</div>
+
+<button class="backtop" id="backtop" aria-label="Till toppen">↑</button>
+
+<script>
+(function(){
+  // ── Tema (delar hb:theme med appen) ─────────────────────────────────
+  var root=document.documentElement;
+  function apply(t){ if(t==="light"||t==="dark") root.setAttribute("data-theme",t); else root.removeAttribute("data-theme"); }
+  try{ apply(localStorage.getItem("hb:theme")||"auto"); }catch(e){}
+  document.getElementById("themeBtn").addEventListener("click",function(){
+    var cur; try{cur=localStorage.getItem("hb:theme")||"auto";}catch(e){cur="auto";}
+    var next=cur==="auto"?"light":cur==="light"?"dark":"auto";
+    try{localStorage.setItem("hb:theme",next);}catch(e){}
+    apply(next);
+  });
+
+  // ── Bygg innehållsförteckningen från sektionerna ────────────────────
+  var secs=[].slice.call(document.querySelectorAll("section.doc"));
+  var toc=document.getElementById("toc");
+  var groups={}, order=[];
+  secs.forEach(function(s){
+    var g=s.getAttribute("data-group")||"Övrigt";
+    if(!groups[g]){groups[g]=[];order.push(g);}
+    groups[g].push(s);
+  });
+  var colsWrap=document.createElement("div"); colsWrap.className="toc-cols";
+  order.forEach(function(g){
+    var h=document.createElement("h4"); h.textContent=g; colsWrap.appendChild(h);
+    groups[g].forEach(function(s){
+      var a=document.createElement("a");
+      a.href="#"+s.id; a.textContent=s.getAttribute("data-title");
+      a.dataset.for=s.id; colsWrap.appendChild(a);
+    });
+  });
+  toc.appendChild(colsWrap);
+  var tocLinks=[].slice.call(toc.querySelectorAll("a"));
+
+  // ── Scrollspy ───────────────────────────────────────────────────────
+  var spy;
+  if("IntersectionObserver" in window){
+    spy=new IntersectionObserver(function(ents){
+      ents.forEach(function(e){
+        if(e.isIntersecting){
+          tocLinks.forEach(function(a){a.classList.toggle("active",a.dataset.for===e.target.id);});
+        }
+      });
+    },{rootMargin:"-140px 0px -70% 0px",threshold:0});
+    secs.forEach(function(s){spy.observe(s);});
+  }
+
+  // ── Sök ─────────────────────────────────────────────────────────────
+  var q=document.getElementById("q"), clr=document.getElementById("qclr"),
+      msg=document.getElementById("searchmsg");
+  // spara ursprunglig HTML för highlight-återställning
+  secs.forEach(function(s){ s._html=s.innerHTML; s._text=s.textContent.toLowerCase(); });
+  function esc(t){return t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
+  function clearMarks(){ secs.forEach(function(s){ if(s.innerHTML!==s._html) s.innerHTML=s._html; }); }
+  function highlight(s,term){
+    // markera i textnoder utan att röra taggar/attribut
+    var rx=new RegExp("("+esc(term)+")","gi");
+    var walk=document.createTreeWalker(s,NodeFilter.SHOW_TEXT,null);
+    var nodes=[],n;
+    while(n=walk.nextNode()){ if(n.nodeValue.trim()&&rx.test(n.nodeValue)) nodes.push(n); }
+    nodes.forEach(function(node){
+      var span=document.createElement("span");
+      span.innerHTML=node.nodeValue.replace(rx,"<mark>$1</mark>");
+      node.parentNode.replaceChild(span,node);
+    });
+  }
+  function run(){
+    var term=q.value.trim().toLowerCase();
+    clr.classList.toggle("on",!!term);
+    clearMarks();
+    if(!term){
+      secs.forEach(function(s){s.classList.remove("hidden");});
+      tocLinks.forEach(function(a){a.style.opacity="";});
+      msg.classList.remove("on"); return;
+    }
+    var hits=0;
+    secs.forEach(function(s){
+      var hit=s._text.indexOf(term)!==-1;
+      s.classList.toggle("hidden",!hit);
+      if(hit){ hits++; try{highlight(s,q.value.trim());}catch(e){} }
+    });
+    // dim TOC-poster som inte matchar
+    tocLinks.forEach(function(a){
+      var s=document.getElementById(a.dataset.for);
+      a.style.opacity=(s&&!s.classList.contains("hidden"))?"":"0.32";
+    });
+    if(hits===0){ msg.textContent="Inga träffar på ”"+q.value.trim()+"”. Prova ett annat ord."; msg.classList.add("on"); }
+    else { msg.textContent=hits+(hits===1?" avsnitt":" avsnitt")+" matchar ”"+q.value.trim()+"”."; msg.classList.add("on"); }
+  }
+  var t; q.addEventListener("input",function(){clearTimeout(t);t=setTimeout(run,120);});
+  clr.addEventListener("click",function(){ q.value=""; run(); q.focus(); });
+  q.addEventListener("keydown",function(e){ if(e.key==="Escape"){q.value="";run();q.blur();} });
+  // "/" fokuserar sök
+  document.addEventListener("keydown",function(e){
+    if(e.key==="/"&&document.activeElement!==q&&!/input|textarea/i.test((document.activeElement||{}).tagName||"")){
+      e.preventDefault(); q.focus();
+    }
+  });
+
+  // ── Till toppen ─────────────────────────────────────────────────────
+  var bt=document.getElementById("backtop");
+  window.addEventListener("scroll",function(){ bt.classList.toggle("on",window.scrollY>window.innerHeight); },{passive:true});
+  bt.addEventListener("click",function(){ window.scrollTo({top:0,behavior:"smooth"}); });
+
+  // ── Öppna sektion om den är dold när man följer en #-länk ───────────
+  window.addEventListener("hashchange",function(){
+    var el=document.querySelector(location.hash); if(el&&el.classList.contains("hidden")){ q.value="";run(); el.scrollIntoView(); }
+  });
+})();
+</script>
+</body>
+</html>
