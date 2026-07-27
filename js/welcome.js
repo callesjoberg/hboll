@@ -299,8 +299,11 @@ window.HB = window.HB || {};
       pulseAmp: 0.52, pulseSpeed: 0.5,
       // Glöd/bloom: glowRadius = varje glöds storlek (px); glowBoost =
       // hur starkt glöden läggs på (additivt, så täta klungor "blommar");
+      // glowFade = glödens uttoningskurva (potens): 1 = linjär (som förr),
+      // >1 = koncentrerad kärna med mjuk svans (tydligare fade per prick),
+      // <1 = platt, bred glöd som flyter ihop till en heatmap i klungor;
       // coreRadius = den skarpa mittprickens storlek (px).
-      glowRadius: 24, glowBoost: 0.4, coreRadius: 1.7,
+      glowRadius: 24, glowBoost: 0.4, glowFade: 1, coreRadius: 1.7,
       // sizeZoom = hur mycket markörstorleken FÖLJER zoomnivån: 0 = fast
       // pixelstorlek, högre = mindre prickar när kameran är utzoomad (hela
       // Europa, Partille) och större när den är hårt inzoomad (en ort).
@@ -387,8 +390,9 @@ window.HB = window.HB || {};
     let spriteCache = {};
     function glowSprite(rgb) {
       const R = TUNE.glowRadius;
+      const fade = TUNE.glowFade;
       const size = Math.ceil((R + 1) * 2);
-      const key = "g|" + rgb + "|" + R;
+      const key = "g|" + rgb + "|" + R + "|" + fade;
       if (spriteCache[key]) return spriteCache[key];
       const s = document.createElement("canvas");
       s.width = Math.round(size * dpr); s.height = Math.round(size * dpr);
@@ -397,8 +401,15 @@ window.HB = window.HB || {};
       sc.scale(dpr, dpr);
       const c = size / 2;
       const g = sc.createRadialGradient(c, c, 0, c, c, R);
-      g.addColorStop(0, `rgba(${rgb}, 0.55)`);
-      g.addColorStop(1, `rgba(${rgb}, 0)`);
+      // Potenskurva alpha = 0.55 · (1−t)^fade, samplad i flera stopp.
+      // fade=1 ger exakt den gamla linjära rampen; högre fade drar energin
+      // mot mitten (skarp kärna, lång mjuk svans), lägre fade plattar ut den.
+      const STOPS = 10;
+      for (let i = 0; i <= STOPS; i++) {
+        const t = i / STOPS;
+        const a = 0.55 * Math.pow(1 - t, fade);
+        g.addColorStop(t, `rgba(${rgb}, ${a.toFixed(4)})`);
+      }
       sc.fillStyle = g;
       sc.fillRect(0, 0, size, size);
       spriteCache[key] = s;
@@ -855,7 +866,7 @@ window.HB = window.HB || {};
             `maxZoomAbove=${TUNE.maxZoomAbove} minZoom=${TUNE.minZoom}\n` +
             `igniteLead=${TUNE.igniteLead} igniteSpread=${TUNE.igniteSpread} dotFade=${TUNE.dotFade} ` +
             `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed} ` +
-            `coreRadius=${TUNE.coreRadius} sizeZoom=${TUNE.sizeZoom} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost}\n` +
+            `coreRadius=${TUNE.coreRadius} sizeZoom=${TUNE.sizeZoom} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost} glowFade=${TUNE.glowFade}\n` +
             `# mörkt tema\n` +
             `stil=${MAPCFG.dark.style} filter=${MAPCFG.dark.filter} ${cols(COLORS.dark)}\n` +
             `# ljust tema\n` +
@@ -886,6 +897,7 @@ window.HB = window.HB || {};
         numRow(tune, "sizeZoom", "Storlek följer zoom", 0, 0.5, 0.02),
         numRow(tune, "glowRadius", "Glöd-radie (px)", 3, 48, 0.5),
         numRow(tune, "glowBoost", "Glöd-styrka (bloom)", 0.2, 3, 0.1),
+        numRow(tune, "glowFade", "Glöd-fade (kurva)", 0.3, 5, 0.1),
         h("div", { class: "welcome-tune-sub" }, "Karta"),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Kartstil"), h("span", null, ""), styleSel),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Mörkläggning"), h("span", null, ""), filterSel),
