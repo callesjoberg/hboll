@@ -240,7 +240,7 @@ window.HB = window.HB || {};
     const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
     const MAPCFG = {
       dark: { style: "positron", filter: "auto", labels: "on" },
-      light: { style: "liberty", filter: "auto", labels: "on" },
+      light: { style: "bright", filter: "auto", labels: "off" },
     };
     const mapCfg = () => (isDarkTheme() ? MAPCFG.dark : MAPCFG.light);
 
@@ -288,7 +288,7 @@ window.HB = window.HB || {};
     // inbakade. Justera vidare där och kopiera in nya värden vid behov.
     const TUNE = {
       maxZoomAbove: 1.4, minZoom: 2.4, panDuration: 5200,
-      drift: 2, driftZoom: 0.7,
+      drift: 0.5, driftZoom: 1,
       // Markörernas livscykel (se frame): igniteLead = hur långt före
       // kamerans framkomst tändningen börjar; igniteSpread = slumpfönster
       // för när varje enskild prick tänds; dotFade = en pricks in-/uttonings-
@@ -303,7 +303,7 @@ window.HB = window.HB || {};
       // >1 = koncentrerad kärna med mjuk svans (tydligare fade per prick),
       // <1 = platt, bred glöd som flyter ihop till en heatmap i klungor;
       // coreRadius = den skarpa mittprickens storlek (px).
-      glowRadius: 24, glowBoost: 0.4, glowFade: 1, coreRadius: 1.7,
+      glowRadius: 37, glowBoost: 1.6, glowFade: 5, coreRadius: 1.7,
       // sizeZoom = hur mycket markörstorleken FÖLJER zoomnivån: 0 = fast
       // pixelstorlek, högre = mindre prickar när kameran är utzoomad (hela
       // Europa, Partille) och större när den är hårt inzoomad (en ort).
@@ -324,7 +324,7 @@ window.HB = window.HB || {};
       light: {
         accent: "#17417e", ink: "#16283f", inkSoft: "#4a5a70",
         cardBg: "#ffffff", cardBgA: 0.82, border: "#16283f", borderA: 0.14,
-        mark0: "#d62f27", mark1: "#1e64c8", mark2: "#6e7888",
+        mark0: "#ff0000", mark1: "#1e64c8", mark2: "#6e7888",
       },
     };
     const themeColors = () => (isDarkTheme() ? COLORS.dark : COLORS.light);
@@ -769,8 +769,12 @@ window.HB = window.HB || {};
     // fram igen. Körs vid varje styledata (efter att stilen laddats klart).
     let hiddenLabelIds = [];
     function applyLabels() {
-      if (!map.isStyleLoaded || !map.isStyleLoaded()) return;
-      const layers = (map.getStyle() && map.getStyle().layers) || [];
+      // Grinden är att lagren FINNS (stilen är parsad), inte isStyleLoaded():
+      // tunga stilar som "bright" rapporterar isStyleLoaded=false länge medan
+      // källor laddar, trots att symbol-lagren redan går att gömma.
+      const style = map.getStyle && map.getStyle();
+      const layers = (style && style.layers) || [];
+      if (!layers.length) return;
       if (mapCfg().labels === "off") {
         for (const l of layers) {
           if (l.type !== "symbol") continue;
