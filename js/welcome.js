@@ -239,8 +239,8 @@ window.HB = window.HB || {};
     const OFM = "https://tiles.openfreemap.org/styles/";
     const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
     const MAPCFG = {
-      dark: { style: "positron", filter: "auto" },
-      light: { style: "liberty", filter: "auto" },
+      dark: { style: "positron", filter: "auto", labels: "on" },
+      light: { style: "liberty", filter: "auto", labels: "on" },
     };
     const mapCfg = () => (isDarkTheme() ? MAPCFG.dark : MAPCFG.light);
 
@@ -763,14 +763,41 @@ window.HB = window.HB || {};
       const f = mapCfg().filter;
       cv.style.filter = f === "auto" ? "" : (f === "on" ? DARK_FILTER : "none");
     }
+    // Ortnamn/etiketter: alla symbol-lager i stilen (land, stad, väg, POI)
+    // döljs när aktiva temats labels === "off". Vi kommer bara ihåg vilka
+    // lager VI gömt, så eventuellt redan dolda lager i stilen inte tvingas
+    // fram igen. Körs vid varje styledata (efter att stilen laddats klart).
+    let hiddenLabelIds = [];
+    function applyLabels() {
+      if (!map.isStyleLoaded || !map.isStyleLoaded()) return;
+      const layers = (map.getStyle() && map.getStyle().layers) || [];
+      if (mapCfg().labels === "off") {
+        for (const l of layers) {
+          if (l.type !== "symbol") continue;
+          try { map.setLayoutProperty(l.id, "visibility", "none"); } catch (e) {}
+          if (!hiddenLabelIds.includes(l.id)) hiddenLabelIds.push(l.id);
+        }
+      } else if (hiddenLabelIds.length) {
+        for (const id of hiddenLabelIds) {
+          try { map.setLayoutProperty(id, "visibility", "visible"); } catch (e) {}
+        }
+        hiddenLabelIds = [];
+      }
+    }
     map.on("styledata", applyFilter);
+    map.on("styledata", applyLabels);
 
     // Byt kart-stil/filter när temat växlar (gäller ÄVEN produktion, inte
     // bara testpanelen) — dark→positron, light→liberty osv.
     function applyMapTheme() {
       const want = mapCfg().style;
-      if (want !== activeStyle) { activeStyle = want; map.setStyle(OFM + want); }
+      if (want !== activeStyle) {
+        activeStyle = want;
+        hiddenLabelIds = []; // ny stil = nya lager-id:n
+        map.setStyle(OFM + want);
+      }
       applyFilter();
+      applyLabels();
     }
     const themeObs = new MutationObserver(applyMapTheme);
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -833,8 +860,13 @@ window.HB = window.HB || {};
         onchange: (e) => { mapCfg().filter = e.target.value; applyFilter(); },
       }, ["auto", "on", "off"].map((f) => h("option", { value: f }, "filter: " + f)));
       filterSel.value = mapCfg().filter;
-      syncers.push(() => { styleSel.value = mapCfg().style; filterSel.value = mapCfg().filter; });
-      adopters.push(() => { mapCfg().style = styleSel.value; mapCfg().filter = filterSel.value; applyMapTheme(); });
+      const labelsSel = h("select", {
+        autocomplete: "off",
+        onchange: (e) => { mapCfg().labels = e.target.value; applyLabels(); },
+      }, [["on", "ortnamn: på"], ["off", "ortnamn: av"]].map(([v, t]) => h("option", { value: v }, t)));
+      labelsSel.value = mapCfg().labels;
+      syncers.push(() => { styleSel.value = mapCfg().style; filterSel.value = mapCfg().filter; labelsSel.value = mapCfg().labels; });
+      adopters.push(() => { mapCfg().style = styleSel.value; mapCfg().filter = filterSel.value; mapCfg().labels = labelsSel.value; applyMapTheme(); });
 
       const resetBtn = h("button", {
         type: "button", class: "welcome-tune-reset",
@@ -868,9 +900,9 @@ window.HB = window.HB || {};
             `holdBase=${TUNE.holdBase} outMs=${TUNE.outMs} pulseAmp=${TUNE.pulseAmp} pulseSpeed=${TUNE.pulseSpeed} ` +
             `coreRadius=${TUNE.coreRadius} sizeZoom=${TUNE.sizeZoom} glowRadius=${TUNE.glowRadius} glowBoost=${TUNE.glowBoost} glowFade=${TUNE.glowFade}\n` +
             `# mörkt tema\n` +
-            `stil=${MAPCFG.dark.style} filter=${MAPCFG.dark.filter} ${cols(COLORS.dark)}\n` +
+            `stil=${MAPCFG.dark.style} filter=${MAPCFG.dark.filter} ortnamn=${MAPCFG.dark.labels} ${cols(COLORS.dark)}\n` +
             `# ljust tema\n` +
-            `stil=${MAPCFG.light.style} filter=${MAPCFG.light.filter} ${cols(COLORS.light)}`;
+            `stil=${MAPCFG.light.style} filter=${MAPCFG.light.filter} ortnamn=${MAPCFG.light.labels} ${cols(COLORS.light)}`;
           navigator.clipboard.writeText(txt).then(
             () => { copyBtn.textContent = "kopierat! ✓"; setTimeout(() => (copyBtn.textContent = "kopiera inställningar"), 1500); },
             () => { copyBtn.textContent = "kunde ej kopiera"; });
@@ -901,6 +933,7 @@ window.HB = window.HB || {};
         h("div", { class: "welcome-tune-sub" }, "Karta"),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Kartstil"), h("span", null, ""), styleSel),
         h("label", { class: "welcome-tune-row" }, h("span", null, "Mörkläggning"), h("span", null, ""), filterSel),
+        h("label", { class: "welcome-tune-row" }, h("span", null, "Ortnamn"), h("span", null, ""), labelsSel),
         h("div", { class: "welcome-tune-sub" }, "Färger (aktivt tema)"),
         colorRow("accent", "Accent (text)"),
         colorRow("ink", "Rubriktext"),
