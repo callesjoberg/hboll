@@ -239,7 +239,7 @@ window.HB = window.HB || {};
     const OFM = "https://tiles.openfreemap.org/styles/";
     const MAP_STYLES = ["liberty", "bright", "positron", "dark", "fiord"];
     const MAPCFG = {
-      dark: { style: "positron", filter: "auto", labels: "on" },
+      dark: { style: "positron", filter: "auto", labels: "off" },
       light: { style: "bright", filter: "auto", labels: "off" },
     };
     const mapCfg = () => (isDarkTheme() ? MAPCFG.dark : MAPCFG.light);
