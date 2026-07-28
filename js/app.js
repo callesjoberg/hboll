@@ -1294,7 +1294,7 @@ window.HB = window.HB || {};
     // (om just den valda underfliken blir ogiltig) sköts av renderStatsView.
     state.statsSupport = {
       trend: trendSupported, karta: mapSupported,
-      vinnare: clubSupported,
+      vinnare: clubSupported, kalender: clubSupported,
       klubb: clubSupported, klubbjamforelse: clubSupported, cuper: clubSupported,
       historik: clubSupported,
     };
@@ -2395,7 +2395,12 @@ window.HB = window.HB || {};
   function teamStatBlock(m, team, side) {
     const counts = teamMatchCounts(team.id);
     const statLine = h("p", { class: "muted team-stat-line" }, "Hämtar tabellplacering …");
-    const calUrl = calendarSubscribeUrl(team);
+    // webcal:// gör att kalenderappen PRENUMERERAR (auto-uppdaterar) i stället
+    // för att bara ladda ner en engångsfil — det som knappen faktiskt lovar.
+    const rawCalUrl = calendarSubscribeUrl(team);
+    const calUrl = rawCalUrl
+      ? new URL(rawCalUrl, location.href).href.replace(/^https?:/i, "webcal:")
+      : null;
     const box = h("div", { class: "team-stat-block" },
       h("h3", { class: isClubName(team.name) ? "us" : "" }, team.name),
       statLine,
@@ -2414,8 +2419,8 @@ window.HB = window.HB || {};
           onclick: () => gotoTeamMatches(team, "played"),
         }, "Spelade matcher"),
         calUrl ? h("a", {
-          class: "btn small", href: calUrl, target: "_blank", rel: "noopener",
-          title: "Lägg till i din kalenderapp för att prenumerera — nya/ändrade matcher dyker upp automatiskt",
+          class: "btn small", href: calUrl, rel: "noopener",
+          title: "Öppnar din kalenderapp och prenumererar på lagets matcher — nya/ändrade tider uppdateras sen automatiskt (funkar bäst på mobil).",
         }, "📅 Prenumerera") : null),
       rosterBlock(team, m.edition));
 
@@ -4309,9 +4314,100 @@ window.HB = window.HB || {};
     }
   }
 
+  // --- Kalender (Stats-underflik): Gantt över cupernas speldagar -----------
+  // Bygger på first/last-datumen i data/archive/index.json (se build_index i
+  // scripts/archive_results.py). En rad per cup-upplaga, staplad på en
+  // årsaxel (jan–dec) så man ser hela säsongen på en gång.
+  let kalenderYear = null;
+
+  // Öppnar en cup+upplaga från Kalender-fliken: live-upplagan i den vanliga
+  // vyn, äldre upplagor i historik-bläddraren (schema).
+  function gotoCupEdition(cupId, edition) {
+    const live = (HB.allCups() || []).find((c) => c.id === cupId);
+    if (live && String(live.edition) === String(edition)) {
+      if (cupId !== state.cupId) switchCup(cupId);
+      state.view = "schema"; saveUi(); render();
+    } else {
+      browseTarget = { cupId, edition, view: "schema", catFilter: "" };
+      vinnareReturn = false; historyMode = "browse";
+      state.statsView = "historik"; state.view = "stats"; saveUi(); renderContent();
+    }
+    window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+
+  function renderKalenderView(root) {
+    const idx = state.archiveIndex;
+    if (!idx) { root.append(h("p", { class: "muted" }, "Hämtar arkivindex …")); return; }
+    const items = [];
+    for (const cid in idx) {
+      for (const e of (idx[cid].editions || [])) {
+        if (e.first && e.last) {
+          items.push({ cup: cid, cupName: idx[cid].cupName, ed: e.edition,
+            first: e.first, last: e.last, matches: e.matches, days: e.days });
+        }
+      }
+    }
+    if (!items.length) { root.append(h("p", { class: "muted" }, "Ingen speldata med datum att visa än.")); return; }
+    const years = [...new Set(items.map((i) => i.first.slice(0, 4)))].sort((a, b) => b.localeCompare(a));
+    const curY = String(new Date().getFullYear());
+    if (kalenderYear === null || !years.includes(kalenderYear)) kalenderYear = years.includes(curY) ? curY : years[0];
+    const yearSel = h("select", { class: "select", "aria-label": "Säsong" },
+      years.map((y) => h("option", { value: y, ...(y === kalenderYear ? { selected: "" } : {}) }, y)));
+    yearSel.addEventListener("change", () => { kalenderYear = yearSel.value; renderContent(); });
+    root.append(h("div", { class: "row vinnare-controls" }, h("span", { class: "muted" }, "Säsong:"), yearSel));
+
+    const Y = +kalenderYear;
+    const yearDays = ((Y % 4 === 0 && Y % 100 !== 0) || Y % 400 === 0) ? 366 : 365;
+    const doy = (iso) => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(Y, 0, 1)) / 86400000;
+    const clampStart = (iso) => (+iso.slice(0, 4) < Y ? 0 : doy(iso));
+    const clampEnd = (iso) => (+iso.slice(0, 4) > Y ? yearDays - 1 : doy(iso));
+    const shown = items.filter((i) => i.first.slice(0, 4) === kalenderYear || i.last.slice(0, 4) === kalenderYear)
+      .sort((a, b) => a.first.localeCompare(b.first) || a.cupName.localeCompare(b.cupName, "sv"));
+    if (!shown.length) { root.append(h("p", { class: "muted" }, "Inga cuper med speldagar det här året.")); return; }
+
+    const months = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+    const monthStart = []; { let acc = 0; for (let mo = 0; mo < 12; mo++) { monthStart.push(acc); acc += new Date(Y, mo + 1, 0).getDate(); } }
+    const pct = (d) => (d / yearDays) * 100;
+    const gridlines = () => months.map((_, mo) => h("span", { class: "gantt-line", style: "left:" + pct(monthStart[mo]) + "%" }));
+    const todayEl = () => {
+      if (kalenderYear !== curY) return null;
+      const t = doy(new Date().toISOString().slice(0, 10));
+      return (t < 0 || t > yearDays) ? null : h("span", { class: "gantt-today", style: "left:" + pct(t) + "%" });
+    };
+    const fmtRange = (i) => {
+      const day = (iso) => +iso.slice(8, 10);
+      const mon = (iso) => months[+iso.slice(5, 7) - 1];
+      if (i.first === i.last) return day(i.first) + " " + mon(i.first);
+      if (i.first.slice(5, 7) === i.last.slice(5, 7)) return day(i.first) + "–" + day(i.last) + " " + mon(i.last);
+      return day(i.first) + " " + mon(i.first) + " – " + day(i.last) + " " + mon(i.last);
+    };
+
+    const header = h("div", { class: "gantt-row gantt-headrow" },
+      h("span", { class: "gantt-label" }, ""),
+      h("div", { class: "gantt-track" }, months.map((mn, mo) => h("span", { class: "gantt-month", style: "left:" + pct(monthStart[mo]) + "%" }, mn))));
+    const rows = shown.map((i) => {
+      const s = Math.max(0, clampStart(i.first)), e = Math.min(yearDays - 1, clampEnd(i.last));
+      const bar = h("div", {
+        class: "gantt-bar", style: "left:" + pct(s) + "%;width:" + Math.max(pct(e - s + 1), 1.2) + "%",
+        title: i.cupName + " " + i.ed + " · " + i.first + " – " + i.last + " · " + i.days + " speldagar · " + i.matches + " matcher",
+      }, h("span", { class: "gantt-bar-txt" }, fmtRange(i)));
+      return h("div", {
+        class: "gantt-row gantt-row-click", role: "button", tabindex: "0",
+        "aria-label": i.cupName + " " + i.ed + ", " + fmtRange(i),
+        onclick: () => gotoCupEdition(i.cup, i.ed),
+        onkeydown: (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); gotoCupEdition(i.cup, i.ed); } },
+      },
+        h("span", { class: "gantt-label", title: i.cupName }, i.cupName),
+        h("div", { class: "gantt-track" }, gridlines(), todayEl(), bar));
+    });
+    root.append(h("div", { class: "gantt" }, header, ...rows));
+    root.append(h("p", { class: "muted gantt-hint" }, "Klicka en cup för att öppna dess schema. Röd linje = idag."));
+  }
+
   const STATS_TABS = [
     ["trend", "Trend", renderTrendView],
     ["vinnare", "🏆 Vinnare", renderVinnareView],
+    ["kalender", "Kalender", renderKalenderView],
     ["karta", "Karta", renderMapView],
     ["klubb", "Klubb/Lag", renderClubView],
     ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
@@ -4327,7 +4423,7 @@ window.HB = window.HB || {};
     // ensureCupClubGeo/fetchArchiveIndex). Anta då att allt är stött hellre
     // än att gömma hela vyn i onödan.
     const support = state.statsSupport ||
-      { trend: true, karta: true, vinnare: true, klubb: true, klubbjamforelse: true, cuper: true, historik: true };
+      { trend: true, karta: true, vinnare: true, kalender: true, klubb: true, klubbjamforelse: true, cuper: true, historik: true };
     const visibleTabs = STATS_TABS.filter(([key]) => support[key]);
     // Den valda underfliken kan ha blivit ogiltig sen sist (t.ex. Karta
     // förlorade sitt stöd) — falla då tillbaka på den första som fortfarande

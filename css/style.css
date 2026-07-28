@@ -2800,3 +2800,28 @@ dialog.history-dialog {
 .tro-go { display: block; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--blue); opacity: 0; transition: opacity .12s; }
 .tro-click:hover .tro-go, .tro-click:focus-visible .tro-go { opacity: 1; }
 @media (hover: none) { .tro-go { opacity: .8; } }
+
+/* ── Kalender (Stats-underflik): Gantt över cupernas speldagar ── */
+.gantt { margin-top: 6px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--card); }
+.gantt-row { display: grid; grid-template-columns: 150px 1fr; align-items: stretch; min-height: 32px; }
+.gantt-row + .gantt-row { border-top: 1px solid var(--line); }
+.gantt-headrow { min-height: 24px; background: var(--paper); border-bottom: 1px solid var(--line); }
+.gantt-label { padding: 6px 10px; font-size: 13px; font-weight: 600; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-self: center; }
+.gantt-track { position: relative; }
+.gantt-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.gantt-month { position: absolute; top: 5px; font-size: 11px; color: var(--ink-soft); transform: translateX(3px); }
+.gantt-today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--live); opacity: .85; z-index: 2; }
+.gantt-bar { position: absolute; top: 7px; height: 18px; border-radius: 5px; z-index: 1;
+  background: linear-gradient(180deg, var(--blue), var(--blue-deep)); box-shadow: var(--shadow);
+  display: flex; align-items: center; overflow: hidden; }
+.gantt-bar-txt { font-size: 11px; line-height: 1; color: #fff; font-weight: 600; padding: 0 6px; white-space: nowrap; }
+.gantt-row-click { cursor: pointer; }
+.gantt-row-click:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
+.gantt-row-click:hover .gantt-bar { filter: brightness(1.1); }
+.gantt-row-click:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.gantt-hint { margin-top: 8px; font-size: 13px; }
+@media (max-width: 560px) {
+  .gantt-row { grid-template-columns: 104px 1fr; }
+  .gantt-label { font-size: 12px; padding: 6px; }
+}

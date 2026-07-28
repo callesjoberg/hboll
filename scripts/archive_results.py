@@ -219,6 +219,13 @@ def build_index():
                 clubs.add(home["club"])
             if away.get("club"):
                 clubs.add(away["club"])
+        # Första/sista speldatum (svensk kalender, se dagberäkningen ovan) —
+        # driver Kalender-fliken (Gantt över cupernas speldagar, se
+        # renderKalenderView i js/app.js).
+        first = last = None
+        if days:
+            first = datetime.fromtimestamp(min(days) * 86400, tz=timezone.utc).strftime("%Y-%m-%d")
+            last = datetime.fromtimestamp(max(days) * 86400, tz=timezone.utc).strftime("%Y-%m-%d")
         by_cup.setdefault(cid, {"cupName": d.get("cupName") or cid, "editions": []})
         by_cup[cid]["cupName"] = d.get("cupName") or by_cup[cid]["cupName"]
         by_cup[cid]["editions"].append({
@@ -229,6 +236,8 @@ def build_index():
             "teams": len(teams),
             "classes": len(classes),
             "days": len(days),
+            "first": first,
+            "last": last,
             "clubs": len(clubs),
             "ts": d.get("ts"),
         })
