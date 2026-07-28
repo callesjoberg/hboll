@@ -65,6 +65,28 @@ _BRONZE_ROUNDS = {"3-4", "bronsmatch", "bronze", "3:e pris",
                   "match om 3:e pris", "match om 3:e plats", "match om brons"}
 
 
+def a_final_rank(div_name):
+    """Hur "A-slutspel" en slutspelsdivision är, oavsett hur cupen råkar
+    stava den. Cuperna använder vitt skilda etiketter för samma sak:
+    "A-Slutspel", "Slutspel A", "A Slutspel", "SlutspelA", "Playoff A",
+    "A-Play-off", eller ett enda "Slutspel" (utan A/B/C-uppdelning).
+      2 = uttryckligt A-slutspel  · 1 = enda/namnlöst slutspel  · 0 = ej A
+    (B-/C-slutspel och rena gruppmatcher → 0, dvs ingen mästartitel)."""
+    s = (div_name or "").lower()
+    if not s:
+        return 1  # tom division + roundName "Final" → enda finalen, räknas
+    compact = re.sub(r"[^a-zåäö0-9]", "", s)
+    if "slutspel" not in compact and "playoff" not in compact:
+        return 0  # "Grupp 1" e.d. — en final där är inte ett mästerskap
+    rest = compact.replace("slutspel", "").replace("playoff", "")
+    rest = re.sub(r"[0-9]", "", rest)  # "slutspel5-8" → "" (platsspel, men syns bara med roundName Final i undantagsfall)
+    if rest == "a":
+        return 2
+    if rest == "":
+        return 1
+    return 0  # b/c/d/e/f …
+
+
 def _win_lose(m):
     w = (m.get("res") or {}).get("winner")
     if w == "home":
@@ -83,19 +105,26 @@ def _side(team):
 def extract_champions(matches, cup_id, cup_name, edition):
     """→ [{cup,cupName,ed,cat, g,gc, s,sc, b,bc}, ...] för en cup-upplaga."""
     from collections import defaultdict
-    by_cat = defaultdict(lambda: {"final": None, "semis": [], "bronze": None})
+    by_cat = defaultdict(lambda: {"final": None, "final_rank": 0, "semis": [], "bronze": None})
     for m in matches:
-        dn = (m.get("divName") or "").strip()
-        if dn and dn != "A-Slutspel":          # hoppa B-/C-slutspel
-            continue
         rn = (m.get("roundName") or "").strip()
+        if not rn:
+            continue
+        rank = a_final_rank(m.get("divName"))
+        if rank == 0:                          # B-/C-slutspel eller gruppspel
+            continue
         cat = m.get("catName") or ""
+        g = by_cat[cat]
         if rn == "Final":
-            by_cat[cat]["final"] = m
+            # Har en klass både ett namnlöst "Slutspel" och ett uttryckligt
+            # "Slutspel A" — behåll det uttryckliga A (högre rank).
+            if rank > g["final_rank"]:
+                g["final"] = m
+                g["final_rank"] = rank
         elif rn == "Semifinal":
-            by_cat[cat]["semis"].append(m)
+            g["semis"].append(m)
         elif rn.lower() in _BRONZE_ROUNDS:
-            by_cat[cat]["bronze"] = m
+            g["bronze"] = m
     rows = []
     for cat, g in by_cat.items():
         fm = g["final"]

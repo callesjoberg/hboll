@@ -4182,11 +4182,26 @@ window.HB = window.HB || {};
     if (vinnareClub === null || !clubs.includes(vinnareClub)) {
       vinnareClub = clubs.includes(state.favoriteClub) ? state.favoriteClub : (clubs[0] || "");
     }
-    const sel = h("select", { class: "select", "aria-label": "Klubb" },
-      clubs.map((c) => h("option", { value: c, ...(c === vinnareClub ? { selected: "" } : {}) }, c)));
-    sel.addEventListener("change", () => { vinnareClub = sel.value; renderContent(); });
+    // Sökruta (datalist) i stället för en jättelång dropdown — det finns
+    // hundratals klubbar med minst en titel.
+    const listId = "vinnare-club-list";
+    const dl = h("datalist", { id: listId }, clubs.map((c) => h("option", { value: c })));
+    const input = h("input", {
+      type: "text", class: "vinnare-club-input", list: listId, autocomplete: "off",
+      placeholder: "Sök klubb …", value: vinnareClub, "aria-label": "Klubb",
+    });
+    const apply = () => {
+      const v = input.value.trim().toLowerCase();
+      if (!v) return;
+      const pick = clubs.find((c) => c.toLowerCase() === v)
+        || clubs.find((c) => c.toLowerCase().startsWith(v))
+        || clubs.find((c) => c.toLowerCase().includes(v));
+      if (pick && pick !== vinnareClub) { vinnareClub = pick; renderContent(); }
+    };
+    input.addEventListener("change", apply);
     root.append(h("div", { class: "row vinnare-controls" },
-      h("span", { class: "muted" }, "Klubb:"), sel));
+      h("span", { class: "muted" }, "Klubb:"),
+      h("div", { class: "autocomplete-wrap" }, input, dl)));
 
     const titles = rows.filter((r) => r.gc === vinnareClub)
       .sort((a, b) => b.ed.localeCompare(a.ed) || a.cupName.localeCompare(b.cupName, "sv"));

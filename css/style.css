@@ -2790,3 +2790,7 @@ dialog.history-dialog {
 .brow.us .brow-club { color: var(--blue); font-weight: 700; }
 .brow-sep { border-top: 2px solid var(--ink-soft) !important; }
 @media (max-width: 560px) { .trophy-hero { grid-template-columns: 1fr; } }
+.vinnare-club-input { padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card); color: var(--ink); font: 500 15px "Barlow", system-ui, sans-serif;
+  min-width: 240px; outline: none; }
+.vinnare-club-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 22%, transparent); }
