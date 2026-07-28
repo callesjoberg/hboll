@@ -4194,6 +4194,7 @@ window.HB = window.HB || {};
   let vinnareCup = null;         // vald cup (årets mästare)
   let vinnareYear = null;        // valt år (årets mästare)
   let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
+  let vinnareToppMedals = { guld: true, silver: false, brons: false }; // medaljer som räknas i topplistan
 
   // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
   // klubbnamn (se normalize_club i archive_results.py); favoritklubben jämförs
@@ -4363,12 +4364,29 @@ window.HB = window.HB || {};
     cupSel.addEventListener("change", () => { vinnareToppCup = cupSel.value; renderContent(); });
     root.append(h("div", { class: "row vinnare-controls" }, h("span", { class: "muted" }, "Cup:"), cupSel));
 
+    // Samma medaljval som troféskåpet — ranka på guld, silver, brons eller totalt.
+    root.append(h("div", { class: "row vinnare-controls" },
+      h("div", { class: "seg", role: "group", "aria-label": "Medaljer" },
+        chip("🥇 Guld", vinnareToppMedals.guld, () => { vinnareToppMedals.guld = !vinnareToppMedals.guld; renderContent(); }),
+        chip("🥈 Silver", vinnareToppMedals.silver, () => { vinnareToppMedals.silver = !vinnareToppMedals.silver; renderContent(); }),
+        chip("🥉 Brons", vinnareToppMedals.brons, () => { vinnareToppMedals.brons = !vinnareToppMedals.brons; renderContent(); }))));
+    const active = ["guld", "silver", "brons"].filter((t) => vinnareToppMedals[t]);
+    const cntLabel = active.length === 1 ? " " + active[0] : " medaljer";
+
     const scope = vinnareToppCup ? rows.filter((r) => r.cup === vinnareToppCup) : rows;
     const count = new Map();
-    scope.forEach((r) => { if (r.gc) count.set(r.gc, (count.get(r.gc) || 0) + 1); });
+    const add = (club) => { if (club) count.set(club, (count.get(club) || 0) + 1); };
+    scope.forEach((r) => {
+      if (vinnareToppMedals.guld) add(r.gc);
+      if (vinnareToppMedals.silver) add(r.sc);
+      if (vinnareToppMedals.brons) (r.bc || []).forEach(add);
+    });
     const ranked = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
-    if (!ranked.length) { root.append(h("p", { class: "muted" }, "Inga mästare för den cupen ännu.")); return; }
-    // Tät rangordning (samma antal titlar delar placering).
+    if (!ranked.length) {
+      root.append(h("p", { class: "muted" }, active.length ? "Inga mästare för den cupen ännu." : "Välj minst en medaljtyp ovan."));
+      return;
+    }
+    // Tät rangordning (samma antal medaljer delar placering).
     let rank = 0, prev = null;
     const withRank = ranked.map(([club, n], i) => {
       if (n !== prev) { rank = i + 1; prev = n; }
@@ -4380,7 +4398,7 @@ window.HB = window.HB || {};
       board.append(h("div", { class: "brow" + (e.rank <= 3 ? " top3" : "") + (e.club.toLowerCase() === fav ? " us" : "") },
         h("span", { class: "brow-pos" }, String(e.rank)),
         h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
-        h("span", { class: "brow-cnt" }, String(e.n), h("small", null, " guld"))));
+        h("span", { class: "brow-cnt" }, String(e.n), h("small", null, cntLabel))));
     });
     root.append(board);
     // Ligger favoritklubben utanför topp 25 — visa dess placering separat sist.
@@ -4389,7 +4407,7 @@ window.HB = window.HB || {};
       board.append(h("div", { class: "brow us brow-sep" },
         h("span", { class: "brow-pos" }, String(favRow.rank)),
         h("span", { class: "brow-club" }, favRow.club),
-        h("span", { class: "brow-cnt" }, String(favRow.n), h("small", null, " guld"))));
+        h("span", { class: "brow-cnt" }, String(favRow.n), h("small", null, cntLabel))));
     }
   }
 
