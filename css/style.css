@@ -2749,3 +2749,44 @@ dialog.history-dialog {
   .welcome-content { padding-left: 18px; padding-right: 18px; }
   .welcome-stats { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Vinnare (Stats-underflik): troféskåp, årets mästare, vinnartoppen ── */
+.vinnare-body { margin-top: 4px; }
+.vinnare-controls { align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0 16px; }
+.trophy-hero { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin: 4px 0 18px; }
+.trophy-num { background: linear-gradient(160deg, var(--blue-deep), var(--blue)); color: #fff;
+  border-radius: var(--radius); padding: 14px 22px; text-align: center; min-width: 118px; }
+.trophy-big { font: 700 46px/1 "Barlow Condensed", system-ui, sans-serif; color: var(--yellow); }
+.trophy-lbl { font: 600 11px/1.2 "Barlow", system-ui; letter-spacing: 1.4px; text-transform: uppercase; opacity: .92; margin-top: 4px; }
+.trophy-lead h3 { margin: 0 0 2px; font-size: 20px; }
+.trophy-lead p { margin: 0; max-width: 52ch; }
+.tro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.tro { position: relative; background: var(--card); border: 1px solid var(--line);
+  border-left: 4px solid var(--yellow); border-radius: var(--radius); padding: 11px 13px; box-shadow: var(--shadow); }
+.tro-medal { position: absolute; top: 9px; right: 11px; font-size: 16px; }
+.tro-yr { font: 700 22px/1 "Barlow Condensed", system-ui, sans-serif; color: var(--ink); }
+.tro-cup { font-size: 12.5px; color: var(--ink-soft); margin: 1px 0 7px; }
+.tro-cls { font-weight: 600; font-size: 14px; color: var(--ink); }
+.tro-team { font-size: 13.5px; color: var(--blue); font-weight: 600; margin-top: 2px; }
+.champ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 12px; }
+.champ { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 13px 14px; box-shadow: var(--shadow); }
+.champ-cls { font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 6px; }
+.rank { display: flex; align-items: center; gap: 9px; padding: 6px 0; }
+.rank + .rank { border-top: 1px dashed var(--line); }
+.medal-badge { font-size: 17px; width: 1.5em; text-align: center; flex: 0 0 auto; }
+.rank-team { font-size: 14px; color: var(--ink); }
+.rank-team.us { color: var(--blue); font-weight: 700; }
+.board { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow); max-width: 460px; }
+.brow { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; padding: 10px 14px; }
+.brow + .brow { border-top: 1px solid var(--line); }
+.brow-pos { font: 700 17px/1 "Barlow Condensed", system-ui, sans-serif; color: var(--ink-soft); text-align: center; }
+.brow.top3 .brow-pos { color: var(--yellow); }
+.brow-club { font-weight: 600; color: var(--ink); }
+.brow-cnt { font: 700 18px/1 "Barlow Condensed", system-ui, sans-serif; color: var(--ink); font-variant-numeric: tabular-nums; }
+.brow-cnt small { font: 600 11px/1 "Barlow", system-ui; color: var(--ink-soft); }
+.brow.us { background: color-mix(in srgb, var(--blue) 12%, transparent); border-left: 3px solid var(--blue); }
+.brow.us .brow-club { color: var(--blue); font-weight: 700; }
+.brow-sep { border-top: 2px solid var(--ink-soft) !important; }
+@media (max-width: 560px) { .trophy-hero { grid-template-columns: 1fr; } }

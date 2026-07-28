@@ -1294,6 +1294,7 @@ window.HB = window.HB || {};
     // (om just den valda underfliken blir ogiltig) sköts av renderStatsView.
     state.statsSupport = {
       trend: trendSupported, karta: mapSupported,
+      vinnare: clubSupported,
       klubb: clubSupported, klubbjamforelse: clubSupported, cuper: clubSupported,
       historik: clubSupported,
     };
@@ -4123,8 +4124,173 @@ window.HB = window.HB || {};
   // [key,label,renderFn]-mönster som HISTORY_TABS ovan, se renderBrowseMode)
   // håller ihop dem utan att trycka undan Schema/Tabeller/Slutspel/Bana ur
   // huvudnavigeringen.
+  // --- Vinnare (Stats-underflik): troféskåp, årets mästare, vinnartoppen ----
+  // Läser data/champions.json (byggd av scripts/archive_results.py) — en rad
+  // per A-slutspelsfinal över alla arkiverade cup-upplagor. Lägena/valen hålls
+  // på modulnivå (som historyMode) så de överlever växling till en annan
+  // Stats-underflik och tillbaka, men nollställs vid full sidladdning.
+  let vinnareMode = "trofe";     // trofe | ar | topp
+  let championsData = null;      // rows[] eller null tills laddat
+  let championsLoading = false;
+  let vinnareClub = null;        // vald klubb (troféskåp); null = default favoritklubb
+  let vinnareCup = null;         // vald cup (årets mästare)
+  let vinnareYear = null;        // valt år (årets mästare)
+  let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
+
+  // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
+  // klubbnamn (se normalize_club i archive_results.py); favoritklubben jämförs
+  // både exakt och som lagnamnsprefix ("Alingsås HK" ⊂ "Alingsås HK Vit").
+  function vinnareIsFav(clubCode, teamName) {
+    const fav = (state.favoriteClub || "").trim().toLowerCase();
+    if (!fav) return false;
+    return (clubCode || "").toLowerCase() === fav ||
+      (teamName || "").toLowerCase().startsWith(fav);
+  }
+
+  function renderVinnareView(root) {
+    if (championsData === null) {
+      root.append(h("p", { class: "muted" }, "Hämtar mästare …"));
+      if (!championsLoading) {
+        championsLoading = true;
+        HB.api.fetchChampions()
+          .then((d) => { championsData = (d && d.rows) || []; renderContent(); })
+          .catch(() => { championsData = []; renderContent(); });
+      }
+      return;
+    }
+    const rows = championsData;
+    if (!rows.length) {
+      root.append(h("p", { class: "muted" },
+        "Inga mästare arkiverade än — fylls på automatiskt allteftersom slutspel avgörs."));
+      return;
+    }
+    root.append(h("div", { class: "row" },
+      h("div", { class: "seg", role: "group", "aria-label": "Vinnarläge" },
+        chip("Troféskåp", vinnareMode === "trofe", () => { vinnareMode = "trofe"; renderContent(); }),
+        chip("Årets mästare", vinnareMode === "ar", () => { vinnareMode = "ar"; renderContent(); }),
+        chip("Vinnartoppen", vinnareMode === "topp", () => { vinnareMode = "topp"; renderContent(); }))));
+    const body = h("div", { class: "vinnare-body" });
+    root.append(body);
+    if (vinnareMode === "trofe") renderTrofeskap(body, rows);
+    else if (vinnareMode === "ar") renderAretsMastare(body, rows);
+    else renderVinnartoppen(body, rows);
+  }
+
+  function renderTrofeskap(root, rows) {
+    const clubs = [...new Set(rows.map((r) => r.gc).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "sv"));
+    if (vinnareClub === null || !clubs.includes(vinnareClub)) {
+      vinnareClub = clubs.includes(state.favoriteClub) ? state.favoriteClub : (clubs[0] || "");
+    }
+    const sel = h("select", { class: "select", "aria-label": "Klubb" },
+      clubs.map((c) => h("option", { value: c, ...(c === vinnareClub ? { selected: "" } : {}) }, c)));
+    sel.addEventListener("change", () => { vinnareClub = sel.value; renderContent(); });
+    root.append(h("div", { class: "row vinnare-controls" },
+      h("span", { class: "muted" }, "Klubb:"), sel));
+
+    const titles = rows.filter((r) => r.gc === vinnareClub)
+      .sort((a, b) => b.ed.localeCompare(a.ed) || a.cupName.localeCompare(b.cupName, "sv"));
+    root.append(h("div", { class: "trophy-hero" },
+      h("div", { class: "trophy-num" },
+        h("div", { class: "trophy-big" }, String(titles.length)),
+        h("div", { class: "trophy-lbl" }, titles.length === 1 ? "titel" : "titlar")),
+      h("div", { class: "trophy-lead" },
+        h("h3", null, vinnareClub + "s troféskåp"),
+        h("p", { class: "muted" }, titles.length
+          ? "A-slutspelsguld genom åren. Byt klubb ovan för att se någon annans skåp."
+          : "Inga A-slutspelstitlar arkiverade ännu."))));
+    if (!titles.length) return;
+    root.append(h("div", { class: "tro-grid" },
+      titles.map((t) => h("div", { class: "tro" },
+        h("span", { class: "tro-medal" }, "🥇"),
+        h("div", { class: "tro-yr" }, t.ed),
+        h("div", { class: "tro-cup" }, t.cupName),
+        h("div", { class: "tro-cls" }, t.cat),
+        h("div", { class: "tro-team" }, t.g)))));
+  }
+
+  function renderAretsMastare(root, rows) {
+    const cups = [...new Map(rows.map((r) => [r.cup, r.cupName])).entries()]
+      .sort((a, b) => a[1].localeCompare(b[1], "sv"));
+    if (vinnareCup === null || !cups.some((c) => c[0] === vinnareCup)) {
+      vinnareCup = cups.some((c) => c[0] === state.cupId) ? state.cupId : (cups[0] && cups[0][0]);
+    }
+    const years = [...new Set(rows.filter((r) => r.cup === vinnareCup).map((r) => r.ed))]
+      .sort((a, b) => b.localeCompare(a));
+    if (vinnareYear === null || !years.includes(vinnareYear)) vinnareYear = years[0];
+    const cupSel = h("select", { class: "select", "aria-label": "Cup" },
+      cups.map(([id, name]) => h("option", { value: id, ...(id === vinnareCup ? { selected: "" } : {}) }, name)));
+    cupSel.addEventListener("change", () => { vinnareCup = cupSel.value; vinnareYear = null; renderContent(); });
+    const yearSel = h("select", { class: "select", "aria-label": "År" },
+      years.map((y) => h("option", { value: y, ...(y === vinnareYear ? { selected: "" } : {}) }, y)));
+    yearSel.addEventListener("change", () => { vinnareYear = yearSel.value; renderContent(); });
+    root.append(h("div", { class: "row vinnare-controls" }, cupSel, yearSel));
+
+    const champs = rows.filter((r) => r.cup === vinnareCup && r.ed === vinnareYear)
+      .sort((a, b) => a.cat.localeCompare(b.cat, "sv"));
+    if (!champs.length) {
+      root.append(h("p", { class: "muted" }, "Inga avgjorda A-slutspel för den upplagan."));
+      return;
+    }
+    const rankRow = (medal, team, club) => team ? h("div", { class: "rank" },
+      h("span", { class: "medal-badge" }, medal),
+      h("span", { class: "rank-team" + (vinnareIsFav(club, team) ? " us" : "") }, team)) : null;
+    root.append(h("div", { class: "champ-grid" },
+      champs.map((c) => {
+        const brons = c.b || [];
+        const bronsFav = (c.bc || []).some((bc) => vinnareIsFav(bc, ""));
+        return h("div", { class: "champ" },
+          h("div", { class: "champ-cls" }, c.cat),
+          rankRow("🥇", c.g, c.gc),
+          rankRow("🥈", c.s, c.sc),
+          brons.length ? h("div", { class: "rank" },
+            h("span", { class: "medal-badge" }, "🥉"),
+            h("span", { class: "rank-team" + (bronsFav ? " us" : "") }, brons.join(" · "))) : null);
+      })));
+  }
+
+  function renderVinnartoppen(root, rows) {
+    const cups = [...new Map(rows.map((r) => [r.cup, r.cupName])).entries()]
+      .sort((a, b) => a[1].localeCompare(b[1], "sv"));
+    const cupSel = h("select", { class: "select", "aria-label": "Cup" },
+      h("option", { value: "", ...(vinnareToppCup === "" ? { selected: "" } : {}) }, "Alla cuper"),
+      cups.map(([id, name]) => h("option", { value: id, ...(id === vinnareToppCup ? { selected: "" } : {}) }, name)));
+    cupSel.addEventListener("change", () => { vinnareToppCup = cupSel.value; renderContent(); });
+    root.append(h("div", { class: "row vinnare-controls" }, h("span", { class: "muted" }, "Cup:"), cupSel));
+
+    const scope = vinnareToppCup ? rows.filter((r) => r.cup === vinnareToppCup) : rows;
+    const count = new Map();
+    scope.forEach((r) => { if (r.gc) count.set(r.gc, (count.get(r.gc) || 0) + 1); });
+    const ranked = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
+    if (!ranked.length) { root.append(h("p", { class: "muted" }, "Inga mästare för den cupen ännu.")); return; }
+    // Tät rangordning (samma antal titlar delar placering).
+    let rank = 0, prev = null;
+    const withRank = ranked.map(([club, n], i) => {
+      if (n !== prev) { rank = i + 1; prev = n; }
+      return { club, n, rank };
+    });
+    const fav = (state.favoriteClub || "").trim().toLowerCase();
+    const board = h("div", { class: "board" });
+    withRank.slice(0, 25).forEach((e) => {
+      board.append(h("div", { class: "brow" + (e.rank <= 3 ? " top3" : "") + (e.club.toLowerCase() === fav ? " us" : "") },
+        h("span", { class: "brow-pos" }, String(e.rank)),
+        h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
+        h("span", { class: "brow-cnt" }, String(e.n), h("small", null, " guld"))));
+    });
+    root.append(board);
+    // Ligger favoritklubben utanför topp 25 — visa dess placering separat sist.
+    const favRow = fav && withRank.find((e) => e.club.toLowerCase() === fav);
+    if (favRow && favRow.rank > 25) {
+      board.append(h("div", { class: "brow us brow-sep" },
+        h("span", { class: "brow-pos" }, String(favRow.rank)),
+        h("span", { class: "brow-club" }, favRow.club),
+        h("span", { class: "brow-cnt" }, String(favRow.n), h("small", null, " guld"))));
+    }
+  }
+
   const STATS_TABS = [
     ["trend", "Trend", renderTrendView],
+    ["vinnare", "🏆 Vinnare", renderVinnareView],
     ["karta", "Karta", renderMapView],
     ["klubb", "Klubb/Lag", renderClubView],
     ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
@@ -4140,7 +4306,7 @@ window.HB = window.HB || {};
     // ensureCupClubGeo/fetchArchiveIndex). Anta då att allt är stött hellre
     // än att gömma hela vyn i onödan.
     const support = state.statsSupport ||
-      { trend: true, karta: true, klubb: true, klubbjamforelse: true, cuper: true, historik: true };
+      { trend: true, karta: true, vinnare: true, klubb: true, klubbjamforelse: true, cuper: true, historik: true };
     const visibleTabs = STATS_TABS.filter(([key]) => support[key]);
     // Den valda underfliken kan ha blivit ogiltig sen sist (t.ex. Karta
     // förlorade sitt stöd) — falla då tillbaka på den första som fortfarande

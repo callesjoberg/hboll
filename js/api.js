@@ -695,6 +695,21 @@ window.HB = window.HB || {};
     }
   }
 
+  // Mästarlistan (data/champions.json, byggd av scripts/archive_results.py) —
+  // en rad per A-slutspelsfinal över alla arkiverade cup-upplagor. Liten
+  // (~100 kB) och ändras bara när en ny final avgjorts, så samma lätta
+  // no-store-hämtning som arkivindexet; Vinnare-fliken (app.js) läser den.
+  let championsPromise = null;
+
+  function fetchChampions() {
+    if (!championsPromise) {
+      championsPromise = fetch("data/champions.json", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { rows: [] }))
+        .catch(() => ({ rows: [] }));
+    }
+    return championsPromise;
+  }
+
   // {klubbnamn: {city,lat,lng,country}} slagit ihop från ALLA klassiska Cup
   // Manager-cupers klubbadresser (scripts/build_club_directory.py) — Karta-
   // vyn i app.js slår upp ProCup/Gothia-cupernas lagnamn mot den här (de
@@ -713,5 +728,6 @@ window.HB = window.HB || {};
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              readCache, writeCache, localDataTs, clubGeo,
-             fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory, fetchTeamIndex };
+             fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory, fetchTeamIndex,
+             fetchChampions };
 })();
