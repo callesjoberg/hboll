@@ -4190,6 +4190,7 @@ window.HB = window.HB || {};
   let championsData = null;      // rows[] eller null tills laddat
   let championsLoading = false;
   let vinnareQuery = null;       // sökterm (troféskåp); null = default favoritklubb
+  let vinnareMedals = { guld: true, silver: false, brons: false }; // vilka medaljer troféskåpet visar
   let vinnareCup = null;         // vald cup (årets mästare)
   let vinnareYear = null;        // valt år (årets mästare)
   let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
@@ -4252,38 +4253,64 @@ window.HB = window.HB || {};
     // Fri delsträngssökning som tar med ALLA namnvarianter — "lugi" matchar
     // Lugi HF, Lugi HF 2, Lugi … (både klubbnyckeln gc och det råa lagnamnet g).
     const q = (vinnareQuery || "").trim().toLowerCase();
-    const titles = q
-      ? rows.filter((r) => (r.gc || "").toLowerCase().includes(q) || (r.g || "").toLowerCase().includes(q))
-          .sort((a, b) => b.ed.localeCompare(a.ed) || a.cupName.localeCompare(b.cupName, "sv"))
-      : [];
-    const distinct = [...new Set(titles.map((t) => t.gc).filter(Boolean))];
+    const matchC = (club, name) => !!q && (((club || "").toLowerCase().includes(q)) || ((name || "").toLowerCase().includes(q)));
+    // Klubbens medaljer: guld = vann finalen, silver = förlorade finalen,
+    // brons = förlorade semifinalen (eller vann bronsmatchen). Se champions.json.
+    const golds = q ? rows.filter((r) => matchC(r.gc, r.g)).map((r) => ({ r, medal: "guld", team: r.g, club: r.gc })) : [];
+    const silvers = q ? rows.filter((r) => matchC(r.sc, r.s)).map((r) => ({ r, medal: "silver", team: r.s, club: r.sc })) : [];
+    const bronzes = [];
+    if (q) rows.forEach((r) => (r.bc || []).forEach((bc, i) => {
+      const nm = (r.b || [])[i];
+      if (matchC(bc, nm)) bronzes.push({ r, medal: "brons", team: nm, club: bc });
+    }));
+    const total = golds.length + silvers.length + bronzes.length;
+
+    // Toggla vilka medaljer som visas (guld på från start = klassiskt troféskåp).
+    if (q) {
+      root.append(h("div", { class: "row vinnare-controls" },
+        h("div", { class: "seg", role: "group", "aria-label": "Medaljer" },
+          chip("🥇 Guld (" + golds.length + ")", vinnareMedals.guld, () => { vinnareMedals.guld = !vinnareMedals.guld; renderContent(); }),
+          chip("🥈 Silver (" + silvers.length + ")", vinnareMedals.silver, () => { vinnareMedals.silver = !vinnareMedals.silver; renderContent(); }),
+          chip("🥉 Brons (" + bronzes.length + ")", vinnareMedals.brons, () => { vinnareMedals.brons = !vinnareMedals.brons; renderContent(); }))));
+    }
+
+    const shown = [].concat(
+      vinnareMedals.guld ? golds : [], vinnareMedals.silver ? silvers : [], vinnareMedals.brons ? bronzes : [])
+      .sort((a, b) => b.r.ed.localeCompare(a.r.ed) || a.r.cupName.localeCompare(b.r.cupName, "sv"));
+    const distinct = [...new Set([...golds, ...silvers, ...bronzes].map((x) => x.club).filter(Boolean))];
+    const active = ["guld", "silver", "brons"].filter((t) => vinnareMedals[t]);
+    const numLabel = active.length === 1
+      ? (active[0] === "guld" ? (shown.length === 1 ? "titel" : "titlar") : active[0])
+      : "medaljer";
     const heading = !q ? "Troféskåp"
       : distinct.length === 1 ? distinct[0] + "s troféskåp"
-      : "Troféer för “" + vinnareQuery.trim() + "”";
-    const lead = !q ? "Skriv en klubb ovan."
-      : !titles.length ? "Inga A-slutspelstitlar som matchar “" + vinnareQuery.trim() + "”."
-      : distinct.length === 1 ? "A-slutspelsguld genom åren. Klicka ett kort för att öppna slutspelsträdet."
-      : titles.length + " titlar från " + distinct.length + " lagnamn — klicka ett kort för slutspelsträdet.";
+      : "Medaljer för “" + vinnareQuery.trim() + "”";
+    const lead = !q ? "Skriv en klubb ovan för att se dess medaljer."
+      : !total ? "Inga medaljer som matchar “" + vinnareQuery.trim() + "”."
+      : "🥇 " + golds.length + "   🥈 " + silvers.length + "   🥉 " + bronzes.length +
+        (distinct.length > 1 ? " · " + distinct.length + " lagnamn" : "") + " · klicka ett kort för slutspelsträdet.";
     root.append(h("div", { class: "trophy-hero" },
       h("div", { class: "trophy-num" },
-        h("div", { class: "trophy-big" }, String(titles.length)),
-        h("div", { class: "trophy-lbl" }, titles.length === 1 ? "titel" : "titlar")),
+        h("div", { class: "trophy-big" }, String(shown.length)),
+        h("div", { class: "trophy-lbl" }, numLabel)),
       h("div", { class: "trophy-lead" },
         h("h3", null, heading),
         h("p", { class: "muted" }, lead))));
-    if (!titles.length) return;
+    if (!q) return;
+    if (!shown.length) { root.append(h("p", { class: "muted" }, total ? "Välj minst en medaljtyp ovan." : "")); return; }
+    const medalEmoji = { guld: "🥇", silver: "🥈", brons: "🥉" };
     root.append(h("div", { class: "tro-grid" },
-      titles.map((t) => h("div", {
-        class: "tro tro-click", role: "button", tabindex: "0",
-        title: "Öppna slutspelsträdet — " + t.cat + " (" + t.cupName + " " + t.ed + ")",
-        onclick: () => gotoBrowseSlutspel(t.cup, t.ed, t.cat),
-        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoBrowseSlutspel(t.cup, t.ed, t.cat); } },
+      shown.map((x) => h("div", {
+        class: "tro tro-click tro-" + x.medal, role: "button", tabindex: "0",
+        title: "Öppna slutspelsträdet — " + x.r.cat + " (" + x.r.cupName + " " + x.r.ed + ")",
+        onclick: () => gotoBrowseSlutspel(x.r.cup, x.r.ed, x.r.cat),
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoBrowseSlutspel(x.r.cup, x.r.ed, x.r.cat); } },
       },
-        h("span", { class: "tro-medal" }, "🥇"),
-        h("div", { class: "tro-yr" }, t.ed),
-        h("div", { class: "tro-cup" }, t.cupName),
-        h("div", { class: "tro-cls" }, t.cat),
-        h("div", { class: "tro-team" }, t.g),
+        h("span", { class: "tro-medal" }, medalEmoji[x.medal]),
+        h("div", { class: "tro-yr" }, x.r.ed),
+        h("div", { class: "tro-cup" }, x.r.cupName),
+        h("div", { class: "tro-cls" }, x.r.cat),
+        h("div", { class: "tro-team" }, x.team),
         h("span", { class: "tro-go" }, "Visa slutspel →")))));
   }
 
