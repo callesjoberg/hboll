@@ -554,7 +554,59 @@ window.HB = window.HB || {};
     if (state.matchFilter !== "all") p.set("mf", state.matchFilter);
     if (state.q) p.set("q", state.q);
     const qs = p.toString();
-    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    const url = location.pathname + (qs ? "?" + qs : "");
+    // Bakåtknappen: lägg BARA en historik-post när den strukturella vyn
+    // ändras (cup / flik / stats-underflik) — då kan webbläsarens bakåt-/
+    // framåtknapp stega mellan de vyerna. Filter-, sök- och sorterings-
+    // ändringar (samma cup+flik) ersätter i stället posten, så historiken
+    // inte spammas med varje litet reglage. popstate nedan läser tillbaka.
+    const sig = navSig();
+    if (navInitialized && !applyingPopstate && sig !== lastNavSig) {
+      history.pushState(null, "", url);
+    } else {
+      history.replaceState(null, "", url);
+    }
+    lastNavSig = sig;
+  }
+
+  // Strukturell "vy-signatur" — det som ska räknas som ett eget bakåtsteg.
+  function navSig() {
+    return state.cupId + "|" + state.view + "|" + (state.view === "stats" ? state.statsView : "");
+  }
+  let lastNavSig = null;
+  let navInitialized = false;   // sätts sant när init är klar (så första synken ersätter, inte pushar)
+  let applyingPopstate = false; // sant medan popstate återställer state (ingen ny push då)
+
+  // Läser URL-parametrar → state (delad/bokmärkt länk och popstate delar
+  // denna). Sätter bara det som faktiskt finns i URL:en; nollställning görs
+  // separat (resetUrlState) före popstate-återställning.
+  function applyUrlToState(params) {
+    const toId = (s) => (/^\d+$/.test(s) ? +s : s);
+    if (params.get("view")) state.view = params.get("view");
+    if (params.get("stats")) state.statsView = params.get("stats");
+    normalizeStatsView();
+    if (params.get("scope")) state.scope = params.get("scope");
+    if (params.get("days")) state.days = new Set(params.get("days").split(","));
+    if (params.get("cats")) state.cats = new Set(params.get("cats").split(",").map(toId));
+    if (params.get("teams")) state.teams = new Set(params.get("teams").split(",").map(toId));
+    if (params.get("years")) state.years = new Set(params.get("years").split(","));
+    if (params.get("curYear") === "0") state.includeCurrentYear = false;
+    if (params.get("arena")) state.arena = params.get("arena");
+    if (params.get("viewArena")) state.viewArena = params.get("viewArena");
+    if (params.get("sort")) state.sort = params.get("sort");
+    if (params.get("order") === "desc") state.timeOrder = "desc";
+    if (["all", "upcoming", "played"].includes(params.get("mf"))) state.matchFilter = params.get("mf");
+    if (params.get("q")) state.q = params.get("q");
+  }
+
+  // Återställer de URL-styrda fälten till default (allt som INTE finns med i
+  // en bakåt-navigerad URL ska tömmas innan den läses in, annars hänger t.ex.
+  // ett gammalt filter kvar). Rör inte fält utanför URL:en (filterLocked m.m.).
+  function resetUrlState() {
+    state.view = "schema"; state.statsView = "trend"; state.scope = "club";
+    state.days = new Set(); state.cats = new Set(); state.teams = new Set(); state.years = new Set();
+    state.includeCurrentYear = true; state.arena = ""; state.viewArena = "";
+    state.sort = "tid"; state.timeOrder = "asc"; state.matchFilter = "all"; state.q = "";
   }
 
   // Trend/Karta/Klubb-Lag var tidigare egna toppnivåflikar (state.view-
@@ -7586,9 +7638,6 @@ window.HB = window.HB || {};
     if (urlCup && HB.allCups().some((c) => c.id === urlCup)) {
       state.cupId = urlCup;
     }
-    // Cup Manager-id:n är numeriska, ProCup-id:n är textsträngar (lagnamn) —
-    // bevara rätt typ så Set.has()-jämförelser mot matchdatan funkar.
-    const toId = (s) => (/^\d+$/.test(s) ? +s : s);
     const hasUrlFilters = ["view", "stats", "scope", "days", "cats", "teams", "arena",
       "viewArena", "sort", "order", "mf", "q"].some((k) => params.has(k));
     $$("#viewTabs .tab").forEach((b) =>
@@ -7619,25 +7668,36 @@ window.HB = window.HB || {};
     updateClubLogo();
     if (hasUrlFilters) {
       // En delad länk vinner över det som råkar ligga sparat i webbläsaren.
-      if (params.get("view")) state.view = params.get("view");
-      if (params.get("stats")) state.statsView = params.get("stats");
-      normalizeStatsView();
-      if (params.get("scope")) state.scope = params.get("scope");
-      if (params.get("days")) state.days = new Set(params.get("days").split(","));
-      if (params.get("cats")) state.cats = new Set(params.get("cats").split(",").map(toId));
-      if (params.get("teams")) state.teams = new Set(params.get("teams").split(",").map(toId));
-      if (params.get("years")) state.years = new Set(params.get("years").split(","));
-      if (params.get("curYear") === "0") state.includeCurrentYear = false;
-      if (params.get("arena")) state.arena = params.get("arena");
-      if (params.get("viewArena")) state.viewArena = params.get("viewArena");
-      if (params.get("sort")) state.sort = params.get("sort");
-      if (params.get("order") === "desc") state.timeOrder = "desc";
-      if (["all", "upcoming", "played"].includes(params.get("mf"))) {
-        state.matchFilter = params.get("mf");
-      }
-      if (params.get("q")) state.q = params.get("q");
+      applyUrlToState(params);
       saveUi(); // spara den delade vyn som din egen, och normalisera URL:en
     }
+
+    // Bakåt-/framåtknappen: läs tillbaka den strukturella vyn ur URL:en (som
+    // syncUrl:s pushState skrev). Nollställ URL-fälten först så inget gammalt
+    // filter hänger kvar, och byt cup med cache-nollställning om cupen ändrats.
+    window.addEventListener("popstate", () => {
+      const pp = new URLSearchParams(location.search);
+      const urlCup = pp.get("cup");
+      const cupChange = urlCup && urlCup !== state.cupId && HB.allCups().some((c) => c.id === urlCup);
+      applyingPopstate = true;
+      resetUrlState();
+      if (cupChange) {
+        state.cupId = urlCup;
+        state.tables = {}; state.playoffs = {}; state.groupTables = {}; dialogTableCache = {};
+        state.matches = []; state.loadedAt = 0; heroIndex = 0; stashedFilter = null;
+        autoScrolledToNow = false; hasSyncedFreshData = false;
+        applyUrlToState(pp);
+        lastNavSig = navSig();
+        loadCup();
+      } else {
+        applyUrlToState(pp);
+        lastNavSig = navSig();
+        render();
+      }
+      applyingPopstate = false;
+    });
+
+    navInitialized = true; // härefter pushar strukturella vy-byten en historik-post
     loadCup();
 
     // Stats-underflikarna Trend/Klubb-Lag/Klubbjämförelse/Cuper behöver
