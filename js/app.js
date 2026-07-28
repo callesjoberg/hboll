@@ -4412,7 +4412,17 @@ window.HB = window.HB || {};
       const content = h("div", { class: "history-viewer-body" });
       root.replaceChildren(
         h("div", { class: "history-viewer-head" },
-          h("button", { class: "chip", type: "button", onclick: renderPicker }, "← Byt cup/år"),
+          // Kom vi hit via ett klick i Vinnare-fliken (troféskåpet) — visa en
+          // väg tillbaka dit, inte bara "byt cup/år" inom historiken.
+          vinnareReturn ? h("button", {
+            class: "chip", type: "button",
+            onclick: () => {
+              vinnareReturn = false; browseTarget = null;
+              state.view = "stats"; state.statsView = "vinnare"; vinnareMode = "trofe";
+              saveUi(); renderContent();
+            },
+          }, "← Tillbaka till troféskåpet") : null,
+          h("button", { class: "chip", type: "button", onclick: () => { vinnareReturn = false; renderPicker(); } }, "← Byt cup/år"),
           h("span", { class: "cat" }, hs.cupName + " " + hs.edition),
           h("span", { class: "muted" }, hs.matches.length + " matcher")),
         tabBar, content);
@@ -4448,8 +4458,10 @@ window.HB = window.HB || {};
   // vyn — används av Vinnare-fliken (klick på ett troféskåpskort). browseTarget
   // konsumeras av renderBrowseMode vid nästa render (nollställs där).
   let browseTarget = null;
+  let vinnareReturn = false;   // kom vi till historik-bläddraren via Vinnare?
   function gotoBrowseSlutspel(cupId, edition, catName) {
     browseTarget = { cupId, edition, view: "slutspel", catFilter: catName || "" };
+    vinnareReturn = true;
     historyMode = "browse";
     state.statsView = "historik";
     state.view = "stats";
