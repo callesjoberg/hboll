@@ -1388,16 +1388,18 @@ window.HB = window.HB || {};
     if (!state.loadedAt) return;
     const n = scoped().length;
     const dataTs = HB.api.localDataTs[state.cupId];
-    const label = (dataTs
-      ? "Data hämtad " + new Intl.DateTimeFormat("sv-SE", {
-          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
-        }).format(new Date(dataTs))
-      : "Uppdaterad " + fmtClock.format(new Date(state.loadedAt))) +
-      " · " + n + " matcher";
+    const when = new Date(dataTs || state.loadedAt);
+    // Visa datum om tidsstämpeln inte är idag — annars ser t.ex. en sedan
+    // länge avslutad cups "12:10" ut som idag fastän datan hämtades för
+    // flera dagar sen (det som förvirrade här).
+    const sameDay = when.toDateString() === new Date().toDateString();
+    const fmt = sameDay ? fmtClock : new Intl.DateTimeFormat("sv-SE",
+      { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const label = (dataTs ? "Data hämtad " : "Uppdaterad ") + fmt.format(when) + " · " + n + " matcher";
     // Klickbar — öppnar en logg över exakt VILKA matcher som räknas in i
     // antalet ovan (samma urval, scoped(), se openMatchLogDialog).
     el.append(h("button", {
-      class: "meta-link", type: "button", title: "Visa hämtade matcher",
+      class: "meta-link", type: "button", title: "Visa vilka matcher som räknas i antalet (inte en ändringslogg)",
       onclick: openMatchLogDialog,
     }, label));
     if (state.loading) el.append(" · hämtar nytt … (" + (loadProgress || "0") + ")");
@@ -4894,9 +4896,14 @@ window.HB = window.HB || {};
     dlg.append(
       h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
       h("div", { class: "match-dialog-head" },
-        h("span", { class: "cat" }, "Hämtade matcher"),
+        h("span", { class: "cat" }, "Matcher i vyn"),
         h("span", null, cup().name),
         h("span", { class: "muted" }, fetchedLabel + " · " + matches.length + " matcher")),
+      h("p", { class: "muted match-log-note" },
+        "Det här är matcherna som räknas in i antalet högst upp — din nuvarande vy (" +
+        (state.scope === "club" ? state.favoriteClub : "hela cupen") +
+        "), inte en logg över ändringar. Tidsstämpeln är när schemat senast hämtades " +
+        "från arrangören; för en avslutad cup ändras inget efteråt."),
       matches.length
         ? h("div", { class: "table-box match-log-table" },
             h("table", { class: "standings" },
