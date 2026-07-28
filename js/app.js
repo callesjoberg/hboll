@@ -4413,7 +4413,28 @@ window.HB = window.HB || {};
     const doy = (iso) => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(Y, 0, 1)) / 86400000;
     const clampStart = (iso) => (+iso.slice(0, 4) < Y ? 0 : doy(iso));
     const clampEnd = (iso) => (+iso.slice(0, 4) > Y ? yearDays - 1 : doy(iso));
-    const shown = items.filter((i) => i.first.slice(0, 4) === kalenderYear || i.last.slice(0, 4) === kalenderYear)
+    const byCup = {};
+    for (const i of items) (byCup[i.cup] = byCup[i.cup] || []).push(i);
+    const realShown = items.filter((i) => i.first.slice(0, 4) === kalenderYear || i.last.slice(0, 4) === kalenderYear);
+    const realCupIds = new Set(realShown.map((i) => i.cup));
+    // Preliminär förhandsvisning: för den NYASTE säsongen, visa cuper som ännu
+    // inte fått årets datum satt med FÖRRA årets datum (tydligt märkta) så man
+    // ändå får en känsla för ungefär när de brukar spelas.
+    const previews = [];
+    if (kalenderYear === years[0]) {
+      for (const cid in byCup) {
+        if (realCupIds.has(cid)) continue;
+        const past = byCup[cid].filter((e) => +e.first.slice(0, 4) < Y)
+          .sort((a, b) => b.first.localeCompare(a.first))[0];
+        if (!past) continue;
+        previews.push({
+          cup: cid, cupName: past.cupName, ed: past.ed,
+          first: kalenderYear + past.first.slice(4), last: kalenderYear + past.last.slice(4),
+          matches: past.matches, days: past.days, preview: true, srcYear: past.first.slice(0, 4),
+        });
+      }
+    }
+    const shown = [...realShown, ...previews]
       .sort((a, b) => a.first.localeCompare(b.first) || a.cupName.localeCompare(b.cupName, "sv"));
     if (!shown.length) { root.append(h("p", { class: "muted" }, "Inga cuper med speldagar det här året.")); return; }
 
@@ -4439,13 +4460,17 @@ window.HB = window.HB || {};
       h("div", { class: "gantt-track" }, months.map((mn, mo) => h("span", { class: "gantt-month", style: "left:" + pct(monthStart[mo]) + "%" }, mn))));
     const rows = shown.map((i) => {
       const s = Math.max(0, clampStart(i.first)), e = Math.min(yearDays - 1, clampEnd(i.last));
+      const label = (i.preview ? "≈ " : "") + fmtRange(i);
+      const tip = i.preview
+        ? i.cupName + " — preliminärt: förra årets datum (" + i.srcYear + "). " + kalenderYear + " ännu inte spikat. Klicka för att se " + i.srcYear + " års schema."
+        : i.cupName + " " + i.ed + " · " + i.first + " – " + i.last + " · " + i.days + " speldagar · " + i.matches + " matcher";
       const bar = h("div", {
-        class: "gantt-bar", style: "left:" + pct(s) + "%;width:" + Math.max(pct(e - s + 1), 1.2) + "%",
-        title: i.cupName + " " + i.ed + " · " + i.first + " – " + i.last + " · " + i.days + " speldagar · " + i.matches + " matcher",
-      }, h("span", { class: "gantt-bar-txt" }, fmtRange(i)));
+        class: "gantt-bar" + (i.preview ? " gantt-preview" : ""),
+        style: "left:" + pct(s) + "%;width:" + Math.max(pct(e - s + 1), 1.2) + "%", title: tip,
+      }, h("span", { class: "gantt-bar-txt" }, label));
       return h("div", {
-        class: "gantt-row gantt-row-click", role: "button", tabindex: "0",
-        "aria-label": i.cupName + " " + i.ed + ", " + fmtRange(i),
+        class: "gantt-row gantt-row-click" + (i.preview ? " gantt-row-prev" : ""), role: "button", tabindex: "0",
+        "aria-label": i.cupName + (i.preview ? " (preliminärt datum)" : " " + i.ed) + ", " + fmtRange(i),
         onclick: () => gotoCupEdition(i.cup, i.ed),
         onkeydown: (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); gotoCupEdition(i.cup, i.ed); } },
       },
@@ -4453,7 +4478,10 @@ window.HB = window.HB || {};
         h("div", { class: "gantt-track" }, gridlines(), todayEl(), bar));
     });
     root.append(h("div", { class: "gantt" }, header, ...rows));
-    root.append(h("p", { class: "muted gantt-hint" }, "Klicka en cup för att öppna dess schema. Röd linje = idag."));
+    const hint = previews.length
+      ? "Klicka en cup för att öppna dess schema. Röd linje = idag. Streckade staplar (≈) är förra årets datum — årets är ännu inte spikat."
+      : "Klicka en cup för att öppna dess schema. Röd linje = idag.";
+    root.append(h("p", { class: "muted gantt-hint" }, hint));
   }
 
   const STATS_TABS = [

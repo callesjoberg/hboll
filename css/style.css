@@ -2825,3 +2825,9 @@ dialog.history-dialog {
   .gantt-row { grid-template-columns: 104px 1fr; }
   .gantt-label { font-size: 12px; padding: 6px; }
 }
+.gantt-bar.gantt-preview { box-shadow: none; border: 1px dashed var(--blue);
+  background: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--blue) 30%, transparent) 0 5px,
+    color-mix(in srgb, var(--blue) 11%, transparent) 5px 10px); }
+.gantt-bar.gantt-preview .gantt-bar-txt { color: var(--blue-deep); }
+.gantt-row-prev .gantt-label { font-style: italic; color: var(--ink-soft); }
