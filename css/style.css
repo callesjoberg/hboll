@@ -2794,3 +2794,9 @@ dialog.history-dialog {
   background: var(--card); color: var(--ink); font: 500 15px "Barlow", system-ui, sans-serif;
   min-width: 240px; outline: none; }
 .vinnare-club-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 22%, transparent); }
+.tro-click { cursor: pointer; transition: border-color .12s, box-shadow .12s, transform .12s; }
+.tro-click:hover { border-left-color: var(--blue); box-shadow: 0 4px 14px rgba(22,40,63,.14); transform: translateY(-1px); }
+.tro-click:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.tro-go { display: block; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--blue); opacity: 0; transition: opacity .12s; }
+.tro-click:hover .tro-go, .tro-click:focus-visible .tro-go { opacity: 1; }
+@media (hover: none) { .tro-go { opacity: .8; } }

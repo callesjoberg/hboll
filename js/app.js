@@ -4132,7 +4132,7 @@ window.HB = window.HB || {};
   let vinnareMode = "trofe";     // trofe | ar | topp
   let championsData = null;      // rows[] eller null tills laddat
   let championsLoading = false;
-  let vinnareClub = null;        // vald klubb (troféskåp); null = default favoritklubb
+  let vinnareQuery = null;       // sökterm (troféskåp); null = default favoritklubb
   let vinnareCup = null;         // vald cup (årets mästare)
   let vinnareYear = null;        // valt år (årets mästare)
   let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
@@ -4179,49 +4179,55 @@ window.HB = window.HB || {};
   function renderTrofeskap(root, rows) {
     const clubs = [...new Set(rows.map((r) => r.gc).filter(Boolean))]
       .sort((a, b) => a.localeCompare(b, "sv"));
-    if (vinnareClub === null || !clubs.includes(vinnareClub)) {
-      vinnareClub = clubs.includes(state.favoriteClub) ? state.favoriteClub : (clubs[0] || "");
-    }
-    // Sökruta (datalist) i stället för en jättelång dropdown — det finns
-    // hundratals klubbar med minst en titel.
+    if (vinnareQuery === null) vinnareQuery = state.favoriteClub || (clubs[0] || "");
     const listId = "vinnare-club-list";
     const dl = h("datalist", { id: listId }, clubs.map((c) => h("option", { value: c })));
     const input = h("input", {
       type: "text", class: "vinnare-club-input", list: listId, autocomplete: "off",
-      placeholder: "Sök klubb …", value: vinnareClub, "aria-label": "Klubb",
+      placeholder: "Sök klubb, t.ex. Lugi …", value: vinnareQuery, "aria-label": "Klubb",
     });
-    const apply = () => {
-      const v = input.value.trim().toLowerCase();
-      if (!v) return;
-      const pick = clubs.find((c) => c.toLowerCase() === v)
-        || clubs.find((c) => c.toLowerCase().startsWith(v))
-        || clubs.find((c) => c.toLowerCase().includes(v));
-      if (pick && pick !== vinnareClub) { vinnareClub = pick; renderContent(); }
-    };
+    const apply = () => { if (input.value !== vinnareQuery) { vinnareQuery = input.value; renderContent(); } };
     input.addEventListener("change", apply);
     root.append(h("div", { class: "row vinnare-controls" },
       h("span", { class: "muted" }, "Klubb:"),
       h("div", { class: "autocomplete-wrap" }, input, dl)));
 
-    const titles = rows.filter((r) => r.gc === vinnareClub)
-      .sort((a, b) => b.ed.localeCompare(a.ed) || a.cupName.localeCompare(b.cupName, "sv"));
+    // Fri delsträngssökning som tar med ALLA namnvarianter — "lugi" matchar
+    // Lugi HF, Lugi HF 2, Lugi … (både klubbnyckeln gc och det råa lagnamnet g).
+    const q = (vinnareQuery || "").trim().toLowerCase();
+    const titles = q
+      ? rows.filter((r) => (r.gc || "").toLowerCase().includes(q) || (r.g || "").toLowerCase().includes(q))
+          .sort((a, b) => b.ed.localeCompare(a.ed) || a.cupName.localeCompare(b.cupName, "sv"))
+      : [];
+    const distinct = [...new Set(titles.map((t) => t.gc).filter(Boolean))];
+    const heading = !q ? "Troféskåp"
+      : distinct.length === 1 ? distinct[0] + "s troféskåp"
+      : "Troféer för “" + vinnareQuery.trim() + "”";
+    const lead = !q ? "Skriv en klubb ovan."
+      : !titles.length ? "Inga A-slutspelstitlar som matchar “" + vinnareQuery.trim() + "”."
+      : distinct.length === 1 ? "A-slutspelsguld genom åren. Klicka ett kort för att öppna slutspelsträdet."
+      : titles.length + " titlar från " + distinct.length + " lagnamn — klicka ett kort för slutspelsträdet.";
     root.append(h("div", { class: "trophy-hero" },
       h("div", { class: "trophy-num" },
         h("div", { class: "trophy-big" }, String(titles.length)),
         h("div", { class: "trophy-lbl" }, titles.length === 1 ? "titel" : "titlar")),
       h("div", { class: "trophy-lead" },
-        h("h3", null, vinnareClub + "s troféskåp"),
-        h("p", { class: "muted" }, titles.length
-          ? "A-slutspelsguld genom åren. Byt klubb ovan för att se någon annans skåp."
-          : "Inga A-slutspelstitlar arkiverade ännu."))));
+        h("h3", null, heading),
+        h("p", { class: "muted" }, lead))));
     if (!titles.length) return;
     root.append(h("div", { class: "tro-grid" },
-      titles.map((t) => h("div", { class: "tro" },
+      titles.map((t) => h("div", {
+        class: "tro tro-click", role: "button", tabindex: "0",
+        title: "Öppna slutspelsträdet — " + t.cat + " (" + t.cupName + " " + t.ed + ")",
+        onclick: () => gotoBrowseSlutspel(t.cup, t.ed, t.cat),
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoBrowseSlutspel(t.cup, t.ed, t.cat); } },
+      },
         h("span", { class: "tro-medal" }, "🥇"),
         h("div", { class: "tro-yr" }, t.ed),
         h("div", { class: "tro-cup" }, t.cupName),
         h("div", { class: "tro-cls" }, t.cat),
-        h("div", { class: "tro-team" }, t.g)))));
+        h("div", { class: "tro-team" }, t.g),
+        h("span", { class: "tro-go" }, "Visa slutspel →")))));
   }
 
   function renderAretsMastare(root, rows) {
@@ -4414,7 +4420,42 @@ window.HB = window.HB || {};
       tabFn(content, hs);
     }
 
-    renderPicker();
+    // Direktlänkning hit från t.ex. Vinnare-fliken (se gotoBrowseSlutspel):
+    // ladda en bestämd cup+upplaga direkt i viewern i stället för väljaren.
+    async function openTarget(t) {
+      if (!idx[t.cupId] || !(idx[t.cupId].editions || []).some((e) => e.edition === t.edition)) {
+        renderPicker();
+        return;
+      }
+      hs.cupId = t.cupId; hs.edition = t.edition; hs.cupName = idx[t.cupId].cupName;
+      hs.view = t.view || "slutspel"; hs.catFilter = t.catFilter || ""; hs.arena = "";
+      root.replaceChildren(h("p", { class: "muted" }, "Hämtar …"));
+      const data = await HB.api.fetchArchiveEdition(t.cupId, t.edition);
+      hs.matches = (data && data.matches) || [];
+      renderViewer();
+    }
+
+    if (browseTarget) {
+      const t = browseTarget;
+      browseTarget = null;
+      openTarget(t);
+    } else {
+      renderPicker();
+    }
+  }
+
+  // Öppnar Historik-bläddraren direkt på en viss cup+upplaga+klass i slutspels-
+  // vyn — används av Vinnare-fliken (klick på ett troféskåpskort). browseTarget
+  // konsumeras av renderBrowseMode vid nästa render (nollställs där).
+  let browseTarget = null;
+  function gotoBrowseSlutspel(cupId, edition, catName) {
+    browseTarget = { cupId, edition, view: "slutspel", catFilter: catName || "" };
+    historyMode = "browse";
+    state.statsView = "historik";
+    state.view = "stats";
+    saveUi();
+    renderContent();
+    window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }
 
   // Historik (under Stats): "Jämför lag" (renderCompareMode) och "Bläddra i
