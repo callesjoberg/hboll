@@ -4882,7 +4882,7 @@ window.HB = window.HB || {};
     dlg.addEventListener("close", () => dlg.remove());
     document.body.append(dlg);
     const openMatch = (m) => { dlg.close(); openMatchDialog(m); };
-    const rows = matches.map((m) => h("tr", {
+    const makeRow = (m) => h("tr", {
       class: "sortable-row-clickable", role: "button", tabindex: "0",
       onclick: () => openMatch(m),
       onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatch(m); } },
@@ -4892,7 +4892,39 @@ window.HB = window.HB || {};
       h("td", { class: "l" }, HB.shortCat(m.catName)),
       h("td", { class: "l" }, m.home.name),
       h("td", { class: "l" }, m.away.name),
-      h("td", null, scoreText(m.res) || "–")));
+      h("td", null, scoreText(m.res) || "–"));
+
+    // Bygg raderna i omgångar (minne/miljö) — ~50 direkt, resten på begäran.
+    // De flesta öppnar bara för att se de översta, inte alla 400+, så det är
+    // onödigt att skapa hundratals DOM-rader i onödan.
+    const BATCH = 50;
+    let shown = 0;
+    const tbody = h("tbody", null);
+    const moreWrap = h("div", { class: "match-log-more" });
+    function addRows(count) {
+      const to = Math.min(shown + count, matches.length);
+      const frag = document.createDocumentFragment();
+      for (let i = shown; i < to; i++) frag.append(makeRow(matches[i]));
+      tbody.append(frag);
+      shown = to;
+      renderMore();
+    }
+    function renderMore() {
+      moreWrap.replaceChildren();
+      const remaining = matches.length - shown;
+      if (remaining <= 0) {
+        if (matches.length > BATCH) moreWrap.append(h("span", { class: "muted" }, "Visar alla " + matches.length + "."));
+        return;
+      }
+      moreWrap.append(
+        h("span", { class: "muted" }, "Visar " + shown + " av " + matches.length + " · "),
+        h("button", { class: "btn small", type: "button", onclick: () => addRows(BATCH) },
+          "Visa fler (" + remaining + " kvar)"),
+        remaining > BATCH
+          ? h("button", { class: "btn small", type: "button", onclick: () => addRows(matches.length) }, "Visa alla")
+          : null);
+    }
+
     dlg.append(
       h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
       h("div", { class: "match-dialog-head" },
@@ -4903,8 +4935,7 @@ window.HB = window.HB || {};
         "Det här är matcherna som räknas in i antalet högst upp — din nuvarande vy (" +
         (state.scope === "club" ? state.favoriteClub : "hela cupen") +
         "), inte en logg över ändringar. Tidsstämpeln är när schemat senast hämtades " +
-        "från arrangören; för en avslutad cup ändras inget efteråt." +
-        (matches.length > 12 ? " Scrolla i listan för att se alla " + matches.length + "." : "")),
+        "från arrangören; för en avslutad cup ändras inget efteråt."),
       matches.length
         ? h("div", { class: "table-box match-log-table" },
             h("table", { class: "standings" },
@@ -4912,8 +4943,10 @@ window.HB = window.HB || {};
                 h("th", { class: "l" }, "Tid"), h("th", { class: "l" }, "Klass"),
                 h("th", { class: "l" }, "Hemma"), h("th", { class: "l" }, "Borta"),
                 h("th", null, "Resultat"))),
-              h("tbody", null, rows)))
-        : h("p", { class: "muted" }, "Inga matcher hämtade ännu."));
+              tbody))
+        : h("p", { class: "muted" }, "Inga matcher hämtade ännu."),
+      moreWrap);
+    if (matches.length) addRows(BATCH);
     dlg.showModal();
   }
 

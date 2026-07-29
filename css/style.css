@@ -2837,3 +2837,4 @@ dialog.history-dialog {
 .tro-silver { border-left-color: #aab4c4; }
 .tro-brons { border-left-color: #c9814a; }
 .match-log-note { margin: 2px 0 10px; font-size: 13.5px; max-width: 62ch; }
+.match-log-more { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; font-size: 13.5px; }
