@@ -313,7 +313,10 @@ header.top {
 }
 .meta-link:hover, .meta-link:focus-visible { color: var(--ink); text-decoration: underline; }
 
-.match-log-table { max-height: 60vh; overflow-y: auto; }
+/* Högre specificitet än .table-box (som sätter overflow-y: hidden för att
+   inte kapa lodrät trackpad-scroll mitt på sidan) — men HÄR, i en modal
+   dialog, vill vi kunna scrolla igenom hela matchlistan (kan vara 400+). */
+.table-box.match-log-table { max-height: 60vh; overflow-y: auto; }
 .match-log-table th, .match-log-table td { white-space: nowrap; }
 
 /* --- verktygsrad ---------------------------------------------------------- */

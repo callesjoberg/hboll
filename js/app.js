@@ -4903,7 +4903,8 @@ window.HB = window.HB || {};
         "Det här är matcherna som räknas in i antalet högst upp — din nuvarande vy (" +
         (state.scope === "club" ? state.favoriteClub : "hela cupen") +
         "), inte en logg över ändringar. Tidsstämpeln är när schemat senast hämtades " +
-        "från arrangören; för en avslutad cup ändras inget efteråt."),
+        "från arrangören; för en avslutad cup ändras inget efteråt." +
+        (matches.length > 12 ? " Scrolla i listan för att se alla " + matches.length + "." : "")),
       matches.length
         ? h("div", { class: "table-box match-log-table" },
             h("table", { class: "standings" },
