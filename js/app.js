@@ -4104,7 +4104,7 @@ window.HB = window.HB || {};
   // Cuper-fliken (under Stats): en översiktsrad per cup, byggd helt ur
   // state.archiveIndex (redan hämtat via fetchArchiveIndex() i init(),
   // se dess kommentar) — INGEN ensureYearMatches krävs, index.json:s
-  // per-upplaga-nyckeltal (matches/teams/classes/clubs/days) räcker. Klick
+  // per-upplaga-nyckeltal (matches/teams/classes/clubs/countries/days) räcker. Klick
   // på en rad borrar ner i den cupens egna år-för-år-historik.
   let cupsOverviewSort = { key: "cupName", dir: 1 };
   let cupsOverviewDetailSort = { key: "edition", dir: -1 };
@@ -4122,6 +4122,7 @@ window.HB = window.HB || {};
         years: editions.length, latestEdition: latest.edition,
         latestTeams: latest.teams || 0, latestMatches: latest.matches || 0,
         latestClasses: latest.classes || 0, latestClubs: latest.clubs || 0,
+        latestCountries: latest.countries == null ? null : latest.countries,
         editions,
       };
     });
@@ -4145,6 +4146,9 @@ window.HB = window.HB || {};
       { key: "latestMatches", label: "Matcher", defaultDir: -1, get: (r) => r.latestMatches },
       { key: "latestClasses", label: "Klasser", defaultDir: -1, get: (r) => r.latestClasses },
       { key: "latestClubs", label: "Klubbar", defaultDir: -1, get: (r) => r.latestClubs },
+      { key: "latestCountries", label: "Länder", defaultDir: -1,
+        get: (r) => r.latestCountries == null ? -1 : r.latestCountries,
+        render: (r) => r.latestCountries == null ? "–" : String(r.latestCountries) },
     ];
     root.append(sortableTable(columns, rows, cupsOverviewSort, null,
       (r) => { state.statsCupDrill = r.cupId; renderContent(); }));
@@ -4171,6 +4175,9 @@ window.HB = window.HB || {};
       { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.matches || 0 },
       { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes || 0 },
       { key: "clubs", label: "Klubbar", defaultDir: -1, get: (r) => r.clubs || 0 },
+      { key: "countries", label: "Länder", defaultDir: -1,
+        get: (r) => r.countries == null ? -1 : r.countries,
+        render: (r) => r.countries == null ? "–" : String(r.countries) },
       { key: "days", label: "Speldagar", defaultDir: -1, get: (r) => r.days || 0 },
     ];
     root.append(sortableTable(columns, editions, cupsOverviewDetailSort));

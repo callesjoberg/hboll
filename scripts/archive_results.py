@@ -198,6 +198,7 @@ def build_index():
         classes = set()
         days = set()
         clubs = set()
+        countries = set()
         for m in matches:
             home, away = m.get("home") or {}, m.get("away") or {}
             if home.get("id") is not None:
@@ -219,6 +220,13 @@ def build_index():
                 clubs.add(home["club"])
             if away.get("club"):
                 clubs.add(away["club"])
+            # country: turneringssystemets landskod för laget. Äldre
+            # arkivfiler saknar fältet helt; None i indexet skiljer då
+            # "uppgift saknas" från en faktisk räknad nolla.
+            if home.get("country"):
+                countries.add(home["country"])
+            if away.get("country"):
+                countries.add(away["country"])
         # Första/sista speldatum (svensk kalender, se dagberäkningen ovan) —
         # driver Kalender-fliken (Gantt över cupernas speldagar, se
         # renderKalenderView i js/app.js).
@@ -239,6 +247,7 @@ def build_index():
             "first": first,
             "last": last,
             "clubs": len(clubs),
+            "countries": len(countries) if countries else None,
             "ts": d.get("ts"),
         })
     for cid in by_cup:
