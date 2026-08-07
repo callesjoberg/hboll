@@ -224,8 +224,8 @@ def main():
                 old = json.loads(path.read_text(encoding="utf-8"))
             except Exception:
                 pass
-        if not should_refresh(old):
-            print(f"{fname}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
+        if not should_refresh(old, cup_id):
+            print(f"{fname}: utanför sitt aktiva fönster — hoppar över skrapningen (se _freshness.py)")
             continue
         # En cups skrapning får inte stoppa RESTEN av listan om t.ex.
         # ProCup blockerar/svarar fel för just den — samma per-cup-

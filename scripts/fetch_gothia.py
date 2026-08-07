@@ -310,8 +310,8 @@ def main():
                 old = json.loads(path.read_text(encoding="utf-8"))
             except Exception:
                 pass
-        if not should_refresh(old):
-            print(f"{fname}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
+        if not should_refresh(old, cup_key):
+            print(f"{fname}: utanför sitt aktiva fönster — hoppar över skrapningen (se _freshness.py)")
             continue
         try:
             data = scrape(gothia_cup_id, edition_name)

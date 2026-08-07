@@ -331,8 +331,8 @@ def main():
                 old = json.loads(snapshot_path.read_text(encoding="utf-8"))
             except Exception:
                 pass
-        if not args.force and not should_refresh(old):
-            print(f"{cup['id']}: avslutad sen länge — hoppar över skrapningen (se _freshness.py)")
+        if not args.force and not should_refresh(old, cup["id"]):
+            print(f"{cup['id']}: utanför sitt aktiva fönster — hoppar över skrapningen (se _freshness.py)")
             continue
         t0 = time.time()
         try:

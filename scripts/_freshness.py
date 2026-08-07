@@ -22,8 +22,22 @@ matchens starttid, ur redan hämtad data):
                                     (~3 dygn, ~10 dygn efter sista matchen)
                                     för sena resultaträttningar
   längre än så:                    tyst för gott
+
+Saknas starttider helt (cupen har inte publicerat sitt schema än — ofta
+är lottningen ute långt före tiderna, så matcherna finns men med start=0)
+går det inte att bedöma något fönster ur datan. Då används FÖRRA årets
+datum ur arkivindexet som uppskattning, samma heuristik som Kalender-
+fliken redan ritar sina preliminära staplar med (se renderKalenderView i
+js/app.js). Uppskattningen får BARA skjuta upp skrapning av en cup som
+ligger tryggt långt fram — så fort det uppskattade fönstret är inom
+räckhåll (eller om ingen uppskattning går att göra) skrapas det varje
+körning igen. En cup som flyttat sig sedan förra året kan alltså aldrig
+tystas ner av en gissning som visar sig fel.
 """
 
+import datetime
+import json
+import pathlib
 import time
 
 ACTIVE_WINDOW_BEFORE_HOURS = 72  # täta kontroller redan såhär nära starten
@@ -31,6 +45,9 @@ ACTIVE_WINDOW_AFTER_HOURS = 24   # ...och såhär länge efter sista matchen
 CHECKPOINTS_HOURS = (72, 240)    # ~3 / ~10 dygn efter sista matchen — sena rättelser
 WINDOW_HOURS = 3                 # tolerans runt varje kontrollpunkt
 SPARSE_HOURS = 6                 # "vila"-kadens för cuper långt fram i tiden
+
+_ARCHIVE_INDEX = pathlib.Path(__file__).resolve().parent.parent / "data" / "archive" / "index.json"
+_index_cache = None  # laddas en gång per körning (samma index för alla cuper)
 
 
 def _match_window(data):
@@ -44,10 +61,54 @@ def _match_window(data):
     return min(starts), max(starts)
 
 
-def should_refresh(existing_data):
+def _archive_index():
+    global _index_cache
+    if _index_cache is None:
+        try:
+            _index_cache = json.loads(_ARCHIVE_INDEX.read_text(encoding="utf-8"))
+        except Exception:
+            _index_cache = {}
+    return _index_cache
+
+
+def _estimated_first_ms(cup_id):
+    """Uppskattad starttid (ms epoch) för en cup som ännu inte publicerat
+    några tider — förra kända upplagans startdatum flyttat till i år.
+    None om cupen saknar arkiverad historik med datum."""
+    if not cup_id:
+        return None
+    editions = (_archive_index().get(cup_id) or {}).get("editions") or []
+    dated = [e for e in editions if e.get("first")]
+    if not dated:
+        return None
+    try:
+        prev = max(dated, key=lambda e: e["first"])["first"]  # "ÅÅÅÅ-MM-DD"
+        month, day = int(prev[5:7]), int(prev[8:10])
+        today = datetime.date.today()
+        est = datetime.date(today.year, month, day)
+        # Cuper runt årsskiftet (Lundaspelen spelas 26–30 dec): har årets
+        # datum redan passerat med god marginal är det nästa års upplaga
+        # som är på väg, inte en cup som just varit.
+        if (today - est).days > 180:
+            est = datetime.date(today.year + 1, month, day)
+    except (ValueError, IndexError, KeyError):
+        return None
+    return time.mktime(est.timetuple()) * 1000
+
+
+def should_refresh(existing_data, cup_id=None):
     first_ms, last_ms = _match_window(existing_data)
     if first_ms is None:
-        return True  # ingen data alls än — försök alltid
+        # Inga starttider än. Ligger cupen enligt förra årets datum tryggt
+        # långt fram räcker den glesa kadensen — annars skrapas den varje
+        # körning, så ett publicerat schema fångas upp direkt.
+        est_first_ms = _estimated_first_ms(cup_id)
+        if est_first_ms is None:
+            return True  # ingen aning om när cupen spelas — försök alltid
+        hours_until_est = (est_first_ms - time.time() * 1000) / 3600000
+        if hours_until_est <= ACTIVE_WINDOW_BEFORE_HOURS:
+            return True
+        return int(time.time() // 3600) % SPARSE_HOURS == 0
 
     now_ms = time.time() * 1000
 
