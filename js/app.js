@@ -553,6 +553,7 @@ window.HB = window.HB || {};
     if (state.timeOrder !== "asc") p.set("order", state.timeOrder);
     if (state.matchFilter !== "all") p.set("mf", state.matchFilter);
     if (state.q) p.set("q", state.q);
+    syncSubViewUrl(p);
     const qs = p.toString();
     const url = location.pathname + (qs ? "?" + qs : "");
     // Bakåtknappen: lägg BARA en historik-post när den strukturella vyn
@@ -563,10 +564,104 @@ window.HB = window.HB || {};
     const sig = navSig();
     if (navInitialized && !applyingPopstate && sig !== lastNavSig) {
       history.pushState(null, "", url);
-    } else {
-      history.replaceState(null, "", url);
+      lastNavSig = sig;
+      return;
     }
     lastNavSig = sig;
+    // syncUrl() körs numera efter VARJE renderContent() (se dess kommentar),
+    // alltså även vid bakgrundsuppdateringar som inte ändrat något. Hoppa
+    // över replaceState när URL:en redan är identisk — Safari stryper
+    // history-anrop (~100 per 30 s) och skulle annars kunna börja kasta.
+    if (url !== location.pathname + location.search) history.replaceState(null, "", url);
+  }
+
+  // Underflikarnas EGNA val — Vinnare-läge/klubb, Klubb/Lag-sökningen och
+  // dess nedborrning, Kartans år, Trends klassurval osv. De bor utanför de
+  // gemensamma filtren ovan (de flesta som modulnivå-variabler eller
+  // "session, sparas ej"-fält i state), men måste ändå med i URL:en för att
+  // en delad länk ska visa det man faktiskt tittar på. Bara parametrar som
+  // hör till den JUST NU visade fliken tas med, så en Schema-länk slipper
+  // släpa på ett halvdussin stats-parametrar den ändå inte läser.
+  const MEDAL_KEYS = ["guld", "silver", "brons"];
+  const medalsToStr = (m) => MEDAL_KEYS.filter((k) => m[k]).join(",");
+  const strToMedals = (s) => {
+    const on = new Set(String(s).split(",").filter(Boolean));
+    return { guld: on.has("guld"), silver: on.has("silver"), brons: on.has("brons") };
+  };
+  // Klass- och klubbnamn kan innehålla komma ("P14, nivå 2") — namnlistor
+  // separeras därför med ~ i stället för den vanliga kommaseparatorn.
+  const NAME_SEP = "~";
+  // Klass-/lag-/divisions-id är numeriska i API:t och jämförs strikt (===)
+  // på flera håll — en URL-sträng måste därför tillbaka till number.
+  const toId = (s) => (/^\d+$/.test(s) ? +s : s);
+
+  function syncSubViewUrl(p) {
+    if (state.view === "slutspel") {
+      if (state.playoffCatTab != null) p.set("pcat", String(state.playoffCatTab));
+      const divs = Object.entries(state.playoffDivTab);
+      if (divs.length) p.set("pdiv", divs.map(([c, d]) => c + ":" + d).join(","));
+      return;
+    }
+    if (state.view !== "stats") return;
+    const sv = state.statsView;
+    // exploreCupIds delas av Trend och Karta (se dess state-kommentar).
+    if ((sv === "trend" || sv === "karta") && state.exploreCupIds.size) {
+      p.set("cups", [...state.exploreCupIds].join(","));
+    }
+    if (sv === "trend") {
+      if (state.trendCats.size) p.set("tcats", [...state.trendCats].join(NAME_SEP));
+      if (state.trendBaselineYear) p.set("tbase", state.trendBaselineYear);
+      if (state.trendCompareMetric !== "matches") p.set("tmetric", state.trendCompareMetric);
+    } else if (sv === "karta") {
+      if (state.mapYear) p.set("mapYear", state.mapYear);
+      if (state.mapCountryHistory) p.set("mapCh", "1");
+    } else if (sv === "klubb") {
+      // Alltid med (även tom) — sökrutan förifylls annars med favoritklubben
+      // vid första ritningen (clubQuerySeeded), och då skulle en medvetet
+      // tömd sökning inte överleva en delad länk eller bakåtknappen.
+      p.set("club", state.clubQuery);
+      if (state.clubDrillCup) p.set("clubCup", state.clubDrillCup);
+      if (state.clubDrillClass) p.set("clubClass", state.clubDrillClass);
+      if (state.clubYears.size) p.set("clubYears", [...state.clubYears].join(","));
+      if (!state.clubShowGaps) p.set("clubGaps", "0");
+    } else if (sv === "klubbjamforelse") {
+      if (state.compareNames.length) p.set("cmp", state.compareNames.join(NAME_SEP));
+      if (state.compareExpanded.size) p.set("cmpOpen", [...state.compareExpanded].join(NAME_SEP));
+    } else if (sv === "cuper") {
+      if (state.statsCupDrill) p.set("cupDrill", state.statsCupDrill);
+    } else if (sv === "kalender") {
+      if (kalenderYear) p.set("kyear", kalenderYear);
+    } else if (sv === "vinnare") {
+      if (vinnareMode !== "trofe") p.set("vm", vinnareMode);
+      if (vinnareMode === "trofe") {
+        if (vinnareQuery !== null) p.set("vq", vinnareQuery); // samma skäl som club ovan
+        if (medalsToStr(vinnareMedals) !== "guld") p.set("vmed", medalsToStr(vinnareMedals));
+      } else if (vinnareMode === "ar") {
+        if (vinnareCup) p.set("vcup", vinnareCup);
+        if (vinnareYear) p.set("vyear", vinnareYear);
+      } else {
+        if (vinnareToppCup) p.set("vtcup", vinnareToppCup);
+        if (medalsToStr(vinnareToppMedals) !== "guld") p.set("vtmed", medalsToStr(vinnareToppMedals));
+      }
+    } else if (sv === "historik") {
+      if (historyMode !== "compare") p.set("hmode", historyMode);
+      // Bläddraren har en helt egen lokal state (hs i renderBrowseMode) —
+      // browseOpen är dess spegling på modulnivå, satt när en upplaga
+      // faktiskt är öppnad (null när cup/år-väljaren visas). browseTarget
+      // som reserv: en upplaga som är BESTÄLLD men ännu inte öppnad (djup-
+      // länk vid appstart, eller ett klick i troféskåpet) hinner annars få
+      // sina b*-parametrar bortskrivna av synken i saveUi() innan
+      // renderBrowseMode ens ritats en första gång.
+      const b = browseOpen || browseTarget;
+      if (historyMode === "browse" && b) {
+        p.set("bcup", b.cupId);
+        p.set("bed", b.edition);
+        if (b.view && b.view !== "schema") p.set("bview", b.view);
+        if (b.catFilter) p.set("bcat", b.catFilter);
+        if (b.arena) p.set("bar", b.arena);
+        if (b.teamQuery) p.set("bq", b.teamQuery);
+      }
+    }
   }
 
   // Strukturell "vy-signatur" — det som ska räknas som ett eget bakåtsteg.
@@ -581,7 +676,6 @@ window.HB = window.HB || {};
   // denna). Sätter bara det som faktiskt finns i URL:en; nollställning görs
   // separat (resetUrlState) före popstate-återställning.
   function applyUrlToState(params) {
-    const toId = (s) => (/^\d+$/.test(s) ? +s : s);
     if (params.get("view")) state.view = params.get("view");
     if (params.get("stats")) state.statsView = params.get("stats");
     normalizeStatsView();
@@ -597,6 +691,58 @@ window.HB = window.HB || {};
     if (params.get("order") === "desc") state.timeOrder = "desc";
     if (["all", "upcoming", "played"].includes(params.get("mf"))) state.matchFilter = params.get("mf");
     if (params.get("q")) state.q = params.get("q");
+    applySubViewUrl(params);
+  }
+
+  // Motsvarigheten till syncSubViewUrl — läser underflikarnas egna val ur
+  // URL:en. Läser ALLA nycklar oavsett vilken flik som är vald (till skillnad
+  // från skrivningen): en länk som råkar bära med sig extra parametrar ska
+  // ändå landa rätt om man sen växlar till den fliken.
+  function applySubViewUrl(params) {
+    if (params.get("pcat")) state.playoffCatTab = +params.get("pcat");
+    if (params.get("pdiv")) {
+      const map = {};
+      params.get("pdiv").split(",").forEach((pair) => {
+        const i = pair.indexOf(":");
+        if (i > 0) map[pair.slice(0, i)] = toId(pair.slice(i + 1)); // divisions-id jämförs strikt (===)
+      });
+      state.playoffDivTab = map;
+    }
+    if (params.get("cups")) state.exploreCupIds = new Set(params.get("cups").split(","));
+    if (params.get("tcats")) state.trendCats = new Set(params.get("tcats").split(NAME_SEP));
+    if (params.get("tbase")) state.trendBaselineYear = params.get("tbase");
+    if (params.get("tmetric")) state.trendCompareMetric = params.get("tmetric");
+    if (params.get("mapYear")) state.mapYear = params.get("mapYear");
+    if (params.get("mapCh") === "1") state.mapCountryHistory = true;
+    // has() (inte get()) — en tom club/vq betyder "medvetet tömd sökruta"
+    // och ska hindra förifyllningen med favoritklubben, se syncSubViewUrl.
+    if (params.has("club")) { state.clubQuery = params.get("club"); clubQuerySeeded = true; }
+    if (params.get("clubCup")) state.clubDrillCup = params.get("clubCup");
+    if (params.get("clubClass")) state.clubDrillClass = params.get("clubClass");
+    if (params.get("clubYears")) state.clubYears = new Set(params.get("clubYears").split(","));
+    if (params.get("clubGaps") === "0") state.clubShowGaps = false;
+    if (params.get("cmp")) state.compareNames = params.get("cmp").split(NAME_SEP);
+    if (params.get("cmpOpen")) state.compareExpanded = new Set(params.get("cmpOpen").split(NAME_SEP));
+    if (params.get("cupDrill")) state.statsCupDrill = params.get("cupDrill");
+    if (params.get("kyear")) kalenderYear = params.get("kyear");
+    if (["trofe", "ar", "topp"].includes(params.get("vm"))) vinnareMode = params.get("vm");
+    if (params.has("vq")) vinnareQuery = params.get("vq");
+    if (params.has("vmed")) vinnareMedals = strToMedals(params.get("vmed"));
+    if (params.get("vcup")) vinnareCup = params.get("vcup");
+    if (params.get("vyear")) vinnareYear = params.get("vyear");
+    if (params.has("vtcup")) vinnareToppCup = params.get("vtcup");
+    if (params.has("vtmed")) vinnareToppMedals = strToMedals(params.get("vtmed"));
+    if (["compare", "browse"].includes(params.get("hmode"))) historyMode = params.get("hmode");
+    if (params.get("bcup") && params.get("bed")) {
+      // Samma mekanism som Vinnare-flikens gotoBrowseSlutspel: browseTarget
+      // konsumeras av renderBrowseMode nästa gång den ritas.
+      browseTarget = {
+        cupId: params.get("bcup"), edition: params.get("bed"),
+        view: params.get("bview") || "schema", catFilter: params.get("bcat") || "",
+        arena: params.get("bar") || "", teamQuery: params.get("bq"),
+      };
+      historyMode = "browse";
+    }
   }
 
   // Återställer de URL-styrda fälten till default (allt som INTE finns med i
@@ -607,6 +753,32 @@ window.HB = window.HB || {};
     state.days = new Set(); state.cats = new Set(); state.teams = new Set(); state.years = new Set();
     state.includeCurrentYear = true; state.arena = ""; state.viewArena = "";
     state.sort = "tid"; state.timeOrder = "asc"; state.matchFilter = "all"; state.q = "";
+    resetSubViewUrl();
+  }
+
+  // Samma sak för underflikarnas egna val (se syncSubViewUrl) — utan den
+  // skulle t.ex. en nedborrning i Klubb/Lag eller Kartans valda år hänga
+  // kvar när man backar till en URL som inte har dem.
+  function resetSubViewUrl() {
+    state.playoffCatTab = null; state.playoffDivTab = {};
+    state.exploreCupIds = new Set();
+    state.trendCats = new Set(); state.trendBaselineYear = null; state.trendCompareMetric = "matches";
+    state.mapYear = null; state.mapCountryHistory = false;
+    // clubQuerySeeded tillbaka till false: en bakåtnavigering till en vy där
+    // Klubb/Lag aldrig var öppnad ska förifylla favoritklubben igen precis
+    // som ett färskt besök gör (en medvetet tömd sökruta bär i stället med
+    // sig club= i URL:en, se syncSubViewUrl).
+    state.clubQuery = ""; clubQuerySeeded = false;
+    state.clubDrillCup = null; state.clubDrillClass = null;
+    state.clubYears = new Set(); state.clubShowGaps = true;
+    state.compareNames = []; state.compareExpanded = new Set();
+    state.statsCupDrill = null;
+    kalenderYear = null;
+    vinnareMode = "trofe"; vinnareQuery = null;
+    vinnareMedals = { guld: true, silver: false, brons: false };
+    vinnareCup = null; vinnareYear = null; vinnareToppCup = "";
+    vinnareToppMedals = { guld: true, silver: false, brons: false };
+    historyMode = "compare"; browseTarget = null; browseOpen = null;
   }
 
   // Trend/Karta/Klubb-Lag var tidigare egna toppnivåflikar (state.view-
@@ -1223,7 +1395,21 @@ window.HB = window.HB || {};
   // Ritar bara matchlistan/tabellerna. Används av allt som inte ska rubba
   // verktygsraden — fritextsökning och bakgrundsuppdateringar — så att
   // fokus i sökfältet (och en öppen lag-dropdown) inte går förlorat.
+  //
+  // Synkar också URL:en. Underflikarnas egna val (Vinnare-läge, Klubb/Lag-
+  // sökningen, Kartans år …) ligger utanför saveUi():s per-cup-filter och
+  // deras klickhanterare anropar bara renderContent() — utan den här
+  // synken hamnade inget av det i adressfältet. Görs EFTER kroppen: flera
+  // underflikar sätter sina defaults lat vid första ritningen (troféskåpets
+  // klubb = favoritklubben, Kalenderns år = innevarande), och en synk före
+  // hade missat dem. syncUrl() hoppar över identiska URL:er, så de många
+  // "onödiga" anropen (bakgrundsuppdateringar) kostar ingenting.
   function renderContent() {
+    renderContentBody();
+    syncUrl();
+  }
+
+  function renderContentBody() {
     const main = $("#content");
     main.replaceChildren();
     // Städa en eventuell övergiven kartinstans så fort vi INTE ska rita
@@ -2827,9 +3013,9 @@ window.HB = window.HB || {};
       h("option", { value: "" }, "Alla klasser"),
       classes.map((c) => h("option",
         { value: c, ...(c === hs.catFilter ? { selected: "" } : {}) }, HB.shortCat(c))));
-    classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); });
+    classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); syncBrowseUrl(); });
     const search = h("input", { type: "text", placeholder: "Sök lag …", value: hs.teamQuery });
-    search.addEventListener("input", () => { hs.teamQuery = search.value; refresh(); });
+    search.addEventListener("input", () => { hs.teamQuery = search.value; refresh(); syncBrowseUrl(); });
     root.replaceChildren(h("div", { class: "history-controls" }, classSel, withClearButton(search)), list);
     refresh();
   }
@@ -2856,7 +3042,7 @@ window.HB = window.HB || {};
       h("option", { value: "" }, "Alla klasser"),
       classes.map((c) => h("option",
         { value: c, ...(c === hs.catFilter ? { selected: "" } : {}) }, HB.shortCat(c))));
-    classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); });
+    classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); syncBrowseUrl(); });
     root.replaceChildren(h("div", { class: "history-controls" }, classSel), content);
     refresh();
   }
@@ -2889,7 +3075,7 @@ window.HB = window.HB || {};
       h("option", { value: "" }, "Alla klasser"),
       classes.map((c) => h("option",
         { value: c, ...(c === hs.catFilter ? { selected: "" } : {}) }, HB.shortCat(c))));
-    classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); });
+    classSel.addEventListener("change", () => { hs.catFilter = classSel.value; refresh(); syncBrowseUrl(); });
     root.replaceChildren(h("div", { class: "history-controls" }, classSel), content);
     refresh();
   }
@@ -2910,7 +3096,7 @@ window.HB = window.HB || {};
     }
     const arenaSel = h("select", { class: "select", "aria-label": "Välj bana" },
       arenas.map((a) => h("option", { value: a, ...(a === hs.arena ? { selected: "" } : {}) }, a)));
-    arenaSel.addEventListener("change", () => { hs.arena = arenaSel.value; refresh(); });
+    arenaSel.addEventListener("change", () => { hs.arena = arenaSel.value; refresh(); syncBrowseUrl(); });
     root.replaceChildren(h("div", { class: "history-controls" }, arenaSel), list);
     refresh();
   }
@@ -3932,6 +4118,25 @@ window.HB = window.HB || {};
       }, "← Tillbaka till " + cupName)));
     root.append(h("h2", { class: "day-h" }, cupName + " · " + className));
 
+    // Samma lata hämtning + förloppsindikator som nivån ovanför (renderClub-
+    // CupDetail). Behövs eftersom man kan landa RAKT här via en djuplänk
+    // (?clubCup=…&clubClass=…) utan att ha passerat nivå 0/1, som annars
+    // hunnit fylla state.yearMatches — computeClubClassGroups hoppar tyst
+    // över upplagor som inte är hämtade och hade gett "Inga matcher hittades".
+    const editionsMeta = clubEditionsFor(cupId);
+    const relevantEditions = state.teamIndex
+      ? editionsMeta.filter((em) => editionMightMatch(cupId, em.edition, query))
+      : editionsMeta;
+    for (const em of relevantEditions) ensureYearMatches(em.edition, cupId);
+    const loadedCount = relevantEditions.filter((em) => {
+      const ym = state.yearMatches[cupId + ":" + em.edition];
+      return ym && ym.status !== "loading";
+    }).length;
+    if (loadedCount < relevantEditions.length) {
+      root.append(archiveProgressBlock(loadedCount, relevantEditions.length));
+      return;
+    }
+
     const groups = computeClubClassGroups(cupId, className, query);
     if (!groups.length) {
       root.append(h("p", { class: "muted" }, "Inga matcher hittades."));
@@ -4367,6 +4572,11 @@ window.HB = window.HB || {};
   function renderVinnartoppen(root, rows) {
     const cups = [...new Map(rows.map((r) => [r.cup, r.cupName])).entries()]
       .sort((a, b) => a[1].localeCompare(b[1], "sv"));
+    // Ett cupfilter som inte finns i listan (t.ex. ett ?vtcup= för en cup
+    // utan arkiverade A-finaler) hade annars gett en tom topplista medan
+    // väljaren påstod "Alla cuper" — samma giltighetskoll som renderArets-
+    // Mastare gör för sitt cupval.
+    if (vinnareToppCup && !cups.some((c) => c[0] === vinnareToppCup)) vinnareToppCup = "";
     const cupSel = h("select", { class: "select", "aria-label": "Cup" },
       h("option", { value: "", ...(vinnareToppCup === "" ? { selected: "" } : {}) }, "Alla cuper"),
       cups.map(([id, name]) => h("option", { value: id, ...(id === vinnareToppCup ? { selected: "" } : {}) }, name)));
@@ -4591,7 +4801,14 @@ window.HB = window.HB || {};
     // huvudappens state.matches/state.view men rör aldrig den riktiga
     // state, så bläddring i historik kan inte läcka in i eller störa
     // den vanliga live-cupen.
-    const hs = {
+    //
+    // Återanvänds från browseOpen när en upplaga redan är öppnad: render-
+    // Content() kan köras när som helst (bakgrundsuppdatering var tredje
+    // minut, arkivindexet som anländer, en URL-synk) och byggde tidigare
+    // alltid ett tomt hs — vilket slängde tillbaka en pågående bläddring
+    // till cup/år-väljaren mitt i. browseOpen sätts av renderViewer och
+    // nollas av renderPicker, se deras kommentarer.
+    const hs = (browseOpen && browseOpen.matches) ? browseOpen : {
       cupId: cupIds.includes(state.cupId) ? state.cupId : cupIds[0],
       edition: null, cupName: "", matches: [],
       view: "schema", catFilter: "", teamQuery: state.favoriteClub || "", arena: "",
@@ -4615,8 +4832,13 @@ window.HB = window.HB || {};
           hs.matches = (data && data.matches) || [];
           hs.view = "schema"; hs.catFilter = ""; hs.arena = "";
           renderViewer();
+          syncUrl();
         },
       }, "Bläddra i " + idx[hs.cupId].cupName + " " + edSel.value);
+      // Ingen upplaga öppen (eller på väg att öppnas) längre — släpp URL:ens
+      // b*-parametrar.
+      browseOpen = null; browseTarget = null;
+      syncUrl();
       // Etiketten ska följa vald årtal, inte alltid det nyaste — edSel.value
       // är ännu tomt vid skapandet (första <option> sätts av webbläsaren
       // efter att elementet är i DOM:et), så sätt om texten en gång direkt
@@ -4634,10 +4856,13 @@ window.HB = window.HB || {};
     }
 
     function renderViewer() {
+      // syncSubViewUrl läser hs live via browseOpen — sätts här (och nollas i
+      // renderPicker) så URL:en alltid speglar den upplaga som faktiskt visas.
+      browseOpen = hs;
       const tabBar = h("nav", { class: "history-tabs", role: "tablist", "aria-label": "Historikvy" },
         HISTORY_TABS.map(([v, label]) => h("button", {
           class: "tab" + (hs.view === v ? " on" : ""), role: "tab", type: "button",
-          onclick: () => { hs.view = v; renderViewer(); },
+          onclick: () => { hs.view = v; renderViewer(); syncUrl(); },
         }, label)));
       const content = h("div", { class: "history-viewer-body" });
       root.replaceChildren(
@@ -4664,21 +4889,33 @@ window.HB = window.HB || {};
     // ladda en bestämd cup+upplaga direkt i viewern i stället för väljaren.
     async function openTarget(t) {
       if (!idx[t.cupId] || !(idx[t.cupId].editions || []).some((e) => e.edition === t.edition)) {
-        renderPicker();
+        renderPicker(); // nollar browseTarget/browseOpen
         return;
       }
       hs.cupId = t.cupId; hs.edition = t.edition; hs.cupName = idx[t.cupId].cupName;
-      hs.view = t.view || "slutspel"; hs.catFilter = t.catFilter || ""; hs.arena = "";
+      hs.view = t.view || "slutspel"; hs.catFilter = t.catFilter || "";
+      hs.arena = t.arena || ""; if (t.teamQuery != null) hs.teamQuery = t.teamQuery;
       root.replaceChildren(h("p", { class: "muted" }, "Hämtar …"));
       const data = await HB.api.fetchArchiveEdition(t.cupId, t.edition);
       hs.matches = (data && data.matches) || [];
+      // Först NU är beställningen utförd. Att nolla den före await:en hade
+      // gjort att en omritning under hämtningen (den är långsam första
+      // gången) inte hittade något att öppna och föll tillbaka på väljaren —
+      // fetchArchiveEdition cachar, så en omkörning är billig.
+      if (browseTarget === t) browseTarget = null;
       renderViewer();
+      syncUrl();
     }
 
+    // En beställd upplaga (djuplänk eller klick i troféskåpet) väger tyngst,
+    // därefter ett redan öppnat läge, annars cup/år-väljaren.
     if (browseTarget) {
-      const t = browseTarget;
-      browseTarget = null;
-      openTarget(t);
+      // Sätt browseOpen redan NU (inte först i renderViewer efter openTargets
+      // await) så URL:en behåller sina b*-parametrar under hämtningen.
+      browseOpen = { ...browseTarget };
+      openTarget(browseTarget);
+    } else if (browseOpen && browseOpen.matches) {
+      renderViewer();
     } else {
       renderPicker();
     }
@@ -4688,6 +4925,12 @@ window.HB = window.HB || {};
   // vyn — används av Vinnare-fliken (klick på ett troféskåpskort). browseTarget
   // konsumeras av renderBrowseMode vid nästa render (nollställs där).
   let browseTarget = null;
+  // Bläddrarens lokala hs-objekt medan en upplaga är öppnad (null = cup/år-
+  // väljaren visas). syncSubViewUrl läser cupId/edition/view/catFilter/arena/
+  // teamQuery direkt ur det — hs muteras ju av väljarna inuti bläddrarens
+  // egna flikar, som bara anropar sin lokala refresh() och aldrig render().
+  let browseOpen = null;
+  const syncBrowseUrl = () => { if (browseOpen) syncUrl(); };
   let vinnareReturn = false;   // kom vi till historik-bläddraren via Vinnare?
   function gotoBrowseSlutspel(cupId, edition, catName) {
     browseTarget = { cupId, edition, view: "slutspel", catFilter: catName || "" };
@@ -5992,7 +6235,10 @@ window.HB = window.HB || {};
       for (const e of ((idx[id] && idx[id].editions) || [])) if (e.matches > 0) yearSet.add(e.edition);
     }
     const years = [...yearSet].sort();
-    if (state.mapYear && !years.includes(state.mapYear)) state.mapYear = null; // t.ex. efter cupbyte
+    // t.ex. efter cupbyte. Bara när arkivindexet FAKTISKT är laddat — annars
+    // är years alltid tom vid första ritningen, och ett djuplänkat ?mapYear=
+    // hade nollställts innan indexet ens hunnit svara.
+    if (state.archiveIndex && state.mapYear && !years.includes(state.mapYear)) state.mapYear = null;
     if (years.length) {
       const yearSelect = h("select", { class: "select", "aria-label": "År" },
         h("option", { value: "" }, "Nu"),
@@ -7753,14 +7999,19 @@ window.HB = window.HB || {};
     } catch { /* kör på reservlistan */ }
 
     // Djuplänk: ?cup=potatis&view=...&scope=...&days=...&cats=...&teams=...
-    // &arena=...&sort=...&mf=...&q=... — hela filtret/sorteringen kan delas.
+    // &arena=...&sort=...&mf=...&q=... — hela filtret/sorteringen kan delas,
+    // liksom underflikarnas egna val (se syncSubViewUrl för hela listan).
     const params = new URLSearchParams(location.search);
     const urlCup = params.get("cup");
     if (urlCup && HB.allCups().some((c) => c.id === urlCup)) {
       state.cupId = urlCup;
     }
-    const hasUrlFilters = ["view", "stats", "scope", "days", "cats", "teams", "arena",
-      "viewArena", "sort", "order", "mf", "q"].some((k) => params.has(k));
+    // "Har länken något MER än bara cup?" i stället för en uppräkning av
+    // nycklar — listan växer med varje ny underflik, och en bortglömd nyckel
+    // hade tyst gjort att just den delen av länken tappades till förmån för
+    // det som råkade ligga sparat i webbläsaren. (tune tillhör välkomst-
+    // överlägget, se js/welcome.js — inte ett vyval.)
+    const hasUrlFilters = [...params.keys()].some((k) => k !== "cup" && k !== "tune");
     $$("#viewTabs .tab").forEach((b) =>
       b.addEventListener("click", () => {
         state.view = b.dataset.view; saveUi(); render();

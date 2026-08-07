@@ -30,14 +30,14 @@ window.HB = window.HB || {};
     return el;
   }
 
-  // Samma filterparametrar som hasUrlFilters i app.js/init() — hålls
-  // medvetet som en egen kopia (inte en delad konstant) eftersom de två
-  // filerna laddas oberoende av varandra och skriptordningen inte ska
-  // behöva spela någon roll.
+  // Samma regel som hasUrlFilters i app.js/init() — hålls medvetet som en
+  // egen kopia (inte en delad konstant) eftersom de två filerna laddas
+  // oberoende av varandra och skriptordningen inte ska behöva spela någon
+  // roll. "Något mer än bara cup" räknas som en delad vy-länk; tune är
+  // överläggets eget felsökningsflagga (se nedan), inte ett vyval.
   function hasUrlFilters() {
     const params = new URLSearchParams(location.search);
-    return ["view", "stats", "scope", "days", "cats", "teams", "arena",
-      "viewArena", "sort", "order", "mf", "q"].some((k) => params.has(k));
+    return [...params.keys()].some((k) => k !== "cup" && k !== "tune");
   }
 
   function fmtNum(n) {
