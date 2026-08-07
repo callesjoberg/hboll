@@ -470,6 +470,10 @@ window.HB = window.HB || {};
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
     favoriteTeam: localStorage.getItem("hb:favoriteTeam") || "", // tomt = ingen stjärna
     fullCardColors: localStorage.getItem("hb:fullCardColors") === "on",
+    // Minuter före matchstart som .ics-exporten lägger in en påminnelse
+    // (VALARM), 0 = ingen. Väljs i exportmenyn men sparas här, se
+    // buildMatchExportPanel.
+    icsAlarmMinutes: +(localStorage.getItem("hb:icsAlarmMinutes") || 0),
     teamColorOverrides: (() => {
       try { return JSON.parse(localStorage.getItem("hb:teamColorOverrides") || "{}"); }
       catch { return {}; }
@@ -2209,28 +2213,72 @@ window.HB = window.HB || {};
     return dd;
   }
 
+  // Hallarnas adressdata för INNEVARANDE cup, i den form exporterna vill ha
+  // ({bannamn: {venue, street, city, lat, lng}}). Tom för ProCup/Gothia —
+  // exporterna hoppar då över adresskolumnerna helt, se matchFields i
+  // export.js. Kickar igång den lata hämtningen om den inte redan gjorts,
+  // så en export från Schema-fliken (där Bana-vyn kanske aldrig besökts)
+  // ändå får med adresserna.
+  function exportArenaGeo() {
+    return HB.api.arenaGeo[state.cupId] || {};
+  }
+
+  const ICS_ALARM_CHOICES = [
+    ["0", "Ingen påminnelse"], ["15", "15 min innan"], ["30", "30 min innan"],
+    ["60", "1 timme innan"], ["120", "2 timmar innan"], ["1440", "1 dygn innan"],
+  ];
+
   function buildMatchExportPanel(item) {
+    // Starta adresshämtningen redan när verktygsraden byggs, inte först vid
+    // klicket: nedladdningen är synkron, så en geodata som fortfarande är på
+    // väg hade gett en export UTAN adresser utan att någon märkte det.
+    // Guardad internt, så det här är en no-op efter första gången.
+    ensureCupArenaGeo(state.cupId);
+    // Påminnelsevalet sitter direkt i exportpanelen (inte i Inställningar)
+    // eftersom det bara betyder något i just den här handlingen — men
+    // sparas ändå, så den som alltid vill ha 1 timme slipper välja om varje
+    // gång. Ett eget klick före nedladdningen; <select> stänger inte
+    // <details>-menyn så .ics-knappen ligger kvar under.
+    const alarmSel = h("select", {
+      class: "select export-alarm", "aria-label": "Påminnelse i kalendern",
+      onchange: (e) => {
+        state.icsAlarmMinutes = +e.target.value || 0;
+        localStorage.setItem("hb:icsAlarmMinutes", String(state.icsAlarmMinutes));
+      },
+    }, ICS_ALARM_CHOICES.map(([v, l]) => h("option",
+      { value: v, ...(String(state.icsAlarmMinutes) === v ? { selected: "" } : {}) }, l)));
+
     return h("div", { class: "team-picker-panel export-panel" },
       item("📅 Kalender (.ics)", () => {
         const list = sorted(filtered());
-        if (list.length) HB.ics.download(cup(), list, exportBaseName() + ".ics", state.matchMinutes);
+        if (list.length) {
+          HB.ics.download(cup(), list, exportBaseName() + ".ics", state.matchMinutes,
+            exportArenaGeo(), state.icsAlarmMinutes);
+        }
       }),
+      h("div", { class: "export-alarm-row" },
+        h("span", { class: "muted" }, "🔔"), alarmSel),
       item("📊 Kalkylark (.xlsx)", () => {
         const list = sorted(filtered());
-        if (list.length) HB.xlsx.download(cup(), list, exportBaseName() + ".xlsx");
+        if (list.length) HB.xlsx.download(cup(), list, exportBaseName() + ".xlsx", exportArenaGeo());
       }),
       item("CSV (.csv)", () => {
         const list = sorted(filtered());
-        if (list.length) HB.csv.download(cup(), list, exportBaseName() + ".csv");
+        if (list.length) HB.csv.download(cup(), list, exportBaseName() + ".csv", exportArenaGeo());
       }),
       item("JSON (.json)", () => {
         const list = sorted(filtered());
-        if (list.length) HB.json.downloadTable(HB.matchExportFields, HB.exportRows(list), exportBaseName() + ".json");
+        if (list.length) {
+          const geo = exportArenaGeo();
+          HB.json.downloadTable(HB.matchFieldsFor(list, geo), HB.exportRows(list, geo),
+            exportBaseName() + ".json");
+        }
       }),
       item("XML (.xml)", () => {
         const list = sorted(filtered());
         if (list.length) {
-          HB.xmlExport.downloadTable(HB.matchExportFields, HB.exportRows(list),
+          const geo = exportArenaGeo();
+          HB.xmlExport.downloadTable(HB.matchFieldsFor(list, geo), HB.exportRows(list, geo),
             "matcher", "match", exportBaseName() + ".xml");
         }
       }));

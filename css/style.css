@@ -2880,3 +2880,14 @@ dialog.history-dialog {
 .arena-popup { font-size: 13px; line-height: 1.5; max-width: 230px; }
 .arena-popup-courts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
 .arena-popup-courts .chip { font-size: 12px; padding: 2px 8px; }
+
+/* Påminnelseväljaren i kalenderexporten (buildMatchExportPanel) — sitter
+   indragen under .ics-raden så den läses som en inställning FÖR den, inte
+   som ett eget exportformat i listan. */
+.export-alarm-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 6px 8px;
+}
+.export-alarm { flex: 1; min-width: 0; font-size: 13px; padding: 3px 6px; }

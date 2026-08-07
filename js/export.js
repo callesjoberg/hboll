@@ -36,13 +36,39 @@ window.HB = window.HB || {};
     { label: "Resultat", key: "resultat" }, { label: "Plan", key: "plan" },
   ];
 
-  function matchRows(matches) {
+  // Adresskolumnerna läggs till BARA när det faktiskt finns adressdata för
+  // någon av de exporterade matcherna — annars hade varje ProCup-/Gothia-
+  // export (de saknar arenaadresser helt i källan) fått tre tomma kolumner.
+  const PLACE_FIELDS = [
+    { label: "Hall", key: "hall" }, { label: "Adress", key: "adress" },
+    { label: "Ort", key: "ort" },
+  ];
+
+  function hasPlaceData(matches, geo) {
+    return !!geo && matches.some((m) => geo[m.arena]);
+  }
+
+  // geo (valfri): {banans namn: {venue, street, city, lat, lng}} från
+  // HB.api.arenaGeo, se arenas_from_store i scripts/fetch_cupmanager.py.
+  function matchFields(matches, geo) {
+    return hasPlaceData(matches || [], geo) ? MATCH_FIELDS.concat(PLACE_FIELDS) : MATCH_FIELDS;
+  }
+
+  function matchRows(matches, geo) {
+    const withPlace = hasPlaceData(matches, geo);
     return matches.map((m) => {
       const { date, time } = wallDateTime(m.start);
-      return {
+      const row = {
         datum: date, tid: time, klass: m.catName, grupp: m.divName,
         hemmalag: m.home.name, bortalag: m.away.name, resultat: resultText(m.res), plan: m.arena,
       };
+      if (withPlace) {
+        const g = geo[m.arena] || null;
+        row.hall = g ? (g.venue || "") : "";
+        row.adress = g ? (g.street || "") : "";
+        row.ort = g ? (g.city || "") : "";
+      }
+      return row;
     });
   }
 
@@ -77,9 +103,12 @@ window.HB = window.HB || {};
     triggerDownload(blob, filename);
   }
 
-  function buildCsv(matches) { return buildCsvTable(MATCH_FIELDS, matchRows(matches)); }
-  function downloadCsv(cup, matches, filename) {
-    downloadCsvTable(MATCH_FIELDS, matchRows(matches), filename || cup.id + "-schema.csv");
+  function buildCsv(matches, geo) {
+    return buildCsvTable(matchFields(matches, geo), matchRows(matches, geo));
+  }
+  function downloadCsv(cup, matches, filename, geo) {
+    downloadCsvTable(matchFields(matches, geo), matchRows(matches, geo),
+      filename || cup.id + "-schema.csv");
   }
 
   // --- JSON --------------------------------------------------------------
@@ -273,13 +302,17 @@ window.HB = window.HB || {};
     triggerDownload(buildXlsxTable(fields, rows, sheetName), filename);
   }
 
-  function buildXlsx(matches) { return buildXlsxTable(MATCH_FIELDS, matchRows(matches), "Matcher"); }
-  function downloadXlsx(cup, matches, filename) {
-    downloadXlsxTable(MATCH_FIELDS, matchRows(matches), filename || cup.id + "-schema.xlsx", "Matcher");
+  function buildXlsx(matches, geo) {
+    return buildXlsxTable(matchFields(matches, geo), matchRows(matches, geo), "Matcher");
+  }
+  function downloadXlsx(cup, matches, filename, geo) {
+    downloadXlsxTable(matchFields(matches, geo), matchRows(matches, geo),
+      filename || cup.id + "-schema.xlsx", "Matcher");
   }
 
   HB.exportRows = matchRows;
-  HB.matchExportFields = MATCH_FIELDS;
+  HB.matchExportFields = MATCH_FIELDS;   // grundkolumnerna, utan adress
+  HB.matchFieldsFor = matchFields;       // med adress när geodata finns
   HB.csv = { build: buildCsv, download: downloadCsv, buildTable: buildCsvTable, downloadTable: downloadCsvTable };
   HB.xlsx = { build: buildXlsx, download: downloadXlsx, buildTable: buildXlsxTable, downloadTable: downloadXlsxTable };
   HB.json = { buildTable: buildJsonTable, downloadTable: downloadJsonTable };
