@@ -7219,6 +7219,23 @@ window.HB = window.HB || {};
     return divs;
   }
 
+  // Köerna nedan (tabeller/slutspel/grupptabeller) serialiserar sina anrop
+  // genom att kedja .then på en promise som lever kvar mellan anropen. Blir
+  // ett led AVVISAT poisonas hela kön: varje efterföljande .then hoppas
+  // över, så inga fler tabeller laddas — och rejection:en är ohanterad,
+  // vilket triggar "något gick fel"-rutan (se felfångaren i index.html).
+  //
+  // Fetchen är redan try/catch:ad i varje kö, men den avslutande
+  // renderContent() låg UTANFÖR: ett renderingsfel (t.ex. i en enskild vy)
+  // förvandlades därför till ett köhaveri i stället för att bara vara det
+  // fel det är. queued() ser till att kön ALLTID lämnas i löst tillstånd
+  // och loggar felet i stället för att tysta det.
+  function queued(prev, fn) {
+    return prev.then(fn, fn).catch((e) => {
+      try { console.error("[hboll] fel i bakgrundskö:", e); } catch { /* ingen konsol */ }
+    });
+  }
+
   let tableQueue = Promise.resolve();
 
   function ensureTable(divId, edition) {
@@ -7234,7 +7251,7 @@ window.HB = window.HB || {};
     }
     state.tables[divId] = { status: "loading", rows: [] };
     const complete = allMatchesFinished(state.matches.filter((m) => m.divId === divId));
-    tableQueue = tableQueue.then(async () => {
+    tableQueue = queued(tableQueue, async () => {
       try {
         const rows = await HB.api.fetchTable(cup(), divId, complete);
         state.tables[divId] = { status: "done", rows };
@@ -7353,7 +7370,7 @@ window.HB = window.HB || {};
     state.playoffs[catId] = { status: "loading", divisions: [] };
     const complete = allMatchesFinished(
       state.matches.filter((m) => m.catId === catId && m.divType === "Playoff"));
-    playoffQueue = playoffQueue.then(async () => {
+    playoffQueue = queued(playoffQueue, async () => {
       try {
         const divisions = await HB.api.fetchPlayoffs(cup(), catId, complete);
         state.playoffs[catId] = { status: "done", divisions };
@@ -7391,7 +7408,7 @@ window.HB = window.HB || {};
     state.groupTables[catId] = { status: "loading" };
     const complete = allMatchesFinished(
       state.matches.filter((m) => m.catId === catId && m.divType !== "Playoff"));
-    groupTablesQueue = groupTablesQueue.then(async () => {
+    groupTablesQueue = queued(groupTablesQueue, async () => {
       try {
         const groups = await HB.api.fetchGroupDivisions(cup(), catId, complete);
         const byGroupNum = {};
