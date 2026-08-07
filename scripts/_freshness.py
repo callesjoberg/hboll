@@ -25,26 +25,41 @@ matchens starttid, ur redan hämtad data):
 
 Saknas starttider helt (cupen har inte publicerat sitt schema än — ofta
 är lottningen ute långt före tiderna, så matcherna finns men med start=0)
-går det inte att bedöma något fönster ur datan. Då används FÖRRA årets
-datum ur arkivindexet som uppskattning, samma heuristik som Kalender-
-fliken redan ritar sina preliminära staplar med (se renderKalenderView i
-js/app.js). Uppskattningen får BARA skjuta upp skrapning av en cup som
-ligger tryggt långt fram — så fort det uppskattade fönstret är inom
-räckhåll (eller om ingen uppskattning går att göra) skrapas det varje
-körning igen. En cup som flyttat sig sedan förra året kan alltså aldrig
-tystas ner av en gissning som visar sig fel.
+går det inte att bedöma något fönster ur datan. Då gäller i tur och ordning:
+
+  förra årets datum finns i
+  arkivindexet:                    behandla det som cupens fönster (samma
+                                    heuristik som Kalender-flikens
+                                    preliminära staplar, se
+                                    renderKalenderView i js/app.js)
+  ingen historik heller, men datan
+  ändrades senaste 48h:            varje körning — något är på väg
+                                    (lottningen läggs ut, lag registreras)
+  ingen historik, inget har hänt:  en gång om dygnet
+
+Uppskattningen får BARA skjuta upp skrapning av en cup som ligger tryggt
+långt fram — så fort det uppskattade fönstret är inom räckhåll skrapas den
+varje körning igen. En cup som flyttat sig sedan förra året kan alltså
+aldrig tystas ner av en gissning som visar sig fel. Och en helt okänd cup
+kan inte fastna i dygnskadensen: nästa gång datan rör sig trappas den upp
+av sig själv.
+
+Alla glesa kadenser är timupplösta, se _slot().
 """
 
 import datetime
 import json
 import pathlib
 import time
+import zlib
 
 ACTIVE_WINDOW_BEFORE_HOURS = 72  # täta kontroller redan såhär nära starten
 ACTIVE_WINDOW_AFTER_HOURS = 24   # ...och såhär länge efter sista matchen
 CHECKPOINTS_HOURS = (72, 240)    # ~3 / ~10 dygn efter sista matchen — sena rättelser
 WINDOW_HOURS = 3                 # tolerans runt varje kontrollpunkt
 SPARSE_HOURS = 6                 # "vila"-kadens för cuper långt fram i tiden
+DORMANT_HOURS = 24               # ...och för en cup vi inte vet NÅGOT om (se should_refresh)
+STIRRING_HOURS = 48              # men ändrades datan såhär nyligen: följ den tätt igen
 
 _ARCHIVE_INDEX = pathlib.Path(__file__).resolve().parent.parent / "data" / "archive" / "index.json"
 _index_cache = None  # laddas en gång per körning (samma index för alla cuper)
@@ -59,6 +74,20 @@ def _match_window(data):
     if not starts:
         return None, None
     return min(starts), max(starts)
+
+
+def _slot(period_hours, cup_id):
+    """Sann under EN timme av varje period_hours — den glesa kadensen.
+
+    Timupplöst med flit: workflowet kör var 20:e minut, så en träff blir tre
+    körningar i rad. Det är avsiktlig redundans — schemalagda Actions-jobb
+    kan försenas flera minuter under last, och en finkornigare slot skulle
+    kunna missas helt. Hellre tre anrop än noll.
+
+    Vilken timme som träffas varierar per cup (crc32 på id:t) så att alla
+    vilande cuper inte råkar vakna i samma körning."""
+    offset = (zlib.crc32(cup_id.encode("utf-8")) % period_hours) if cup_id else 0
+    return int(time.time() // 3600) % period_hours == offset
 
 
 def _archive_index():
@@ -103,12 +132,25 @@ def should_refresh(existing_data, cup_id=None):
         # långt fram räcker den glesa kadensen — annars skrapas den varje
         # körning, så ett publicerat schema fångas upp direkt.
         est_first_ms = _estimated_first_ms(cup_id)
-        if est_first_ms is None:
-            return True  # ingen aning om när cupen spelas — försök alltid
-        hours_until_est = (est_first_ms - time.time() * 1000) / 3600000
-        if hours_until_est <= ACTIVE_WINDOW_BEFORE_HOURS:
+        if est_first_ms is not None:
+            hours_until_est = (est_first_ms - time.time() * 1000) / 3600000
+            if hours_until_est <= ACTIVE_WINDOW_BEFORE_HOURS:
+                return True
+            return _slot(SPARSE_HOURS, cup_id)
+        # Varken schema eller arkiverad historik att gissa ur — vi vet
+        # ingenting om när cupen spelas. Datans egen "senast ändrad"-stämpel
+        # är då enda signalen: ts skrivs bara om när innehållet FAKTISKT
+        # ändrats (se write_if_changed i skraporna), så en färsk stämpel
+        # betyder att något håller på att hända — lottningen läggs ut, lag
+        # registreras — och då är det värt att följa tätt. Har inget rört
+        # sig på länge räcker en kontroll om dygnet: den fångar upp starten
+        # på nästa förändring, som i sin tur trappar upp kadensen igen.
+        ts = (existing_data or {}).get("ts")
+        if not ts:
+            return True  # aldrig hämtad — försök alltid
+        if (time.time() * 1000 - ts) / 3600000 <= STIRRING_HOURS:
             return True
-        return int(time.time() // 3600) % SPARSE_HOURS == 0
+        return _slot(DORMANT_HOURS, cup_id)
 
     now_ms = time.time() * 1000
 
