@@ -499,20 +499,20 @@ window.HB = window.HB || {};
   rebuildClubPattern();
 
   function saveSettings() {
-    localStorage.setItem("hb:theme", state.theme);
-    localStorage.setItem("hb:favoriteClub", state.favoriteClub);
-    localStorage.setItem("hb:favoriteTeam", state.favoriteTeam);
+    persist("hb:theme", state.theme);
+    persist("hb:favoriteClub", state.favoriteClub);
+    persist("hb:favoriteTeam", state.favoriteTeam);
     rebuildClubPattern();
     updateClubLogo();
-    localStorage.setItem("hb:teamColors", state.teamColors ? "on" : "off");
-    localStorage.setItem("hb:breakMinutes", String(state.breakMinutes));
-    localStorage.setItem("hb:matchMinutes", String(state.matchMinutes));
-    localStorage.setItem("hb:revealBatchSize", String(state.revealBatchSize));
-    localStorage.setItem("hb:recentMatchCount", String(state.recentMatchCount));
-    localStorage.setItem("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
-    localStorage.setItem("hb:showPlayoffProjection", state.showPlayoffProjection ? "on" : "off");
-    localStorage.setItem("hb:fullCardColors", state.fullCardColors ? "on" : "off");
-    localStorage.setItem("hb:teamColorOverrides", JSON.stringify(state.teamColorOverrides));
+    persist("hb:teamColors", state.teamColors ? "on" : "off");
+    persist("hb:breakMinutes", String(state.breakMinutes));
+    persist("hb:matchMinutes", String(state.matchMinutes));
+    persist("hb:revealBatchSize", String(state.revealBatchSize));
+    persist("hb:recentMatchCount", String(state.recentMatchCount));
+    persist("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
+    persist("hb:showPlayoffProjection", state.showPlayoffProjection ? "on" : "off");
+    persist("hb:fullCardColors", state.fullCardColors ? "on" : "off");
+    persist("hb:teamColorOverrides", JSON.stringify(state.teamColorOverrides));
     applyTheme();
   }
 
@@ -526,9 +526,21 @@ window.HB = window.HB || {};
 
   function uiKey() { return "hb:ui:" + state.cupId; }
 
+  // localStorage kan kasta: full kvot (Firefox ger 5 MB per origin mot
+  // Chromes ~10 — se MAX_CACHE_BYTES i api.js), privat läge, eller
+  // blockerad lagring i webbläsarens integritetsinställningar. Ett
+  // misslyckat SPARANDE av en inställning får aldrig fälla hela sidan:
+  // utan den här spärren blev det ett ofångat fel vid varje sidladdning
+  // och varje cupbyte, vilket i sin tur triggade "något gick fel"-rutan
+  // (se felfångaren överst i index.html). Vyn fungerar ändå — den tappar
+  // bara minnet till nästa besök.
+  function persist(key, value) {
+    try { localStorage.setItem(key, value); } catch { /* utan lagring: kör vidare */ }
+  }
+
   function saveUi() {
-    localStorage.setItem("hb:cup", state.cupId);
-    localStorage.setItem(uiKey(), JSON.stringify({
+    persist("hb:cup", state.cupId);
+    persist(uiKey(), JSON.stringify({
       view: state.view, statsView: state.statsView, scope: state.scope, days: [...state.days],
       cats: [...state.cats], teams: [...state.teams], years: [...state.years],
       includeCurrentYear: state.includeCurrentYear,
@@ -2243,7 +2255,7 @@ window.HB = window.HB || {};
       class: "select export-alarm", "aria-label": "Påminnelse i kalendern",
       onchange: (e) => {
         state.icsAlarmMinutes = +e.target.value || 0;
-        localStorage.setItem("hb:icsAlarmMinutes", String(state.icsAlarmMinutes));
+        persist("hb:icsAlarmMinutes", String(state.icsAlarmMinutes));
       },
     }, ICS_ALARM_CHOICES.map(([v, l]) => h("option",
       { value: v, ...(String(state.icsAlarmMinutes) === v ? { selected: "" } : {}) }, l)));

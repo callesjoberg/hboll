@@ -547,6 +547,21 @@ window.HB = window.HB || {};
     }
   }
 
+  // Största cache-post vi ens FÖRSÖKER skriva. Firefox ger 5 MB per origin
+  // (Chrome ~10), och en enda stor cup kan spränga hela budgeten på egen
+  // hand — Åhus Beach är 6382 matcher ≈ 8,7 MB som UTF-16. En sådan post
+  // får ALDRIG plats i Firefox, men försöket slänger ut alla andra cupers
+  // cache på vägen (reservlogiken nedan) och lämnar kvoten spikad, så att
+  // nästa ofarliga localStorage-skrivning (saveUi/saveSettings i app.js)
+  // kastar. Hoppa hellre över cachen helt: loadCup() faller då tillbaka på
+  // den CI-byggda snapshotten, exakt som vid ett förstabesök.
+  //
+  // 2 MB: lämnar plats för två cachade cuper inom Firefox budget. Bara de
+  // riktigt stora (Åhus, Eken, Göteborg Fotboll) hamnar över — resten
+  // cachas som förut, och kolliderar de ändå tar den befintliga
+  // utrymmesröjningen nedan hand om det.
+  const MAX_CACHE_BYTES = 2e6;
+
   function writeCache(cup, matches, ts) {
     // clubs (Karta-vyns adressdata) och arenas (Bana-vyns) hänger med i
     // samma cache-post — de
@@ -555,6 +570,10 @@ window.HB = window.HB || {};
     // fetchIncremental ovan och loadCup() i app.js.
     const payload = JSON.stringify({ ts: ts || Date.now(), matches,
                                      clubs: clubGeo[cup.id], arenas: arenaGeo[cup.id] });
+    if (payload.length * 2 > MAX_CACHE_BYTES) { // *2: localStorage lagrar UTF-16
+      try { localStorage.removeItem(cacheKey(cup)); } catch { /* ingen lagring alls */ }
+      return;
+    }
     try {
       localStorage.setItem(cacheKey(cup), payload);
     } catch {
