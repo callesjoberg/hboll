@@ -2838,3 +2838,45 @@ dialog.history-dialog {
 .tro-brons { border-left-color: #c9814a; }
 .match-log-note { margin: 2px 0 10px; font-size: 13.5px; max-width: 62ch; }
 .match-log-more { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; font-size: 13.5px; }
+
+/* --- Bana-vyns platsblock (renderArenaPlaceBlock) ------------------------
+   Adressraden under banväljaren, plus den utfällbara kartan över var cupens
+   banor ligger. Lägre än Karta-flikens .map-box: här är kartan ett
+   komplement till matchlistan under, inte vyns huvudinnehåll, och ska inte
+   trycka ner listan utanför skärmen. */
+.arena-address { margin: 2px 0 10px; font-size: 13.5px; }
+.arena-pin { margin-right: 5px; }
+.arena-siblings { color: var(--ink-soft); }
+
+.arena-map-box {
+  height: 42vh;
+  min-height: 240px;
+  max-height: 420px;
+  margin: 10px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Platsnålen. Den valda banans plats fylls i --blue och får en ring, så den
+   går att hitta direkt bland de andra i samma stad. */
+.arena-marker {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 4px rgba(10, 18, 30, 0.35);
+  cursor: pointer;
+}
+.arena-marker.on {
+  background: var(--blue);
+  width: 19px;
+  height: 19px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 28%, transparent),
+              0 1px 4px rgba(10, 18, 30, 0.35);
+}
+
+.arena-popup { font-size: 13px; line-height: 1.5; max-width: 230px; }
+.arena-popup-courts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.arena-popup-courts .chip { font-size: 12px; padding: 2px 8px; }

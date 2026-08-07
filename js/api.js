@@ -77,11 +77,20 @@ window.HB = window.HB || {};
   const TEAM_FIELDS =
     "{club:{address:{address:{city:{},lat:{},lng:{},nation:{name:{},code:{}}}},nation:{code:{}}}}";
 
+  // Arena (BANAN) -> Location (PLATSEN) -> Address. Samma "gratis"-princip
+  // som TEAM_FIELDS klubbadress: store:n deduplicerar per entitet, så
+  // uppslaget kostar inga extra anrop hur många matcher banan än har.
+  // Flera banor delar ofta location — Åhus Beach har 18 arenor på EN,
+  // eftersom banorna ligger utspridda på samma inhägnade område. Håll i
+  // synk med scripts/fetch_cupmanager.py:s arenas_from_store.
+  const ARENA_FIELDS =
+    "{completeName:{},fieldName:{},location:{name:{},address:{street:{},city:{},lat:{},lng:{}}}}";
+
   function matchQuery(cup, limit, offset) {
     return (
       "MatchWindow({limit:" + limit + ",offset:" + offset +
       ",tournamentId:" + cup.tournamentId + "})" +
-      "{matches:[{... on Match:{start:{},arena:{},round:{}," +
+      "{matches:[{... on Match:{start:{},arena:" + ARENA_FIELDS + ",round:{}," +
       "away:{team:" + TEAM_FIELDS + "},division:{category:{},name:{}}," +
       "home:{team:" + TEAM_FIELDS + "},result:{}}}]}"
     );
@@ -226,6 +235,34 @@ window.HB = window.HB || {};
     return geo;
   }
 
+  // cupId -> {banans namn: {venue, street, city, lat, lng, loc}} — Bana-vyn
+  // i app.js läser direkt ur det här (delat, muterbart) objektet, precis som
+  // Karta-vyn gör med clubGeo. Nyckeln är SAMMA sträng som matchernas
+  // arena-fält bär, så uppslaget blir en ren dict-slagning.
+  const arenaGeo = {};
+
+  // {banans namn: {venue, street, city, lat, lng, loc}} — bara banor med
+  // ifylld adress. Ett hopp mindre än clubGeoFromStore: Location.address
+  // pekar direkt på Address-entiteten. venue/loc är PLATSEN banan tillhör,
+  // se ARENA_FIELDS. Håll i synk med arenas_from_store i
+  // scripts/fetch_cupmanager.py.
+  function arenaGeoFromStore(store) {
+    const geo = {};
+    for (const e of Object.values(store)) {
+      if (e.__typename !== "Arena") continue;
+      const name = e.completeName || e.fieldName || "";
+      if (!name) continue;
+      const loc = storeGet(store, e.location);
+      const addr = loc && storeGet(store, loc.address);
+      if (!addr || addr.lat == null || addr.lng == null) continue;
+      geo[name] = {
+        venue: loc.name || "", street: addr.street || "", city: addr.city || "",
+        lat: addr.lat, lng: addr.lng, loc: loc.id,
+      };
+    }
+    return geo;
+  }
+
   // --- förhämtad data (ProCup-cuper utan API/CORS) -----------------------
 
   const localTables = {};   // cupId -> {divId: rows}
@@ -257,7 +294,7 @@ window.HB = window.HB || {};
   // enskilda Match({id})-anrop och den stora fönsterfrågan strukturellt
   // identiska så normalize() kan användas rakt av på båda.
   function singleMatchFields() {
-    return "{start:{},arena:{},round:{},away:{team:" + TEAM_FIELDS + "}," +
+    return "{start:{},arena:" + ARENA_FIELDS + ",round:{},away:{team:" + TEAM_FIELDS + "}," +
       "division:{category:{},name:{}},home:{team:" + TEAM_FIELDS + "},result:{}}";
   }
 
@@ -297,6 +334,10 @@ window.HB = window.HB || {};
     // matchernas lag/klubbar — att skriva över hela clubGeo[cup.id] här
     // skulle tappa alla klubbar från redan avgjorda matcher.
     Object.assign(clubGeo[cup.id] = clubGeo[cup.id] || {}, clubGeoFromStore(combinedStore));
+    // Samma sammanslagning för banorna: en bana som bara har spelade
+    // matcher kvar finns inte i combinedStore, och skulle tappas av en
+    // rak överskrivning.
+    Object.assign(arenaGeo[cup.id] = arenaGeo[cup.id] || {}, arenaGeoFromStore(combinedStore));
     return merged;
   }
 
@@ -304,6 +345,7 @@ window.HB = window.HB || {};
     if (cup.dataUrl) return fetchLocal(cup);
     const store = await fetchStore(cup, onProgress);
     clubGeo[cup.id] = clubGeoFromStore(store);
+    arenaGeo[cup.id] = arenaGeoFromStore(store);
     return normalize(store);
   }
 
@@ -506,11 +548,13 @@ window.HB = window.HB || {};
   }
 
   function writeCache(cup, matches, ts) {
-    // clubs (Karta-vyns adressdata) hänger med i samma cache-post — den
+    // clubs (Karta-vyns adressdata) och arenas (Bana-vyns) hänger med i
+    // samma cache-post — de
     // fylls redan (live/inkrementellt eller från snapshotten) i
     // clubGeo[cup.id] innan writeCache() anropas, se fetchMatches/
     // fetchIncremental ovan och loadCup() i app.js.
-    const payload = JSON.stringify({ ts: ts || Date.now(), matches, clubs: clubGeo[cup.id] });
+    const payload = JSON.stringify({ ts: ts || Date.now(), matches,
+                                     clubs: clubGeo[cup.id], arenas: arenaGeo[cup.id] });
     try {
       localStorage.setItem(cacheKey(cup), payload);
     } catch {
@@ -727,7 +771,7 @@ window.HB = window.HB || {};
 
   HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
-             readCache, writeCache, localDataTs, clubGeo,
+             readCache, writeCache, localDataTs, clubGeo, arenaGeo,
              fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory, fetchTeamIndex,
              fetchChampions };
 })();

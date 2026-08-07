@@ -65,8 +65,18 @@ def match_query(tid, limit, offset):
     # "ungefärlig landsplacering"-nivå (mellan känd adress och helt okänd).
     team_fields = ("{club:{address:{address:{city:{},lat:{},lng:{},"
                    "nation:{name:{},code:{}}}},nation:{code:{}}}}")
+    # arena:{location:{address:...}} — samma "gratis"-princip som klubb-
+    # adressen ovan: store:n deduplicerar per Arena/Location-entitet, så
+    # uppslaget kostar inga extra anrop hur många matcher som än spelas på
+    # banan. Kedjan är Arena (BANAN, t.ex. "Bana 14"/"Noltorpshallen 2")
+    # -> Location (PLATSEN, t.ex. hallen eller hela festivalområdet)
+    # -> Address (gata/ort/koordinater). Flera banor delar location: Åhus
+    # Beach har 18 arenor men EN location, eftersom banorna ligger utspridda
+    # på samma inhägnade område. Se arenas_from_store().
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
-            "{matches:[{... on Match:{start:{},arena:{},round:{},roundRank:{},"
+            "{matches:[{... on Match:{start:{},round:{},roundRank:{},"
+            "arena:{completeName:{},fieldName:{},"
+            "location:{name:{},address:{street:{},city:{},lat:{},lng:{}}}},"
             "nextMatchWinner:{},nextMatchLoser:{},"
             f"away:{{team:{team_fields}}},division:{{category:{{}},name:{{}}}},"
             f"home:{{team:{team_fields}}},result:{{}}}}}}]}}")
@@ -196,6 +206,44 @@ def normalize(store):
     return matches
 
 
+def arenas_from_store(store):
+    """{arenanamn: {venue, street, city, lat, lng, loc}} för de banor som har
+    en adress. Nyckeln är SAMMA sträng som matchernas "arena"-fält bär
+    (Arena.completeName, se normalize) så uppslaget blir en ren dict-slagning
+    i js/app.js utan namnmatchning.
+
+    venue/loc är PLATSEN banan tillhör (Location-entiteten), inte banan
+    själv: flera banor delar ofta en location — Åhus Beach har 18 arenor på
+    EN, eftersom banorna ligger utspridda på samma inhägnade område, och
+    Noltorpshallen 1/2/3 är en hall. loc (location-id) är grupperings-
+    nyckeln; att gruppera på koordinat skulle funka men blir känsligt för
+    flyttalsjämförelser, och att gruppera på venue-NAMN duger inte eftersom
+    namnet ibland är intetsägande ("Bana" för hela Åhus-området).
+
+    Ett hopp mindre än clubs_from_store: Location.address pekar direkt på
+    Address-entiteten, utan NameClub:s wrapper-indirektion."""
+    def get(ref):
+        if isinstance(ref, dict):
+            return store.get(ref.get("href"), {}) or {}
+        return {}
+
+    arenas = {}
+    for e in store.values():
+        if e.get("__typename") != "Arena":
+            continue
+        name = e.get("completeName") or e.get("fieldName") or ""
+        if not name:
+            continue
+        loc = get(e.get("location"))
+        addr = get(loc.get("address"))
+        if addr.get("lat") is None or addr.get("lng") is None:
+            continue
+        arenas[name] = {"venue": loc.get("name") or "", "street": addr.get("street") or "",
+                        "city": addr.get("city") or "", "lat": addr["lat"], "lng": addr["lng"],
+                        "loc": loc.get("id")}
+    return arenas
+
+
 def clubs_from_store(store):
     """{klubbnamn: {city, lat, lng, country}} — bara klubbar med en ifylld
     adress (saknas för enstaka lag som registrerats utan klubbadress). Två
@@ -270,11 +318,13 @@ def write_if_changed(path, data, old=None):
             old = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             old = None
-    # "clubs" tillkom 2026-07-24 — old.get("clubs") is None fångar ÄLDRE
-    # snapshottar som redan har identiska matcher (och annars aldrig skulle
-    # skrivas om) så de får sin klubbdata efterhand utan att man manuellt
-    # måste radera filerna.
-    if old and old.get("matches") == data["matches"] and old.get("clubs") is not None:
+    # "clubs" tillkom 2026-07-24, "arenas" 2026-08-07 — is None-kollarna
+    # fångar ÄLDRE snapshottar som redan har identiska matcher (och annars
+    # aldrig skulle skrivas om) så de får de nya fälten efterhand utan att
+    # man manuellt måste radera filerna. Lägg till ett villkor här för varje
+    # nytt toppnivåfält, annars migreras vilande cuper aldrig.
+    if (old and old.get("matches") == data["matches"]
+            and old.get("clubs") is not None and old.get("arenas") is not None):
         print(f"{path.name}: oförändrad — skriver inte om")
         return
     ok, reason = check_plausible(old, data)
@@ -342,10 +392,12 @@ def main():
             continue
         matches = normalize(store)
         clubs = clubs_from_store(store)
-        print(f"{cup['id']}: {len(matches)} matcher, {len(clubs)} klubbar med adress "
-              f"på {time.time()-t0:.0f}s")
+        arenas = arenas_from_store(store)
+        print(f"{cup['id']}: {len(matches)} matcher, {len(clubs)} klubbar med adress, "
+              f"{len(arenas)} banor med adress på {time.time()-t0:.0f}s")
         write_if_changed(snapshot_path,
-                          {"ts": int(time.time() * 1000), "matches": matches, "clubs": clubs},
+                          {"ts": int(time.time() * 1000), "matches": matches,
+                           "clubs": clubs, "arenas": arenas},
                           old=old)
 
     if cups_changed:

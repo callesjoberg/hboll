@@ -444,6 +444,10 @@ window.HB = window.HB || {};
     // just synliga året, se countryYearSummary). Session, sparas ej.
     mapCountryHistory: false,
     showAllPlayedArena: false,   // Bana-vyn: visa alla spelade i stället för bara senaste timmarna
+    // Bana-vyn: är kartan över banornas platser utfälld? Av som förval —
+    // den drar in MapLibre från CDN (appens enda externa JS-beroende), och
+    // adressraden ovanför räcker för de flesta besök. Session, sparas ej.
+    arenaMapOpen: false,
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
     matches: [],
@@ -596,6 +600,10 @@ window.HB = window.HB || {};
   const toId = (s) => (/^\d+$/.test(s) ? +s : s);
 
   function syncSubViewUrl(p) {
+    if (state.view === "bana") {
+      if (state.arenaMapOpen) p.set("amap", "1");
+      return;
+    }
     if (state.view === "slutspel") {
       if (state.playoffCatTab != null) p.set("pcat", String(state.playoffCatTab));
       const divs = Object.entries(state.playoffDivTab);
@@ -699,6 +707,7 @@ window.HB = window.HB || {};
   // från skrivningen): en länk som råkar bära med sig extra parametrar ska
   // ändå landa rätt om man sen växlar till den fliken.
   function applySubViewUrl(params) {
+    if (params.get("amap") === "1") state.arenaMapOpen = true;
     if (params.get("pcat")) state.playoffCatTab = +params.get("pcat");
     if (params.get("pdiv")) {
       const map = {};
@@ -760,6 +769,7 @@ window.HB = window.HB || {};
   // skulle t.ex. en nedborrning i Klubb/Lag eller Kartans valda år hänga
   // kvar när man backar till en URL som inte har dem.
   function resetSubViewUrl() {
+    state.arenaMapOpen = false;
     state.playoffCatTab = null; state.playoffDivTab = {};
     state.exploreCupIds = new Set();
     state.trendCats = new Set(); state.trendBaselineYear = null; state.trendCompareMetric = "matches";
@@ -899,6 +909,10 @@ window.HB = window.HB || {};
       // vilket visar sig som "0 klubbar totalt" i Karta trots att adresser
       // faktiskt finns (entries/merged byggs direkt ur HB.api.clubGeo, som
       // ANDRA halvan av paret, och blir därför inte tomt).
+      // Bana-vyns adressdata, samma resonemang som clubs ovan: äldre
+      // cache-poster (skrivna innan arenas-fältet infördes) saknar den, och
+      // ska då lämna arenaGeo osatt så snapshot-vägen nedan kan fylla den.
+      if (cached.arenas) HB.api.arenaGeo[c.id] = cached.arenas;
       if (cached.clubs) {
         HB.api.clubGeo[c.id] = cached.clubs;
         state.mapCupAllClubs[c.id] = allClubNamesFromMatches(cached.matches);
@@ -920,6 +934,7 @@ window.HB = window.HB || {};
             state.matches = j.matches;
             state.loadedAt = j.ts || 0;
             HB.api.clubGeo[c.id] = j.clubs || {};
+            if (j.arenas) HB.api.arenaGeo[c.id] = j.arenas;
             state.mapCupAllClubs[c.id] = allClubNamesFromMatches(j.matches);
             state.mapCupCountryByClub[c.id] = clubCountryFromMatches(j.matches);
             const tc = teamsAndClassesFromMatches(j.matches);
@@ -1416,6 +1431,10 @@ window.HB = window.HB || {};
     // Karta just nu — se destroyMapIfLeavingKarta()s kommentar för varför
     // (misstänkt Chrome-specifik scrollåsning på HELT andra flikar).
     if (!(state.view === "stats" && state.statsView === "karta")) destroyMapIfLeavingKarta();
+    // Samma sak för Bana-vyns egen kartinstans (se createArenaMap) — den
+    // rivs så fort vi INTE ritar Bana, annars ligger en osynlig MapLibre-
+    // instans kvar och äter minne/WebGL-kontext på alla andra flikar.
+    if (state.view !== "bana") destroyArenaMap();
     // Stats (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper) bygger uteslutande
     // på det arkiverade data/archive/index.json (plus klubbadresser för
     // Karta) — beror INTE på om innevarande upplaga hunnit publicera ett
@@ -5595,6 +5614,8 @@ window.HB = window.HB || {};
         arenas.map((a) => h("option",
           { value: a, ...(state.viewArena === a ? { selected: "" } : {}) }, a)))));
 
+    renderArenaPlaceBlock(main, arenas);
+
     if (!state.viewArena) {
       main.append(h("div", { class: "banner" }, "Välj en bana ovan för att se dess matcher."));
       return;
@@ -5612,6 +5633,172 @@ window.HB = window.HB || {};
       state.showAllPlayedArena = true; renderContent();
     });
     if (btn) main.append(btn);
+  }
+
+  // --- Bana-vyns platsblock (adress + karta) -------------------------------
+  // Banorna bär bara ett NAMN i matchdatan ("Bana 14", "Noltorpshallen 2").
+  // HB.api.arenaGeo (se arenaGeoFromStore i api.js / arenas_from_store i
+  // scripts/fetch_cupmanager.py) kopplar namnet till en PLATS med adress och
+  // koordinater. Bara klassiska Cup Manager-cuper har datan — ProCup och
+  // Gothia exponerar ingen arenaadress alls, och deras banor får därför
+  // inget platsblock (samma begränsning som Karta-flikens klubbadresser).
+  //
+  // Flera banor delar ofta plats: Åhus Beach har 19 banor på EN adress
+  // eftersom de ligger utspridda på samma inhägnade festivalområde, och
+  // Noltorpshallen 1/2/3 är en hall. Därför grupperas nålarna på loc
+  // (location-id), inte på banans namn — annars hade de lagts i en hög på
+  // exakt samma punkt.
+  function arenaGeoFor(name) {
+    return (HB.api.arenaGeo[state.cupId] || {})[name] || null;
+  }
+
+  // [{loc, venue, street, city, lat, lng, arenas:[banor], matches:n}] för
+  // cupens alla banor med känd adress — en post per PLATS.
+  function arenaPlaces(arenas) {
+    const byLoc = new Map();
+    for (const a of arenas) {
+      const g = arenaGeoFor(a);
+      if (!g) continue;
+      const key = g.loc != null ? String(g.loc) : g.lat + "," + g.lng;
+      if (!byLoc.has(key)) {
+        byLoc.set(key, { key, venue: g.venue, street: g.street, city: g.city,
+                          lat: g.lat, lng: g.lng, arenas: [], matches: 0 });
+      }
+      byLoc.get(key).arenas.push(a);
+    }
+    for (const p of byLoc.values()) {
+      p.matches = scoped().filter((m) => p.arenas.includes(m.arena)).length;
+    }
+    return [...byLoc.values()];
+  }
+
+  // Platsens rubrik: location-namnet ("Estrad", "Noltorpshallen"), med
+  // gatan som reserv när platsen saknar namn. Popupen visar adressen på
+  // egen rad under, så rubriken utelämnas när den skulle bli en ren
+  // dubblett av den (en namnlös plats där rubrik och adress är samma gata).
+  function placeLabel(place) {
+    return (place.venue || "").trim() || place.street || place.city || "";
+  }
+
+  function addressText(place) {
+    return [place.street, place.city].filter(Boolean).join(", ");
+  }
+
+  function renderArenaPlaceBlock(main, arenas) {
+    const places = arenaPlaces(arenas);
+    if (!places.length) return; // ProCup/Gothia: ingen adressdata att visa
+    const sel = state.viewArena ? arenaGeoFor(state.viewArena) : null;
+    const selKey = sel ? (sel.loc != null ? String(sel.loc) : sel.lat + "," + sel.lng) : null;
+
+    if (sel) {
+      const place = places.find((p) => p.key === selKey);
+      const siblings = place ? place.arenas.filter((a) => a !== state.viewArena) : [];
+      // Räkna i stället för att räkna upp när platsen har många banor —
+      // Åhus 18 syskon skulle annars bli en rad text som dränker adressen.
+      const siblingText = !siblings.length ? null
+        : siblings.length > ARENA_SIBLING_NAMES
+          ? " · " + siblings.length + " andra banor på samma plats"
+          : " · samma plats som " + siblings.join(", ");
+      main.append(h("p", { class: "muted arena-address" },
+        h("span", { class: "arena-pin" }, "📍"),
+        addressText(sel),
+        siblingText ? h("span", { class: "arena-siblings" }, siblingText) : null));
+    }
+
+    main.append(h("div", { class: "row" },
+      h("button", {
+        class: "chip" + (state.arenaMapOpen ? " on" : ""), type: "button",
+        "aria-expanded": state.arenaMapOpen ? "true" : "false",
+        onclick: () => { state.arenaMapOpen = !state.arenaMapOpen; renderContent(); },
+      }, (state.arenaMapOpen ? "▾ " : "▸ ") + "Visa på karta"
+         + (places.length > 1 ? " (" + places.length + " platser)" : ""))));
+
+    if (!state.arenaMapOpen) return;
+    const box = h("div", { class: "arena-map-box" });
+    main.append(box);
+    ensureMapLibre().then((maplibregl) => {
+      // Vyn kan ha bytts ut medan MapLibre laddades — rita då ingenting.
+      if (!box.isConnected) return;
+      createArenaMap(maplibregl, box, places, selKey);
+    }).catch((e) => {
+      box.replaceChildren(h("p", { class: "muted" },
+        "Kartan kunde inte laddas: " + e.message));
+    });
+  }
+
+  // Egen kartinstans, HELT skild från Karta-flikens currentMap — de två kan
+  // aldrig vara synliga samtidigt (olika toppnivåflikar), men att dela
+  // variabel hade gjort att den enas städning rev den andras karta.
+  let arenaMap = null;
+  const ARENA_POPUP_COURTS = 12; // hur många banchips en platspopup visar
+  const ARENA_SIBLING_NAMES = 4; // fler syskonbanor än så räknas i stället för att räknas upp
+
+  function destroyArenaMap() {
+    if (!arenaMap) return;
+    arenaMap.remove();
+    arenaMap = null;
+  }
+
+  function createArenaMap(maplibregl, container, places, selKey) {
+    destroyArenaMap();
+    arenaMap = new maplibregl.Map({
+      container,
+      style: "https://tiles.openfreemap.org/styles/liberty",
+      center: [places[0].lng, places[0].lat],
+      zoom: 11,
+    });
+    arenaMap.addControl(new maplibregl.NavigationControl(), "top-right");
+    // Boxen ligger i ett innehåll som just ritats om, så MapLibre hinner
+    // mäta containern innan layouten satt sig — utan den här omstorleken
+    // ritas rutorna i en mindre yta än canvasen och lämnar tomma marginaler.
+    // ResizeObserver (inte bara ett engångsanrop) täcker även fönsterbyten
+    // och att verktygsraden fälls ut/ihop ovanför medan kartan är öppen.
+    const ro = new ResizeObserver(() => { if (arenaMap) arenaMap.resize(); });
+    ro.observe(container);
+    arenaMap.once("remove", () => ro.disconnect());
+    const bounds = new maplibregl.LngLatBounds();
+    for (const p of places) {
+      bounds.extend([p.lng, p.lat]);
+      const el = h("div", { class: "arena-marker" + (p.key === selKey ? " on" : "") });
+      const label = placeLabel(p);
+      const addr = addressText(p);
+      // Ett stort område (Åhus: 19 banor på en adress) skulle ge en popup
+      // längre än kartan — visa ett hanterbart urval, med den valda banan
+      // alltid med så man ser var man står.
+      const courts = p.arenas.length > ARENA_POPUP_COURTS
+        ? [...new Set([...(p.arenas.includes(state.viewArena) ? [state.viewArena] : []),
+                        ...p.arenas])].slice(0, ARENA_POPUP_COURTS)
+        : p.arenas;
+      const body = h("div", { class: "arena-popup" },
+        h("strong", null, label),
+        addr && addr !== label ? h("div", { class: "muted" }, addr) : null,
+        h("div", { class: "muted" },
+          p.arenas.length + (p.arenas.length === 1 ? " bana" : " banor") +
+          " · " + p.matches + " matcher"),
+        h("div", { class: "arena-popup-courts" },
+          courts.map((a) => h("button", {
+            class: "chip" + (a === state.viewArena ? " on" : ""), type: "button",
+            onclick: () => {
+              state.viewArena = a; state.showAllPlayedArena = false;
+              saveUi(); renderContent();
+            },
+          }, a)),
+          courts.length < p.arenas.length
+            ? h("span", { class: "muted" }, "+" + (p.arenas.length - courts.length) + " till")
+            : null));
+      new maplibregl.Marker({ element: el })
+        .setLngLat([p.lng, p.lat])
+        .setPopup(new maplibregl.Popup({ offset: 14 }).setDOMContent(body))
+        .addTo(arenaMap);
+    }
+    // En enda plats (t.ex. hela Åhus-området) ger tomma bounds att zooma
+    // till — centrera i stället på den med en läsbar kvartersnivå.
+    if (places.length > 1) {
+      arenaMap.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+    } else {
+      arenaMap.setCenter([places[0].lng, places[0].lat]);
+      arenaMap.setZoom(14);
+    }
   }
 
   // --- render: karta -----------------------------------------------------------
