@@ -5652,6 +5652,38 @@ window.HB = window.HB || {};
     return (HB.api.arenaGeo[state.cupId] || {})[name] || null;
   }
 
+  // Adressdatan kan saknas trots att cupen i övrigt är laddad: loadCup()
+  // läser i FÖRSTA hand localStorage-cachen, och poster skrivna innan
+  // arenas-fältet infördes (2026-08-07) har det inte. Snapshot-vägen som
+  // annars fyller fältet körs bara när det inte finns NÅGON cache, och för
+  // en avslutad cup görs ingen live-hämtning heller (refreshTtl är lång) —
+  // utan den här lata hämtningen skulle Bana-vyn sakna adress ända tills
+  // cachen en dag naturligt förnyas. Samma princip som ensureCupClubGeo.
+  const arenaGeoStatus = {}; // cupId -> "loading" | "done"
+
+  function ensureCupArenaGeo(cupId) {
+    if (HB.api.arenaGeo[cupId] || arenaGeoStatus[cupId]) return;
+    const c = HB.allCups().find((x) => x.id === cupId);
+    // ProCup/Gothia (dataUrl-cuper) har ingen arenaadress i källan alls —
+    // markera som färdig direkt i stället för att hämta en snapshot som
+    // inte finns.
+    if (!c || c.dataUrl) { arenaGeoStatus[cupId] = "done"; return; }
+    arenaGeoStatus[cupId] = "loading";
+    fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        HB.api.arenaGeo[cupId] = (j && j.arenas) || {};
+        arenaGeoStatus[cupId] = "done";
+        // Skriv tillbaka till cachen så nästa besök slipper hämta om hela
+        // snapshotten (Åhus är 6382 matcher) bara för adresserna.
+        if (state.cupId === cupId && state.matches.length) {
+          HB.api.writeCache(c, state.matches, state.loadedAt);
+        }
+        if (state.view === "bana" && state.cupId === cupId) renderContent();
+      })
+      .catch(() => { HB.api.arenaGeo[cupId] = {}; arenaGeoStatus[cupId] = "done"; });
+  }
+
   // [{loc, venue, street, city, lat, lng, arenas:[banor], matches:n}] för
   // cupens alla banor med känd adress — en post per PLATS.
   function arenaPlaces(arenas) {
@@ -5685,6 +5717,7 @@ window.HB = window.HB || {};
   }
 
   function renderArenaPlaceBlock(main, arenas) {
+    ensureCupArenaGeo(state.cupId); // ritar om själv när datan landat
     const places = arenaPlaces(arenas);
     if (!places.length) return; // ProCup/Gothia: ingen adressdata att visa
     const sel = state.viewArena ? arenaGeoFor(state.viewArena) : null;
