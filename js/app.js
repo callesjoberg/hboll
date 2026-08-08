@@ -1180,8 +1180,25 @@ window.HB = window.HB || {};
   // INTE som ett aktivt val här — man kunde skriva ett lagnamn i sökrutan
   // utan att kryssa någon klass/lag och bara få tomt/"välj klass"-meddelan-
   // det tillbaka, trots träffar.
+  // Spärren finns för att Schema/Tabeller/Slutspel annars skulle rendera
+  // HELA cupen som förval — tusentals matcher man sällan vill se på en gång.
+  // Den ska alltså fånga "har användaren smalnat av tillräckligt", inte
+  // "har användaren valt just en klass".
+  //
+  // En vald PLAN räknas därför också: en hall är i praktiken ett par dussin
+  // matcher (Örebrocupens största har 37 av 416), alltså minst lika smalt
+  // som en klass. Det är dessutom precis det urval en hallansvarig vill ha —
+  // cup, dag och hall, utan att bry sig om vilka klasser som spelar där.
+  //
+  // Dagar räknas INTE på egen hand: en enskild dag kan vara hela cupen i en
+  // helgcup, och Åhus har 600+ matcher per speldag. Dag SMALNAR AV ett
+  // hallval, men duger inte som enda avgränsning.
+  //
+  // Tabeller och Slutspel delar spärren men har ingen planväljare, så för dem
+  // är villkoret oförändrat i praktiken.
   function hasFilterSelection() {
-    return state.cats.size > 0 || state.teams.size > 0 || !!state.q.trim();
+    return state.cats.size > 0 || state.teams.size > 0 ||
+      !!state.arena || !!state.q.trim();
   }
 
   // Boolesk fritextsökning, delad av alla sökrutor (huvudsökrutan och
@@ -2585,7 +2602,11 @@ window.HB = window.HB || {};
     // Dagar och klasser — dropdown-väljare (sök-, filter- och sorterbara)
     // i stället för en knapp per dag/klass, som blir orimligt rörigt när
     // en cup spänner över många dagar eller klasser.
-    const days = [...new Set(scoped().map((m) => dayKey(m.start)))].sort();
+    // Matcher utan satt tid (start = 0, vanligt innan arrangören spikat
+    // spelordningen) hamnar på epoken och gav ett spöke i dagväljaren:
+    // "tors 1 jan." bland cupens riktiga speldagar. De har ingen dag att
+    // välja, så de hör inte hemma i listan — de syns fortfarande i schemat.
+    const days = [...new Set(scoped().filter((m) => m.start).map((m) => dayKey(m.start)))].sort();
     const cats = new Map();
     for (const m of scoped()) if (m.catId) cats.set(m.catId, m.catName);
     const catEntries = [...cats.entries()].sort((a, b) =>
@@ -6168,8 +6189,8 @@ window.HB = window.HB || {};
         // sortering" i verktygsraden på dator, bara "Filter" i mobilens
         // bottenrad. Att hänvisa till fel namn hjälper ingen.
         sheetMode()
-          ? "Välj en eller flera klasser eller lag under “Filter” för att visa schemat."
-          : "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
+          ? "Välj klass, lag eller plan under “Filter” för att visa schemat."
+          : "Välj klass, lag eller plan ovan (“Filter och sortering”) för att visa schemat."));
       return;
     }
     const list = sorted(filtered().filter(matchesViewFilter));
