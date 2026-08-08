@@ -328,6 +328,11 @@
         <span id="appVersion" class="muted"></span>
         <button class="btn small" type="button" id="resetAppBtn">Töm cache och ladda om</button>
       </div>
+      <!-- Vad webbläsaren rapporterar om sina två viewporter. Fasta
+           bottenrader går sönder just när de glider isär, och siffrorna
+           skiljer sig åt mellan webbläsare på ett sätt som inte går att
+           simulera på dator — de måste läsas av på den enhet som krånglar. -->
+      <p class="muted settings-hint" id="viewportDebug"></p>
       <p class="muted settings-hint">
         Visar sidan gammal information eller ett felmeddelande som inte
         försvinner? Knappen avregistrerar appens service worker, tömmer dess

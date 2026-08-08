@@ -8942,6 +8942,36 @@ window.HB = window.HB || {};
     // INTE, så filter, favoritklubb och övriga inställningar överlever.
     const verEl = $("#appVersion");
     if (verEl) verEl.textContent = "Version " + (HB.VERSION || "okänd");
+
+    // Viewport-siffrorna uppdateras medan dialogen är öppen, så man kan
+    // scrolla, se adressfältet ändra sig och läsa av vad webbläsaren
+    // faktiskt rapporterar. Utan dem går den här klassen av buggar bara att
+    // gissa sig till.
+    const vpEl = $("#viewportDebug");
+    if (vpEl) {
+      const visaViewport = () => {
+        const vv = window.visualViewport;
+        const rot = getComputedStyle(document.documentElement);
+        vpEl.textContent =
+          "Viewport: layout " + window.innerHeight +
+          (vv ? " · visuell " + Math.round(vv.height) + " · offsetTop " + Math.round(vv.offsetTop)
+              : " · visualViewport saknas") +
+          " · korrigering " + (rot.getPropertyValue("--vv-offset").trim() || "0px") +
+          // Inline-satt av renderBottomBar; läs från style, inte computed —
+          // custom properties satta via setProperty syns inte alltid i den.
+          " · rad " + (document.documentElement.style
+            .getPropertyValue("--bottombar-h").trim() || "?");
+      };
+      // Ingen villkorad loop: fyll direkt och uppdatera vid varje
+      // viewport-händelse. Dialogen kan öppnas när som helst, och texten ska
+      // vara aktuell så fort den syns.
+      visaViewport();
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", visaViewport);
+        window.visualViewport.addEventListener("scroll", visaViewport);
+      }
+      window.addEventListener("scroll", visaViewport, { passive: true });
+    }
     const resetBtn = $("#resetAppBtn");
     if (resetBtn) {
       resetBtn.addEventListener("click", async () => {
