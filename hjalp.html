@@ -261,7 +261,7 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <ol>
         <li><strong>Välj cup.</strong> Klicka på cup-knappen uppe till höger (t.ex. <em>Åhus Beach</em>) och välj den cup du är på. Byt när som helst.</li>
         <li><strong>Sätt din favoritklubb.</strong> Öppna <strong>⚙ Inställningar</strong> och skriv in din klubb (t.ex. <em>Alingsås HK</em>). Nu markeras dina lag, du får en egen flik med klubbnamnet och ett <em>Nästa match</em>-kort.</li>
-        <li><strong>Filtrera fram dina matcher.</strong> I <strong>Filter och sortering</strong> väljer du en klass eller ett lag — så visas schemat. Vill du bara se ditt lag? Välj det under <em>Alla lag</em>.</li>
+        <li><strong>Filtrera fram dina matcher.</strong> I <strong>Filter och sortering</strong> väljer du en klass, ett lag eller en plan — så visas schemat. Vill du bara se ditt lag? Välj det under <em>Alla lag</em>.</li>
       </ol>
       <div class="note good" data-label="Klart">
         <p>Appen kommer ihåg dina val till nästa gång — och adressfältet uppdateras så att du kan spara eller dela exakt den vyn.</p>
@@ -291,6 +291,18 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
         <li><strong>Stats</strong> — historik och statistik (dyker upp när cupen har historik att visa).</li>
       </ul>
       <p class="muted">Flikar som inte är relevanta för en viss cup döljs automatiskt — en ProCup-cup utan slutspelsdata visar t.ex. ingen Slutspel-flik.</p>
+
+      <h3>På mobilen ser det annorlunda ut</h3>
+      <p>På en telefon flyttar allt det här ner till en <strong>bottenrad</strong> som alltid ligger kvar, inom räckhåll för tummen. Skärmytan går till matcherna i stället för till knappar.</p>
+      <ul>
+        <li><strong>Flikarna</strong> (Schema, Tabeller, Slutspel, Bana, Stats) ligger som ikoner längst ned. Raden går att dra i sidled — <strong>⚙ Inställningar</strong> sitter längst ut efter Stats.</li>
+        <li><strong>Filter</strong> öppnar en rad med ikoner ovanför bottenraden: år, dagar, klasser, lag, plan. En liten <strong>siffra på filterknappen</strong> säger hur många filter som är aktiva.</li>
+        <li><strong>✕</strong> längst ut i filterremsan rensar allt du filtrerat på, i ett svep.</li>
+        <li>Väljarna öppnas som <strong>ark underifrån</strong> i stället för små rutor. Dra i handtaget upptill för att göra arket högre eller lägre.</li>
+      </ul>
+      <div class="note good" data-label="Hittar tillbaka">
+        <p>Klickar du dig vidare från ett matchkort — på en hall, ett lag eller en grupp — lägger sig en rad överst som säger <strong>vad du tittar på</strong> och tar dig tillbaka med ett tryck.</p>
+      </div>
     </section>
 
     <!-- 4 -->
@@ -368,6 +380,13 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <div class="note tip" data-label="Färgknep">
         <p>Har din klubb flera lag (Blå, Vit, Röd …)? Slå på färgkodning i <a href="#installningar">Inställningar</a> så syns de direkt — eller färglägg hela matchkortet i lagets färg.</p>
       </div>
+      <h3>Hur långt bakåt listan börjar</h3>
+      <p>Spelade matcher visas inte allihop på en gång — listan börjar där du troligen vill titta, och knappen <strong>↑ Visa fler tidigare matcher</strong> hämtar resten. Var den börjar beror på vad du gör:</p>
+      <ul>
+        <li><strong>Pågår cupen just nu</strong> vill du se de <strong>par senaste</strong> matcherna och sedan allt som återstår. Antalet ställer du i <a href="#installningar">Inställningar</a>.</li>
+        <li><strong>Bläddrar du i en avslutad cup</strong> (mer än en vecka sedan sista matchen) är hela poängen det som varit — då visas <strong>ungefär tjugo åt gången</strong>, och du laddar fler allt eftersom.</li>
+      </ul>
+      <p class="muted">Inget hämtas om från servern när listan växer; allt finns redan. Knappen visar bara mer av det.</p>
     </section>
 
     <!-- 7 -->
@@ -382,14 +401,21 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <ul>
         <li><strong>Din klubb / Hela cupen</strong> — begränsa till dina lag eller se allt.</li>
         <li><strong>Alla / Kommande / Spelade</strong> — matchstatus.</li>
-        <li><strong>Dagar</strong>, <strong>Klasser</strong> och <strong>Lag</strong> — sök- och flervalsbara listor (klasser har snabbval Flickor/Pojkar).</li>
+        <li><strong>Dagar</strong>, <strong>Klasser</strong> och <strong>Lag</strong> — sök- och flervalsbara listor (klasser har snabbval Flickor/Pojkar). Det du kryssat i lägger sig överst i listan.</li>
         <li><strong>Sök lag, plan, grupp …</strong> — fritextsök med förslag. Avancerat: <code>&amp;</code> = OCH, <code>/</code> eller <code>,</code> = ELLER.</li>
         <li><strong>Alla planer</strong> — filtrera på en bana.</li>
       </ul>
+      <h3>Klasser väljs på födelseår</h3>
+      <p>En klass heter olika saker olika år. Samma barn spelar <em>F11</em> ett år, <em>F12</em> nästa och <em>F13</em> året därpå — så ett filter på åldersklassen följer inte laget, det följer åldern.</p>
+      <p>Därför grupperas klassväljaren på <strong>födelseår</strong>. Väljer du <strong>F2011</strong> och tittar på flera år får du F11, F12, F13 och F14 — alltså samma årskull genom åren, inte fyra olika lag.</p>
+      <div class="note tip" data-label="Bra att veta">
+        <p>Laddas ett nytt år in i efterhand fylls valet på av sig själv med det årets klass för samma kull. Du behöver inte gå tillbaka och kryssa i på nytt.</p>
+      </div>
       <h3>Sortering (i Schema)</h3>
       <p>Välj <strong>Sortera: tid / klass / plan / resultat / mål</strong>. I tidsordning kan du dessutom vända listan med <em>Äldst/Nyast överst</em>.</p>
       <div class="note tip" data-label="Lås-tipset">
         <p><strong>🔒 Lås</strong> är smart när du t.ex. följer en hel klass men vill kika in på ett enskilt lag utan att tappa ditt grundfilter. Lås — utforska — klicka på chipen igen för att låsa upp.</p>
+        <p class="muted">Låset finns på dator. På mobilen behövs det inte: där tar orienteringsraden dig tillbaka till din vy när du klickat dig vidare.</p>
       </div>
     </section>
 
@@ -458,6 +484,13 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
         <li>Samma filter som resten av appen gäller (t.ex. bara din klubb, eller en viss klass).</li>
         <li>De senast spelade matcherna visas alltid (antal ställs in i Inställningar), plus alla kommande.</li>
       </ul>
+      <h3>Karta och adress</h3>
+      <p>Ligger hallarna utspridda över en hel kommun räcker det inte med ett namn. Har arrangören lagt in var hallarna ligger visar Bana-fliken dem <strong>på en karta</strong>, med <strong>gatuadress och ort</strong> under.</p>
+      <ul>
+        <li>Hallar som delar adress grupperas ihop — <em>Lindesberg Arena 1</em> och <em>2</em> är samma hus, och visas som en punkt.</li>
+        <li>Adressen följer med ut i exporterna, så den hamnar i kalendern och kan navigeras till. Se <a href="#export">Exportera</a>.</li>
+      </ul>
+      <p class="muted">Alla cuper har inte lagt in adresser. Saknas de visas bara hallens namn, precis som förut.</p>
     </section>
 
     <!-- 12 -->
@@ -524,9 +557,25 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <ul>
         <li><strong>📅 Kalender (.ics)</strong> — importera till Google/Apple/Outlook-kalendern. Matchlängden styrs i Inställningar.</li>
         <li><strong>📊 Kalkylark (.xlsx)</strong> och <strong>CSV</strong> — öppnas i Excel/Sheets.</li>
+        <li><strong>🎧 Till ProCue DJ</strong> — se nedan.</li>
         <li><strong>JSON</strong> och <strong>XML</strong> för den som vill jobba vidare med datan.</li>
       </ul>
+      <p><strong>Bana och adress följer med.</strong> Finns hallens gatuadress i cupen hamnar den i kalenderhändelsens platsfält — då kan du trycka på den i telefonen och få vägbeskrivning direkt. Kalkylark och CSV får egna kolumner för hall, adress och ort.</p>
+      <p><strong>Påminnelse.</strong> I exportpanelen väljer du om kalendern ska larma <em>15 min</em>, <em>30 min</em>, <em>1 timme</em>, <em>2 timmar</em> eller <em>1 dygn</em> före matchstart. Standard är ingen påminnelse.</p>
       <p class="muted">Vill du hellre <em>prenumerera</em> på ett enskilt lag (så kalendern uppdateras av sig själv)? Använd <strong>📅 Prenumerera</strong> i match-/lagdialogen.</p>
+
+      <h3>Till ProCue DJ</h3>
+      <p>Sköter du musiken i en hall kan du hämta matchlistan rakt in i <strong>ProCue DJ</strong>. Knappen <strong>🎧 Till ProCue DJ (kopiera)</strong> lägger urvalet i urklipp — klistra in i ProCues <em>Inspring</em>-flik. Den laddar alltså inte ner någon fil.</p>
+      <p>Exporten följer ditt filter, precis som allt annat här. Det vanliga upplägget för en hallansvarig:</p>
+      <ol>
+        <li>Välj cupen.</li>
+        <li>Välj <strong>dag</strong> — eller flera.</li>
+        <li>Välj <strong>hallen</strong> du ansvarar för under <em>Alla planer</em>.</li>
+        <li>Kopiera till ProCue.</li>
+      </ol>
+      <div class="note good" data-label="Ingen klass behövs">
+        <p>Du behöver <strong>inte</strong> välja klass eller lag för det här. En vald plan räcker för att schemat ska visas — så du ser exakt vad du är på väg att exportera innan du kopierar.</p>
+      </div>
       <h3>Dela din vy</h3>
       <p>Adressfältet speglar alltid ditt filter och din sortering. Kopiera länken — mottagaren får <strong>exakt samma vy</strong>, ända ner till vald klass, lag, dag och ordning.</p>
     </section>
@@ -549,6 +598,8 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
         <li><strong>Matchlängd</strong> — styr kalenderexport och pausmarkering.</li>
         <li><strong>Pausmarkering</strong> — visa mat/vätska-luckor i tidslinjen.</li>
         <li><strong>”Visa fler tidigare”-antal</strong> och <strong>senast spelade i Bana/slutspelstabell</strong> — finjustera hur mycket som visas.</li>
+        <li><strong>Om och hjälp</strong> — genvägar hit till manualen och till appens övriga sidor.</li>
+        <li><strong>Appversion</strong> — vilken version du kör, med knappen <strong>Töm cache och ladda om</strong> bredvid. Använd den om appen känns fastlåst i en gammal version.</li>
       </ul>
     </section>
 
@@ -567,7 +618,9 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
     <!-- 18 -->
     <section class="doc" id="faq" data-title="Vanliga frågor" data-group="Personligt">
       <h2><span class="num">18</span> Vanliga frågor</h2>
-      <details class="faq"><summary>Varför ser jag inget schema?</summary><div class="body"><p>Schemat visas först när du valt något att titta på. Öppna <strong>Filter och sortering</strong> och välj en klass eller ett lag. Har din klubb inga matcher i cupen erbjuds knappen <em>Visa hela cupen</em>.</p></div></details>
+      <details class="faq"><summary>Varför ser jag inget schema?</summary><div class="body"><p>Schemat visas först när du valt något att titta på. Öppna <strong>Filter och sortering</strong> och välj en <strong>klass</strong>, ett <strong>lag</strong> eller en <strong>plan</strong> — vilket som räcker. Har din klubb inga matcher i cupen erbjuds knappen <em>Visa hela cupen</em>.</p><p class="muted">Dagar räknas inte på egen hand: en enda speldag kan vara hela cupen, och då hade du fått flera hundra matcher i klump.</p></div></details>
+      <details class="faq"><summary>Jag är hallansvarig — kan jag få bara min hall?</summary><div class="body"><p>Ja. Välj cup, sedan <strong>dag</strong> och <strong>hall</strong> under <em>Alla planer</em>. Ingen klass eller lag behövs. Därifrån når du alla exporter, inklusive <strong>🎧 Till ProCue DJ</strong> — se <a href="#export">Exportera</a>.</p></div></details>
+      <details class="faq"><summary>Vart tog knapparna vägen på mobilen?</summary><div class="body"><p>De ligger i <strong>bottenraden</strong>. Flikarna som ikoner längst ned (dra i sidled — ⚙ Inställningar sitter längst ut), och all filtrering under <strong>Filter</strong>. Siffran på filterknappen säger hur många filter som är aktiva, och <strong>✕</strong> rensar dem.</p></div></details>
       <details class="faq"><summary>Mitt lag heter olika i olika cuper — spelar det roll?</summary><div class="body"><p>Nej. Sätt din <strong>favoritklubb</strong> så känner appen igen stavningsvarianter (AHK, Alingsås HK …). Förslagen i Inställningar är hämtade från den cup som är öppen.</p></div></details>
       <details class="faq"><summary>Stämmer tiderna?</summary><div class="body"><p>Tiderna kommer direkt från arrangören och kan ändras med kort varsel. Appen visar alltid det senast hämtade — tryck <strong>↻ Uppdatera</strong> om du vill vara helt säker.</p></div></details>
       <details class="faq"><summary>Kan jag följa flera lag samtidigt?</summary><div class="body"><p>Ja — välj flera lag i <em>Alla lag</em>-listan, eller håll dig i klubbläge så ser du alla dina lag. Ett enskilt <strong>favoritlag</strong> får dessutom en ⭐.</p></div></details>
