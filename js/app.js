@@ -1635,7 +1635,11 @@ window.HB = window.HB || {};
     // inte heller finnas, annars öppnar den ett tomt ark.
     const showFilter = state.view !== "stats";
     const tabs = $$("#viewTabs .tab").filter((b) => !b.hidden);
-    bar.replaceChildren(
+    // .filter(Boolean): replaceChildren är DOM:ets egen metod och gör om ett
+    // null till TEXTEN "null" (till skillnad från h(), som hoppar över det)
+    // — det syntes som ordet "null" i bottenraden på Stats-fliken, där
+    // filterknappen medvetet utelämnas.
+    bar.replaceChildren(...[
       ...tabs.map((src) => h("button", {
         class: "bottom-tab" + (src.dataset.view === state.view ? " on" : ""),
         type: "button", "aria-selected": String(src.dataset.view === state.view),
@@ -1660,7 +1664,13 @@ window.HB = window.HB || {};
         h("span", { class: "bottom-tab-label" }, "Filter"),
         activeFilterCount()
           ? h("span", { class: "bottom-filter-badge" }, String(activeFilterCount()))
-          : null) : null);
+          : null) : null,
+    ].filter(Boolean));
+    // Arkets underkant ska ligga dikt an mot raden. Höjden mäts i stället
+    // för att hårdkodas — den varierar med teckenstorlek och safe-area, och
+    // en gissad siffra gav ett synligt glapp mellan rad och ark.
+    document.documentElement.style.setProperty(
+      "--bottombar-h", Math.round(bar.getBoundingClientRect().height) + "px");
   }
 
   let filterBackdrop = null;

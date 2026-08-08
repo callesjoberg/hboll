@@ -3079,7 +3079,7 @@ dialog.history-dialog {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: calc(56px + env(safe-area-inset-bottom));
+    bottom: var(--bottombar-h, 56px); /* mätt i renderBottomBar, inkl. safe-area */
     z-index: 65;
     max-height: 70vh;
     overflow-y: auto;
@@ -3114,5 +3114,5 @@ dialog.history-dialog {
   }
 
   /* Plats åt bottenraden så sista matchen/sidfoten inte hamnar under den. */
-  #content, body > footer { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  #content, body > footer { padding-bottom: calc(var(--bottombar-h, 56px) + 14px); }
 }
