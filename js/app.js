@@ -48,6 +48,39 @@ window.HB = window.HB || {};
     return null;
   }
 
+  // Årskullen ur ett klassnamn: "Flickor 13 (födda 2012) 24-26 april" ->
+  // {g:"F", born:2012}. Åldersetiketten förskjuts mellan år (födda 2012 är
+  // F13 år 2026 men F14 år 2025) medan årskullen är densamma — den är alltså
+  // den stabila identiteten när flera upplagor blandas i samma vy.
+  // null när födelseåret inte går att läsa ut (alla cuper skriver det inte).
+  // Fyra skrivsätt förekommer i skarp data, uppmätt över samtliga cuper:
+  //   "Flickor 13 (födda 2012)"      svensk standard
+  //   "Boys 11 (boys born 2014)"     engelska (Eken Cup)
+  //   "Flickor 10 år (f 2015)"       förkortat (IrstaBlixten)
+  //   "F10(2014)"                    bara år i parentes (Katrineholm)
+  // Tillsammans täcker de 69 % av alla klassnamn. Resten ("F09", "F12/13",
+  // "Para Gul") har inget entydigt födelseår att gruppera på och behåller
+  // sitt fulla namn som egen rad — inget val försvinner.
+  function parseCohort(catName) {
+    const born = /(?:f[öo]dd[a]?|born|\bf)\.?\s*(\d{4})|\((\d{4})\)/i.exec(catName || "");
+    if (!born) return null;
+    const g = (parseCat(catName) || {}).g;
+    if (!g) return null;
+    return { g, born: +(born[1] || born[2]) };
+  }
+
+  const COHORT_LABELS = { F: "Flickor", P: "Pojkar", U: "Ungdom", D: "Damer", H: "Herrar" };
+
+  function cohortKey(catName) {
+    const c = parseCohort(catName);
+    return c ? c.g + c.born : null;
+  }
+
+  function cohortLabel(catName) {
+    const c = parseCohort(catName);
+    return c ? (COHORT_LABELS[c.g] || c.g) + " " + c.born : catName;
+  }
+
   HB.shortCat = function (catName) {
     const p = parseCat(catName);
     if (!p) return (catName || "").slice(0, 8);
@@ -549,6 +582,17 @@ window.HB = window.HB || {};
       filterLocked: state.filterLocked,
     }));
     syncUrl();
+    refreshFilterChrome();
+  }
+
+  // Siffran på filterknappen och Rensa-brickans synlighet speglar aktuellt
+  // filter. Ett filterval anropar bara renderContent(), inte render(), så
+  // utan den här lätta uppdateringen låg både siffran och brickan kvar i
+  // sitt gamla läge tills något annat råkade rita om verktygsraden.
+  function refreshFilterChrome() {
+    const n = activeFilterCount();
+    for (const el of document.querySelectorAll(".filter-clear-tile")) el.hidden = !n;
+    if (document.querySelector("#bottomBar")) renderBottomBar();
   }
 
   // Speglar aktuellt filter/sortering i adressfältet (utan att lägga till
@@ -1173,8 +1217,17 @@ window.HB = window.HB || {};
     return state.days.size > 0 || state.cats.size > 0 || state.teams.size > 0 ||
       state.years.size > 0 || !state.includeCurrentYear;
   }
+  // Låset skyddar en ALLTID SYNLIG verktygsrad från feltryck under en cupdag.
+  // I mobilens ark ligger filtren tre medvetna tryck bort (Filter -> väljare
+  // -> kryssruta), så skyddet köper ingenting där — det gjorde bara att
+  // klass-/lag-/årsväljarna försvann utan att det var uppenbart varför.
+  // Gäller alltså bara över 700 px, där raden fortfarande står framme.
+  //
+  // state.filterLocked NOLLSTÄLLS inte: låser man på datorn och sedan öppnar
+  // telefonen ska urvalet vara detsamma, bara redigerbart. Skyddet är det
+  // enda som skiljer.
   function isFilterLocked() {
-    return state.filterLocked && hasLockableSelection();
+    return !sheetMode() && state.filterLocked && hasLockableSelection();
   }
 
   function matchesViewFilter(m) {
@@ -1308,7 +1361,14 @@ window.HB = window.HB || {};
       for (const side of [m.home, m.away]) {
         if (side.id && !map.has(side.id)) {
           map.set(side.id, {
-            id: side.id, name: side.name, suffix: teamSuffix(side.name),
+            id: side.id, name: side.name,
+            // HELA namnet, inte teamSuffix(): den strippar favoritklubbens
+            // namn, vilket är rätt i klubbläget (där ALLA lag är dina, så
+            // prefixet bara upprepas) men fel här. I "Hela cupen" stod
+            // andra klubbars lag med fullt namn medan dina egna dök upp som
+            // bara "F13 Blå" — omöjliga att hitta för den som letar efter
+            // "Alingsås HK", och sorterade dessutom under B i stället för A.
+            suffix: side.name,
             catName: m.catName, catId: m.catId,
           });
         }
@@ -1442,7 +1502,68 @@ window.HB = window.HB || {};
   // "onödiga" anropen (bakgrundsuppdateringar) kostar ingenting.
   function renderContent() {
     renderContentBody();
+    renderMobileContextBar();
     syncUrl();
+  }
+
+  // Klassnamn ur ett kategori-id, för orienteringsraden nedan.
+  function catNameById(id) {
+    const m = allActiveMatches().find((x) => x.catId === id);
+    return m ? HB.shortCat(m.catName) : null;
+  }
+
+  // Vad vyn är avsmalnad till, i ord. Sammanfattar samma sak som
+  // activeFilterCount räknar, men läsbart — "Alingsås HK Blå · P13" i
+  // stället för en siffra.
+  function filterSummaryText() {
+    const bits = [];
+    if (state.teams.size) {
+      const namn = [...state.teams].map(teamNameById).filter(Boolean);
+      bits.push(namn.length && namn.length <= 2 ? namn.join(", ") : state.teams.size + " lag");
+    }
+    if (state.cats.size) {
+      const namn = [...state.cats].map(catNameById).filter(Boolean);
+      bits.push(namn.length && namn.length <= 2 ? namn.join(", ") : state.cats.size + " klasser");
+    }
+    if (state.arena) bits.push(state.arena);
+    if (state.days.size) bits.push(state.days.size + (state.days.size === 1 ? " dag" : " dagar"));
+    if (state.q) bits.push("\u201d" + state.q + "\u201d");
+    if (state.matchFilter !== "all") {
+      bits.push(state.matchFilter === "upcoming" ? "kommande" : "spelade");
+    }
+    return bits.join(" · ");
+  }
+
+  // Orienteringsrad överst i innehållet, BARA på mobil. Klick på hall, lag
+  // eller grupp i ett matchkort byter tyst ut hela filtret (gotoTeamMatches
+  // m.fl.) — på dator ser man det direkt i verktygsraden, som dessutom har
+  // en "Tillbaka till din vy"-chip. På mobil ligger den raden gömd bakom
+  // Filter-knappen, så man landade i en avsmalnad vy utan att se varför
+  // eller hur man tog sig ur den.
+  function renderMobileContextBar() {
+    const main = $("#content");
+    const gammal = main.querySelector(":scope > .mobile-context");
+    if (gammal) gammal.remove();
+    if (!sheetMode() || state.view === "stats") return;
+    const text = filterSummaryText();
+    if (!stashedFilter && !text) return;
+    main.prepend(h("div", { class: "mobile-context" },
+      stashedFilter ? h("button", {
+        class: "mobile-context-back", type: "button",
+        onclick: () => restoreStashedFilter(),
+      }, "\u2190 Tillbaka") : null,
+      h("span", { class: "mobile-context-text" }, text || "Filtrerad vy"),
+      text ? h("button", {
+        class: "mobile-context-clear", type: "button", "aria-label": "Rensa filtret",
+        onclick: () => {
+          state.days.clear(); state.cats.clear(); state.teams.clear(); state.years.clear();
+          state.includeCurrentYear = true;
+          state.viewCats = new Set(); state.viewTeams = new Set();
+          state.arena = ""; state.q = ""; state.matchFilter = "all";
+          state.schemaOlderRevealCount = 0;
+          saveUi(); render();
+        },
+      }, "\u2715") : null));
   }
 
   function renderContentBody() {
@@ -1597,7 +1718,212 @@ window.HB = window.HB || {};
       b.classList.toggle("on", b.dataset.view === state.view);
       b.setAttribute("aria-selected", String(b.dataset.view === state.view));
     });
+    renderBottomBar();
   }
+
+  // --- mobilens bottenrad --------------------------------------------------
+  // På telefon tog sidhuvud + vyflikar + verktygsrad 374 px av 844 — 44 % av
+  // skärmen innan första matchen. Bottenraden flyttar ner vyvalet (närmare
+  // tummen) och ersätter hela verktygsraden med EN filterknapp som fäller
+  // upp den som ett ark. Toppen får därmed tillbaka ~300 px.
+  //
+  // Raden SPEGLAR #viewTabs i stället för att äga sin egen fliklista: all
+  // logik för vilka flikar som är stödda (slutspel/stats) bor kvar i
+  // renderTabs, och kan inte hamna ur synk.
+  const FILTER_ICON = "☰";
+  const VIEW_ICONS = {
+    schema: "📅", tabeller: "▦", slutspel: "🏆", bana: "📍", stats: "📈",
+  };
+
+  // Hur många filter som faktiskt smalnar av vyn just nu — siffran på
+  // filterknappen, så man ser att ett filter är aktivt utan att öppna arket.
+  // Sortering räknas INTE: den ändrar ordning, inte urval.
+  function activeFilterCount() {
+    let n = 0;
+    // scope (Alingsås HK / Hela cupen) räknas INTE: det är ett läge, inte en
+    // avsmalning, och syns alltid som en egen växel. Att räkna avvikelse från
+    // förvalet gjorde dessutom att "Hela cupen" — det MINST filtrerade läget
+    // — bidrog till siffran, vilket var precis bakvänt.
+    n += state.days.size + state.cats.size + state.teams.size + state.years.size;
+    if (!state.includeCurrentYear) n++;
+    if (state.arena) n++;
+    if (state.q) n++;
+    if (state.matchFilter !== "all") n++;
+    return n;
+  }
+
+  function renderBottomBar() {
+    const bar = $("#bottomBar");
+    if (!bar) return;
+    // Stats har ingen verktygsrad (se renderToolbar) — då ska filterknappen
+    // inte heller finnas, annars öppnar den ett tomt ark.
+    // Stats har en EXTRA fast rad (underflikarna, se style.css) — innehållet
+    // måste lämna plats för båda, annars göms sista raden bakom dem.
+    document.body.classList.toggle("stats-tabs-fixed", state.view === "stats");
+    placeFooterLinks();
+    const showFilter = state.view !== "stats";
+    const tabs = $$("#viewTabs .tab").filter((b) => !b.hidden);
+    // .filter(Boolean): replaceChildren är DOM:ets egen metod och gör om ett
+    // null till TEXTEN "null" (till skillnad från h(), som hoppar över det)
+    // — det syntes som ordet "null" i bottenraden på Stats-fliken, där
+    // filterknappen medvetet utelämnas.
+    bar.replaceChildren(...[
+      ...tabs.map((src) => h("button", {
+        class: "bottom-tab" + (src.dataset.view === state.view ? " on" : ""),
+        type: "button", "aria-selected": String(src.dataset.view === state.view),
+        onclick: () => {
+          // toggleFilterSheet (inte bara klassen): den tar även bort
+          // bakgrundstäcket, som annars blev kvar och blockerade all
+          // klickning efter ett vybyte med arket öppet.
+          toggleFilterSheet(false);
+          state.view = src.dataset.view; saveUi(); render();
+        },
+      },
+        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" },
+          VIEW_ICONS[src.dataset.view] || "•"),
+        h("span", { class: "bottom-tab-label" }, src.textContent.trim()))),
+      // Kugghjulet flyttas hit från sidhuvudet: på en telefon är överkanten
+      // svårast att nå, och sidhuvudet blir samtidigt en rad renare. Öppnar
+      // samma dialog som förut — knappen i headern finns kvar i DOM:et (bara
+      // dold via CSS) så all befintlig logik pekar på samma element.
+      h("button", {
+        class: "bottom-tab bottom-settings", type: "button",
+        onclick: () => { toggleFilterSheet(false); $("#settingsBtn").click(); },
+      },
+        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, "⚙"),
+        // "Inställningar" är 13 tecken och klipps mitt i ordet på en 56 px
+        // flik. Förkortningen är standard i svenska mobilgränssnitt och
+        // läses obehindrat bredvid kugghjulet.
+        h("span", { class: "bottom-tab-label" }, "Inställn.")),
+      showFilter ? h("button", {
+        class: "bottom-tab bottom-filter" +
+          (document.body.classList.contains("filters-open") ? " on" : ""),
+        type: "button", "aria-label": "Filter och sortering",
+        onclick: () => { toggleFilterSheet(); },
+      },
+        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, FILTER_ICON),
+        h("span", { class: "bottom-tab-label" }, "Filter"),
+        activeFilterCount()
+          ? h("span", { class: "bottom-filter-badge" }, String(activeFilterCount()))
+          : null) : null,
+    ].filter(Boolean));
+    // Arkets underkant ska ligga dikt an mot raden. Höjden mäts i stället
+    // för att hårdkodas — den varierar med teckenstorlek och safe-area, och
+    // en gissad siffra gav ett synligt glapp mellan rad och ark.
+    document.documentElement.style.setProperty(
+      "--bottombar-h", Math.round(bar.getBoundingClientRect().height) + "px");
+    syncBottomStack();
+  }
+
+  // Total höjd på ALLT som ligger fast i botten just nu: bottenraden plus
+  // filterremsan när den är uppfälld. Väljarpanelerna utgår från den och
+  // lägger sig OVANFÖR i stället för att täcka raderna man just navigerade
+  // med. Mäts i stället för att räknas ut — remsans höjd beror på hur många
+  // brickor som ryms och på safe-area.
+  function syncBottomStack() {
+    const bar = $("#bottomBar");
+    let h = bar ? bar.getBoundingClientRect().height : 0;
+    // Allt annat som ligger FAST i botten just nu: filterremsan när den är
+    // uppfälld, och Stats-underflikarna på den fliken. Mäts i stället för
+    // att räknas ut — höjderna beror på antal brickor, teckenstorlek och
+    // safe-area, och en gissad siffra gömmer slutet på matchlistan.
+    for (const sel of ["#toolbar", '#content .history-tabs[aria-label="Stats"]']) {
+      const el = document.querySelector(sel);
+      if (el && getComputedStyle(el).position === "fixed") {
+        h += el.getBoundingClientRect().height;
+      }
+    }
+    document.documentElement.style.setProperty("--bottomstack-h", Math.round(h) + "px");
+  }
+
+  // Sidfotens länkar (Om appen / Hjälp / Lägg till cup / Admin) hör hemma i
+  // inställningarna på mobil — de är alla inställningsartade, och i sidfoten
+  // tog de plats i en vy där varje pixel räknas. FLYTTAS, inte kopieras:
+  // samma knappar med samma lyssnare, så inget behöver hållas i synk.
+  //
+  // Anropas från renderBottomBar (som körs vid varje renderTabs) i stället
+  // för att bara haka på matchMedia("change") — den händelsen är svår att
+  // testa och skulle vid ett missat fall lämna länkarna på fel ställe för
+  // gott. Funktionen är idempotent: den flyttar bara det som står fel.
+  function placeFooterLinks() {
+    const footer = document.querySelector("body > footer");
+    const linkSlot = $("#settingsLinks");
+    if (!footer || !linkSlot) return;
+    const host = window.matchMedia("(max-width: 700px)").matches ? linkSlot : footer;
+    // Textraden om datakällan hör till sidfoten och följer inte med.
+    for (const el of [...footer.children, ...linkSlot.children]) {
+      if (el.tagName === "SPAN") continue;
+      if (el.parentElement !== host) host.append(el);
+    }
+  }
+
+  let filterBackdrop = null;
+
+  // Cupknapp överst i filterarket. Cupen är det största urvalsvalet som
+  // finns, men låg bakom kugghjulet medan allt annat urval bor i arket.
+  // Knappen öppnar samma inställningsdialog som förut (där cuplistan med
+  // sportväljare redan finns) — ingen andra, konkurrerande cuplista att
+  // hålla i synk.
+  function renderSheetCupButton() {
+    const bar = $("#toolbar");
+    if (!bar || state.view === "stats") return;
+    const c = cup();
+    bar.prepend(h("button", {
+      class: "sheet-cup-btn", type: "button",
+      onclick: () => {
+        toggleFilterSheet(false);
+        $("#currentCupBtn").click();
+      },
+    },
+      h("span", { class: "sheet-cup-text" },
+        h("span", { class: "sheet-cup-label" }, "Cup"),
+        h("span", { class: "sheet-cup-name" }, c.name),
+        h("span", { class: "sheet-cup-meta" }, [c.place, c.edition].filter(Boolean).join(" "))),
+      h("span", { class: "sheet-cup-arrow", "aria-hidden": "true" }, "›")));
+  }
+
+  // Bakgrundstäcket hör till det STORA arket (filters-expanded), inte till
+  // ikonremsan: remsan är en tunn rad ovanför bottenraden och ska inte
+  // spärra resten av sidan — man ska kunna scrolla matchlistan med filtren
+  // framme, precis som med Stats-underflikarna.
+  function syncFilterBackdrop() {
+    const behovs = document.body.classList.contains("filters-open") &&
+      document.body.classList.contains("filters-expanded");
+    if (behovs && !filterBackdrop) {
+      filterBackdrop = h("div", {
+        class: "filter-sheet-backdrop",
+        onclick: () => {
+          document.body.classList.remove("filters-expanded");
+          syncFilterBackdrop();
+        },
+      });
+      document.body.append(filterBackdrop);
+    } else if (!behovs && filterBackdrop) {
+      filterBackdrop.remove();
+      filterBackdrop = null;
+    }
+  }
+
+  function toggleFilterSheet(force) {
+    const open = force === undefined
+      ? !document.body.classList.contains("filters-open") : !!force;
+    document.body.classList.toggle("filters-open", open);
+    if (!open) document.body.classList.remove("filters-expanded");
+    syncFilterBackdrop();
+    // Efter en bildruta: remsan måste hinna få sin layout innan den mäts.
+    requestAnimationFrame(syncBottomStack);
+    // Verktygsradens egen ihopfällning är meningslös inne i arket — arket ÄR
+    // den öppna/stängda växlingen. Tvinga upp den så man inte behöver två
+    // klick för att komma åt filtren.
+    if (open) {
+      state.toolbarOpen = true;
+      const dd = document.querySelector(".toolbar-collapse");
+      if (dd) dd.open = true;
+    }
+    renderBottomBar();
+  }
+
+
 
   function renderMeta() {
     // Uppdatera-knappen ger tydlig feedback direkt vid klick — annars
@@ -1733,6 +2059,36 @@ window.HB = window.HB || {};
     }
   }
 
+  // position:fixed utgår från LAYOUT-viewporten. Mobilwebbläsare ändrar
+  // däremot den VISUELLA viewporten när adressfältet krymper eller blir en
+  // flytande "ö" (Firefox), och då glider de två isär: bottenraden hamnade
+  // en bit ovanför skärmkanten med sidinnehåll synligt under, som en banner
+  // mitt i sidan.
+  //
+  // Skillnaden mäts via Visual Viewport-API:t och skrivs till --vv-offset,
+  // som alla bottenfästa element lägger till i sitt bottom-värde (se
+  // style.css). Saknas API:t blir den 0 och allt beter sig som förut.
+  function syncViewportOffset() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    // Positivt: den synliga ytan slutar OVANFÖR layoutens botten, så
+    // elementen måste lyftas. Negativt: tvärtom. Under 1 px är brus.
+    const diff = window.innerHeight - (vv.offsetTop + vv.height);
+    const px = Math.abs(diff) < 1 ? 0 : Math.round(diff);
+    document.documentElement.style.setProperty("--vv-offset", px + "px");
+  }
+
+  function setupViewportOffset() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    // scroll OCH resize: adressfältet ändrar höjd under scrollning, inte
+    // bara vid ett omritningstillfälle.
+    vv.addEventListener("resize", syncViewportOffset);
+    vv.addEventListener("scroll", syncViewportOffset);
+    window.addEventListener("orientationchange", () => setTimeout(syncViewportOffset, 250));
+    syncViewportOffset();
+  }
+
   function setupPickerSheets() {
     // toggle bubblar INTE, så lyssnaren måste ligga i fångstfasen för att
     // nå <details> var de än råkar sitta i trädet.
@@ -1752,22 +2108,48 @@ window.HB = window.HB || {};
           dd.querySelector(".team-picker-panel").style.setProperty("--sheet-h", saved + "vh");
         }
       }
-      syncSheetBackdrop(!!document.querySelector(".team-picker-dd[open]") && sheetMode());
+      const nagonOppen = !!document.querySelector(".team-picker-dd[open]");
+      syncSheetBackdrop(nagonOppen && sheetMode());
+      // #toolbar är position:fixed med z-index och skapar därmed en EGEN
+      // staplingskontext: väljarpanelens z-index gäller bara inom den, så
+      // bakgrundstäcket (barn till body) la sig ovanpå hela raden — panelen
+      // såg utgråad ut och gick inte att klicka i. Lyft raden över täcket
+      // medan en väljare är öppen. Att jämföra z-index-SIFFROR räcker inte
+      // mellan olika staplingskontexter.
+      document.body.classList.toggle("picker-open", nagonOppen);
     }, true);
 
     // Roterar man till liggande (eller öppnar på en bred skärm) ska ett
     // kvarglömt bakgrundstäcke inte ligga och blockera klick.
     window.matchMedia(SHEET_QUERY).addEventListener("change", () => {
       syncSheetBackdrop(!!document.querySelector(".team-picker-dd[open]") && sheetMode());
+      // Låset gäller bara över brytpunkten (se isFilterLocked) — rita om
+      // hela raden vid rotation, annars visas fel uppsättning väljare.
+      render();
     });
   }
 
   function buildPicker(opts) {
+    // opts.icon: enskild emoji som mobilens filterremsa visar ovanför
+    // etiketten (se .filter-group i style.css). Sätts som data-attribut i
+    // stället för att byggas som ett element, så desktopvyn — där remsan
+    // inte finns — förblir helt oförändrad.
     const dd = h("details", { class: "team-picker-dd" });
-    const summary = h("summary", { class: "chip team-picker-summary" });
+    // data-icon sitter på SUMMARY, inte på <details>: attr() i CSS läser bara
+    // attribut från pseudoelementets EGET element, och ::before hänger på
+    // summary. På <details> hade content: attr(data-icon) gett tomt.
+    const summary = h("summary", {
+      class: "chip team-picker-summary",
+      ...(opts.icon ? { "data-icon": opts.icon } : {}),
+    });
+    // Etiketten i ett eget element (inte som ren textnod): mobilens brickor
+    // behöver kunna korta den med ellips, och text-overflow biter inte på en
+    // anonym textnod inuti en flex-container.
+    const label = h("span", { class: "picker-label" });
     const setSummary = () => {
-      summary.textContent = opts.selected.size
+      label.textContent = opts.selected.size
         ? opts.countLabel(opts.selected.size) : opts.emptyLabel;
+      if (!label.parentNode) summary.append(label);
     };
     setSummary();
 
@@ -1782,13 +2164,21 @@ window.HB = window.HB || {};
     // det spelar ingen roll eftersom "klass"-jämförelsen aldrig körs.
     let sortMode = opts.sortToggle === false ? "namn" : "klass";
     const sortBtns = {};
-    const applySort = () => {
-      const cmp = sortMode === "namn"
+    // selectedFirst: lyfter ikryssade rader överst. Körs BARA när panelen
+    // öppnas (se toggle-lyssnaren nedan), aldrig vid ett enskilt klick —
+    // annars hoppar raden man just kryssade i väg under fingret och nästa
+    // klick landar på fel rad.
+    const applySort = (selectedFirst) => {
+      const base = sortMode === "namn"
         ? (a, b) => a.dataset.name.localeCompare(b.dataset.name, "sv")
         : (a, b) => (+a.dataset.catkey - +b.dataset.catkey) ||
             a.dataset.name.localeCompare(b.dataset.name, "sv");
+      const cmp = selectedFirst
+        ? (a, b) => (opts.selected.has(b._id) ? 1 : 0) - (opts.selected.has(a._id) ? 1 : 0) || base(a, b)
+        : base;
       [...list.children].sort(cmp).forEach((el) => list.append(el));
     };
+    dd.addEventListener("toggle", () => { if (dd.open) applySort(true); });
     const sortRow = opts.sortToggle === false ? null : h("div", { class: "team-picker-sort-row" },
       ["klass", "namn"].map((key) => {
         const b = h("button", {
@@ -1943,8 +2333,9 @@ window.HB = window.HB || {};
         id: t.id, label: HB.shortCat(t.catName) + " " + t.suffix,
         sortKey: catSortKey(t.catName), sortName: t.suffix,
       })),
+      icon: "👥",
       selected: state.teams,
-      emptyLabel: "Alla lag",
+      emptyLabel: "Lag",
       countLabel: (n) => "Lag (" + n + ")",
       searchPlaceholder: "Sök lag …",
       onChange: onChange || renderContent,
@@ -1957,21 +2348,98 @@ window.HB = window.HB || {};
         id: d, label: fmtDay.format(new Date(d + "T00:00:00Z")),
         sortKey: Date.parse(d + "T00:00:00Z"), sortName: d, // dayKey (ÅÅÅÅ-MM-DD) sorterar redan kronologiskt
       })),
+      icon: "📆",
       selected: state.days,
-      emptyLabel: "Alla dagar",
+      emptyLabel: "Dagar",
       countLabel: (n) => "Dagar (" + n + ")",
       searchPlaceholder: "Sök dag …",
       onChange: onChange || renderContent,
     });
   }
 
+  // Klassväljaren grupperar på ÅRSKULL när det går: "Flickor 2011" i stället
+  // för "Flickor 13 (födda 2011) 25-27 april". Blandar man in tidigare år
+  // finns annars samma lag under olika etiketter — F13 år 2024 är F14 år
+  // 2025 — och varje upplaga får dessutom egna klass-id, så en klass vald i
+  // ett år filtrerade bort både matcher OCH lag från de andra.
+  //
+  // Bara PRESENTATIONEN grupperas. state.cats innehåller fortfarande klass-
+  // id, så filtrering, tabeller, slutspel, URL:er och sparad vy är helt
+  // orörda — proxyn nedan översätter mellan årskull och id, precis som
+  // yearSelectionProxy gör för årsväljaren.
+  //
+  // Klasser utan läsbart födelseår (alla cuper skriver det inte) blir kvar
+  // som egna rader med sitt fulla namn — inget val försvinner.
+  // Ett kullval fångar de klass-id som fanns NÄR man kryssade i det. Lägger
+  // man till ett år efteråt hämtas det årets matcher in, men dess klass-id
+  // står utanför urvalet — resultatet blev att man valde "Flickor 2011",
+  // la till 2025, och ändå bara såg 2026 års matcher.
+  //
+  // Här utökas därför urvalet till att omfatta ALLA nu kända id för de
+  // kullar som redan är valda. Körs vid varje uppbyggnad av verktygsraden,
+  // alltså även när ett arkivår just laddat klart (ensureYearMatches
+  // anropar render()). Säkert att köra om: kullproxyn kryssar ur hela
+  // kullen på en gång, så ett delvis urval kan aldrig vara avsiktligt.
+  function expandCohortSelection(catEntries) {
+    if (!state.cats.size) return;
+    const idsByKey = new Map();
+    const valdaKullar = new Set();
+    for (const [id, name] of catEntries) {
+      const key = cohortKey(name);
+      if (!key) continue;
+      if (!idsByKey.has(key)) idsByKey.set(key, []);
+      idsByKey.get(key).push(id);
+      if (state.cats.has(id)) valdaKullar.add(key);
+    }
+    let andrat = false;
+    for (const key of valdaKullar) {
+      for (const id of idsByKey.get(key) || []) {
+        if (!state.cats.has(id)) { state.cats.add(id); andrat = true; }
+      }
+    }
+    if (andrat) saveUi();
+  }
+
   function buildCatPicker(catEntries, onChange) {
+    const idsByKey = new Map();   // årskullsnyckel (eller id) -> [catId]
+    const labelByKey = new Map();
+    const sortByKey = new Map();
+    for (const [id, name] of catEntries) {
+      const key = cohortKey(name) || ("id:" + id);
+      if (!idsByKey.has(key)) {
+        idsByKey.set(key, []);
+        labelByKey.set(key, cohortKey(name) ? cohortLabel(name) : name);
+        sortByKey.set(key, catSortKey(name));
+      }
+      idsByKey.get(key).push(id);
+      // Sorteringen följer den YNGSTA åldersetiketten kullen har i vyn, så
+      // listan står i samma ordning som när bara ett år är valt.
+      sortByKey.set(key, Math.min(sortByKey.get(key), catSortKey(name)));
+    }
+
+    const idsFor = (key) => idsByKey.get(key) || [];
+    const cohortSelection = {
+      get size() {
+        let n = 0;
+        for (const ids of idsByKey.values()) if (ids.some((id) => state.cats.has(id))) n++;
+        return n;
+      },
+      // "Vald" så snart NÅGOT av kullens id är valt — annars skulle en kull
+      // vars ena år saknar matcher aldrig kunna se ikryssad ut.
+      has: (key) => idsFor(key).some((id) => state.cats.has(id)),
+      add: (key) => { for (const id of idsFor(key)) state.cats.add(id); },
+      delete: (key) => { for (const id of idsFor(key)) state.cats.delete(id); },
+      clear: () => state.cats.clear(),
+    };
+
     return buildPicker({
-      items: catEntries.map(([id, name]) => ({
-        id, label: name, sortKey: catSortKey(name), sortName: name,
+      items: [...idsByKey.keys()].map((key) => ({
+        id: key, label: labelByKey.get(key),
+        sortKey: sortByKey.get(key), sortName: labelByKey.get(key),
       })),
-      selected: state.cats,
-      emptyLabel: "Alla klasser",
+      icon: "🏷️",
+      selected: cohortSelection,
+      emptyLabel: "Klasser",
       countLabel: (n) => "Klasser (" + n + ")",
       searchPlaceholder: "Sök klass …",
       genderQuickSelect: true,
@@ -2009,12 +2477,21 @@ window.HB = window.HB || {};
     }));
     return buildPicker({
       items,
+      icon: "🗓️",
       selected: yearSelectionProxy,
       emptyLabel: "Inga år valda",
       // Standardläget (bara innevarande år) ska fortfarande läsas som
       // "Innevarande år", inte det generiska "1 år" — annars ser den
       // vanligaste inställningen ut som ett aktivt urval i onödan.
-      countLabel: (n) => (n === 1 && state.includeCurrentYear) ? "Innevarande år" : n + " år",
+      // Visa ÅRTALET när exakt ett år är valt — "Innevarande år" sa varken
+      // vilket år det var eller matchade de andra rader i listan, som alla
+      // är årtal. Dessutom för långt för en bricka i mobilens filterremsa,
+      // där det klipptes till "Innevarand…".
+      countLabel: (n) => {
+        if (n !== 1) return n + " år";
+        if (state.includeCurrentYear) return String(currentEdition);
+        return String([...state.years][0] || "1 år");
+      },
       searchPlaceholder: "Sök år …",
       onChange: () => {
         for (const y of state.years) ensureYearMatches(y);
@@ -2113,6 +2590,7 @@ window.HB = window.HB || {};
     for (const m of scoped()) if (m.catId) cats.set(m.catId, m.catName);
     const catEntries = [...cats.entries()].sort((a, b) =>
       catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
+    expandCohortSelection(catEntries);
 
     // Lagväljaren smalnas av om klasser redan valts, men visas alltid —
     // "Hela cupen"-lägets potentiellt tusentals lag hanteras av buildPicker
@@ -2136,11 +2614,23 @@ window.HB = window.HB || {};
       chip("Hela cupen", state.scope === "all", () => {
         state.scope = "all"; saveUi(); render();
       }));
-    const statusSeg = h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
-      [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
-        chip(l, state.matchFilter === v, () => {
-          state.matchFilter = v; saveUi(); render();
-        })));
+    // Matchstatus: tre synliga val på dator (man ser alternativen direkt),
+    // EN växlingsknapp på mobil där utrymmet är dyrast. Knappen visar alltid
+    // aktuellt läge och stegar Alla -> Kommande -> Spelade -> Alla.
+    const STATUS_STEG = [["all", "Alla matcher"], ["upcoming", "Kommande"], ["played", "Spelade"]];
+    const statusSeg = sheetMode()
+      ? (() => {
+          const i = Math.max(0, STATUS_STEG.findIndex(([v]) => v === state.matchFilter));
+          return chip(STATUS_STEG[i][1], state.matchFilter !== "all", () => {
+            state.matchFilter = STATUS_STEG[(i + 1) % STATUS_STEG.length][0];
+            saveUi(); render();
+          }, "status-cycle");
+        })()
+      : h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
+          [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
+            chip(l, state.matchFilter === v, () => {
+              state.matchFilter = v; saveUi(); render();
+            })));
 
     // Ett enda lås fryser år+dagar+klasser+lag TILLSAMMANS (till en chip
     // bredvid "Filter och sortering", se dd/lockSlot ovan) — tanken är att
@@ -2193,7 +2683,11 @@ window.HB = window.HB || {};
     // placerad mitt i eller sist i en lång kedja av chips, och försvann
     // dessutom ur sikte så fort man fällde ihop panelen.
     const refreshLockSlot = () => {
-      if (days.length <= 1 && catEntries.length <= 1 && !archiveYears.length) {
+      // Ingen låsknapp i mobilens ark — den skulle inte göra något (se
+      // isFilterLocked) och bara ta plats i en rubrikrad där utrymmet är
+      // dyrast.
+      if (sheetMode() ||
+          (days.length <= 1 && catEntries.length <= 1 && !archiveYears.length)) {
         lockSlot.replaceChildren(); return;
       }
       if (isFilterLocked()) {
@@ -2235,13 +2729,55 @@ window.HB = window.HB || {};
         // undefined till en bokstavlig "null"-textnod i stället för att
         // hoppa över dem — filtrera bort inaktuella delar (ingen arkiverad
         // historik/en enda dag/en enda klass) innan de skickas in.
-        row.append(...[
+        const urval = [
           archiveYears.length ? buildYearPicker(archiveYears, cup().edition) : null,
           days.length > 1 ? buildDayPicker(days, onTeamOrDayChange) : null,
           catEntries.length > 1 ? buildCatPicker(catEntries, onCatChange) : null,
-        ].filter((el) => el != null));
+        ].filter((el) => el != null);
         refreshTeamRow();
-        row.append(teamSlot);
+        // De fyra urvalsväljarna (år/dagar/klasser/lag) i en egen grupp.
+        // Som grå chips i en lång rad läste de som inaktiva knappar snarare
+        // än som menyval — på mobil blir gruppen i stället fullbreddsrader
+        // med etikett och värde (se .filter-group i style.css), där det är
+        // uppenbart att raden går att trycka på. CSS-only-omslag: samma
+        // element, samma lyssnare, bara en behållare runt.
+        // "Mer" sist i remsan: på mobil är remsan allt man ser när man
+        // trycker Filter, så resten av verktygsraden (sök, status, plan,
+        // sortering, export) måste ha en väg in. Brickan göms över 700 px,
+        // där hela raden ändå står framme.
+        // Rensa allt: visas bara när det FINNS något att rensa, annars vore
+        // den en död knapp i en remsa där varje bricka kostar bredd. Rensar
+        // exakt det siffran på filterknappen räknar (se activeFilterCount) —
+        // annars kan man trycka rensa och ändå ha en siffra kvar.
+        // Byggs ALLTID och göms med hidden i stället för att utelämnas: ett
+        // filterval ritar bara om innehållet, inte verktygsraden, så en
+        // villkorligt skapad bricka hade inte dykt upp förrän nästa fulla
+        // omritning. refreshFilterChrome växlar hidden i stället.
+        const rensaTile = h("button", {
+          class: "filter-more-tile filter-clear-tile", type: "button", "data-icon": "✕",
+          ...(activeFilterCount() ? {} : { hidden: "" }),
+          title: "Rensa all filtrering",
+          onclick: () => {
+            state.days.clear(); state.cats.clear(); state.teams.clear(); state.years.clear();
+            state.includeCurrentYear = true;
+            state.viewCats = new Set(); state.viewTeams = new Set();
+            state.arena = ""; state.q = ""; state.matchFilter = "all";
+            state.schemaOlderRevealCount = 0;
+            saveUi();
+            render();
+          },
+        }, "Rensa");
+
+        const merTile = h("button", {
+          class: "filter-more-tile", type: "button", "data-icon": "⋯",
+          onclick: () => {
+            document.body.classList.toggle("filters-expanded");
+            syncFilterBackdrop();
+            requestAnimationFrame(syncBottomStack);
+          },
+        }, "Mer");
+        row.append(h("div", { class: "filter-group" },
+          ...urval, teamSlot, rensaTile, merTile));
       }
       row.append(h("span", { class: "row-sep" }), statusSeg);
       body.append(row);
@@ -2277,6 +2813,7 @@ window.HB = window.HB || {};
       oninput: (e) => {
         state.q = e.target.value;
         syncUrl(); // inte saveUi() — q ska inte fastna i localStorage mellan besök
+        refreshFilterChrome(); // fritextsök räknas in i filtersiffran
         renderContent();
       },
     });
@@ -2320,6 +2857,7 @@ window.HB = window.HB || {};
       }, state.timeOrder === "desc" ? "↓ Nyast överst" : "↑ Äldst överst") : null,
       buildExportPicker(),
     ));
+    renderSheetCupButton();
   }
 
   // Exporterar exakt den synliga, filtrerade (och för Schema: sorterade)
@@ -4993,6 +5531,9 @@ window.HB = window.HB || {};
     root.append(tabBar, content);
     const tabFn = (STATS_TABS.find(([v]) => v === state.statsView) || STATS_TABS[0])[2];
     tabFn(content);
+    // Underflikraden är fast placerad på mobil (se style.css) — mät om
+    // stapeln så innehållets bottenmarginal räknar med den.
+    requestAnimationFrame(syncBottomStack);
   }
 
   function renderBrowseMode(root, idx, cupIds) {
@@ -5466,11 +6007,16 @@ window.HB = window.HB || {};
     },
       h("div", { class: "match-head" },
         h("span", { class: "cat" }, HB.shortCat(m.catName)),
-        // m.edition är bara satt för matcher som blandats in från ett
-        // extra år (state.years, se allActiveMatches) — odefinierad för
-        // innevarande live-upplaga, som därför inte får någon badge (den
-        // gemensamma/underförstådda "vanliga" kortlayouten).
-        m.edition ? h("span", { class: "match-year-badge" }, m.edition) : null,
+        // m.edition är bara satt för matcher som blandats in från ett extra
+        // år (state.years, se allActiveMatches) — odefinierad för
+        // innevarande live-upplaga. Så länge man tittar på ETT år är det
+        // rätt: en badge på varje kort vore brus när alla ändå är från
+        // samma år. Blandas år in blir det däremot skevt — de gamla
+        // matcherna märks med årtal medan årets står omärkta, och man kan
+        // inte se vilket år ett omärkt kort hör till. Då får innevarande
+        // upplaga sitt årtal också, så alla kort går att läsa likadant.
+        (m.edition || (state.years.size ? cup().edition : null))
+          ? h("span", { class: "match-year-badge" }, m.edition || cup().edition) : null,
         m.divName ? h("span", { class: "div" }, m.divName) : null,
         m.roundName && m.roundName !== m.divName
           ? h("span", { class: "div" }, m.roundName) : null,
@@ -5595,7 +6141,12 @@ window.HB = window.HB || {};
     renderHero(main);
     if (!hasFilterSelection()) {
       main.append(h("div", { class: "banner" },
-        "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
+        // Knappen heter olika saker beroende på layout — "Filter och
+        // sortering" i verktygsraden på dator, bara "Filter" i mobilens
+        // bottenrad. Att hänvisa till fel namn hjälper ingen.
+        sheetMode()
+          ? "Välj en eller flera klasser eller lag under “Filter” för att visa schemat."
+          : "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
       return;
     }
     const list = sorted(filtered().filter(matchesViewFilter));
@@ -5616,11 +6167,18 @@ window.HB = window.HB || {};
     }
 
     if (state.sort === "tid") {
-      const { visible, hiddenCount } = splitRecentPlayed(
-        list, SCHEMA_RECENT_HOURS, state.schemaOlderRevealCount);
-      const loadMoreBtn = loadMorePlayedButtons(hiddenCount, state.revealBatchSize,
+      // Antalsbaserat, inte tidsbaserat: "senaste timmen" gav noll matcher i
+      // en gles cup och femtio i en tät. Man vill se DE SENASTE spelade,
+      // oavsett hur länge sedan de spelades — samma resonemang som Bana
+      // redan bygger på (se splitRecentPlayedByCount).
+      const retro = isRetrospective(list);
+      const visaAntal = retro ? SCHEMA_RETRO_BATCH : state.recentMatchCount;
+      const batch = retro ? SCHEMA_RETRO_BATCH : state.revealBatchSize;
+      const { visible, hiddenCount } = splitRecentPlayedByCount(
+        list, visaAntal, state.schemaOlderRevealCount);
+      const loadMoreBtn = loadMorePlayedButtons(hiddenCount, batch,
         state.timeOrder === "desc" ? "↓" : "↑",
-        () => { state.schemaOlderRevealCount += state.revealBatchSize; renderContent(); },
+        () => { state.schemaOlderRevealCount += batch; renderContent(); },
         () => { state.schemaOlderRevealCount = Infinity; renderContent(); });
       // Äldre matcher hamnar överst i asc-ordning (äldst→nyast) och underst
       // i desc-ordning (nyast/kommande överst) — knappen placeras därefter.
@@ -5688,31 +6246,8 @@ window.HB = window.HB || {};
     window.scrollTo({ top: 0, behavior: "auto" });
   }
 
-  function splitRecentPlayed(list, cutoffHours, revealExtra) {
-    const cutoff = Date.now() - cutoffHours * 3600000;
-    const always = [];
-    const older = []; // äldre spelade, i samma stigande tidsordning som list
-    for (const m of list) {
-      if (m.res && m.res.fin && m.start < cutoff) older.push(m);
-      else always.push(m);
-    }
-    const revealed = revealExtra > 0 ? older.slice(Math.max(0, older.length - revealExtra)) : [];
-    const hiddenCount = older.length - revealed.length;
-    const visible = [...revealed, ...always].sort((a, b) => a.start - b.start);
-    return { visible, hiddenCount };
-  }
-
-  function showAllPlayedButton(hiddenCount, cutoffHours, onClick) {
-    if (!hiddenCount) return null;
-    return h("button", {
-      class: "btn small show-all-played", type: "button",
-      onclick: () => preserveScrollOnExpand(onClick),
-    }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
-      cutoffHours + " tim visas alltid)");
-  }
-
-  // Antalsbaserad variant av splitRecentPlayed() — för Bana och slutspels-
-  // tabellen. Ett fast timfönster är opålitligt där: matchlängden varierar
+  // Visar alltid de N SENAST SPELADE matcherna plus alla ännu ospelade.
+  // Ett fast timfönster vore opålitligt: matchlängden varierar
   // för mycket mellan cuper (korta beachmatcher kontra långa 11-manna-
   // matcher) för att t.ex. "senaste 2 tim" ska ge samma antal synliga
   // matcher överallt. Visar i stället alltid de N SENAST SPELADE matcherna
@@ -5761,7 +6296,29 @@ window.HB = window.HB || {};
     return h("div", { class: "load-more-row" }, moreBtn, allBtn);
   }
 
-  const SCHEMA_RECENT_HOURS = 1; // schemat: hur långt bakåt spelade matcher visas som standard
+  // Två helt olika användningslägen för schemat:
+  //
+  //   PÅGÅENDE CUP — man står i hallen och vill veta hur det nyss gick. Då
+  //   räcker de par senast spelade (state.recentMatchCount); att scrolla
+  //   förbi femtio avklarade matcher för att hitta den kommande är rent
+  //   motstånd.
+  //
+  //   I EFTERHAND — man går igenom en avslutad cup för att se hur det gick,
+  //   vilka man mötte, hur det slutade. Då är de spelade matcherna hela
+  //   poängen, och att klicka fram fyra åt gången är tröttsamt.
+  //
+  // Gränsen dras vid en vecka sedan sista matchen. Kortare än så kan cupen
+  // fortfarande pågå (eller nyss ha avslutats, då man ännu kollar resultat
+  // löpande); längre än så är man där för historiken.
+  const SCHEMA_RETRO_DAYS = 7;
+  const SCHEMA_RETRO_BATCH = 20;
+
+  function isRetrospective(list) {
+    let senaste = 0;
+    for (const m of list) if (m.start > senaste) senaste = m.start;
+    if (!senaste) return false;
+    return Date.now() - senaste > SCHEMA_RETRO_DAYS * 86400000;
+  }
 
   // --- render: bana -----------------------------------------------------------
 
@@ -8381,6 +8938,8 @@ window.HB = window.HB || {};
     $("#currentCupBtn").addEventListener("click", openSettings);
     $("#settingsClose").addEventListener("click", () => dlg.close());
 
+    placeFooterLinks();
+
     // Versionsmärke + nödutgång ur en envis service worker-cache. En
     // installerad PWA (eller bara en registrerad SW) kan servera gammalt
     // skal långt efter en driftsättning, och då syns inga rättningar hur
@@ -8389,6 +8948,11 @@ window.HB = window.HB || {};
     // INTE, så filter, favoritklubb och övriga inställningar överlever.
     const verEl = $("#appVersion");
     if (verEl) verEl.textContent = "Version " + (HB.VERSION || "okänd");
+
+    // Viewport-siffrorna uppdateras medan dialogen är öppen, så man kan
+    // scrolla, se adressfältet ändra sig och läsa av vad webbläsaren
+    // faktiskt rapporterar. Utan dem går den här klassen av buggar bara att
+    // gissa sig till.
     const resetBtn = $("#resetAppBtn");
     if (resetBtn) {
       resetBtn.addEventListener("click", async () => {
@@ -8501,9 +9065,18 @@ window.HB = window.HB || {};
     // stänger arket precis som ett klick i matchlistan bakom.
     document.addEventListener("click", (e) => {
       const dd = document.querySelector(".team-picker-dd[open]");
-      if (dd && !dd.contains(e.target)) dd.open = false;
+      if (!dd) return;
+      // Kryssar man i en post i en LAT lista (>60 val, se
+      // PICKER_LAZY_THRESHOLD) bygger change-hanteraren om listan MITT I
+      // klickets bubbling — den klickade kryssrutan är då redan borttagen ur
+      // DOM:et när den här lyssnaren nås, contains() ger false, och panelen
+      // stängdes mitt i ett val. Ett bortkopplat mål betyder att klicket kom
+      // inifrån något vi själva just ritat om, alltså inte "utanför".
+      if (!e.target.isConnected) return;
+      if (!dd.contains(e.target)) dd.open = false;
     });
     setupPickerSheets();
+    setupViewportOffset();
     loadUi();
     updateClubLogo();
     if (hasUrlFilters) {

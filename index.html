@@ -143,6 +143,12 @@
 
   <main id="content"></main>
 
+  <!-- Mobilens bottenrad (renderBottomBar i js/app.js). Dold över 700 px,
+       där vyflikarna och verktygsraden ligger kvar i toppen som förut.
+       Speglar #viewTabs (samma data-view, samma dolda flikar) och lägger
+       till en filterknapp som fäller upp verktygsraden som ett ark. -->
+  <nav id="bottomBar" aria-label="Vy och filter" hidden></nav>
+
   <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
 
   <footer>
@@ -299,13 +305,23 @@
 
     <div class="settings-group full">
       <label class="settings-label" for="recentMatchCountInput">
-        Bana och slutspelstabellen — visa alltid de senast spelade
+        Schema, Bana och slutspelstabellen — visa alltid de senast spelade
       </label>
       <div class="settings-inline">
         <input type="number" id="recentMatchCountInput" min="1" step="1" style="width:70px">
         <span>matcherna (räknat i antal, inte tid — funkar lika bra oavsett
-          hur långa matcherna är i just den här cupen)</span>
+          hur långa matcherna är i just den här cupen). En cup vars sista
+          match spelades för mer än en vecka sedan visar i stället 20 åt
+          gången: då bläddrar man historik, inte följer en pågående cup.</span>
       </div>
+    </div>
+
+    <!-- Sidfotens länkar flyttas hit på mobil (se placeFooterLinks i
+         js/app.js) — tomt och osynligt på större skärmar, där de ligger
+         kvar i sidfoten. -->
+    <div class="settings-group full" id="settingsLinksGroup">
+      <label class="settings-label">Om och hjälp</label>
+      <div class="settings-inline" id="settingsLinks"></div>
     </div>
 
     <div class="settings-group full">

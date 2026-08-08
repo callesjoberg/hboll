@@ -506,7 +506,10 @@ header.top {
 .team-picker-list {
   display: grid;
   gap: 2px;
-  max-height: 260px;
+  /* 260px rymde ~9 rader — för lite när en cup har 20 klasser eller 40 lag,
+     och man fick scrolla i en liten ruta i stället för att se urvalet. Växer
+     nu med fönstret men aldrig så att panelen går utanför skärmen. */
+  max-height: min(58vh, 520px);
   overflow-y: auto;
 }
 
@@ -2909,7 +2912,11 @@ dialog.history-dialog {
     top: auto;
     left: 0;
     right: 0;
-    bottom: 0;
+    /* Ovanför bottenraden och filterremsan (syncBottomStack i app.js) i
+       stället för dikt mot skärmkanten — annars täcker panelen just de
+       rader man navigerade med, och man ser inte vilken väljare som är
+       öppen. */
+    bottom: calc(var(--bottomstack-h, 0px) + var(--vv-offset, 0px));
     width: auto;
     max-width: none;
     /* --sheet-h sätts av draghandtaget (se setupPickerSheets i app.js) och
@@ -2925,7 +2932,10 @@ dialog.history-dialog {
     /* Innehållet ska växa nedåt från rubriken, inte spridas ut över hela
        arkets höjd som grid-standarden gör när arket är högre än innehållet. */
     align-content: start;
-    z-index: 60;
+    /* Över filterarket (65) OCH bottenraden (70): en picker öppnad inifrån
+       filterarket måste lägga sig ovanpå det, annars hamnar den bakom och
+       blir helt oåtkomlig. */
+    z-index: 80;
   }
 
   .team-picker-dd[open] > .team-picker-panel > .team-picker-list {
@@ -2989,7 +2999,7 @@ dialog.history-dialog {
     position: fixed;
     inset: 0;
     background: rgba(10, 18, 30, 0.45);
-    z-index: 59;
+    z-index: 79; /* strax under picker-arket, se z-index-kommentaren ovan */
   }
 }
 
@@ -2997,4 +3007,472 @@ dialog.history-dialog {
    dropdown under sin knapp, där den bara vore i vägen. */
 @media (min-width: 701px) {
   .picker-sheet-head, .picker-sheet-backdrop { display: none; }
+}
+
+/* --- mobilens bottenrad ---------------------------------------------------
+   Sidhuvud + vyflikar + verktygsrad tog 374 px av 844 på en telefon — 44 %
+   av skärmen innan första matchen. Här flyttas vyvalet ner till tumhöjd och
+   hela verktygsraden ersätts av en filterknapp som fäller upp den som ett
+   ark, vilket ger tillbaka ~300 px åt innehållet. Över 700 px är allt
+   oförändrat: bottenraden är hidden och toppen ser ut som förut. */
+@media (max-width: 700px) {
+  /* --vv-offset kompenserar för att position:fixed utgår från LAYOUT-
+     viewporten medan mobilwebbläsarnas krympande/flytande adressfält ändrar
+     den VISUELLA. I Firefox blev raden hängande en bit ovanför skärmkanten
+     med sidinnehåll synligt under — som en banner mitt i sidan. Sätts av
+     syncViewportOffset() i app.js via Visual Viewport-API:t; 0 när API:t
+     saknas eller de två viewporterna sammanfaller. */
+  #bottomBar[hidden] { display: flex; } /* [hidden] är utgångsläget i markupen */
+
+  #bottomBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--vv-offset, 0px);
+    z-index: 70;
+    display: flex;
+    /* Scrollar i sidled när flikarna inte får plats — med kugghjulet är de
+       sju stycken, och en smal telefon (320 px) ryms inte. På 390 px fyller
+       de raden utan att scrolla, se flex-basis på .bottom-tab. */
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Andra skuggan är ingen skugga: en solid, oskarp yta 260 px NEDANFÖR
+       raden i samma färg som den själv. Firefox på iOS krymper inte layout-
+       viewporten när dess bottenplacerade adressfält fälls ihop till en ö,
+       så bottom:0 hamnar en bit ovanför skärmkanten och sidan syntes rulla
+       förbi i springan under. Ytan täcker den utan att flytta något — och
+       är helt osynlig i Safari/Chrome, där den hamnar utanför skärmen.
+       box-shadow (inte ::after) eftersom radens egen overflow-x:auto skulle
+       klippa ett pseudoelement, men aldrig en skugga.
+
+       Förskjutning OCH spridning, inte bara förskjutning: en skugga flyttas
+       som en hel rektangel, den töjs inte. "0 260px 0 0" la alltså hela
+       ytan 260 px ned — utanför skärmen, där den inte täckte något.
+       130+130 ger i stället en yta som börjar vid radens överkant och
+       slutar 260 px under dess underkant. Spridningen växer även i sidled,
+       vilket är ofarligt: den hamnar utanför skärmens kanter. */
+    box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22),
+                0 130px 0 130px var(--card);
+  }
+  #bottomBar::-webkit-scrollbar { display: none; }
+
+  .bottom-tab {
+    /* Växer och fyller raden när det finns plats, men krymper aldrig under
+       52 px — då scrollar raden i stället för att klämma ihop etiketterna
+       till oläsbarhet. */
+    flex: 1 0 52px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 2px 6px;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 10.5px;
+    cursor: pointer;
+    position: relative;
+  }
+  .bottom-tab.on { color: var(--blue); }
+  .bottom-tab-icon { font-size: 18px; line-height: 1; }
+  .bottom-tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Siffran på filterknappen — visar att ett filter är aktivt utan att man
+     behöver öppna arket för att upptäcka det. */
+  .bottom-filter-badge {
+    position: absolute;
+    top: 3px;
+    right: 50%;
+    transform: translateX(15px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+  }
+
+  /* Vyflikarna i toppen ersätts av bottenraden. Kugghjulet likaså — det
+     ligger kvar i DOM:et (all befintlig logik pekar på #settingsBtn) men
+     visas bara i bottenraden på mobil. */
+  #viewTabs { display: none; }
+  #settingsBtn { display: none; }
+
+  /* Verktygsraden bor kvar på sin plats i DOM:et (renderToolbar ritar dit
+     som förut) men visas bara som ark, fällt upp av filterknappen. */
+  #toolbar { display: none; }
+  /* Filter fäller upp en tunn IKONREMSA ovanför bottenraden — inte ett helt
+     ark. Man ska kunna scrolla matchlistan med filtren framme, precis som
+     med Stats-underflikarna. Först "Mer" fäller ut resten av
+     verktygsraden (filters-expanded nedan). */
+  body.filters-open #toolbar {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px)); /* mätt i renderBottomBar, inkl. safe-area */
+    z-index: 65;
+    margin: 0;
+    /* Ingen egen fyllning: brickorna bär sin padding själva, precis som
+       bottenradens flikar, så de två raderna blir exakt lika höga. */
+    padding: 0 6px;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+  }
+  /* I remsläget visas BARA ikonerna. Resten av verktygsraden finns kvar i
+     DOM:et (renderToolbar är orörd) men göms tills man trycker Mer. */
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-summary,
+  body.filters-open:not(.filters-expanded) #toolbar .sheet-cup-btn,
+  body.filters-open:not(.filters-expanded) #toolbar .row > *:not(.filter-group),
+  body.filters-open:not(.filters-expanded) #toolbar .row ~ * { display: none; }
+  body.filters-open:not(.filters-expanded) #toolbar .row {
+    display: block;
+    margin: 0;
+  }
+  /* Mellanliggande omslag (details > .toolbar-body > .row) bidrog med 24 px
+     marginal och gap som gjorde remsan 73 px mot bottenradens 49. I remsläget
+     ska bara brickornas egen padding räknas. */
+  body.filters-open:not(.filters-expanded) #toolbar,
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-collapse,
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-body {
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    gap: 0;
+  }
+
+  /* Se picker-open i app.js: utan detta hamnar hela verktygsraden — och
+     därmed den öppna väljarpanelen — under väljarens eget bakgrundstäcke. */
+  body.picker-open #toolbar { z-index: 85; }
+  /* Bottenraden med: båda ska förbli synliga OCH klickbara medan en väljare
+     är öppen, så man kan hoppa direkt mellan brickor eller byta vy. */
+  body.picker-open #bottomBar { z-index: 85; }
+
+  body.filters-open.filters-expanded #toolbar {
+    max-height: 72vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 14px 16px;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
+  }
+
+  /* "Mer"-brickan: samma form som väljarbrickorna, egen klass eftersom den
+     inte är en <details>. */
+  .filter-more-tile {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 64px;
+    padding: 7px 2px 6px;
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .filter-more-tile::before {
+    content: attr(data-icon);
+    font-size: 18px;
+    line-height: 1;
+  }
+  body.filters-expanded .filter-more-tile { color: var(--blue); }
+  /* Rensa-brickan skiljs från väljarna med en tunn linje: den ÄNDRAR något
+     när man trycker, till skillnad från de andra som bara öppnar en panel. */
+  .filter-clear-tile {
+    border-left: 1px solid var(--line) !important;
+    /* --live är appens egna röda (matchlivemarkeringen) och har en variant
+       för mörkt tema — bättre än en hårdkodad hex som skär sig där. */
+    color: var(--live);
+  }
+
+  /* Verktygsradens egen ihopfällning behålls i arket: dels sitter LÅSET
+     inuti <summary> (lockSlot i renderToolbar) och skulle annars bli
+     oåtkomligt på mobil, dels fungerar den som arkets rubrik och ger en
+     minimera/expandera utan extra kod. */
+  body.filters-open #toolbar .toolbar-summary {
+    position: sticky;
+    top: -12px;
+    z-index: 1;
+    margin: -12px -14px 8px;
+    padding: 12px 14px 8px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filter-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 64;
+    background: rgba(10, 18, 30, 0.45);
+  }
+
+  /* Plats åt ALLT som ligger fast i botten — bottenraden, filterremsan när
+     den är uppfälld och Stats-underflikarna. Utgick tidigare bara från
+     bottenraden, så slutet på en lång matchlista hamnade bakom de andra
+     raderna och gick inte att scrolla fram. */
+  #content, body > footer { padding-bottom: calc(var(--bottomstack-h, 56px) + 16px); }
+
+  /* Orienteringsraden (renderMobileContextBar): klistrad högst upp i
+     innehållet så den syns även när man scrollat ner i en lång träfflista —
+     den svarar på "vad tittar jag på och hur tar jag mig tillbaka", vilket
+     annars bara framgick av den gömda verktygsraden. */
+  .mobile-context {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    padding: 7px 10px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 13px;
+    box-shadow: var(--shadow);
+  }
+  .mobile-context-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink-soft);
+  }
+  .mobile-context-back {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--blue);
+    cursor: pointer;
+  }
+  .mobile-context-clear {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  /* "Upp till toppen" låg på bottom:16px med z-index 30 — alltså bakom både
+     bottenraden (70) och filterremsan (65), och geometriskt under dem.
+     Placeras nu ovanför hela den fasta stapeln (--bottomstack-h, samma mått
+     som väljarpanelerna utgår från). z-index under panelerna med flit: när
+     en väljare är öppen SKA knappen hamna bakom den, den är inte
+     meningsfull då. */
+  #scrollTopBtn {
+    bottom: calc(var(--bottomstack-h, 56px) + 12px + var(--vv-offset, 0px));
+    z-index: 68;
+  }
+}
+
+/* --- bottenradens följdändringar --------------------------------------- */
+@media (max-width: 700px) {
+  /* Stats-underflikarna (Trend/Vinnare/Kalender/…) som egen rad ovanför
+     bottenraden i stället för överst i innehållet. aria-label avgränsar
+     till just Stats-raden — samma klass används av Historik-bläddrarens
+     egna flikar, som ska ligga kvar i innehållet där de hör hemma.
+     Horisontellt scrollbar: åtta flikar på 390 px blir 48 px styck och
+     oläsbara om man pressar in dem. */
+  #content .history-tabs[aria-label="Stats"] {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
+    z-index: 69;
+    margin: 0;
+    padding: 6px 10px;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  #content .history-tabs[aria-label="Stats"]::-webkit-scrollbar { display: none; }
+  #content .history-tabs[aria-label="Stats"] .tab { flex: 0 0 auto; }
+
+  /* (Stats-radens höjd ingår numera i --bottomstack-h, se syncBottomStack.) */
+
+  /* Sidfotens länkar bor i inställningarna här (placeFooterLinks); kvar
+     blir bara datakällstexten, som inte behöver ta plats på en telefon. */
+  body > footer { display: none; }
+
+  /* Cupknappen överst i filterarket, och urvalsgruppen under den. Båda är
+     menyrader i full bredd: etikett till vänster, aktuellt värde och en
+     chevron till höger. Som grå chips i en rad läste väljarna som INAKTIVA
+     knappar — en rad med tydlig avgränsare och pil läser som något man
+     trycker på. */
+  .sheet-cup-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 11px 12px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  /* Brickan ska se ut EXAKT som en flik i bottenraden (.bottom-tab): platt,
+     utan ram och utan kortbakgrund. Med ram och fyllning läste remsan som
+     en rad knappar i stället för som en meny, och blev dessutom nästan
+     dubbelt så hög som raden den ligger ovanpå. Samma padding, samma
+     teckenstorlek, samma färger — bara fast bredd i stället för flex, så
+     remsan kan scrolla i sidled. */
+  .filter-group .team-picker-dd > .team-picker-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 64px;
+    padding: 7px 2px 6px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    font: inherit;
+    font-size: 10.5px;
+    line-height: 1.15;
+    color: var(--ink-soft);
+    text-align: center;
+    cursor: pointer;
+  }
+  /* Ikonen kommer från data-icon (satt i buildPicker) — inget extra element
+     att bygga, och desktopvyn påverkas inte alls. */
+  /* Samma ikonstorlek som bottenradens (.bottom-tab-icon) så de två
+     raderna läser som samma system. */
+  .filter-group .team-picker-summary[data-icon]::before {
+    content: attr(data-icon);
+    font-size: 18px;
+    line-height: 1;
+  }
+  /* "Innevarande år" ryms inte på en 64 px-bricka — korta med ellips i
+     stället för att klippa mitt i ordet. */
+  .filter-group .picker-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sheet-cup-btn { margin-bottom: 10px; }
+  .sheet-cup-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+  .sheet-cup-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--ink-soft);
+  }
+  .sheet-cup-name { font-weight: 600; }
+  .sheet-cup-meta { font-size: 12px; color: var(--ink-soft); }
+  .sheet-cup-arrow { font-size: 22px; color: var(--ink-soft); }
+
+  /* Urvalsgruppen: år, dagar, klasser och lag som en horisontell ikonremsa.
+     Fullbreddsrader tog 52 px styck och åt upp arket; som brickor ryms de
+     på EN rad, och remsan scrollar i sidled om de blir fler. Ikonen bär
+     igenkänningen, etiketten under bär värdet ("Klasser (2)"). */
+  .filter-group {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    /* Föräldern (.row) är flex — utan flex-basis 100 % krymper remsan till
+       sitt innehåll i stället för att ta hela bredden och kunna scrolla. */
+    flex: 1 1 100%;
+    width: 100%;
+    margin: 0;
+    scrollbar-width: none;
+    /* Brickorna ska kunna dras i sidled utan att gesten kapas av arkets
+       egen vertikala scroll. */
+    touch-action: pan-x;
+  }
+  .filter-group::-webkit-scrollbar { display: none; }
+  /* Efterkommande, inte direkt barn: lagväljaren ligger i en span med
+     display:contents (teamSlot i renderToolbar). Den försvinner ur
+     layouten men finns kvar i DOM:et, så en >-selektor missar den. */
+  .filter-group .team-picker-dd { flex: 0 0 auto; }
+  /* Standardpilen (▾) är brus på en bricka som redan har ikon och etikett. */
+  .filter-group .team-picker-dd > .team-picker-summary::after { content: none; }
+  /* Öppen bricka markeras med färg, precis som .bottom-tab.on. */
+  .filter-group .team-picker-dd[open] > .team-picker-summary {
+    background: none;
+    color: var(--blue);
+  }
+}
+
+/* Urvalsgruppen är ETT MOBILGREPP. På större skärmar ska år/dagar/klasser/
+   lag ligga som chips på samma rad som förut — display:contents plockar bort
+   omslaget ur layouten helt, så raden blir exakt densamma som innan
+   grupperingen infördes. Utan detta ärvde gruppen block-layout och staplade
+   väljarna under varandra. */
+@media (min-width: 701px) { .filter-group { display: contents; } }
+
+/* "Mer"-brickan hör bara till mobilens ikonremsa. */
+@media (min-width: 701px) { .filter-more-tile { display: none; } }
+
+/* Länkgruppen i inställningarna är bara till för mobil — tom på desktop,
+   där länkarna ligger kvar i sidfoten, och ska då inte visa sin rubrik. */
+@media (min-width: 701px) { #settingsLinksGroup { display: none; } }
+
+/* --- iOS: ingen autozoom vid fokus i textfält --------------------------
+   Safari på iPhone zoomar in sidan när man fokuserar ett fält vars
+   teckenstorlek är UNDER 16 px, och zoomar sedan inte ut igen. Flera av
+   appens fält ligger på 13-14 px.
+
+   Lösningen är 16 px på själva fältet — INTE user-scalable=no i
+   viewport-taggen, som visserligen tar bort zoomen men samtidigt
+   förbjuder nypzoom i hela appen. Att beröva någon möjligheten att zooma
+   in ett spelschema är ett sämre pris än några pixlar större text.
+
+   Två villkor, inte ett: pointer:coarse är det precisa signalet men
+   matchar inte en iPad med styrplatta, och går heller inte att verifiera i
+   en desktop-simulering. max-width fångar telefonerna oavsett. Ett par
+   pixlar större fält på en smal dator-skärm är ett pris värt att betala
+   för en regel som faktiskt går att testa. */
+@media (pointer: coarse), (max-width: 700px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="number"],
+  input[type="url"],
+  input:not([type]),
+  select,
+  select.select,
+  textarea {
+    /* select.select: klassen .select sätter 13px och vinner över en ren
+       elementselektor på specificitet — utan den här raden hade
+       rullgardinerna (plan, sortering, år) fortsatt utlösa zoom. */
+    font-size: 16px;
+  }
 }
