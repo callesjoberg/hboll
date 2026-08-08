@@ -1173,8 +1173,17 @@ window.HB = window.HB || {};
     return state.days.size > 0 || state.cats.size > 0 || state.teams.size > 0 ||
       state.years.size > 0 || !state.includeCurrentYear;
   }
+  // Låset skyddar en ALLTID SYNLIG verktygsrad från feltryck under en cupdag.
+  // I mobilens ark ligger filtren tre medvetna tryck bort (Filter -> väljare
+  // -> kryssruta), så skyddet köper ingenting där — det gjorde bara att
+  // klass-/lag-/årsväljarna försvann utan att det var uppenbart varför.
+  // Gäller alltså bara över 700 px, där raden fortfarande står framme.
+  //
+  // state.filterLocked NOLLSTÄLLS inte: låser man på datorn och sedan öppnar
+  // telefonen ska urvalet vara detsamma, bara redigerbart. Skyddet är det
+  // enda som skiljer.
   function isFilterLocked() {
-    return state.filterLocked && hasLockableSelection();
+    return !sheetMode() && state.filterLocked && hasLockableSelection();
   }
 
   function matchesViewFilter(m) {
@@ -1909,6 +1918,9 @@ window.HB = window.HB || {};
     // kvarglömt bakgrundstäcke inte ligga och blockera klick.
     window.matchMedia(SHEET_QUERY).addEventListener("change", () => {
       syncSheetBackdrop(!!document.querySelector(".team-picker-dd[open]") && sheetMode());
+      // Låset gäller bara över brytpunkten (se isFilterLocked) — rita om
+      // hela raden vid rotation, annars visas fel uppsättning väljare.
+      render();
     });
   }
 
@@ -2343,7 +2355,11 @@ window.HB = window.HB || {};
     // placerad mitt i eller sist i en lång kedja av chips, och försvann
     // dessutom ur sikte så fort man fällde ihop panelen.
     const refreshLockSlot = () => {
-      if (days.length <= 1 && catEntries.length <= 1 && !archiveYears.length) {
+      // Ingen låsknapp i mobilens ark — den skulle inte göra något (se
+      // isFilterLocked) och bara ta plats i en rubrikrad där utrymmet är
+      // dyrast.
+      if (sheetMode() ||
+          (days.length <= 1 && catEntries.length <= 1 && !archiveYears.length)) {
         lockSlot.replaceChildren(); return;
       }
       if (isFilterLocked()) {
