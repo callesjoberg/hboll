@@ -28,14 +28,16 @@
       // och sparas på window.__hbLastError, plus en utfällbar "Visa
       // detaljer" i rutan för den som inte har konsolen framme.
       window.__hbErrors = [];
-      function showBanner(msg, err, kind) {
+      // silent: registrera felet men visa INTE rutan. Används för fel vi
+      // varken orsakat eller kan se något av — se anropet nedan.
+      function showBanner(msg, err, kind, silent) {
         if (ignore(msg)) return;
         var detail = kind + ": " + (msg || "(inget meddelande)") +
           ((err && err.stack) ? "\n" + err.stack : "");
         window.__hbErrors.push(detail);
         window.__hbLastError = detail;
         try { console.error("[hboll]", detail); } catch (e) { /* strikt konsollös miljö */ }
-        if (shown) return;
+        if (silent || shown) return;
         shown = true;
         var el = document.createElement("div");
         el.setAttribute("role", "alert");
@@ -80,7 +82,16 @@
         var where = e.filename
           ? " (" + e.filename + ":" + e.lineno + ":" + e.colno + ")"
           : " (okänd källa — troligen ett skript från annan origin, t.ex. ett webbläsartillägg)";
-        showBanner((e.message || "") + where, e.error, "error");
+        // Ett "Script error." UTAN filnamn kan inte komma från appen:
+        // alla egna skript ligger på samma origin och får då alltid fil och
+        // rad, och MapLibre (det enda externa) laddas med crossOrigin så
+        // även dess fel är läsbara. Kvar blir kod som injicerats i sidan
+        // utifrån — i praktiken ett webbläsartillägg. Att larma om något vi
+        // varken orsakat eller kan se är rent brus för användaren, samma
+        // resonemang som ResizeObserver-varningen ovan. Felet loggas ändå,
+        // så det går att gräva i via konsolen eller window.__hbErrors.
+        var foreign = !e.filename && /^Script error\.?$/i.test(e.message || "");
+        showBanner((e.message || "") + where, e.error, "error", foreign);
       });
       window.addEventListener("unhandledrejection", function (e) {
         var r = e.reason;
