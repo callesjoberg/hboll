@@ -2619,7 +2619,15 @@ window.HB = window.HB || {};
     // hela väljaren tills en klass valts, som tidigare.
     function teamPickerCandidates() {
       const pool = state.scope === "club" ? clubTeamsList : allScopedTeams();
-      return state.cats.size ? pool.filter((t) => state.cats.has(t.catId)) : pool;
+      if (!state.cats.size) return pool;
+      const smalnad = pool.filter((t) => state.cats.has(t.catId));
+      // Ett VALT lag som klassfiltret smalnat bort måste ändå ligga kvar i
+      // listan. Annars går det inte att kryssa ur: väljer man F13 Blå och
+      // sedan klassen F14 blir träffmängden tom, och sidan säger "prova att
+      // rensa något filter" om ett filter man inte längre kan se.
+      const kvar = new Set(smalnad.map((t) => t.id));
+      const bortfiltrerade = pool.filter((t) => state.teams.has(t.id) && !kvar.has(t.id));
+      return bortfiltrerade.length ? [...smalnad, ...bortfiltrerade] : smalnad;
     }
 
     // Klubb/hela cupen inleder raden. Matchstatus (alla/kommande/spelade)
@@ -2695,7 +2703,11 @@ window.HB = window.HB || {};
     const teamSlot = h("span", { style: "display:contents" });
     const refreshTeamRow = () => {
       const candidates = teamPickerCandidates();
-      teamSlot.replaceChildren(...(candidates.length > 1 ? [buildTeamPicker(candidates, onTeamOrDayChange)] : []));
+      // En ensam kandidat filtrerar inte bort något — den väljaren göms. Men
+      // finns det ett lagval kvar måste väljaren fram ändå, annars sitter
+      // urkryssningen inlåst (se teamPickerCandidates ovan).
+      const visa = candidates.length > 1 || state.teams.size > 0;
+      teamSlot.replaceChildren(...(visa ? [buildTeamPicker(candidates, onTeamOrDayChange)] : []));
     };
 
     // Låskontrollen (knapp när upplåst, klickbar sammanfattnings-chip när
