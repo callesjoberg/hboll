@@ -2916,7 +2916,7 @@ dialog.history-dialog {
        stället för dikt mot skärmkanten — annars täcker panelen just de
        rader man navigerade med, och man ser inte vilken väljare som är
        öppen. */
-    bottom: var(--bottomstack-h, 0px);
+    bottom: calc(var(--bottomstack-h, 0px) + var(--vv-offset, 0px));
     width: auto;
     max-width: none;
     /* --sheet-h sätts av draghandtaget (se setupPickerSheets i app.js) och
@@ -3016,13 +3016,19 @@ dialog.history-dialog {
    ark, vilket ger tillbaka ~300 px åt innehållet. Över 700 px är allt
    oförändrat: bottenraden är hidden och toppen ser ut som förut. */
 @media (max-width: 700px) {
+  /* --vv-offset kompenserar för att position:fixed utgår från LAYOUT-
+     viewporten medan mobilwebbläsarnas krympande/flytande adressfält ändrar
+     den VISUELLA. I Firefox blev raden hängande en bit ovanför skärmkanten
+     med sidinnehåll synligt under — som en banner mitt i sidan. Sätts av
+     syncViewportOffset() i app.js via Visual Viewport-API:t; 0 när API:t
+     saknas eller de två viewporterna sammanfaller. */
   #bottomBar[hidden] { display: flex; } /* [hidden] är utgångsläget i markupen */
 
   #bottomBar {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: var(--vv-offset, 0px);
     z-index: 70;
     display: flex;
     /* Scrollar i sidled när flikarna inte får plats — med kugghjulet är de
@@ -3103,7 +3109,7 @@ dialog.history-dialog {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: var(--bottombar-h, 56px); /* mätt i renderBottomBar, inkl. safe-area */
+    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px)); /* mätt i renderBottomBar, inkl. safe-area */
     z-index: 65;
     margin: 0;
     /* Ingen egen fyllning: brickorna bär sin padding själva, precis som
@@ -3266,7 +3272,7 @@ dialog.history-dialog {
      en väljare är öppen SKA knappen hamna bakom den, den är inte
      meningsfull då. */
   #scrollTopBtn {
-    bottom: calc(var(--bottomstack-h, 56px) + 12px);
+    bottom: calc(var(--bottomstack-h, 56px) + 12px + var(--vv-offset, 0px));
     z-index: 68;
   }
 }
@@ -3283,7 +3289,7 @@ dialog.history-dialog {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: var(--bottombar-h, 56px);
+    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
     z-index: 69;
     margin: 0;
     padding: 6px 10px;

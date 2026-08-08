@@ -2059,6 +2059,36 @@ window.HB = window.HB || {};
     }
   }
 
+  // position:fixed utgår från LAYOUT-viewporten. Mobilwebbläsare ändrar
+  // däremot den VISUELLA viewporten när adressfältet krymper eller blir en
+  // flytande "ö" (Firefox), och då glider de två isär: bottenraden hamnade
+  // en bit ovanför skärmkanten med sidinnehåll synligt under, som en banner
+  // mitt i sidan.
+  //
+  // Skillnaden mäts via Visual Viewport-API:t och skrivs till --vv-offset,
+  // som alla bottenfästa element lägger till i sitt bottom-värde (se
+  // style.css). Saknas API:t blir den 0 och allt beter sig som förut.
+  function syncViewportOffset() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    // Positivt: den synliga ytan slutar OVANFÖR layoutens botten, så
+    // elementen måste lyftas. Negativt: tvärtom. Under 1 px är brus.
+    const diff = window.innerHeight - (vv.offsetTop + vv.height);
+    const px = Math.abs(diff) < 1 ? 0 : Math.round(diff);
+    document.documentElement.style.setProperty("--vv-offset", px + "px");
+  }
+
+  function setupViewportOffset() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    // scroll OCH resize: adressfältet ändrar höjd under scrollning, inte
+    // bara vid ett omritningstillfälle.
+    vv.addEventListener("resize", syncViewportOffset);
+    vv.addEventListener("scroll", syncViewportOffset);
+    window.addEventListener("orientationchange", () => setTimeout(syncViewportOffset, 250));
+    syncViewportOffset();
+  }
+
   function setupPickerSheets() {
     // toggle bubblar INTE, så lyssnaren måste ligga i fångstfasen för att
     // nå <details> var de än råkar sitta i trädet.
@@ -9035,6 +9065,7 @@ window.HB = window.HB || {};
       if (!dd.contains(e.target)) dd.open = false;
     });
     setupPickerSheets();
+    setupViewportOffset();
     loadUi();
     updateClubLogo();
     if (hasUrlFilters) {
