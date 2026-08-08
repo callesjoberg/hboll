@@ -3338,3 +3338,34 @@ dialog.history-dialog {
 /* Länkgruppen i inställningarna är bara till för mobil — tom på desktop,
    där länkarna ligger kvar i sidfoten, och ska då inte visa sin rubrik. */
 @media (min-width: 701px) { #settingsLinksGroup { display: none; } }
+
+/* --- iOS: ingen autozoom vid fokus i textfält --------------------------
+   Safari på iPhone zoomar in sidan när man fokuserar ett fält vars
+   teckenstorlek är UNDER 16 px, och zoomar sedan inte ut igen. Flera av
+   appens fält ligger på 13-14 px.
+
+   Lösningen är 16 px på själva fältet — INTE user-scalable=no i
+   viewport-taggen, som visserligen tar bort zoomen men samtidigt
+   förbjuder nypzoom i hela appen. Att beröva någon möjligheten att zooma
+   in ett spelschema är ett sämre pris än några pixlar större text.
+
+   Två villkor, inte ett: pointer:coarse är det precisa signalet men
+   matchar inte en iPad med styrplatta, och går heller inte att verifiera i
+   en desktop-simulering. max-width fångar telefonerna oavsett. Ett par
+   pixlar större fält på en smal dator-skärm är ett pris värt att betala
+   för en regel som faktiskt går att testa. */
+@media (pointer: coarse), (max-width: 700px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="number"],
+  input[type="url"],
+  input:not([type]),
+  select,
+  select.select,
+  textarea {
+    /* select.select: klassen .select sätter 13px och vinner över en ren
+       elementselektor på specificitet — utan den här raden hade
+       rullgardinerna (plan, sortering, år) fortsatt utlösa zoom. */
+    font-size: 16px;
+  }
+}
