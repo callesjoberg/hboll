@@ -6167,11 +6167,18 @@ window.HB = window.HB || {};
     }
 
     if (state.sort === "tid") {
-      const { visible, hiddenCount } = splitRecentPlayed(
-        list, SCHEMA_RECENT_HOURS, state.schemaOlderRevealCount);
-      const loadMoreBtn = loadMorePlayedButtons(hiddenCount, state.revealBatchSize,
+      // Antalsbaserat, inte tidsbaserat: "senaste timmen" gav noll matcher i
+      // en gles cup och femtio i en tät. Man vill se DE SENASTE spelade,
+      // oavsett hur länge sedan de spelades — samma resonemang som Bana
+      // redan bygger på (se splitRecentPlayedByCount).
+      const retro = isRetrospective(list);
+      const visaAntal = retro ? SCHEMA_RETRO_BATCH : state.recentMatchCount;
+      const batch = retro ? SCHEMA_RETRO_BATCH : state.revealBatchSize;
+      const { visible, hiddenCount } = splitRecentPlayedByCount(
+        list, visaAntal, state.schemaOlderRevealCount);
+      const loadMoreBtn = loadMorePlayedButtons(hiddenCount, batch,
         state.timeOrder === "desc" ? "↓" : "↑",
-        () => { state.schemaOlderRevealCount += state.revealBatchSize; renderContent(); },
+        () => { state.schemaOlderRevealCount += batch; renderContent(); },
         () => { state.schemaOlderRevealCount = Infinity; renderContent(); });
       // Äldre matcher hamnar överst i asc-ordning (äldst→nyast) och underst
       // i desc-ordning (nyast/kommande överst) — knappen placeras därefter.
@@ -6239,31 +6246,8 @@ window.HB = window.HB || {};
     window.scrollTo({ top: 0, behavior: "auto" });
   }
 
-  function splitRecentPlayed(list, cutoffHours, revealExtra) {
-    const cutoff = Date.now() - cutoffHours * 3600000;
-    const always = [];
-    const older = []; // äldre spelade, i samma stigande tidsordning som list
-    for (const m of list) {
-      if (m.res && m.res.fin && m.start < cutoff) older.push(m);
-      else always.push(m);
-    }
-    const revealed = revealExtra > 0 ? older.slice(Math.max(0, older.length - revealExtra)) : [];
-    const hiddenCount = older.length - revealed.length;
-    const visible = [...revealed, ...always].sort((a, b) => a.start - b.start);
-    return { visible, hiddenCount };
-  }
-
-  function showAllPlayedButton(hiddenCount, cutoffHours, onClick) {
-    if (!hiddenCount) return null;
-    return h("button", {
-      class: "btn small show-all-played", type: "button",
-      onclick: () => preserveScrollOnExpand(onClick),
-    }, "Visa " + hiddenCount + " äldre spelade matcher (senaste " +
-      cutoffHours + " tim visas alltid)");
-  }
-
-  // Antalsbaserad variant av splitRecentPlayed() — för Bana och slutspels-
-  // tabellen. Ett fast timfönster är opålitligt där: matchlängden varierar
+  // Visar alltid de N SENAST SPELADE matcherna plus alla ännu ospelade.
+  // Ett fast timfönster vore opålitligt: matchlängden varierar
   // för mycket mellan cuper (korta beachmatcher kontra långa 11-manna-
   // matcher) för att t.ex. "senaste 2 tim" ska ge samma antal synliga
   // matcher överallt. Visar i stället alltid de N SENAST SPELADE matcherna
@@ -6312,7 +6296,29 @@ window.HB = window.HB || {};
     return h("div", { class: "load-more-row" }, moreBtn, allBtn);
   }
 
-  const SCHEMA_RECENT_HOURS = 1; // schemat: hur långt bakåt spelade matcher visas som standard
+  // Två helt olika användningslägen för schemat:
+  //
+  //   PÅGÅENDE CUP — man står i hallen och vill veta hur det nyss gick. Då
+  //   räcker de par senast spelade (state.recentMatchCount); att scrolla
+  //   förbi femtio avklarade matcher för att hitta den kommande är rent
+  //   motstånd.
+  //
+  //   I EFTERHAND — man går igenom en avslutad cup för att se hur det gick,
+  //   vilka man mötte, hur det slutade. Då är de spelade matcherna hela
+  //   poängen, och att klicka fram fyra åt gången är tröttsamt.
+  //
+  // Gränsen dras vid en vecka sedan sista matchen. Kortare än så kan cupen
+  // fortfarande pågå (eller nyss ha avslutats, då man ännu kollar resultat
+  // löpande); längre än så är man där för historiken.
+  const SCHEMA_RETRO_DAYS = 7;
+  const SCHEMA_RETRO_BATCH = 20;
+
+  function isRetrospective(list) {
+    let senaste = 0;
+    for (const m of list) if (m.start > senaste) senaste = m.start;
+    if (!senaste) return false;
+    return Date.now() - senaste > SCHEMA_RETRO_DAYS * 86400000;
+  }
 
   // --- render: bana -----------------------------------------------------------
 
