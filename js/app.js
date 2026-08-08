@@ -1725,9 +1725,10 @@ window.HB = window.HB || {};
         $("#currentCupBtn").click();
       },
     },
-      h("span", { class: "sheet-cup-label" }, "Cup"),
-      h("span", { class: "sheet-cup-name" }, c.name),
-      h("span", { class: "sheet-cup-meta" }, (c.place || "") + " " + (c.edition || "")),
+      h("span", { class: "sheet-cup-text" },
+        h("span", { class: "sheet-cup-label" }, "Cup"),
+        h("span", { class: "sheet-cup-name" }, c.name),
+        h("span", { class: "sheet-cup-meta" }, [c.place, c.edition].filter(Boolean).join(" "))),
       h("span", { class: "sheet-cup-arrow", "aria-hidden": "true" }, "›")));
   }
 
@@ -2401,13 +2402,19 @@ window.HB = window.HB || {};
         // undefined till en bokstavlig "null"-textnod i stället för att
         // hoppa över dem — filtrera bort inaktuella delar (ingen arkiverad
         // historik/en enda dag/en enda klass) innan de skickas in.
-        row.append(...[
+        const urval = [
           archiveYears.length ? buildYearPicker(archiveYears, cup().edition) : null,
           days.length > 1 ? buildDayPicker(days, onTeamOrDayChange) : null,
           catEntries.length > 1 ? buildCatPicker(catEntries, onCatChange) : null,
-        ].filter((el) => el != null));
+        ].filter((el) => el != null);
         refreshTeamRow();
-        row.append(teamSlot);
+        // De fyra urvalsväljarna (år/dagar/klasser/lag) i en egen grupp.
+        // Som grå chips i en lång rad läste de som inaktiva knappar snarare
+        // än som menyval — på mobil blir gruppen i stället fullbreddsrader
+        // med etikett och värde (se .filter-group i style.css), där det är
+        // uppenbart att raden går att trycka på. CSS-only-omslag: samma
+        // element, samma lyssnare, bara en behållare runt.
+        row.append(h("div", { class: "filter-group" }, ...urval, teamSlot));
       }
       row.append(h("span", { class: "row-sep" }), statusSeg);
       body.append(row);
