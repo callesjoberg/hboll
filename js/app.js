@@ -1647,6 +1647,121 @@ window.HB = window.HB || {};
   // med direkt DOM-manipulation i stället för renderToolbar(), så att den kan
   // hållas öppen genom flera val utan att byggas om. items: [{id, label,
   // sortKey (numeriskt), sortName (för alfabetisk sortering)}].
+  // --- mobil: filterpanelerna som bottenark --------------------------------
+  // På smal skärm öppnas varje picker som ett ark underifrån i stället för
+  // som en dropdown under sin knapp (se motsvarande @media i style.css).
+  // Löser att en knapp långt till höger sköt ut panelen utanför skärmkanten,
+  // och ger samtidigt hela bredden åt sök- och kryssrutor.
+  //
+  // Allt hängs på via delegering på document i stället för i buildPicker, så
+  // det gäller ALLA pickers — även exportmenyn, som bygger sin panel själv.
+  const SHEET_QUERY = "(max-width: 700px)";
+  const SHEET_MIN_VH = 25;   // hur lågt arket får dras innan det är meningslöst
+  const SHEET_MAX_VH = 92;   // ...och hur högt, med lite luft kvar upptill
+  let sheetBackdrop = null;
+
+  function sheetMode() {
+    return window.matchMedia(SHEET_QUERY).matches;
+  }
+
+  function savedSheetHeight() {
+    const v = +(localStorage.getItem("hb:sheetVh") || 0);
+    return v >= SHEET_MIN_VH && v <= SHEET_MAX_VH ? v : 0;
+  }
+
+  // Rubrikrad med draghandtag, titel och stängkryss. Byggs en gång per
+  // panel och återanvänds; titeln uppdateras vid varje öppning eftersom
+  // knappens text ändras med urvalet ("Alla lag" -> "Lag (3)").
+  function ensureSheetHead(dd) {
+    const panel = dd.querySelector(".team-picker-panel");
+    if (!panel) return null;
+    const summary = dd.querySelector("summary");
+    let head = panel.querySelector(".picker-sheet-head");
+    if (!head) {
+      const grip = h("span", { class: "picker-sheet-grip", "aria-hidden": "true" });
+      const title = h("span", { class: "picker-sheet-title" });
+      const close = h("button", {
+        class: "picker-sheet-close", type: "button", "aria-label": "Stäng",
+        onclick: () => { dd.open = false; },
+      }, "×");
+      head = h("div", { class: "picker-sheet-head" }, grip, title, close);
+      panel.prepend(head);
+      attachSheetDrag(grip, panel);
+    }
+    head.querySelector(".picker-sheet-title").textContent =
+      (summary && summary.textContent.trim()) || "Filter";
+    return head;
+  }
+
+  // Dra handtaget för att välja höjd. Uppåt = högre ark, så höjden räknas
+  // från startpunkten MINUS aktuell y. Höjden sparas så nästa öppning
+  // (och nästa besök) behåller den man valt.
+  function attachSheetDrag(grip, panel) {
+    let startY = 0, startH = 0, dragging = false;
+    grip.addEventListener("pointerdown", (e) => {
+      if (!sheetMode()) return;
+      dragging = true;
+      startY = e.clientY;
+      startH = panel.getBoundingClientRect().height;
+      grip.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    grip.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const vh = window.innerHeight / 100;
+      const raw = (startH + (startY - e.clientY)) / vh;
+      const clamped = Math.min(SHEET_MAX_VH, Math.max(SHEET_MIN_VH, raw));
+      panel.style.setProperty("--sheet-h", clamped.toFixed(1) + "vh");
+      persist("hb:sheetVh", String(Math.round(clamped)));
+    });
+    const end = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      try { grip.releasePointerCapture(e.pointerId); } catch { /* redan släppt */ }
+    };
+    grip.addEventListener("pointerup", end);
+    grip.addEventListener("pointercancel", end);
+  }
+
+  function syncSheetBackdrop(open) {
+    if (open && !sheetBackdrop) {
+      sheetBackdrop = h("div", { class: "picker-sheet-backdrop" });
+      document.body.append(sheetBackdrop);
+    } else if (!open && sheetBackdrop) {
+      sheetBackdrop.remove();
+      sheetBackdrop = null;
+    }
+  }
+
+  function setupPickerSheets() {
+    // toggle bubblar INTE, så lyssnaren måste ligga i fångstfasen för att
+    // nå <details> var de än råkar sitta i trädet.
+    document.addEventListener("toggle", (e) => {
+      const dd = e.target;
+      if (!(dd instanceof HTMLElement) || !dd.classList.contains("team-picker-dd")) return;
+      if (dd.open) {
+        // Bara EN picker åt gången — annars kan två ark hamna ovanpå
+        // varandra, båda fixerade mot skärmens nederkant.
+        for (const other of document.querySelectorAll(".team-picker-dd[open]")) {
+          if (other !== dd) other.open = false;
+        }
+        if (!sheetMode()) return;
+        const head = ensureSheetHead(dd);
+        const saved = savedSheetHeight();
+        if (head && saved) {
+          dd.querySelector(".team-picker-panel").style.setProperty("--sheet-h", saved + "vh");
+        }
+      }
+      syncSheetBackdrop(!!document.querySelector(".team-picker-dd[open]") && sheetMode());
+    }, true);
+
+    // Roterar man till liggande (eller öppnar på en bred skärm) ska ett
+    // kvarglömt bakgrundstäcke inte ligga och blockera klick.
+    window.matchMedia(SHEET_QUERY).addEventListener("change", () => {
+      syncSheetBackdrop(!!document.querySelector(".team-picker-dd[open]") && sheetMode());
+    });
+  }
+
   function buildPicker(opts) {
     const dd = h("details", { class: "team-picker-dd" });
     const summary = h("summary", { class: "chip team-picker-summary" });
@@ -8381,11 +8496,14 @@ window.HB = window.HB || {};
 
     // Stäng en öppen lag-dropdown vid klick utanför den. En enda global
     // lyssnare (i stället för en per renderToolbar-anrop) hittar alltid
-    // den dropdown som råkar vara monterad just nu.
+    // den dropdown som råkar vara monterad just nu. Bakgrundstäckets klick
+    // fångas också här: det ligger utanför <details>, så villkoret nedan
+    // stänger arket precis som ett klick i matchlistan bakom.
     document.addEventListener("click", (e) => {
       const dd = document.querySelector(".team-picker-dd[open]");
       if (dd && !dd.contains(e.target)) dd.open = false;
     });
+    setupPickerSheets();
     loadUi();
     updateClubLogo();
     if (hasUrlFilters) {

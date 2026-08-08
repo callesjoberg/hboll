@@ -2895,3 +2895,106 @@ dialog.history-dialog {
 /* Hjälptexten under "Appversion" i Inställningar — samma dämpade ton som
    övriga förklaringar i dialogen, men på egen rad under kontrollerna. */
 .settings-hint { margin: 6px 0 0; font-size: 13px; max-width: 62ch; }
+
+/* --- mobil: filterpanelerna som bottenark ------------------------------
+   På smal skärm ligger panelen inte längre under sin knapp. En knapp långt
+   till höger sköt ut hela panelen utanför skärmkanten (position:absolute
+   mot knappen — max-width begränsar bredden, inte positionen), så sökruta
+   och sorteringsval hamnade utanför. Här blir den i stället ett ark
+   underifrån i full bredd, med draghandtag för att välja höjd själv.
+   Gäller ALLA pickers, inklusive exportmenyn, eftersom de delar klass. */
+@media (max-width: 700px) {
+  .team-picker-dd[open] > .team-picker-panel {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    /* --sheet-h sätts av draghandtaget (se setupPickerSheets i app.js) och
+       sparas mellan besök; 62vh är utgångsläget. */
+    height: var(--sheet-h, 62vh);
+    max-height: 92vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 18px 18px 0 0;
+    border-bottom: none;
+    padding: 0 14px max(16px, env(safe-area-inset-bottom)) 14px;
+    box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
+    /* Innehållet ska växa nedåt från rubriken, inte spridas ut över hela
+       arkets höjd som grid-standarden gör när arket är högre än innehållet. */
+    align-content: start;
+    z-index: 60;
+  }
+
+  .team-picker-dd[open] > .team-picker-panel > .team-picker-list {
+    max-height: none; /* arket sköter scrollen, inte listan */
+  }
+
+  /* Rubrikraden: klistrad högst upp så handtaget och stängkrysset finns
+     kvar när man scrollat ner i en lång lagliste. */
+  .picker-sheet-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    margin: 0 -14px 4px;
+    padding: 6px 14px 8px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .picker-sheet-grip {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    /* --line syns knappt mot --card i mörkt tema; --ink-soft nedtonad ger
+       ett handtag som går att se utan att ta över rubrikraden. */
+    background: var(--ink-soft);
+    opacity: .5;
+    margin-bottom: 6px;
+    cursor: grab;
+    /* Utan detta tolkar webbläsaren dragningen som sidscroll och
+       pointermove-händelserna uteblir helt. */
+    touch-action: none;
+  }
+  .picker-sheet-grip:active { cursor: grabbing; opacity: .85; }
+  /* Osynlig men greppbar yta runt handtaget — 5 px är omöjligt att träffa. */
+  .picker-sheet-grip::before {
+    content: "";
+    display: block;
+    margin: -14px -24px;
+    height: 33px;
+  }
+
+  .picker-sheet-title { font-weight: 600; font-size: 15px; }
+
+  .picker-sheet-close {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 26px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+  }
+
+  .picker-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 18, 30, 0.45);
+    z-index: 59;
+  }
+}
+
+/* Rubrikraden hör bara till arket — på större skärmar är panelen en vanlig
+   dropdown under sin knapp, där den bara vore i vägen. */
+@media (min-width: 701px) {
+  .picker-sheet-head, .picker-sheet-backdrop { display: none; }
+}
