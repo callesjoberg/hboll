@@ -310,6 +310,56 @@ window.HB = window.HB || {};
       filename || cup.id + "-schema.xlsx", "Matcher");
   }
 
+  // --- ProCue DJ -----------------------------------------------------------
+
+  // Matchlistan i det lilla utbytesformat ProCue DJ:s Inspring-flik läser
+  // (services/matchScheduleImport.ts i det projektet). Avsiktligt magert:
+  // datum, tid, två lagnamn och en etikett. Tabeller, resultat och trupper
+  // följer inte med — ett DJ-bås behöver veta vem som springer in och när,
+  // och ett format som bär mer är ett format som går sönder oftare.
+  //
+  // Klockslagen är Stockholms väggklocka via wallDateTime, samma som .ics och
+  // kalkylarken: ProCue jämför dem mot användarens lokala tid för att öppna på
+  // rätt match, så en UTC-stämpel hade landat fel halva året.
+  const PROCUE_FORMAT = "procue-schedule";
+  const PROCUE_VERSION = 1;
+
+  function buildProCue(cup, matches) {
+    const doc = {
+      format: PROCUE_FORMAT,
+      version: PROCUE_VERSION,
+      source: "cupschema",
+      name: (cup && (cup.name || cup.id)) || "Cup",
+      matches: matches.map((m) => {
+        const { date, time } = wallDateTime(m.start);
+        // Klass och grupp blir matchens namn i ProCue — det är så DJ:n hittar
+        // rätt rad mot den utskrivna spelordningen.
+        const label = [m.catName, m.divName].filter(Boolean).join(" · ") || null;
+        return {
+          date: date, time: time,
+          home: m.home.name, away: m.away.name,
+          label: label, venue: m.arena || null,
+        };
+      }),
+    };
+    return JSON.stringify(doc, null, 2);
+  }
+
+  // Kopiera i stället för att ladda ner: ProCue importerar genom inklistring,
+  // så en fil hade betytt ett extra steg via Hämtade filer utan att tillföra
+  // något. Nedladdning finns kvar som reserv när urklipp inte är tillåtet
+  // (äldre webbläsare, eller sidan utan https).
+  function copyProCue(cup, matches, filename) {
+    const text = buildProCue(cup, matches);
+    const fallback = () => triggerDownload(
+      new Blob([text], { type: "application/json;charset=utf-8" }),
+      filename || (cup.id + "-procue.json"));
+    if (!navigator.clipboard || !navigator.clipboard.writeText) { fallback(); return Promise.resolve(false); }
+    return navigator.clipboard.writeText(text).then(() => true).catch(() => { fallback(); return false; });
+  }
+
+  HB.procue = { build: buildProCue, copy: copyProCue };
+
   HB.exportRows = matchRows;
   HB.matchExportFields = MATCH_FIELDS;   // grundkolumnerna, utan adress
   HB.matchFieldsFor = matchFields;       // med adress när geodata finns

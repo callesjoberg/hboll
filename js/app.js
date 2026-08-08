@@ -2936,6 +2936,29 @@ window.HB = window.HB || {};
         const list = sorted(filtered());
         if (list.length) HB.csv.download(cup(), list, exportBaseName() + ".csv", exportArenaGeo());
       }),
+      // Kopierar i stället för att ladda ner — ProCue DJ importerar schemat
+      // genom inklistring i sin Inspring-flik, så urklipp är hela vägen fram.
+      // Exporterar samma filtrerade urval som allt annat här: filtrera på
+      // klubb eller hall först, så slipper DJ:n fyrtio matcher hen inte spelar.
+      //
+      // Byggs för hand i stället för via item(): den stänger menyn direkt vid
+      // klick, och då hade kvittensen aldrig synts. Samma text-i-knappen-
+      // kvittens som "kopiera inställningar" i welcome.js.
+      (() => {
+        const label = "🎧 Till ProCue DJ (kopiera)";
+        const btn = h("button", { class: "export-item", type: "button" }, label);
+        btn.onclick = () => {
+          const list = sorted(filtered());
+          if (!list.length) return;
+          HB.procue.copy(cup(), list, exportBaseName() + "-procue.json").then((copied) => {
+            btn.textContent = copied
+              ? list.length + " matcher kopierade! ✓"
+              : "nedladdad i stället ✓";
+            setTimeout(() => (btn.textContent = label), 2500);
+          });
+        };
+        return btn;
+      })(),
       item("JSON (.json)", () => {
         const list = sorted(filtered());
         if (list.length) {
