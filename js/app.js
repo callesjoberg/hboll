@@ -2340,6 +2340,36 @@ window.HB = window.HB || {};
   //
   // Klasser utan läsbart födelseår (alla cuper skriver det inte) blir kvar
   // som egna rader med sitt fulla namn — inget val försvinner.
+  // Ett kullval fångar de klass-id som fanns NÄR man kryssade i det. Lägger
+  // man till ett år efteråt hämtas det årets matcher in, men dess klass-id
+  // står utanför urvalet — resultatet blev att man valde "Flickor 2011",
+  // la till 2025, och ändå bara såg 2026 års matcher.
+  //
+  // Här utökas därför urvalet till att omfatta ALLA nu kända id för de
+  // kullar som redan är valda. Körs vid varje uppbyggnad av verktygsraden,
+  // alltså även när ett arkivår just laddat klart (ensureYearMatches
+  // anropar render()). Säkert att köra om: kullproxyn kryssar ur hela
+  // kullen på en gång, så ett delvis urval kan aldrig vara avsiktligt.
+  function expandCohortSelection(catEntries) {
+    if (!state.cats.size) return;
+    const idsByKey = new Map();
+    const valdaKullar = new Set();
+    for (const [id, name] of catEntries) {
+      const key = cohortKey(name);
+      if (!key) continue;
+      if (!idsByKey.has(key)) idsByKey.set(key, []);
+      idsByKey.get(key).push(id);
+      if (state.cats.has(id)) valdaKullar.add(key);
+    }
+    let andrat = false;
+    for (const key of valdaKullar) {
+      for (const id of idsByKey.get(key) || []) {
+        if (!state.cats.has(id)) { state.cats.add(id); andrat = true; }
+      }
+    }
+    if (andrat) saveUi();
+  }
+
   function buildCatPicker(catEntries, onChange) {
     const idsByKey = new Map();   // årskullsnyckel (eller id) -> [catId]
     const labelByKey = new Map();
@@ -2530,6 +2560,7 @@ window.HB = window.HB || {};
     for (const m of scoped()) if (m.catId) cats.set(m.catId, m.catName);
     const catEntries = [...cats.entries()].sort((a, b) =>
       catSortKey(a[1]) - catSortKey(b[1]) || a[1].localeCompare(b[1], "sv"));
+    expandCohortSelection(catEntries);
 
     // Lagväljaren smalnas av om klasser redan valts, men visas alltid —
     // "Hela cupen"-lägets potentiellt tusentals lag hanteras av buildPicker
