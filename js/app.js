@@ -1633,6 +1633,10 @@ window.HB = window.HB || {};
     if (!bar) return;
     // Stats har ingen verktygsrad (se renderToolbar) — då ska filterknappen
     // inte heller finnas, annars öppnar den ett tomt ark.
+    // Stats har en EXTRA fast rad (underflikarna, se style.css) — innehållet
+    // måste lämna plats för båda, annars göms sista raden bakom dem.
+    document.body.classList.toggle("stats-tabs-fixed", state.view === "stats");
+    placeFooterLinks();
     const showFilter = state.view !== "stats";
     const tabs = $$("#viewTabs .tab").filter((b) => !b.hidden);
     // .filter(Boolean): replaceChildren är DOM:ets egen metod och gör om ett
@@ -1673,7 +1677,50 @@ window.HB = window.HB || {};
       "--bottombar-h", Math.round(bar.getBoundingClientRect().height) + "px");
   }
 
+  // Sidfotens länkar (Om appen / Hjälp / Lägg till cup / Admin) hör hemma i
+  // inställningarna på mobil — de är alla inställningsartade, och i sidfoten
+  // tog de plats i en vy där varje pixel räknas. FLYTTAS, inte kopieras:
+  // samma knappar med samma lyssnare, så inget behöver hållas i synk.
+  //
+  // Anropas från renderBottomBar (som körs vid varje renderTabs) i stället
+  // för att bara haka på matchMedia("change") — den händelsen är svår att
+  // testa och skulle vid ett missat fall lämna länkarna på fel ställe för
+  // gott. Funktionen är idempotent: den flyttar bara det som står fel.
+  function placeFooterLinks() {
+    const footer = document.querySelector("body > footer");
+    const linkSlot = $("#settingsLinks");
+    if (!footer || !linkSlot) return;
+    const host = window.matchMedia("(max-width: 700px)").matches ? linkSlot : footer;
+    // Textraden om datakällan hör till sidfoten och följer inte med.
+    for (const el of [...footer.children, ...linkSlot.children]) {
+      if (el.tagName === "SPAN") continue;
+      if (el.parentElement !== host) host.append(el);
+    }
+  }
+
   let filterBackdrop = null;
+
+  // Cupknapp överst i filterarket. Cupen är det största urvalsvalet som
+  // finns, men låg bakom kugghjulet medan allt annat urval bor i arket.
+  // Knappen öppnar samma inställningsdialog som förut (där cuplistan med
+  // sportväljare redan finns) — ingen andra, konkurrerande cuplista att
+  // hålla i synk.
+  function renderSheetCupButton() {
+    const bar = $("#toolbar");
+    if (!bar || state.view === "stats") return;
+    const c = cup();
+    bar.prepend(h("button", {
+      class: "sheet-cup-btn", type: "button",
+      onclick: () => {
+        toggleFilterSheet(false);
+        $("#currentCupBtn").click();
+      },
+    },
+      h("span", { class: "sheet-cup-label" }, "Cup"),
+      h("span", { class: "sheet-cup-name" }, c.name),
+      h("span", { class: "sheet-cup-meta" }, (c.place || "") + " " + (c.edition || "")),
+      h("span", { class: "sheet-cup-arrow", "aria-hidden": "true" }, "›")));
+  }
 
   function toggleFilterSheet(force) {
     const open = force === undefined
@@ -2423,6 +2470,7 @@ window.HB = window.HB || {};
       }, state.timeOrder === "desc" ? "↓ Nyast överst" : "↑ Äldst överst") : null,
       buildExportPicker(),
     ));
+    renderSheetCupButton();
   }
 
   // Exporterar exakt den synliga, filtrerade (och för Schema: sorterade)
@@ -8483,6 +8531,8 @@ window.HB = window.HB || {};
     $("#settingsBtn").addEventListener("click", openSettings);
     $("#currentCupBtn").addEventListener("click", openSettings);
     $("#settingsClose").addEventListener("click", () => dlg.close());
+
+    placeFooterLinks();
 
     // Versionsmärke + nödutgång ur en envis service worker-cache. En
     // installerad PWA (eller bara en registrerad SW) kan servera gammalt
