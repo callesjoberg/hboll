@@ -3159,6 +3159,14 @@ dialog.history-dialog {
     line-height: 1;
   }
   body.filters-expanded .filter-more-tile { color: var(--blue); }
+  /* Rensa-brickan skiljs från väljarna med en tunn linje: den ÄNDRAR något
+     när man trycker, till skillnad från de andra som bara öppnar en panel. */
+  .filter-clear-tile {
+    border-left: 1px solid var(--line) !important;
+    /* --live är appens egna röda (matchlivemarkeringen) och har en variant
+       för mörkt tema — bättre än en hårdkodad hex som skär sig där. */
+    color: var(--live);
+  }
 
   /* Verktygsradens egen ihopfällning behålls i arket: dels sitter LÅSET
      inuti <summary> (lockSlot i renderToolbar) och skulle annars bli

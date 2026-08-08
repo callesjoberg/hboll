@@ -549,6 +549,17 @@ window.HB = window.HB || {};
       filterLocked: state.filterLocked,
     }));
     syncUrl();
+    refreshFilterChrome();
+  }
+
+  // Siffran på filterknappen och Rensa-brickans synlighet speglar aktuellt
+  // filter. Ett filterval anropar bara renderContent(), inte render(), så
+  // utan den här lätta uppdateringen låg både siffran och brickan kvar i
+  // sitt gamla läge tills något annat råkade rita om verktygsraden.
+  function refreshFilterChrome() {
+    const n = activeFilterCount();
+    for (const el of document.querySelectorAll(".filter-clear-tile")) el.hidden = !n;
+    if (document.querySelector("#bottomBar")) renderBottomBar();
   }
 
   // Speglar aktuellt filter/sortering i adressfältet (utan att lägga till
@@ -1628,7 +1639,10 @@ window.HB = window.HB || {};
   // Sortering räknas INTE: den ändrar ordning, inte urval.
   function activeFilterCount() {
     let n = 0;
-    if (state.scope !== "club") n++;
+    // scope (Alingsås HK / Hela cupen) räknas INTE: det är ett läge, inte en
+    // avsmalning, och syns alltid som en egen växel. Att räkna avvikelse från
+    // förvalet gjorde dessutom att "Hela cupen" — det MINST filtrerade läget
+    // — bidrog till siffran, vilket var precis bakvänt.
     n += state.days.size + state.cats.size + state.teams.size + state.years.size;
     if (!state.includeCurrentYear) n++;
     if (state.arena) n++;
@@ -2478,6 +2492,29 @@ window.HB = window.HB || {};
         // trycker Filter, så resten av verktygsraden (sök, status, plan,
         // sortering, export) måste ha en väg in. Brickan göms över 700 px,
         // där hela raden ändå står framme.
+        // Rensa allt: visas bara när det FINNS något att rensa, annars vore
+        // den en död knapp i en remsa där varje bricka kostar bredd. Rensar
+        // exakt det siffran på filterknappen räknar (se activeFilterCount) —
+        // annars kan man trycka rensa och ändå ha en siffra kvar.
+        // Byggs ALLTID och göms med hidden i stället för att utelämnas: ett
+        // filterval ritar bara om innehållet, inte verktygsraden, så en
+        // villkorligt skapad bricka hade inte dykt upp förrän nästa fulla
+        // omritning. refreshFilterChrome växlar hidden i stället.
+        const rensaTile = h("button", {
+          class: "filter-more-tile filter-clear-tile", type: "button", "data-icon": "✕",
+          ...(activeFilterCount() ? {} : { hidden: "" }),
+          title: "Rensa all filtrering",
+          onclick: () => {
+            state.days.clear(); state.cats.clear(); state.teams.clear(); state.years.clear();
+            state.includeCurrentYear = true;
+            state.viewCats = new Set(); state.viewTeams = new Set();
+            state.arena = ""; state.q = ""; state.matchFilter = "all";
+            state.schemaOlderRevealCount = 0;
+            saveUi();
+            render();
+          },
+        }, "Rensa");
+
         const merTile = h("button", {
           class: "filter-more-tile", type: "button", "data-icon": "⋯",
           onclick: () => {
@@ -2486,7 +2523,8 @@ window.HB = window.HB || {};
             requestAnimationFrame(syncBottomStack);
           },
         }, "Mer");
-        row.append(h("div", { class: "filter-group" }, ...urval, teamSlot, merTile));
+        row.append(h("div", { class: "filter-group" },
+          ...urval, teamSlot, rensaTile, merTile));
       }
       row.append(h("span", { class: "row-sep" }), statusSeg);
       body.append(row);
@@ -2522,6 +2560,7 @@ window.HB = window.HB || {};
       oninput: (e) => {
         state.q = e.target.value;
         syncUrl(); // inte saveUi() — q ska inte fastna i localStorage mellan besök
+        refreshFilterChrome(); // fritextsök räknas in i filtersiffran
         renderContent();
       },
     });
