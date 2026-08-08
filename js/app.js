@@ -1926,7 +1926,15 @@ window.HB = window.HB || {};
           dd.querySelector(".team-picker-panel").style.setProperty("--sheet-h", saved + "vh");
         }
       }
-      syncSheetBackdrop(!!document.querySelector(".team-picker-dd[open]") && sheetMode());
+      const nagonOppen = !!document.querySelector(".team-picker-dd[open]");
+      syncSheetBackdrop(nagonOppen && sheetMode());
+      // #toolbar är position:fixed med z-index och skapar därmed en EGEN
+      // staplingskontext: väljarpanelens z-index gäller bara inom den, så
+      // bakgrundstäcket (barn till body) la sig ovanpå hela raden — panelen
+      // såg utgråad ut och gick inte att klicka i. Lyft raden över täcket
+      // medan en väljare är öppen. Att jämföra z-index-SIFFROR räcker inte
+      // mellan olika staplingskontexter.
+      document.body.classList.toggle("picker-open", nagonOppen);
     }, true);
 
     // Roterar man till liggande (eller öppnar på en bred skärm) ska ett
@@ -8716,7 +8724,15 @@ window.HB = window.HB || {};
     // stänger arket precis som ett klick i matchlistan bakom.
     document.addEventListener("click", (e) => {
       const dd = document.querySelector(".team-picker-dd[open]");
-      if (dd && !dd.contains(e.target)) dd.open = false;
+      if (!dd) return;
+      // Kryssar man i en post i en LAT lista (>60 val, se
+      // PICKER_LAZY_THRESHOLD) bygger change-hanteraren om listan MITT I
+      // klickets bubbling — den klickade kryssrutan är då redan borttagen ur
+      // DOM:et när den här lyssnaren nås, contains() ger false, och panelen
+      // stängdes mitt i ett val. Ett bortkopplat mål betyder att klicket kom
+      // inifrån något vi själva just ritat om, alltså inte "utanför".
+      if (!e.target.isConnected) return;
+      if (!dd.contains(e.target)) dd.open = false;
     });
     setupPickerSheets();
     loadUi();

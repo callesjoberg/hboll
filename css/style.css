@@ -3102,6 +3102,10 @@ dialog.history-dialog {
     margin: 0;
   }
 
+  /* Se picker-open i app.js: utan detta hamnar hela verktygsraden — och
+     därmed den öppna väljarpanelen — under väljarens eget bakgrundstäcke. */
+  body.picker-open #toolbar { z-index: 85; }
+
   body.filters-open.filters-expanded #toolbar {
     max-height: 72vh;
     overflow-y: auto;
@@ -3119,21 +3123,21 @@ dialog.history-dialog {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    width: 78px;
-    min-height: 62px;
-    padding: 7px 4px;
+    gap: 2px;
+    width: 66px;
+    min-height: 52px;
+    padding: 6px 4px;
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     font: inherit;
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--ink-soft);
     cursor: pointer;
   }
   .filter-more-tile::before {
     content: attr(data-icon);
-    font-size: 19px;
+    font-size: 18px;
     line-height: 1;
   }
   body.filters-expanded .filter-more-tile { border-color: var(--blue); color: var(--blue); }
@@ -3222,25 +3226,27 @@ dialog.history-dialog {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    width: 78px;
-    min-height: 62px;
-    padding: 7px 4px;
+    gap: 2px;
+    width: 66px;
+    min-height: 52px;
+    padding: 6px 4px;
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     font: inherit;
-    font-size: 11px;
-    line-height: 1.25;
+    font-size: 10.5px;
+    line-height: 1.2;
     color: var(--ink-soft);
     text-align: center;
     cursor: pointer;
   }
   /* Ikonen kommer från data-icon (satt i buildPicker) — inget extra element
      att bygga, och desktopvyn påverkas inte alls. */
+  /* Samma ikonstorlek som bottenradens (.bottom-tab-icon) så de två
+     raderna läser som samma system. */
   .filter-group .team-picker-summary[data-icon]::before {
     content: attr(data-icon);
-    font-size: 19px;
+    font-size: 18px;
     line-height: 1;
   }
   /* Etiketten får gå på två rader — "Innevarande år" ryms inte på 78 px. */
