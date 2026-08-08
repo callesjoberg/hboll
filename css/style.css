@@ -2909,7 +2909,11 @@ dialog.history-dialog {
     top: auto;
     left: 0;
     right: 0;
-    bottom: 0;
+    /* Ovanför bottenraden och filterremsan (syncBottomStack i app.js) i
+       stället för dikt mot skärmkanten — annars täcker panelen just de
+       rader man navigerade med, och man ser inte vilken väljare som är
+       öppen. */
+    bottom: var(--bottomstack-h, 0px);
     width: auto;
     max-width: none;
     /* --sheet-h sätts av draghandtaget (se setupPickerSheets i app.js) och
@@ -3105,6 +3109,9 @@ dialog.history-dialog {
   /* Se picker-open i app.js: utan detta hamnar hela verktygsraden — och
      därmed den öppna väljarpanelen — under väljarens eget bakgrundstäcke. */
   body.picker-open #toolbar { z-index: 85; }
+  /* Bottenraden med: båda ska förbli synliga OCH klickbara medan en väljare
+     är öppen, så man kan hoppa direkt mellan brickor eller byta vy. */
+  body.picker-open #bottomBar { z-index: 85; }
 
   body.filters-open.filters-expanded #toolbar {
     max-height: 72vh;
@@ -3124,9 +3131,9 @@ dialog.history-dialog {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    width: 66px;
-    min-height: 52px;
-    padding: 6px 4px;
+    width: 64px;
+    min-height: 47px;
+    padding: 5px 4px;
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -3227,15 +3234,17 @@ dialog.history-dialog {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    width: 66px;
-    min-height: 52px;
-    padding: 6px 4px;
+    width: 64px;
+    /* Samma höjd som bottenradens flikar (7px+18px+2px+label+6px ~= 49) så
+       remsan inte tar mer plats än den rad den ligger ovanpå. */
+    min-height: 47px;
+    padding: 5px 4px;
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     font: inherit;
     font-size: 10.5px;
-    line-height: 1.2;
+    line-height: 1.15;
     color: var(--ink-soft);
     text-align: center;
     cursor: pointer;
@@ -3249,10 +3258,13 @@ dialog.history-dialog {
     font-size: 18px;
     line-height: 1;
   }
-  /* Etiketten får gå på två rader — "Innevarande år" ryms inte på 78 px. */
-  .filter-group .team-picker-dd > .team-picker-summary {
+  /* "Innevarande år" ryms inte på en 64 px-bricka — korta med ellips i
+     stället för att klippa mitt i ordet. */
+  .filter-group .picker-label {
+    max-width: 100%;
     overflow: hidden;
-    word-break: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .sheet-cup-btn { margin-bottom: 10px; }
   .sheet-cup-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }

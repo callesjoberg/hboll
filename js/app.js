@@ -1684,6 +1684,23 @@ window.HB = window.HB || {};
     // en gissad siffra gav ett synligt glapp mellan rad och ark.
     document.documentElement.style.setProperty(
       "--bottombar-h", Math.round(bar.getBoundingClientRect().height) + "px");
+    syncBottomStack();
+  }
+
+  // Total höjd på ALLT som ligger fast i botten just nu: bottenraden plus
+  // filterremsan när den är uppfälld. Väljarpanelerna utgår från den och
+  // lägger sig OVANFÖR i stället för att täcka raderna man just navigerade
+  // med. Mäts i stället för att räknas ut — remsans höjd beror på hur många
+  // brickor som ryms och på safe-area.
+  function syncBottomStack() {
+    const bar = $("#bottomBar");
+    const tb = $("#toolbar");
+    let h = bar ? bar.getBoundingClientRect().height : 0;
+    if (tb && document.body.classList.contains("filters-open") &&
+        getComputedStyle(tb).position === "fixed") {
+      h += tb.getBoundingClientRect().height;
+    }
+    document.documentElement.style.setProperty("--bottomstack-h", Math.round(h) + "px");
   }
 
   // Sidfotens länkar (Om appen / Hjälp / Lägg till cup / Admin) hör hemma i
@@ -1760,6 +1777,8 @@ window.HB = window.HB || {};
     document.body.classList.toggle("filters-open", open);
     if (!open) document.body.classList.remove("filters-expanded");
     syncFilterBackdrop();
+    // Efter en bildruta: remsan måste hinna få sin layout innan den mäts.
+    requestAnimationFrame(syncBottomStack);
     // Verktygsradens egen ihopfällning är meningslös inne i arket — arket ÄR
     // den öppna/stängda växlingen. Tvinga upp den så man inte behöver två
     // klick för att komma åt filtren.
@@ -1960,9 +1979,14 @@ window.HB = window.HB || {};
       class: "chip team-picker-summary",
       ...(opts.icon ? { "data-icon": opts.icon } : {}),
     });
+    // Etiketten i ett eget element (inte som ren textnod): mobilens brickor
+    // behöver kunna korta den med ellips, och text-overflow biter inte på en
+    // anonym textnod inuti en flex-container.
+    const label = h("span", { class: "picker-label" });
     const setSummary = () => {
-      summary.textContent = opts.selected.size
+      label.textContent = opts.selected.size
         ? opts.countLabel(opts.selected.size) : opts.emptyLabel;
+      if (!label.parentNode) summary.append(label);
     };
     setSummary();
 
@@ -2459,6 +2483,7 @@ window.HB = window.HB || {};
           onclick: () => {
             document.body.classList.toggle("filters-expanded");
             syncFilterBackdrop();
+            requestAnimationFrame(syncBottomStack);
           },
         }, "Mer");
         row.append(h("div", { class: "filter-group" }, ...urval, teamSlot, merTile));
