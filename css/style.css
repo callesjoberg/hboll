@@ -506,7 +506,10 @@ header.top {
 .team-picker-list {
   display: grid;
   gap: 2px;
-  max-height: 260px;
+  /* 260px rymde ~9 rader — för lite när en cup har 20 klasser eller 40 lag,
+     och man fick scrolla i en liten ruta i stället för att se urvalet. Växer
+     nu med fönstret men aldrig så att panelen går utanför skärmen. */
+  max-height: min(58vh, 520px);
   overflow-y: auto;
 }
 

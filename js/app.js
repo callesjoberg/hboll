@@ -2134,13 +2134,21 @@ window.HB = window.HB || {};
     // det spelar ingen roll eftersom "klass"-jämförelsen aldrig körs.
     let sortMode = opts.sortToggle === false ? "namn" : "klass";
     const sortBtns = {};
-    const applySort = () => {
-      const cmp = sortMode === "namn"
+    // selectedFirst: lyfter ikryssade rader överst. Körs BARA när panelen
+    // öppnas (se toggle-lyssnaren nedan), aldrig vid ett enskilt klick —
+    // annars hoppar raden man just kryssade i väg under fingret och nästa
+    // klick landar på fel rad.
+    const applySort = (selectedFirst) => {
+      const base = sortMode === "namn"
         ? (a, b) => a.dataset.name.localeCompare(b.dataset.name, "sv")
         : (a, b) => (+a.dataset.catkey - +b.dataset.catkey) ||
             a.dataset.name.localeCompare(b.dataset.name, "sv");
+      const cmp = selectedFirst
+        ? (a, b) => (opts.selected.has(b._id) ? 1 : 0) - (opts.selected.has(a._id) ? 1 : 0) || base(a, b)
+        : base;
       [...list.children].sort(cmp).forEach((el) => list.append(el));
     };
+    dd.addEventListener("toggle", () => { if (dd.open) applySort(true); });
     const sortRow = opts.sortToggle === false ? null : h("div", { class: "team-picker-sort-row" },
       ["klass", "namn"].map((key) => {
         const b = h("button", {
@@ -2297,7 +2305,7 @@ window.HB = window.HB || {};
       })),
       icon: "👥",
       selected: state.teams,
-      emptyLabel: "Alla lag",
+      emptyLabel: "Lag",
       countLabel: (n) => "Lag (" + n + ")",
       searchPlaceholder: "Sök lag …",
       onChange: onChange || renderContent,
@@ -2312,7 +2320,7 @@ window.HB = window.HB || {};
       })),
       icon: "📆",
       selected: state.days,
-      emptyLabel: "Alla dagar",
+      emptyLabel: "Dagar",
       countLabel: (n) => "Dagar (" + n + ")",
       searchPlaceholder: "Sök dag …",
       onChange: onChange || renderContent,
@@ -2371,7 +2379,7 @@ window.HB = window.HB || {};
       })),
       icon: "🏷️",
       selected: cohortSelection,
-      emptyLabel: "Alla klasser",
+      emptyLabel: "Klasser",
       countLabel: (n) => "Klasser (" + n + ")",
       searchPlaceholder: "Sök klass …",
       genderQuickSelect: true,
@@ -2545,11 +2553,23 @@ window.HB = window.HB || {};
       chip("Hela cupen", state.scope === "all", () => {
         state.scope = "all"; saveUi(); render();
       }));
-    const statusSeg = h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
-      [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
-        chip(l, state.matchFilter === v, () => {
-          state.matchFilter = v; saveUi(); render();
-        })));
+    // Matchstatus: tre synliga val på dator (man ser alternativen direkt),
+    // EN växlingsknapp på mobil där utrymmet är dyrast. Knappen visar alltid
+    // aktuellt läge och stegar Alla -> Kommande -> Spelade -> Alla.
+    const STATUS_STEG = [["all", "Alla matcher"], ["upcoming", "Kommande"], ["played", "Spelade"]];
+    const statusSeg = sheetMode()
+      ? (() => {
+          const i = Math.max(0, STATUS_STEG.findIndex(([v]) => v === state.matchFilter));
+          return chip(STATUS_STEG[i][1], state.matchFilter !== "all", () => {
+            state.matchFilter = STATUS_STEG[(i + 1) % STATUS_STEG.length][0];
+            saveUi(); render();
+          }, "status-cycle");
+        })()
+      : h("div", { class: "seg", role: "group", "aria-label": "Matchstatus" },
+          [["all", "Alla"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, l]) =>
+            chip(l, state.matchFilter === v, () => {
+              state.matchFilter = v; saveUi(); render();
+            })));
 
     // Ett enda lås fryser år+dagar+klasser+lag TILLSAMMANS (till en chip
     // bredvid "Filter och sortering", se dd/lockSlot ovan) — tanken är att
