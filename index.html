@@ -71,8 +71,16 @@
         el.appendChild(pre);
         (document.body || document.documentElement).appendChild(el);
       }
+      // filename/lineno är TOMMA när felet kom från ett skript på annan
+      // origin utan CORS — det är just då meddelandet blir det
+      // intetsägande "Script error.". Att skriva ut dem ändå är poängen:
+      // en tom källa pekar på tredjepartskod (webbläsartillägg, injicerat
+      // skript), en ifylld pekar rakt in i appens egna filer.
       window.addEventListener("error", function (e) {
-        showBanner(e.message, e.error, "error");
+        var where = e.filename
+          ? " (" + e.filename + ":" + e.lineno + ":" + e.colno + ")"
+          : " (okänd källa — troligen ett skript från annan origin, t.ex. ett webbläsartillägg)";
+        showBanner((e.message || "") + where, e.error, "error");
       });
       window.addEventListener("unhandledrejection", function (e) {
         var r = e.reason;

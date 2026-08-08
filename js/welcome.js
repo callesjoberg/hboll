@@ -174,6 +174,11 @@ window.HB = window.HB || {};
       css.href = "https://unpkg.com/maplibre-gl@" + MAPLIBRE_VERSION + "/dist/maplibre-gl.css";
       document.head.append(css);
       const script = document.createElement("script");
+      // crossOrigin: unpkg skickar Access-Control-Allow-Origin: *, och utan
+      // attributet döljer webbläsaren ALLA fel från skriptet bakom det
+      // intetsägande "Script error." — utan fil, rad eller stack. Med det
+      // satt går ett MapLibre-fel att felsöka i stället för att bara gissa.
+      script.crossOrigin = "anonymous";
       script.src = "https://unpkg.com/maplibre-gl@" + MAPLIBRE_VERSION + "/dist/maplibre-gl.js";
       script.onload = () => resolve(window.maplibregl);
       script.onerror = () => reject(new Error("maplibre kunde inte laddas"));

@@ -5831,7 +5831,14 @@ window.HB = window.HB || {};
   const ARENA_POPUP_COURTS = 12; // hur många banchips en platspopup visar
   const ARENA_SIBLING_NAMES = 4; // fler syskonbanor än så räknas i stället för att räknas upp
 
+  let arenaMapResizeObserver = null;
+
   function destroyArenaMap() {
+    // Koppla ner observern FÖRST: den anropar arenaMap.resize(), och en
+    // resize på en redan borttagen karta kastar inifrån MapLibre — ett fel
+    // som dessutom bara syns som "Script error." eftersom biblioteket
+    // laddas från unpkg (se crossOrigin i ensureMapLibre).
+    if (arenaMapResizeObserver) { arenaMapResizeObserver.disconnect(); arenaMapResizeObserver = null; }
     if (!arenaMap) return;
     arenaMap.remove();
     arenaMap = null;
@@ -5851,9 +5858,14 @@ window.HB = window.HB || {};
     // ritas rutorna i en mindre yta än canvasen och lämnar tomma marginaler.
     // ResizeObserver (inte bara ett engångsanrop) täcker även fönsterbyten
     // och att verktygsraden fälls ut/ihop ovanför medan kartan är öppen.
-    const ro = new ResizeObserver(() => { if (arenaMap) arenaMap.resize(); });
-    ro.observe(container);
-    arenaMap.once("remove", () => ro.disconnect());
+    // MapLibre har INGEN "remove"-händelse att haka av på, så observern
+    // måste ägas på modulnivå och kopplas ner explicit i destroyArenaMap.
+    // Tidigare låg den i en once("remove")-callback som aldrig kördes,
+    // vilket lämnade en observer per öppnad karta vid liv.
+    arenaMapResizeObserver = new ResizeObserver(() => {
+      if (arenaMap) arenaMap.resize();
+    });
+    arenaMapResizeObserver.observe(container);
     const bounds = new maplibregl.LngLatBounds();
     for (const p of places) {
       bounds.extend([p.lng, p.lat]);
@@ -5921,6 +5933,11 @@ window.HB = window.HB || {};
       css.href = "https://unpkg.com/maplibre-gl@" + MAPLIBRE_VERSION + "/dist/maplibre-gl.css";
       document.head.append(css);
       const script = document.createElement("script");
+      // crossOrigin: unpkg skickar Access-Control-Allow-Origin: *, och utan
+      // attributet döljer webbläsaren ALLA fel från skriptet bakom det
+      // intetsägande "Script error." — utan fil, rad eller stack. Med det
+      // satt går ett MapLibre-fel att felsöka i stället för att bara gissa.
+      script.crossOrigin = "anonymous";
       script.src = "https://unpkg.com/maplibre-gl@" + MAPLIBRE_VERSION + "/dist/maplibre-gl.js";
       script.onload = () => resolve(window.maplibregl);
       script.onerror = () => reject(new Error("kunde inte nås (kontrollera nätet)"));
