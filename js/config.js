@@ -6,6 +6,13 @@
 
 window.HB = window.HB || {};
 
+// Synligt versionsmärke (Inställningar, längst ned) och HB.VERSION i
+// konsolen. Finns för att kunna svara på "kör du senaste versionen?" —
+// en cachad service worker kan annars servera gammal kod hur länge som
+// helst utan att vare sig användaren eller utvecklaren märker det.
+// Bumpa tillsammans med CACHE_NAME i sw.js.
+HB.VERSION = "2026-08-08";
+
 HB.CLUB = {
   name: "Alingsås HK",
   // Lagnamn i Cup Manager börjar med klubbnamnet ("Alingsås HK Blå" osv.)

@@ -611,6 +611,11 @@ window.HB = window.HB || {};
   // Klass- och klubbnamn kan innehålla komma ("P14, nivå 2") — namnlistor
   // separeras därför med ~ i stället för den vanliga kommaseparatorn.
   const NAME_SEP = "~";
+  // Parametrar som INTE är ett vyval: cup hanteras separat, tune tillhör
+  // välkomstöverlägget (js/welcome.js) och _v är cache-busten från
+  // "Töm cache och ladda om" i Inställningar. Ingen av dem ska få en
+  // länk att räknas som delad vy (se hasUrlFilters i init).
+  const NON_VIEW_PARAMS = new Set(["cup", "tune", "_v"]);
   // Klass-/lag-/divisions-id är numeriska i API:t och jämförs strikt (===)
   // på flera håll — en URL-sträng måste därför tillbaka till number.
   const toId = (s) => (/^\d+$/.test(s) ? +s : s);
@@ -8243,6 +8248,37 @@ window.HB = window.HB || {};
     $("#settingsBtn").addEventListener("click", openSettings);
     $("#currentCupBtn").addEventListener("click", openSettings);
     $("#settingsClose").addEventListener("click", () => dlg.close());
+
+    // Versionsmärke + nödutgång ur en envis service worker-cache. En
+    // installerad PWA (eller bara en registrerad SW) kan servera gammalt
+    // skal långt efter en driftsättning, och då syns inga rättningar hur
+    // många gånger man än laddar om — utan att det märks att det är
+    // orsaken. Knappen river SW:n och HELA dess cache; localStorage rörs
+    // INTE, så filter, favoritklubb och övriga inställningar överlever.
+    const verEl = $("#appVersion");
+    if (verEl) verEl.textContent = "Version " + (HB.VERSION || "okänd");
+    const resetBtn = $("#resetAppBtn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", async () => {
+        resetBtn.disabled = true;
+        resetBtn.textContent = "Tömmer …";
+        try {
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+          }
+          if (window.caches) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+        } catch { /* inget att tömma — ladda om ändå */ }
+        // Cache-bust i URL:en: annars kan webbläsarens EGEN HTTP-cache
+        // fortfarande servera samma gamla index.html som nyss låg i SW:n.
+        const u = new URL(location.href);
+        u.searchParams.set("_v", Date.now().toString(36));
+        location.replace(u.toString());
+      });
+    }
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   }
 
@@ -8308,7 +8344,7 @@ window.HB = window.HB || {};
     // hade tyst gjort att just den delen av länken tappades till förmån för
     // det som råkade ligga sparat i webbläsaren. (tune tillhör välkomst-
     // överlägget, se js/welcome.js — inte ett vyval.)
-    const hasUrlFilters = [...params.keys()].some((k) => k !== "cup" && k !== "tune");
+    const hasUrlFilters = [...params.keys()].some((k) => !NON_VIEW_PARAMS.has(k));
     $$("#viewTabs .tab").forEach((b) =>
       b.addEventListener("click", () => {
         state.view = b.dataset.view; saveUi(); render();

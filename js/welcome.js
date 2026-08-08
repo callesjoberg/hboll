@@ -37,7 +37,7 @@ window.HB = window.HB || {};
   // överläggets eget felsökningsflagga (se nedan), inte ett vyval.
   function hasUrlFilters() {
     const params = new URLSearchParams(location.search);
-    return [...params.keys()].some((k) => k !== "cup" && k !== "tune");
+    return [...params.keys()].some((k) => !["cup", "tune", "_v"].includes(k));
   }
 
   function fmtNum(n) {

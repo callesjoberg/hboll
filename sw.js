@@ -8,7 +8,11 @@
    här — appen har redan sin egen, mer träffsäkra cachningslogik för den
    datan (se js/api.js). */
 
-const CACHE_NAME = "hboll-shell-v1";
+// Bumpa vid varje driftsättning som MÅSTE nå ut direkt. activate-
+// handlern nedan raderar alla cacher med ett ANNAT namn, så ett nytt
+// namn är det enda som garanterat tömmer en gammal, envis skalcache
+// (nätverk-först räcker inte om ett enskilt anrop råkar falla tillbaka).
+const CACHE_NAME = "hboll-shell-v2";
 const SHELL_FILES = [
   "./",
   "./index.html",

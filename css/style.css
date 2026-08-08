@@ -2891,3 +2891,7 @@ dialog.history-dialog {
   padding: 0 8px 6px 8px;
 }
 .export-alarm { flex: 1; min-width: 0; font-size: 13px; padding: 3px 6px; }
+
+/* Hjälptexten under "Appversion" i Inställningar — samma dämpade ton som
+   övriga förklaringar i dialogen, men på egen rad under kontrollerna. */
+.settings-hint { margin: 6px 0 0; font-size: 13px; max-width: 62ch; }
