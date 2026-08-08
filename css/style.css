@@ -3090,7 +3090,9 @@ dialog.history-dialog {
     bottom: var(--bottombar-h, 56px); /* mätt i renderBottomBar, inkl. safe-area */
     z-index: 65;
     margin: 0;
-    padding: 6px 10px 8px;
+    /* Ingen egen fyllning: brickorna bär sin padding själva, precis som
+       bottenradens flikar, så de två raderna blir exakt lika höga. */
+    padding: 0 6px;
     background: var(--card);
     border-top: 1px solid var(--line);
     box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
@@ -3104,6 +3106,17 @@ dialog.history-dialog {
   body.filters-open:not(.filters-expanded) #toolbar .row {
     display: block;
     margin: 0;
+  }
+  /* Mellanliggande omslag (details > .toolbar-body > .row) bidrog med 24 px
+     marginal och gap som gjorde remsan 73 px mot bottenradens 49. I remsläget
+     ska bara brickornas egen padding räknas. */
+  body.filters-open:not(.filters-expanded) #toolbar,
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-collapse,
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-body {
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    gap: 0;
   }
 
   /* Se picker-open i app.js: utan detta hamnar hela verktygsraden — och
@@ -3132,11 +3145,9 @@ dialog.history-dialog {
     justify-content: center;
     gap: 2px;
     width: 64px;
-    min-height: 47px;
-    padding: 5px 4px;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    padding: 7px 2px 6px;
+    background: none;
+    border: none;
     font: inherit;
     font-size: 10.5px;
     color: var(--ink-soft);
@@ -3147,7 +3158,7 @@ dialog.history-dialog {
     font-size: 18px;
     line-height: 1;
   }
-  body.filters-expanded .filter-more-tile { border-color: var(--blue); color: var(--blue); }
+  body.filters-expanded .filter-more-tile { color: var(--blue); }
 
   /* Verktygsradens egen ihopfällning behålls i arket: dels sitter LÅSET
      inuti <summary> (lockSlot i renderToolbar) och skulle annars bli
@@ -3227,7 +3238,12 @@ dialog.history-dialog {
     cursor: pointer;
   }
 
-  /* Brickan: ikon över etikett, fast bredd så remsan blir jämn. */
+  /* Brickan ska se ut EXAKT som en flik i bottenraden (.bottom-tab): platt,
+     utan ram och utan kortbakgrund. Med ram och fyllning läste remsan som
+     en rad knappar i stället för som en meny, och blev dessutom nästan
+     dubbelt så hög som raden den ligger ovanpå. Samma padding, samma
+     teckenstorlek, samma färger — bara fast bredd i stället för flex, så
+     remsan kan scrolla i sidled. */
   .filter-group .team-picker-dd > .team-picker-summary {
     display: flex;
     flex-direction: column;
@@ -3235,13 +3251,10 @@ dialog.history-dialog {
     justify-content: center;
     gap: 2px;
     width: 64px;
-    /* Samma höjd som bottenradens flikar (7px+18px+2px+label+6px ~= 49) så
-       remsan inte tar mer plats än den rad den ligger ovanpå. */
-    min-height: 47px;
-    padding: 5px 4px;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    padding: 7px 2px 6px;
+    background: none;
+    border: none;
+    border-radius: 0;
     font: inherit;
     font-size: 10.5px;
     line-height: 1.15;
@@ -3285,15 +3298,14 @@ dialog.history-dialog {
   .filter-group {
     display: flex;
     flex-wrap: nowrap;
-    gap: 8px;
+    gap: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     /* Föräldern (.row) är flex — utan flex-basis 100 % krymper remsan till
        sitt innehåll i stället för att ta hela bredden och kunna scrolla. */
     flex: 1 1 100%;
     width: 100%;
-    margin: 2px 0 6px;
-    padding-bottom: 2px;
+    margin: 0;
     scrollbar-width: none;
     /* Brickorna ska kunna dras i sidled utan att gesten kapas av arkets
        egen vertikala scroll. */
@@ -3306,10 +3318,9 @@ dialog.history-dialog {
   .filter-group .team-picker-dd { flex: 0 0 auto; }
   /* Standardpilen (▾) är brus på en bricka som redan har ikon och etikett. */
   .filter-group .team-picker-dd > .team-picker-summary::after { content: none; }
-  /* Öppen bricka markeras med ram och färg, inte fyllning. */
+  /* Öppen bricka markeras med färg, precis som .bottom-tab.on. */
   .filter-group .team-picker-dd[open] > .team-picker-summary {
-    background: var(--paper);
-    border-color: var(--blue);
+    background: none;
     color: var(--blue);
   }
 }
