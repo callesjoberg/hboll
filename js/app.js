@@ -5946,11 +5946,16 @@ window.HB = window.HB || {};
     },
       h("div", { class: "match-head" },
         h("span", { class: "cat" }, HB.shortCat(m.catName)),
-        // m.edition är bara satt för matcher som blandats in från ett
-        // extra år (state.years, se allActiveMatches) — odefinierad för
-        // innevarande live-upplaga, som därför inte får någon badge (den
-        // gemensamma/underförstådda "vanliga" kortlayouten).
-        m.edition ? h("span", { class: "match-year-badge" }, m.edition) : null,
+        // m.edition är bara satt för matcher som blandats in från ett extra
+        // år (state.years, se allActiveMatches) — odefinierad för
+        // innevarande live-upplaga. Så länge man tittar på ETT år är det
+        // rätt: en badge på varje kort vore brus när alla ändå är från
+        // samma år. Blandas år in blir det däremot skevt — de gamla
+        // matcherna märks med årtal medan årets står omärkta, och man kan
+        // inte se vilket år ett omärkt kort hör till. Då får innevarande
+        // upplaga sitt årtal också, så alla kort går att läsa likadant.
+        (m.edition || (state.years.size ? cup().edition : null))
+          ? h("span", { class: "match-year-badge" }, m.edition || cup().edition) : null,
         m.divName ? h("span", { class: "div" }, m.divName) : null,
         m.roundName && m.roundName !== m.divName
           ? h("span", { class: "div" }, m.roundName) : null,
