@@ -48,6 +48,39 @@ window.HB = window.HB || {};
     return null;
   }
 
+  // Årskullen ur ett klassnamn: "Flickor 13 (födda 2012) 24-26 april" ->
+  // {g:"F", born:2012}. Åldersetiketten förskjuts mellan år (födda 2012 är
+  // F13 år 2026 men F14 år 2025) medan årskullen är densamma — den är alltså
+  // den stabila identiteten när flera upplagor blandas i samma vy.
+  // null när födelseåret inte går att läsa ut (alla cuper skriver det inte).
+  // Fyra skrivsätt förekommer i skarp data, uppmätt över samtliga cuper:
+  //   "Flickor 13 (födda 2012)"      svensk standard
+  //   "Boys 11 (boys born 2014)"     engelska (Eken Cup)
+  //   "Flickor 10 år (f 2015)"       förkortat (IrstaBlixten)
+  //   "F10(2014)"                    bara år i parentes (Katrineholm)
+  // Tillsammans täcker de 69 % av alla klassnamn. Resten ("F09", "F12/13",
+  // "Para Gul") har inget entydigt födelseår att gruppera på och behåller
+  // sitt fulla namn som egen rad — inget val försvinner.
+  function parseCohort(catName) {
+    const born = /(?:f[öo]dd[a]?|born|\bf)\.?\s*(\d{4})|\((\d{4})\)/i.exec(catName || "");
+    if (!born) return null;
+    const g = (parseCat(catName) || {}).g;
+    if (!g) return null;
+    return { g, born: +(born[1] || born[2]) };
+  }
+
+  const COHORT_LABELS = { F: "Flickor", P: "Pojkar", U: "Ungdom", D: "Damer", H: "Herrar" };
+
+  function cohortKey(catName) {
+    const c = parseCohort(catName);
+    return c ? c.g + c.born : null;
+  }
+
+  function cohortLabel(catName) {
+    const c = parseCohort(catName);
+    return c ? (COHORT_LABELS[c.g] || c.g) + " " + c.born : catName;
+  }
+
   HB.shortCat = function (catName) {
     const p = parseCat(catName);
     if (!p) return (catName || "").slice(0, 8);
@@ -2274,13 +2307,58 @@ window.HB = window.HB || {};
     });
   }
 
+  // Klassväljaren grupperar på ÅRSKULL när det går: "Flickor 2011" i stället
+  // för "Flickor 13 (födda 2011) 25-27 april". Blandar man in tidigare år
+  // finns annars samma lag under olika etiketter — F13 år 2024 är F14 år
+  // 2025 — och varje upplaga får dessutom egna klass-id, så en klass vald i
+  // ett år filtrerade bort både matcher OCH lag från de andra.
+  //
+  // Bara PRESENTATIONEN grupperas. state.cats innehåller fortfarande klass-
+  // id, så filtrering, tabeller, slutspel, URL:er och sparad vy är helt
+  // orörda — proxyn nedan översätter mellan årskull och id, precis som
+  // yearSelectionProxy gör för årsväljaren.
+  //
+  // Klasser utan läsbart födelseår (alla cuper skriver det inte) blir kvar
+  // som egna rader med sitt fulla namn — inget val försvinner.
   function buildCatPicker(catEntries, onChange) {
+    const idsByKey = new Map();   // årskullsnyckel (eller id) -> [catId]
+    const labelByKey = new Map();
+    const sortByKey = new Map();
+    for (const [id, name] of catEntries) {
+      const key = cohortKey(name) || ("id:" + id);
+      if (!idsByKey.has(key)) {
+        idsByKey.set(key, []);
+        labelByKey.set(key, cohortKey(name) ? cohortLabel(name) : name);
+        sortByKey.set(key, catSortKey(name));
+      }
+      idsByKey.get(key).push(id);
+      // Sorteringen följer den YNGSTA åldersetiketten kullen har i vyn, så
+      // listan står i samma ordning som när bara ett år är valt.
+      sortByKey.set(key, Math.min(sortByKey.get(key), catSortKey(name)));
+    }
+
+    const idsFor = (key) => idsByKey.get(key) || [];
+    const cohortSelection = {
+      get size() {
+        let n = 0;
+        for (const ids of idsByKey.values()) if (ids.some((id) => state.cats.has(id))) n++;
+        return n;
+      },
+      // "Vald" så snart NÅGOT av kullens id är valt — annars skulle en kull
+      // vars ena år saknar matcher aldrig kunna se ikryssad ut.
+      has: (key) => idsFor(key).some((id) => state.cats.has(id)),
+      add: (key) => { for (const id of idsFor(key)) state.cats.add(id); },
+      delete: (key) => { for (const id of idsFor(key)) state.cats.delete(id); },
+      clear: () => state.cats.clear(),
+    };
+
     return buildPicker({
-      items: catEntries.map(([id, name]) => ({
-        id, label: name, sortKey: catSortKey(name), sortName: name,
+      items: [...idsByKey.keys()].map((key) => ({
+        id: key, label: labelByKey.get(key),
+        sortKey: sortByKey.get(key), sortName: labelByKey.get(key),
       })),
       icon: "🏷️",
-      selected: state.cats,
+      selected: cohortSelection,
       emptyLabel: "Alla klasser",
       countLabel: (n) => "Klasser (" + n + ")",
       searchPlaceholder: "Sök klass …",
