@@ -3191,6 +3191,17 @@ dialog.history-dialog {
 
   /* Plats åt bottenraden så sista matchen/sidfoten inte hamnar under den. */
   #content, body > footer { padding-bottom: calc(var(--bottombar-h, 56px) + 14px); }
+
+  /* "Upp till toppen" låg på bottom:16px med z-index 30 — alltså bakom både
+     bottenraden (70) och filterremsan (65), och geometriskt under dem.
+     Placeras nu ovanför hela den fasta stapeln (--bottomstack-h, samma mått
+     som väljarpanelerna utgår från). z-index under panelerna med flit: när
+     en väljare är öppen SKA knappen hamna bakom den, den är inte
+     meningsfull då. */
+  #scrollTopBtn {
+    bottom: calc(var(--bottomstack-h, 56px) + 12px);
+    z-index: 68;
+  }
 }
 
 /* --- bottenradens följdändringar --------------------------------------- */
