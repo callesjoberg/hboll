@@ -1926,8 +1926,18 @@ window.HB = window.HB || {};
   }
 
   function buildPicker(opts) {
+    // opts.icon: enskild emoji som mobilens filterremsa visar ovanför
+    // etiketten (se .filter-group i style.css). Sätts som data-attribut i
+    // stället för att byggas som ett element, så desktopvyn — där remsan
+    // inte finns — förblir helt oförändrad.
     const dd = h("details", { class: "team-picker-dd" });
-    const summary = h("summary", { class: "chip team-picker-summary" });
+    // data-icon sitter på SUMMARY, inte på <details>: attr() i CSS läser bara
+    // attribut från pseudoelementets EGET element, och ::before hänger på
+    // summary. På <details> hade content: attr(data-icon) gett tomt.
+    const summary = h("summary", {
+      class: "chip team-picker-summary",
+      ...(opts.icon ? { "data-icon": opts.icon } : {}),
+    });
     const setSummary = () => {
       summary.textContent = opts.selected.size
         ? opts.countLabel(opts.selected.size) : opts.emptyLabel;
@@ -2106,6 +2116,7 @@ window.HB = window.HB || {};
         id: t.id, label: HB.shortCat(t.catName) + " " + t.suffix,
         sortKey: catSortKey(t.catName), sortName: t.suffix,
       })),
+      icon: "👥",
       selected: state.teams,
       emptyLabel: "Alla lag",
       countLabel: (n) => "Lag (" + n + ")",
@@ -2120,6 +2131,7 @@ window.HB = window.HB || {};
         id: d, label: fmtDay.format(new Date(d + "T00:00:00Z")),
         sortKey: Date.parse(d + "T00:00:00Z"), sortName: d, // dayKey (ÅÅÅÅ-MM-DD) sorterar redan kronologiskt
       })),
+      icon: "📆",
       selected: state.days,
       emptyLabel: "Alla dagar",
       countLabel: (n) => "Dagar (" + n + ")",
@@ -2133,6 +2145,7 @@ window.HB = window.HB || {};
       items: catEntries.map(([id, name]) => ({
         id, label: name, sortKey: catSortKey(name), sortName: name,
       })),
+      icon: "🏷️",
       selected: state.cats,
       emptyLabel: "Alla klasser",
       countLabel: (n) => "Klasser (" + n + ")",
@@ -2172,6 +2185,7 @@ window.HB = window.HB || {};
     }));
     return buildPicker({
       items,
+      icon: "🗓️",
       selected: yearSelectionProxy,
       emptyLabel: "Inga år valda",
       // Standardläget (bara innevarande år) ska fortfarande läsas som

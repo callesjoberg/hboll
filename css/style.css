@@ -3154,7 +3154,7 @@ dialog.history-dialog {
      chevron till höger. Som grå chips i en rad läste väljarna som INAKTIVA
      knappar — en rad med tydlig avgränsare och pil läser som något man
      trycker på. */
-  .sheet-cup-btn, .filter-group .team-picker-dd > .team-picker-summary {
+  .sheet-cup-btn {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -3169,6 +3169,39 @@ dialog.history-dialog {
     color: var(--ink);
     cursor: pointer;
   }
+
+  /* Brickan: ikon över etikett, fast bredd så remsan blir jämn. */
+  .filter-group .team-picker-dd > .team-picker-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 78px;
+    min-height: 62px;
+    padding: 7px 4px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 11px;
+    line-height: 1.25;
+    color: var(--ink-soft);
+    text-align: center;
+    cursor: pointer;
+  }
+  /* Ikonen kommer från data-icon (satt i buildPicker) — inget extra element
+     att bygga, och desktopvyn påverkas inte alls. */
+  .filter-group .team-picker-summary[data-icon]::before {
+    content: attr(data-icon);
+    font-size: 19px;
+    line-height: 1;
+  }
+  /* Etiketten får gå på två rader — "Innevarande år" ryms inte på 78 px. */
+  .filter-group .team-picker-dd > .team-picker-summary {
+    overflow: hidden;
+    word-break: break-word;
+  }
   .sheet-cup-btn { margin-bottom: 10px; }
   .sheet-cup-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
   .sheet-cup-label {
@@ -3181,31 +3214,35 @@ dialog.history-dialog {
   .sheet-cup-meta { font-size: 12px; color: var(--ink-soft); }
   .sheet-cup-arrow { font-size: 22px; color: var(--ink-soft); }
 
-  /* Urvalsgruppen: år, dagar, klasser, lag som en sammanhängande lista. */
+  /* Urvalsgruppen: år, dagar, klasser och lag som en horisontell ikonremsa.
+     Fullbreddsrader tog 52 px styck och åt upp arket; som brickor ryms de
+     på EN rad, och remsan scrollar i sidled om de blir fler. Ikonen bär
+     igenkänningen, etiketten under bär värdet ("Klasser (2)"). */
   .filter-group {
-    display: grid;
-    gap: 6px;
-    /* Föräldern (.row) är flex — utan flex-basis 100 % krymper gruppen till
-       sitt innehåll och raderna blir smala chips igen i stället för
-       fullbreddsrader. */
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    /* Föräldern (.row) är flex — utan flex-basis 100 % krymper remsan till
+       sitt innehåll i stället för att ta hela bredden och kunna scrolla. */
     flex: 1 1 100%;
     width: 100%;
-    margin: 2px 0 4px;
+    margin: 2px 0 6px;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    /* Brickorna ska kunna dras i sidled utan att gesten kapas av arkets
+       egen vertikala scroll. */
+    touch-action: pan-x;
   }
+  .filter-group::-webkit-scrollbar { display: none; }
   /* Efterkommande, inte direkt barn: lagväljaren ligger i en span med
      display:contents (teamSlot i renderToolbar). Den försvinner ur
      layouten men finns kvar i DOM:et, så en >-selektor missar den. */
-  .filter-group .team-picker-dd { width: 100%; }
-  /* Pilen efter etiketten (▾ från .team-picker-summary::after) flyttas ut
-     till högerkanten och blir en chevron, som i en vanlig inställningslista. */
-  .filter-group .team-picker-dd > .team-picker-summary::after {
-    content: "›";
-    margin-left: auto;
-    font-size: 20px;
-    color: var(--ink-soft);
-  }
-  /* Vald väljare får blå text i stället för blå fyllning: en helfylld rad
-     i full bredd skriker mer än den informerar. */
+  .filter-group .team-picker-dd { flex: 0 0 auto; }
+  /* Standardpilen (▾) är brus på en bricka som redan har ikon och etikett. */
+  .filter-group .team-picker-dd > .team-picker-summary::after { content: none; }
+  /* Öppen bricka markeras med ram och färg, inte fyllning. */
   .filter-group .team-picker-dd[open] > .team-picker-summary {
     background: var(--paper);
     border-color: var(--blue);
