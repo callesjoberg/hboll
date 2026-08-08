@@ -1361,7 +1361,14 @@ window.HB = window.HB || {};
       for (const side of [m.home, m.away]) {
         if (side.id && !map.has(side.id)) {
           map.set(side.id, {
-            id: side.id, name: side.name, suffix: teamSuffix(side.name),
+            id: side.id, name: side.name,
+            // HELA namnet, inte teamSuffix(): den strippar favoritklubbens
+            // namn, vilket är rätt i klubbläget (där ALLA lag är dina, så
+            // prefixet bara upprepas) men fel här. I "Hela cupen" stod
+            // andra klubbars lag med fullt namn medan dina egna dök upp som
+            // bara "F13 Blå" — omöjliga att hitta för den som letar efter
+            // "Alingsås HK", och sorterade dessutom under B i stället för A.
+            suffix: side.name,
             catName: m.catName, catId: m.catId,
           });
         }
