@@ -3202,8 +3202,11 @@ dialog.history-dialog {
     background: rgba(10, 18, 30, 0.45);
   }
 
-  /* Plats åt bottenraden så sista matchen/sidfoten inte hamnar under den. */
-  #content, body > footer { padding-bottom: calc(var(--bottombar-h, 56px) + 14px); }
+  /* Plats åt ALLT som ligger fast i botten — bottenraden, filterremsan när
+     den är uppfälld och Stats-underflikarna. Utgick tidigare bara från
+     bottenraden, så slutet på en lång matchlista hamnade bakom de andra
+     raderna och gick inte att scrolla fram. */
+  #content, body > footer { padding-bottom: calc(var(--bottomstack-h, 56px) + 16px); }
 
   /* Orienteringsraden (renderMobileContextBar): klistrad högst upp i
      innehållet så den syns även när man scrollat ner i en lång träfflista —
@@ -3290,8 +3293,7 @@ dialog.history-dialog {
   #content .history-tabs[aria-label="Stats"]::-webkit-scrollbar { display: none; }
   #content .history-tabs[aria-label="Stats"] .tab { flex: 0 0 auto; }
 
-  /* Innehållet måste lämna plats för BÅDA raderna i Stats. */
-  body.stats-tabs-fixed #content { padding-bottom: calc(var(--bottombar-h, 56px) + 56px); }
+  /* (Stats-radens höjd ingår numera i --bottomstack-h, se syncBottomStack.) */
 
   /* Sidfotens länkar bor i inställningarna här (placeFooterLinks); kvar
      blir bara datakällstexten, som inte behöver ta plats på en telefon. */

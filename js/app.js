@@ -1815,11 +1815,16 @@ window.HB = window.HB || {};
   // brickor som ryms och på safe-area.
   function syncBottomStack() {
     const bar = $("#bottomBar");
-    const tb = $("#toolbar");
     let h = bar ? bar.getBoundingClientRect().height : 0;
-    if (tb && document.body.classList.contains("filters-open") &&
-        getComputedStyle(tb).position === "fixed") {
-      h += tb.getBoundingClientRect().height;
+    // Allt annat som ligger FAST i botten just nu: filterremsan när den är
+    // uppfälld, och Stats-underflikarna på den fliken. Mäts i stället för
+    // att räknas ut — höjderna beror på antal brickor, teckenstorlek och
+    // safe-area, och en gissad siffra gömmer slutet på matchlistan.
+    for (const sel of ["#toolbar", '#content .history-tabs[aria-label="Stats"]']) {
+      const el = document.querySelector(sel);
+      if (el && getComputedStyle(el).position === "fixed") {
+        h += el.getBoundingClientRect().height;
+      }
     }
     document.documentElement.style.setProperty("--bottomstack-h", Math.round(h) + "px");
   }
@@ -2403,7 +2408,15 @@ window.HB = window.HB || {};
       // Standardläget (bara innevarande år) ska fortfarande läsas som
       // "Innevarande år", inte det generiska "1 år" — annars ser den
       // vanligaste inställningen ut som ett aktivt urval i onödan.
-      countLabel: (n) => (n === 1 && state.includeCurrentYear) ? "Innevarande år" : n + " år",
+      // Visa ÅRTALET när exakt ett år är valt — "Innevarande år" sa varken
+      // vilket år det var eller matchade de andra rader i listan, som alla
+      // är årtal. Dessutom för långt för en bricka i mobilens filterremsa,
+      // där det klipptes till "Innevarand…".
+      countLabel: (n) => {
+        if (n !== 1) return n + " år";
+        if (state.includeCurrentYear) return String(currentEdition);
+        return String([...state.years][0] || "1 år");
+      },
       searchPlaceholder: "Sök år …",
       onChange: () => {
         for (const y of state.years) ensureYearMatches(y);
@@ -5430,6 +5443,9 @@ window.HB = window.HB || {};
     root.append(tabBar, content);
     const tabFn = (STATS_TABS.find(([v]) => v === state.statsView) || STATS_TABS[0])[2];
     tabFn(content);
+    // Underflikraden är fast placerad på mobil (se style.css) — mät om
+    // stapeln så innehållets bottenmarginal räknar med den.
+    requestAnimationFrame(syncBottomStack);
   }
 
   function renderBrowseMode(root, idx, cupIds) {
