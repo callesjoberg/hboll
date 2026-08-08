@@ -3040,7 +3040,23 @@ dialog.history-dialog {
     background: var(--card);
     border-top: 1px solid var(--line);
     padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22);
+    /* Andra skuggan är ingen skugga: en solid, oskarp yta 260 px NEDANFÖR
+       raden i samma färg som den själv. Firefox på iOS krymper inte layout-
+       viewporten när dess bottenplacerade adressfält fälls ihop till en ö,
+       så bottom:0 hamnar en bit ovanför skärmkanten och sidan syntes rulla
+       förbi i springan under. Ytan täcker den utan att flytta något — och
+       är helt osynlig i Safari/Chrome, där den hamnar utanför skärmen.
+       box-shadow (inte ::after) eftersom radens egen overflow-x:auto skulle
+       klippa ett pseudoelement, men aldrig en skugga.
+
+       Förskjutning OCH spridning, inte bara förskjutning: en skugga flyttas
+       som en hel rektangel, den töjs inte. "0 260px 0 0" la alltså hela
+       ytan 260 px ned — utanför skärmen, där den inte täckte något.
+       130+130 ger i stället en yta som börjar vid radens överkant och
+       slutar 260 px under dess underkant. Spridningen växer även i sidled,
+       vilket är ofarligt: den hamnar utanför skärmens kanter. */
+    box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22),
+                0 130px 0 130px var(--card);
   }
   #bottomBar::-webkit-scrollbar { display: none; }
 
