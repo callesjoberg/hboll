@@ -1462,7 +1462,68 @@ window.HB = window.HB || {};
   // "onödiga" anropen (bakgrundsuppdateringar) kostar ingenting.
   function renderContent() {
     renderContentBody();
+    renderMobileContextBar();
     syncUrl();
+  }
+
+  // Klassnamn ur ett kategori-id, för orienteringsraden nedan.
+  function catNameById(id) {
+    const m = allActiveMatches().find((x) => x.catId === id);
+    return m ? HB.shortCat(m.catName) : null;
+  }
+
+  // Vad vyn är avsmalnad till, i ord. Sammanfattar samma sak som
+  // activeFilterCount räknar, men läsbart — "Alingsås HK Blå · P13" i
+  // stället för en siffra.
+  function filterSummaryText() {
+    const bits = [];
+    if (state.teams.size) {
+      const namn = [...state.teams].map(teamNameById).filter(Boolean);
+      bits.push(namn.length && namn.length <= 2 ? namn.join(", ") : state.teams.size + " lag");
+    }
+    if (state.cats.size) {
+      const namn = [...state.cats].map(catNameById).filter(Boolean);
+      bits.push(namn.length && namn.length <= 2 ? namn.join(", ") : state.cats.size + " klasser");
+    }
+    if (state.arena) bits.push(state.arena);
+    if (state.days.size) bits.push(state.days.size + (state.days.size === 1 ? " dag" : " dagar"));
+    if (state.q) bits.push("\u201d" + state.q + "\u201d");
+    if (state.matchFilter !== "all") {
+      bits.push(state.matchFilter === "upcoming" ? "kommande" : "spelade");
+    }
+    return bits.join(" · ");
+  }
+
+  // Orienteringsrad överst i innehållet, BARA på mobil. Klick på hall, lag
+  // eller grupp i ett matchkort byter tyst ut hela filtret (gotoTeamMatches
+  // m.fl.) — på dator ser man det direkt i verktygsraden, som dessutom har
+  // en "Tillbaka till din vy"-chip. På mobil ligger den raden gömd bakom
+  // Filter-knappen, så man landade i en avsmalnad vy utan att se varför
+  // eller hur man tog sig ur den.
+  function renderMobileContextBar() {
+    const main = $("#content");
+    const gammal = main.querySelector(":scope > .mobile-context");
+    if (gammal) gammal.remove();
+    if (!sheetMode() || state.view === "stats") return;
+    const text = filterSummaryText();
+    if (!stashedFilter && !text) return;
+    main.prepend(h("div", { class: "mobile-context" },
+      stashedFilter ? h("button", {
+        class: "mobile-context-back", type: "button",
+        onclick: () => restoreStashedFilter(),
+      }, "\u2190 Tillbaka") : null,
+      h("span", { class: "mobile-context-text" }, text || "Filtrerad vy"),
+      text ? h("button", {
+        class: "mobile-context-clear", type: "button", "aria-label": "Rensa filtret",
+        onclick: () => {
+          state.days.clear(); state.cats.clear(); state.teams.clear(); state.years.clear();
+          state.includeCurrentYear = true;
+          state.viewCats = new Set(); state.viewTeams = new Set();
+          state.arena = ""; state.q = ""; state.matchFilter = "all";
+          state.schemaOlderRevealCount = 0;
+          saveUi(); render();
+        },
+      }, "\u2715") : null));
   }
 
   function renderContentBody() {
@@ -5893,7 +5954,12 @@ window.HB = window.HB || {};
     renderHero(main);
     if (!hasFilterSelection()) {
       main.append(h("div", { class: "banner" },
-        "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
+        // Knappen heter olika saker beroende på layout — "Filter och
+        // sortering" i verktygsraden på dator, bara "Filter" i mobilens
+        // bottenrad. Att hänvisa till fel namn hjälper ingen.
+        sheetMode()
+          ? "Välj en eller flera klasser eller lag under “Filter” för att visa schemat."
+          : "Välj en eller flera klasser eller lag ovan (“Filter och sortering”) för att visa schemat."));
       return;
     }
     const list = sorted(filtered().filter(matchesViewFilter));

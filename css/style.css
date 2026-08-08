@@ -3205,6 +3205,54 @@ dialog.history-dialog {
   /* Plats åt bottenraden så sista matchen/sidfoten inte hamnar under den. */
   #content, body > footer { padding-bottom: calc(var(--bottombar-h, 56px) + 14px); }
 
+  /* Orienteringsraden (renderMobileContextBar): klistrad högst upp i
+     innehållet så den syns även när man scrollat ner i en lång träfflista —
+     den svarar på "vad tittar jag på och hur tar jag mig tillbaka", vilket
+     annars bara framgick av den gömda verktygsraden. */
+  .mobile-context {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    padding: 7px 10px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 13px;
+    box-shadow: var(--shadow);
+  }
+  .mobile-context-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink-soft);
+  }
+  .mobile-context-back {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--blue);
+    cursor: pointer;
+  }
+  .mobile-context-clear {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
   /* "Upp till toppen" låg på bottom:16px med z-index 30 — alltså bakom både
      bottenraden (70) och filterremsan (65), och geometriskt under dem.
      Placeras nu ovanför hela den fasta stapeln (--bottomstack-h, samma mått
