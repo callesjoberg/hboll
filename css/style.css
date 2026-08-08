@@ -3022,14 +3022,24 @@ dialog.history-dialog {
     bottom: 0;
     z-index: 70;
     display: flex;
+    /* Scrollar i sidled när flikarna inte får plats — med kugghjulet är de
+       sju stycken, och en smal telefon (320 px) ryms inte. På 390 px fyller
+       de raden utan att scrolla, se flex-basis på .bottom-tab. */
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
     background: var(--card);
     border-top: 1px solid var(--line);
     padding-bottom: env(safe-area-inset-bottom);
     box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22);
   }
+  #bottomBar::-webkit-scrollbar { display: none; }
 
   .bottom-tab {
-    flex: 1;
+    /* Växer och fyller raden när det finns plats, men krymper aldrig under
+       52 px — då scrollar raden i stället för att klämma ihop etiketterna
+       till oläsbarhet. */
+    flex: 1 0 52px;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -3072,8 +3082,11 @@ dialog.history-dialog {
     text-align: center;
   }
 
-  /* Vyflikarna i toppen ersätts av bottenraden. */
+  /* Vyflikarna i toppen ersätts av bottenraden. Kugghjulet likaså — det
+     ligger kvar i DOM:et (all befintlig logik pekar på #settingsBtn) men
+     visas bara i bottenraden på mobil. */
   #viewTabs { display: none; }
+  #settingsBtn { display: none; }
 
   /* Verktygsraden bor kvar på sin plats i DOM:et (renderToolbar ritar dit
      som förut) men visas bara som ark, fällt upp av filterknappen. */

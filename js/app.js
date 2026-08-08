@@ -1681,6 +1681,19 @@ window.HB = window.HB || {};
         h("span", { class: "bottom-tab-icon", "aria-hidden": "true" },
           VIEW_ICONS[src.dataset.view] || "•"),
         h("span", { class: "bottom-tab-label" }, src.textContent.trim()))),
+      // Kugghjulet flyttas hit från sidhuvudet: på en telefon är överkanten
+      // svårast att nå, och sidhuvudet blir samtidigt en rad renare. Öppnar
+      // samma dialog som förut — knappen i headern finns kvar i DOM:et (bara
+      // dold via CSS) så all befintlig logik pekar på samma element.
+      h("button", {
+        class: "bottom-tab bottom-settings", type: "button",
+        onclick: () => { toggleFilterSheet(false); $("#settingsBtn").click(); },
+      },
+        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, "⚙"),
+        // "Inställningar" är 13 tecken och klipps mitt i ordet på en 56 px
+        // flik. Förkortningen är standard i svenska mobilgränssnitt och
+        // läses obehindrat bredvid kugghjulet.
+        h("span", { class: "bottom-tab-label" }, "Inställn.")),
       showFilter ? h("button", {
         class: "bottom-tab bottom-filter" +
           (document.body.classList.contains("filters-open") ? " on" : ""),
