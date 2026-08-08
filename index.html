@@ -143,6 +143,12 @@
 
   <main id="content"></main>
 
+  <!-- Mobilens bottenrad (renderBottomBar i js/app.js). Dold över 700 px,
+       där vyflikarna och verktygsraden ligger kvar i toppen som förut.
+       Speglar #viewTabs (samma data-view, samma dolda flikar) och lägger
+       till en filterknapp som fäller upp verktygsraden som ett ark. -->
+  <nav id="bottomBar" aria-label="Vy och filter" hidden></nav>
+
   <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
 
   <footer>

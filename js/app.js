@@ -1597,7 +1597,100 @@ window.HB = window.HB || {};
       b.classList.toggle("on", b.dataset.view === state.view);
       b.setAttribute("aria-selected", String(b.dataset.view === state.view));
     });
+    renderBottomBar();
   }
+
+  // --- mobilens bottenrad --------------------------------------------------
+  // På telefon tog sidhuvud + vyflikar + verktygsrad 374 px av 844 — 44 % av
+  // skärmen innan första matchen. Bottenraden flyttar ner vyvalet (närmare
+  // tummen) och ersätter hela verktygsraden med EN filterknapp som fäller
+  // upp den som ett ark. Toppen får därmed tillbaka ~300 px.
+  //
+  // Raden SPEGLAR #viewTabs i stället för att äga sin egen fliklista: all
+  // logik för vilka flikar som är stödda (slutspel/stats) bor kvar i
+  // renderTabs, och kan inte hamna ur synk.
+  const FILTER_ICON = "☰";
+  const VIEW_ICONS = {
+    schema: "📅", tabeller: "▦", slutspel: "🏆", bana: "📍", stats: "📈",
+  };
+
+  // Hur många filter som faktiskt smalnar av vyn just nu — siffran på
+  // filterknappen, så man ser att ett filter är aktivt utan att öppna arket.
+  // Sortering räknas INTE: den ändrar ordning, inte urval.
+  function activeFilterCount() {
+    let n = 0;
+    if (state.scope !== "club") n++;
+    n += state.days.size + state.cats.size + state.teams.size + state.years.size;
+    if (!state.includeCurrentYear) n++;
+    if (state.arena) n++;
+    if (state.q) n++;
+    if (state.matchFilter !== "all") n++;
+    return n;
+  }
+
+  function renderBottomBar() {
+    const bar = $("#bottomBar");
+    if (!bar) return;
+    // Stats har ingen verktygsrad (se renderToolbar) — då ska filterknappen
+    // inte heller finnas, annars öppnar den ett tomt ark.
+    const showFilter = state.view !== "stats";
+    const tabs = $$("#viewTabs .tab").filter((b) => !b.hidden);
+    bar.replaceChildren(
+      ...tabs.map((src) => h("button", {
+        class: "bottom-tab" + (src.dataset.view === state.view ? " on" : ""),
+        type: "button", "aria-selected": String(src.dataset.view === state.view),
+        onclick: () => {
+          // toggleFilterSheet (inte bara klassen): den tar även bort
+          // bakgrundstäcket, som annars blev kvar och blockerade all
+          // klickning efter ett vybyte med arket öppet.
+          toggleFilterSheet(false);
+          state.view = src.dataset.view; saveUi(); render();
+        },
+      },
+        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" },
+          VIEW_ICONS[src.dataset.view] || "•"),
+        h("span", { class: "bottom-tab-label" }, src.textContent.trim()))),
+      showFilter ? h("button", {
+        class: "bottom-tab bottom-filter" +
+          (document.body.classList.contains("filters-open") ? " on" : ""),
+        type: "button", "aria-label": "Filter och sortering",
+        onclick: () => { toggleFilterSheet(); },
+      },
+        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, FILTER_ICON),
+        h("span", { class: "bottom-tab-label" }, "Filter"),
+        activeFilterCount()
+          ? h("span", { class: "bottom-filter-badge" }, String(activeFilterCount()))
+          : null) : null);
+  }
+
+  let filterBackdrop = null;
+
+  function toggleFilterSheet(force) {
+    const open = force === undefined
+      ? !document.body.classList.contains("filters-open") : !!force;
+    document.body.classList.toggle("filters-open", open);
+    if (open && !filterBackdrop) {
+      filterBackdrop = h("div", {
+        class: "filter-sheet-backdrop",
+        onclick: () => toggleFilterSheet(false),
+      });
+      document.body.append(filterBackdrop);
+    } else if (!open && filterBackdrop) {
+      filterBackdrop.remove();
+      filterBackdrop = null;
+    }
+    // Verktygsradens egen ihopfällning är meningslös inne i arket — arket ÄR
+    // den öppna/stängda växlingen. Tvinga upp den så man inte behöver två
+    // klick för att komma åt filtren.
+    if (open) {
+      state.toolbarOpen = true;
+      const dd = document.querySelector(".toolbar-collapse");
+      if (dd) dd.open = true;
+    }
+    renderBottomBar();
+  }
+
+
 
   function renderMeta() {
     // Uppdatera-knappen ger tydlig feedback direkt vid klick — annars

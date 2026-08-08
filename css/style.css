@@ -2925,7 +2925,10 @@ dialog.history-dialog {
     /* Innehållet ska växa nedåt från rubriken, inte spridas ut över hela
        arkets höjd som grid-standarden gör när arket är högre än innehållet. */
     align-content: start;
-    z-index: 60;
+    /* Över filterarket (65) OCH bottenraden (70): en picker öppnad inifrån
+       filterarket måste lägga sig ovanpå det, annars hamnar den bakom och
+       blir helt oåtkomlig. */
+    z-index: 80;
   }
 
   .team-picker-dd[open] > .team-picker-panel > .team-picker-list {
@@ -2989,7 +2992,7 @@ dialog.history-dialog {
     position: fixed;
     inset: 0;
     background: rgba(10, 18, 30, 0.45);
-    z-index: 59;
+    z-index: 79; /* strax under picker-arket, se z-index-kommentaren ovan */
   }
 }
 
@@ -2997,4 +3000,119 @@ dialog.history-dialog {
    dropdown under sin knapp, där den bara vore i vägen. */
 @media (min-width: 701px) {
   .picker-sheet-head, .picker-sheet-backdrop { display: none; }
+}
+
+/* --- mobilens bottenrad ---------------------------------------------------
+   Sidhuvud + vyflikar + verktygsrad tog 374 px av 844 på en telefon — 44 %
+   av skärmen innan första matchen. Här flyttas vyvalet ner till tumhöjd och
+   hela verktygsraden ersätts av en filterknapp som fäller upp den som ett
+   ark, vilket ger tillbaka ~300 px åt innehållet. Över 700 px är allt
+   oförändrat: bottenraden är hidden och toppen ser ut som förut. */
+@media (max-width: 700px) {
+  #bottomBar[hidden] { display: flex; } /* [hidden] är utgångsläget i markupen */
+
+  #bottomBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 70;
+    display: flex;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22);
+  }
+
+  .bottom-tab {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 2px 6px;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 10.5px;
+    cursor: pointer;
+    position: relative;
+  }
+  .bottom-tab.on { color: var(--blue); }
+  .bottom-tab-icon { font-size: 18px; line-height: 1; }
+  .bottom-tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Siffran på filterknappen — visar att ett filter är aktivt utan att man
+     behöver öppna arket för att upptäcka det. */
+  .bottom-filter-badge {
+    position: absolute;
+    top: 3px;
+    right: 50%;
+    transform: translateX(15px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+  }
+
+  /* Vyflikarna i toppen ersätts av bottenraden. */
+  #viewTabs { display: none; }
+
+  /* Verktygsraden bor kvar på sin plats i DOM:et (renderToolbar ritar dit
+     som förut) men visas bara som ark, fällt upp av filterknappen. */
+  #toolbar { display: none; }
+  body.filters-open #toolbar {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    z-index: 65;
+    max-height: 70vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 12px 14px 16px;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
+  }
+
+  /* Verktygsradens egen ihopfällning behålls i arket: dels sitter LÅSET
+     inuti <summary> (lockSlot i renderToolbar) och skulle annars bli
+     oåtkomligt på mobil, dels fungerar den som arkets rubrik och ger en
+     minimera/expandera utan extra kod. */
+  body.filters-open #toolbar .toolbar-summary {
+    position: sticky;
+    top: -12px;
+    z-index: 1;
+    margin: -12px -14px 8px;
+    padding: 12px 14px 8px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filter-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 64;
+    background: rgba(10, 18, 30, 0.45);
+  }
+
+  /* Plats åt bottenraden så sista matchen/sidfoten inte hamnar under den. */
+  #content, body > footer { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
 }
