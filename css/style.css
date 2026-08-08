@@ -3074,6 +3074,10 @@ dialog.history-dialog {
   /* Verktygsraden bor kvar på sin plats i DOM:et (renderToolbar ritar dit
      som förut) men visas bara som ark, fällt upp av filterknappen. */
   #toolbar { display: none; }
+  /* Filter fäller upp en tunn IKONREMSA ovanför bottenraden — inte ett helt
+     ark. Man ska kunna scrolla matchlistan med filtren framme, precis som
+     med Stats-underflikarna. Först "Mer" fäller ut resten av
+     verktygsraden (filters-expanded nedan). */
   body.filters-open #toolbar {
     display: block;
     position: fixed;
@@ -3081,16 +3085,58 @@ dialog.history-dialog {
     right: 0;
     bottom: var(--bottombar-h, 56px); /* mätt i renderBottomBar, inkl. safe-area */
     z-index: 65;
-    max-height: 70vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
     margin: 0;
-    padding: 12px 14px 16px;
+    padding: 6px 10px 8px;
     background: var(--card);
     border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+  }
+  /* I remsläget visas BARA ikonerna. Resten av verktygsraden finns kvar i
+     DOM:et (renderToolbar är orörd) men göms tills man trycker Mer. */
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-summary,
+  body.filters-open:not(.filters-expanded) #toolbar .sheet-cup-btn,
+  body.filters-open:not(.filters-expanded) #toolbar .row > *:not(.filter-group),
+  body.filters-open:not(.filters-expanded) #toolbar .row ~ * { display: none; }
+  body.filters-open:not(.filters-expanded) #toolbar .row {
+    display: block;
+    margin: 0;
+  }
+
+  body.filters-open.filters-expanded #toolbar {
+    max-height: 72vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 14px 16px;
     border-radius: 18px 18px 0 0;
     box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
   }
+
+  /* "Mer"-brickan: samma form som väljarbrickorna, egen klass eftersom den
+     inte är en <details>. */
+  .filter-more-tile {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 78px;
+    min-height: 62px;
+    padding: 7px 4px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .filter-more-tile::before {
+    content: attr(data-icon);
+    font-size: 19px;
+    line-height: 1;
+  }
+  body.filters-expanded .filter-more-tile { border-color: var(--blue); color: var(--blue); }
 
   /* Verktygsradens egen ihopfällning behålls i arket: dels sitter LÅSET
      inuti <summary> (lockSlot i renderToolbar) och skulle annars bli
@@ -3256,6 +3302,9 @@ dialog.history-dialog {
    grupperingen infördes. Utan detta ärvde gruppen block-layout och staplade
    väljarna under varandra. */
 @media (min-width: 701px) { .filter-group { display: contents; } }
+
+/* "Mer"-brickan hör bara till mobilens ikonremsa. */
+@media (min-width: 701px) { .filter-more-tile { display: none; } }
 
 /* Länkgruppen i inställningarna är bara till för mobil — tom på desktop,
    där länkarna ligger kvar i sidfoten, och ska då inte visa sin rubrik. */

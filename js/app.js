@@ -1732,20 +1732,34 @@ window.HB = window.HB || {};
       h("span", { class: "sheet-cup-arrow", "aria-hidden": "true" }, "›")));
   }
 
+  // Bakgrundstäcket hör till det STORA arket (filters-expanded), inte till
+  // ikonremsan: remsan är en tunn rad ovanför bottenraden och ska inte
+  // spärra resten av sidan — man ska kunna scrolla matchlistan med filtren
+  // framme, precis som med Stats-underflikarna.
+  function syncFilterBackdrop() {
+    const behovs = document.body.classList.contains("filters-open") &&
+      document.body.classList.contains("filters-expanded");
+    if (behovs && !filterBackdrop) {
+      filterBackdrop = h("div", {
+        class: "filter-sheet-backdrop",
+        onclick: () => {
+          document.body.classList.remove("filters-expanded");
+          syncFilterBackdrop();
+        },
+      });
+      document.body.append(filterBackdrop);
+    } else if (!behovs && filterBackdrop) {
+      filterBackdrop.remove();
+      filterBackdrop = null;
+    }
+  }
+
   function toggleFilterSheet(force) {
     const open = force === undefined
       ? !document.body.classList.contains("filters-open") : !!force;
     document.body.classList.toggle("filters-open", open);
-    if (open && !filterBackdrop) {
-      filterBackdrop = h("div", {
-        class: "filter-sheet-backdrop",
-        onclick: () => toggleFilterSheet(false),
-      });
-      document.body.append(filterBackdrop);
-    } else if (!open && filterBackdrop) {
-      filterBackdrop.remove();
-      filterBackdrop = null;
-    }
+    if (!open) document.body.classList.remove("filters-expanded");
+    syncFilterBackdrop();
     // Verktygsradens egen ihopfällning är meningslös inne i arket — arket ÄR
     // den öppna/stängda växlingen. Tvinga upp den så man inte behöver två
     // klick för att komma åt filtren.
@@ -2428,7 +2442,18 @@ window.HB = window.HB || {};
         // med etikett och värde (se .filter-group i style.css), där det är
         // uppenbart att raden går att trycka på. CSS-only-omslag: samma
         // element, samma lyssnare, bara en behållare runt.
-        row.append(h("div", { class: "filter-group" }, ...urval, teamSlot));
+        // "Mer" sist i remsan: på mobil är remsan allt man ser när man
+        // trycker Filter, så resten av verktygsraden (sök, status, plan,
+        // sortering, export) måste ha en väg in. Brickan göms över 700 px,
+        // där hela raden ändå står framme.
+        const merTile = h("button", {
+          class: "filter-more-tile", type: "button", "data-icon": "⋯",
+          onclick: () => {
+            document.body.classList.toggle("filters-expanded");
+            syncFilterBackdrop();
+          },
+        }, "Mer");
+        row.append(h("div", { class: "filter-group" }, ...urval, teamSlot, merTile));
       }
       row.append(h("span", { class: "row-sep" }), statusSeg);
       body.append(row);
