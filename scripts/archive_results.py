@@ -24,6 +24,25 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ARCHIVE_DIR = ROOT / "data" / "archive"
 
+# --- platshållarlag i ospelade slutspel -------------------------------------
+# Ett genererat men oavgjort slutspelsträd har platshållare i stället för lag
+# ("Vinn.", "Förl. 1/4 Final - 2", "1:an i Grupp A", "10:e bästa 3:an"), och
+# varje platshållare har ett EGET unikt lag-id i turneringssystemet. Utan
+# filtrering nästan tredubblas lagräkningen för en ännu inte spelad upplaga
+# (Göteborg Cup 2026: 957 "lag" varav bara 335 riktiga). Samma mönster finns
+# i js/app.js (isPlaceholderTeam) — håll dem i synk.
+_PLACEHOLDER_RE = re.compile(r"^(?:vinn\.|förl\.|\d+:an i |\d+:e bästa )", re.I)
+
+
+def is_placeholder_team(side):
+    name = (side.get("name") or "").strip()
+    return not name or bool(_PLACEHOLDER_RE.match(name))
+
+
+# Dagens datum i samma format som index.json:s first/last (svensk kalender,
+# se dagberäkningen i build_index) — avgör om en upplaga ligger i framtiden.
+_TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
 # --- mästare/vinnare (data/champions.json, se js/app.js renderVinnareView) ---
 # En "mästare" = vinnaren av matchen med roundName "Final" i A-slutspelet
 # (divName "A-Slutspel", eller tomt för cuper som inte delar upp slutspelet i
@@ -201,9 +220,9 @@ def build_index():
         countries = set()
         for m in matches:
             home, away = m.get("home") or {}, m.get("away") or {}
-            if home.get("id") is not None:
+            if home.get("id") is not None and not is_placeholder_team(home):
                 teams.add(home["id"])
-            if away.get("id") is not None:
+            if away.get("id") is not None and not is_placeholder_team(away):
                 teams.add(away["id"])
             classes.add(m.get("catId") if m.get("catId") is not None else m.get("catName"))
             start = m.get("start")
@@ -249,6 +268,24 @@ def build_index():
             "clubs": len(clubs),
             "countries": len(countries) if countries else None,
             "ts": d.get("ts"),
+            # Ännu inte spelad upplaga: schemat är publicerat (matcher finns)
+            # men inget är avgjort OCH sista speldagen ligger i framtiden
+            # (eller saknas helt — otidsatta matcher, start=0). Talen är då en
+            # ögonblicksbild av ett ofta HALVFÄRDIGT schema — klasser släpps
+            # efter hand — så de får inte jämföras rakt av med färdigspelade
+            # år (Göteborg Cup 2026 låg på 779 matcher i 12 klasser mot
+            # fjolårets 1181 i 16, enbart för att resten inte publicerats än).
+            # js/app.js flaggar dessa som "preliminär".
+            #
+            # Datumvillkoret är nödvändigt: finished == 0 ensamt träffar även
+            # gamla ProCup-år vars resultat aldrig gick att skrapa (t.ex.
+            # katrineholm 2019, vikingaspelen 2023) — de är spelade, bara
+            # resultatlösa, och ska INTE märkas preliminära.
+            # Saknas datum helt får årtalet avgöra: en otidsatt upplaga från
+            # ett gånget år (t.ex. irstablixten 2021) är inte preliminär, den
+            # är bara dåligt skrapad.
+            **({"preliminary": True} if matches and not finished and (
+                last >= _TODAY if last else edition >= _TODAY[:4]) else {}),
         })
     for cid in by_cup:
         by_cup[cid]["editions"].sort(key=lambda e: e["edition"])

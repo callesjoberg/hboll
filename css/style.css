@@ -698,6 +698,11 @@ input[type="search"]::-webkit-search-cancel-button {
 .banner.error { border-color: var(--live); }
 .banner .btn { margin-top: 8px; }
 .banner p { margin: 0 0 4px; }
+/* Upplysning om ett ännu ofärdigt schema (se pendingSchedule i js/app.js) —
+   ska läsas, inte varna: klubbens blå kantmarkering i stället för rött. */
+.banner-info { border-left: 4px solid var(--blue); }
+.banner-info p + p { margin-top: 8px; }
+.banner-info strong { color: var(--ink); }
 
 /* Karta ------------------------------------------------------------------ */
 
@@ -1780,6 +1785,8 @@ dialog.history-dialog {
 .trend-delta.down { color: var(--live); }
 
 .trend-note { margin-top: 10px; font-size: 12px; }
+/* Markör för ännu ospelad upplaga (preliminary i data/archive/index.json) */
+.trend-prelim { color: var(--muted); cursor: help; }
 
 /* "Bläddra i ett år" ----------------------------------------------------- */
 

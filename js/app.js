@@ -4073,7 +4073,15 @@ window.HB = window.HB || {};
       h("p", { class: "muted trend-note" },
         "Allt normerat mot " + baseEd.edition + " (= 100 %)" + skippedOutlier +
         ". Antal spelare visas inte — ingen av källorna (Cup Manager/ProCup) ger " +
-        "spelardata, förutom Partilles trupplistor."),
+        "spelardata, förutom Partilles trupplistor." +
+        // Ospelade år ser ut som ett ras i grafen (halvpublicerat schema,
+        // se preliminary i archive_results.py) — säg det rakt ut i stället
+        // för att låta kurvan tala.
+        (editions.some((e) => e.preliminary)
+          ? " * " + editions.filter((e) => e.preliminary).map((e) => e.edition).join(", ") +
+            " är inte spelad än: schemat fylls på löpande, så talen är preliminära " +
+            "och ligger lågt jämfört med färdigspelade år."
+          : "")),
       // Rådata i tabellform under diagrammet — SAMMA editions-lista (alla
       // arkiverade år, oavsett vilket som råkar vara normeringens
       // baslinje) så man kan slå upp exakta tal utan att behöva hovra
@@ -4143,9 +4151,22 @@ window.HB = window.HB || {};
   let clubTableSort = { key: "cupName", dir: 1 };
   let clubClassTableSort = { key: "matches", dir: -1 };
 
+  const PRELIM_TITLE = "Preliminärt: upplagan är inte spelad än och schemat " +
+    "kan vara ofullständigt — talen går inte att jämföra rakt av med " +
+    "färdigspelade år.";
+
   function trendTable(editions, metrics) {
     const columns = [
-      { key: "edition", label: "År", align: "l", defaultDir: 1, get: (e) => e.edition },
+      {
+        key: "edition", label: "År", align: "l", defaultDir: 1,
+        get: (e) => e.edition,
+        // Ospelade upplagor (se preliminary i archive_results.py) får en
+        // markör — deras tal är en ögonblicksbild av ett halvpublicerat
+        // schema och sjunker inte, de har bara inte fyllts på än.
+        render: (e) => e.preliminary
+          ? [e.edition, h("span", { class: "trend-prelim", title: PRELIM_TITLE }, " *")]
+          : e.edition,
+      },
       ...metrics.map(([key, label]) => ({ key, label, defaultDir: -1, get: (e) => e[key] || 0 })),
     ];
     return sortableTable(columns, editions, trendTableSort);
@@ -5615,7 +5636,12 @@ window.HB = window.HB || {};
       const cupSel = h("select", { class: "select", "aria-label": "Välj cup" },
         cupIds.map((id) => h("option", { value: id, ...(id === hs.cupId ? { selected: "" } : {}) }, idx[id].cupName)));
       const edSel = h("select", { class: "select", "aria-label": "Välj år" },
-        editions.map((e) => h("option", { value: e.edition }, e.edition + " (" + e.matches + " matcher)")));
+        editions.map((e) => h("option", { value: e.edition },
+          e.edition + " (" + e.matches + " matcher" +
+          // Ospelad upplaga: matchantalet växer fortfarande allteftersom
+          // arrangören publicerar klasserna (se preliminary i
+          // scripts/archive_results.py).
+          (e.preliminary ? ", preliminärt" : "") + ")")));
       cupSel.addEventListener("change", () => { hs.cupId = cupSel.value; renderPicker(); });
       const browseBtn = h("button", {
         class: "btn primary", type: "button",
@@ -6193,8 +6219,54 @@ window.HB = window.HB || {};
     }
   }
 
+  // Innevarande cups schema är publicerat men inte spelklart: inga matcher
+  // avgjorda OCH inga (eller bara några) har fått speltid. Arrangören
+  // släpper klasser och tider löpande fram till cupstart, så talen man ser
+  // är en ögonblicksbild som växer — samma sak som index.json flaggar som
+  // "preliminary" för arkivet (se scripts/archive_results.py), fast avgjord
+  // direkt ur live-matcherna så den gäller redan innan arkivet hunnit
+  // byggas om. null = schemat är igång eller färdigt, inget att flagga.
+  function pendingSchedule() {
+    const ms = state.matches;
+    if (!ms.length) return null;
+    if (ms.some((m) => m.res && (m.res.fin || m.res.live))) return null;
+    const timed = ms.filter((m) => m.start).length;
+    // Enstaka otidsatta matcher är NORMALT även i ett färdigt schema —
+    // slutspelsmatcher får ofta tid först när gruppspelet är avgjort (Örebro
+    // 2026: 12 av 416 otidsatta i ett i övrigt komplett schema). Kräv att
+    // minst hälften saknar tid, annars är rutan brus på ett schema som i
+    // praktiken är klart. I verkligheten är cuper nästan alltid antingen
+    // helt tidsatta eller helt otidsatta, så tröskeln är trubbig med flit.
+    if (timed * 2 > ms.length) return null;
+    const classes = new Set();
+    for (const m of ms) if (m.catName) classes.add(m.catName);
+    return { total: ms.length, timed, classes: classes.size };
+  }
+
   function renderSchema(main) {
     renderHero(main);
+    const pending = pendingSchedule();
+    if (pending) {
+      main.append(h("div", { class: "banner banner-info" },
+        h("p", null,
+          h("strong", null, "Schemat är inte klart än. "),
+          pending.timed
+            ? "Bara " + pending.timed + " av " + pending.total +
+              " matcher har fått speltid"
+            : "Inga speltider är satta ännu (" + pending.total + " matcher i " +
+              pending.classes + " klasser är publicerade)",
+          " — arrangören fyller på med fler klasser och tider ända fram till cupstart, " +
+          "så antalen här växer de närmaste veckorna."),
+        h("p", null,
+          "Titta in igen om några dagar. När tiderna är på plats kan du filtrera fram " +
+          "just dina matcher och lägga dem i kalendern via " +
+          // Exportmenyn sitter i verktygsraden, som på mobil är hopfälld i
+          // två steg bakom bottenradens Filter-knapp (se filters-open/
+          // filters-expanded i style.css) — hänvisa till hela vägen, annars
+          // står man i remsan och hittar ingen export.
+          (sheetMode() ? "“Filter” → “Mer” → “Exportera”" : "“Exportera”") +
+          " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon.")));
+    }
     if (!hasFilterSelection()) {
       main.append(h("div", { class: "banner" },
         // Knappen heter olika saker beroende på layout — "Filter och
@@ -6951,12 +7023,23 @@ window.HB = window.HB || {};
   // Antal DISTINKTA lag (id, inte klubbnamn — ett lag är en åldersklass-
   // trupp, en klubb kan ha flera) och Set(klassnamn) ur en matchlista —
   // till Kartans sammanfattningsrad ("X lag · Y klubbar totalt · ...").
+  // Platshållare i ospelade slutspelsträd ("Vinn.", "Förl. 1/4 Final - 2",
+  // "1:an i Grupp A", "10:e bästa 3:an") har egna unika lag-id och skulle
+  // annars nästan tredubbla lagräkningen för en ännu inte spelad upplaga.
+  // Samma mönster i scripts/archive_results.py (is_placeholder_team) —
+  // håll dem i synk.
+  const PLACEHOLDER_TEAM_RE = /^(?:vinn\.|förl\.|\d+:an i |\d+:e bästa )/i;
+  function isPlaceholderTeam(side) {
+    const name = ((side && side.name) || "").trim();
+    return !name || PLACEHOLDER_TEAM_RE.test(name);
+  }
+
   function teamsAndClassesFromMatches(matches) {
     const teamIds = new Set();
     const classes = new Set();
     for (const m of matches) {
-      if (m.home && m.home.id != null) teamIds.add(m.home.id);
-      if (m.away && m.away.id != null) teamIds.add(m.away.id);
+      if (m.home && m.home.id != null && !isPlaceholderTeam(m.home)) teamIds.add(m.home.id);
+      if (m.away && m.away.id != null && !isPlaceholderTeam(m.away)) teamIds.add(m.away.id);
       if (m.catName) classes.add(m.catName);
     }
     return { teamCount: teamIds.size, classes };
