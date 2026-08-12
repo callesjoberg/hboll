@@ -328,8 +328,16 @@ window.HB = window.HB || {};
 
   // --- state ---------------------------------------------------------------
 
+  // Förra besökets cupval. Bor i localStorage, som är knutet till origin —
+  // en ny domän (eller en ny webbläsare) ger alltså tomt blad. Saknas det
+  // väljer init() den cup som ligger närmast i tiden i stället, se
+  // pickDefaultCup; raden nedan är bara ett värde att stå på tills dess.
+  const savedCupId = (() => {
+    try { return localStorage.getItem("hb:cup"); } catch { return null; }
+  })();
+
   const state = {
-    cupId: localStorage.getItem("hb:cup") || (HB.allCups()[0] || {}).id,
+    cupId: savedCupId || (HB.allCups()[0] || {}).id,
     view: "schema",          // schema | tabeller
     // Vilken underflik som visas under "Stats" (se STATS_TABS/renderStatsView)
     // — trend | karta | klubb | klubbjamforelse | cuper. Sparas som en del av
@@ -9173,6 +9181,44 @@ window.HB = window.HB || {};
 
   // --- uppstart ------------------------------------------------------------------
 
+  // Startcup för ett förstabesök: hellre "det som händer nu" än första
+  // raden i data/cups.json, vars ordning inte har med kalendern att göra.
+  // windows är data/cup-windows.json (byggd av scripts/build_cup_windows.py)
+  // — varje cups matchfönster i ms epoch. Väljer i tur och ordning:
+  //
+  //   1. cup som pågår           — första matchen har startat och sista
+  //                                spelades för mindre än ett dygn sedan
+  //                                (resultaten kollas ofta dagen efter)
+  //   2. annars närmast kommande
+  //   3. annars senast spelade
+  //
+  // Uppskattade fönster ("est": cuper som ännu inte publicerat några tider,
+  // inplacerade efter förra upplagans datum) kan bara vinna som kommande.
+  // En gissning ska aldrig kunna hävda att en cup PÅGÅR och därmed kapa
+  // startvyn från en cup med riktigt schema.
+  const DEFAULT_CUP_GRACE_MS = 24 * 3600 * 1000;
+
+  function pickDefaultCup(windows) {
+    if (!windows || typeof windows !== "object") return null;
+    const now = Date.now();
+    let ongoing = null, upcoming = null, past = null;
+    for (const c of HB.allCups()) {
+      const w = windows[c.id];
+      if (!w || !w.first) continue;
+      const last = w.last || w.first;
+      if (!w.est && w.first <= now && now <= last + DEFAULT_CUP_GRACE_MS) {
+        // Två cuper kan överlappa (t.ex. Göteborg Cup och Örebrocupen
+        // samma helg) — den som startade senast är den mest aktuella.
+        if (!ongoing || w.first > ongoing.first) ongoing = { id: c.id, first: w.first };
+      } else if (w.first > now) {
+        if (!upcoming || w.first < upcoming.first) upcoming = { id: c.id, first: w.first };
+      } else if (!past || last > past.last) {
+        past = { id: c.id, last };
+      }
+    }
+    return (ongoing || upcoming || past || {}).id || null;
+  }
+
   async function init() {
     // PWA: relativ sökväg (inte "/sw.js") så det funkar under en undermapp,
     // t.ex. GitHub Pages-projektsidor (callesjoberg.github.io/hboll/).
@@ -9193,6 +9239,18 @@ window.HB = window.HB || {};
       });
     });
 
+    // Länkens cup läses redan här, synkront: då vet vi INNAN cups.json ens
+    // hämtats om startcupen behöver väljas åt besökaren, och kan hämta
+    // cup-windows.json parallellt i stället för i ett andra varv efteråt.
+    // Själva valet sker längre ner — pickDefaultCup behöver den skarpa
+    // cuplistan, som inte finns än här.
+    const params = new URLSearchParams(location.search);
+    const urlCup = params.get("cup");
+    const windowsPromise = (urlCup || savedCupId) ? null
+      : fetch("data/cup-windows.json?_=" + Date.now().toString(36))
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null); // utan filen: första cupen i listan, som förr
+
     // Skarp cuplista från data/cups.json (redigeras via admin.html);
     // HB.CUPS i config.js är reserv om filen saknas eller är trasig.
     try {
@@ -9206,10 +9264,11 @@ window.HB = window.HB || {};
     // Djuplänk: ?cup=potatis&view=...&scope=...&days=...&cats=...&teams=...
     // &arena=...&sort=...&mf=...&q=... — hela filtret/sorteringen kan delas,
     // liksom underflikarnas egna val (se syncSubViewUrl för hela listan).
-    const params = new URLSearchParams(location.search);
-    const urlCup = params.get("cup");
     if (urlCup && HB.allCups().some((c) => c.id === urlCup)) {
       state.cupId = urlCup;
+    } else if (windowsPromise) {
+      const picked = pickDefaultCup(await windowsPromise);
+      if (picked) state.cupId = picked;
     }
     // "Har länken något MER än bara cup?" i stället för en uppräkning av
     // nycklar — listan växer med varje ny underflik, och en bortglömd nyckel
