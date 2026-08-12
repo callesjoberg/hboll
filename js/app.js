@@ -1528,6 +1528,7 @@ window.HB = window.HB || {};
   function renderContent() {
     renderContentBody();
     renderMobileContextBar();
+    reconcilePickerChrome();
     syncUrl();
   }
 
@@ -2082,6 +2083,21 @@ window.HB = window.HB || {};
       sheetBackdrop.remove();
       sheetBackdrop = null;
     }
+  }
+
+  // Bakgrundstäcket och picker-open sätts av toggle-lyssnaren i
+  // setupPickerSheets — men <details> avfyrar INGET toggle-event när det
+  // rivs ur DOM:et, och en väljares egen onChange ritar ofta om just den
+  // del av sidan den själv sitter i (Stats-vyernas cup-, klass- och
+  // lagväljare anropar renderContent()). Då blev täcket kvar som ett
+  // osynligt lager över hela sidan: allt gick att se men inget att klicka
+  // på, och bara en omladdning hjälpte (rapporterat på iOS Firefox).
+  // Därför stäms båda av mot DOM:ets faktiska innehåll efter varje
+  // omritning, i stället för att lita på att ett event hinner före.
+  function reconcilePickerChrome() {
+    const nagonOppen = !!document.querySelector(".team-picker-dd[open]");
+    syncSheetBackdrop(nagonOppen && sheetMode());
+    document.body.classList.toggle("picker-open", nagonOppen);
   }
 
   // position:fixed utgår från LAYOUT-viewporten. Mobilwebbläsare ändrar
