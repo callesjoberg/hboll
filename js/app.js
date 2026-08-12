@@ -5193,7 +5193,15 @@ window.HB = window.HB || {};
       { key: "teams", label: "Lag", defaultDir: -1, get: (r) => r.teams || 0 },
       { key: "matches", label: "Matcher", defaultDir: -1, get: (r) => r.matches || 0 },
       { key: "classes", label: "Klasser", defaultDir: -1, get: (r) => r.classes || 0 },
-      { key: "clubs", label: "Klubbar", defaultDir: -1, get: (r) => r.clubs || 0 },
+      // clubs = 0 betyder "uppgift saknas", inte "noll klubbar": det rena
+      // klubbnamnsfältet tillkom i skraporna 2026-07-24, och år som
+      // arkiverades dessförinnan (och ännu inte backfillats) har det inte
+      // alls. Visa "–" som Länder redan gör — en nolla läses som att cupen
+      // saknade klubbar, vilket den förstås inte gjorde. Trend-fliken gömmer
+      // hela kolumnen i samma läge (se renderTrendChartBlock).
+      { key: "clubs", label: "Klubbar", defaultDir: -1,
+        get: (r) => r.clubs || -1,
+        render: (r) => r.clubs ? String(r.clubs) : "–" },
       { key: "countries", label: "Länder", defaultDir: -1,
         get: (r) => r.countries == null ? -1 : r.countries,
         render: (r) => r.countries == null ? "–" : String(r.countries) },
@@ -6219,28 +6227,50 @@ window.HB = window.HB || {};
     }
   }
 
-  // Innevarande cups schema är publicerat men inte spelklart: inga matcher
-  // avgjorda OCH inga (eller bara några) har fått speltid. Arrangören
-  // släpper klasser och tider löpande fram till cupstart, så talen man ser
-  // är en ögonblicksbild som växer — samma sak som index.json flaggar som
-  // "preliminary" för arkivet (se scripts/archive_results.py), fast avgjord
-  // direkt ur live-matcherna så den gäller redan innan arkivet hunnit
-  // byggas om. null = schemat är igång eller färdigt, inget att flagga.
+  // Hur många speldagar cupen BRUKAR ha, ur arkivindexets färdigspelade år
+  // (max av de tre senaste — snittet skulle dras ner av corona-år och
+  // enstaka nedbantade upplagor). null = ingen historik att jämföra med.
+  function typicalMatchDays() {
+    const eds = ((state.archiveIndex && state.archiveIndex[state.cupId] || {}).editions || [])
+      .filter((e) => !e.preliminary && e.matches > 0 && e.days > 0);
+    if (!eds.length) return null;
+    return Math.max(...eds.slice(-3).map((e) => e.days));
+  }
+
+  // Innevarande cups schema är publicerat men inte färdigt: inget spelat än
+  // OCH schemat är kortare/glesare än en färdig upplaga brukar vara.
+  // Arrangören släpper klasser och tider löpande fram till cupstart, så
+  // talen man ser är en ögonblicksbild som växer.
+  //
+  // Antalet SPELDAGAR mot historiken är den signal som faktiskt skiljer ett
+  // halvpublicerat schema från ett färdigt: andelen otidsatta matcher duger
+  // inte ensam. Göteborg Cup 2026 hade 47 % otidsatta (bara första helgen av
+  // två publicerad, 3 av normalt 6 dagar) — under en ren 50 %-tröskel, alltså
+  // osynlig precis när upplysningen behövs som mest. Örebro 2026 har tvärtom
+  // ett komplett schema där bara slutspelsmatcherna väntar på tid (12 av 416),
+  // och dess 3 dagar ÄR dess normala. null = inget att flagga.
   function pendingSchedule() {
     const ms = state.matches;
     if (!ms.length) return null;
     if (ms.some((m) => m.res && (m.res.fin || m.res.live))) return null;
     const timed = ms.filter((m) => m.start).length;
-    // Enstaka otidsatta matcher är NORMALT även i ett färdigt schema —
-    // slutspelsmatcher får ofta tid först när gruppspelet är avgjort (Örebro
-    // 2026: 12 av 416 otidsatta i ett i övrigt komplett schema). Kräv att
-    // minst hälften saknar tid, annars är rutan brus på ett schema som i
-    // praktiken är klart. I verkligheten är cuper nästan alltid antingen
-    // helt tidsatta eller helt otidsatta, så tröskeln är trubbig med flit.
-    if (timed * 2 > ms.length) return null;
+    const untimed = ms.length - timed;
+    if (!untimed) return null;
+    // start = svensk väggtid kodad som UTC-epoch-ms (se normalize i api.js),
+    // så heltalsdivisionen ger rätt svenskt kalenderdatum direkt.
+    const days = new Set();
+    for (const m of ms) if (m.start) days.add(Math.floor(m.start / 86400000));
+    const typicalDays = typicalMatchDays();
+    const short = typicalDays != null && days.size < typicalDays;
+    // Utan historik att jämföra med får andelen otidsatta avgöra (samma
+    // trubbiga fallback som tidigare — en cup utan arkiv har inget bättre).
+    if (!short && timed * 2 > ms.length) return null;
     const classes = new Set();
     for (const m of ms) if (m.catName) classes.add(m.catName);
-    return { total: ms.length, timed, classes: classes.size };
+    return {
+      total: ms.length, timed, untimed, classes: classes.size,
+      days: days.size, typicalDays: short ? typicalDays : null,
+    };
   }
 
   function renderSchema(main) {
@@ -6250,12 +6280,19 @@ window.HB = window.HB || {};
       main.append(h("div", { class: "banner banner-info" },
         h("p", null,
           h("strong", null, "Schemat är inte klart än. "),
-          pending.timed
-            ? "Bara " + pending.timed + " av " + pending.total +
-              " matcher har fått speltid"
-            : "Inga speltider är satta ännu (" + pending.total + " matcher i " +
-              pending.classes + " klasser är publicerade)",
-          " — arrangören fyller på med fler klasser och tider ända fram till cupstart, " +
+          pending.timed === 0
+            ? "Inga speltider är satta ännu (" + pending.total + " matcher i " +
+              pending.classes + " klasser är publicerade)"
+            : pending.typicalDays
+              // Det mest talande: cupen brukar spelas över fler dagar än det
+              // som hunnit publiceras (Göteborg Cup: en av två helger).
+              ? "Hittills är " + pending.days + " speldagar publicerade — " +
+                cup().name + " brukar spelas över " + pending.typicalDays +
+                " — och " + pending.untimed + " av " + pending.total +
+                " matcher saknar fortfarande tid"
+              : pending.untimed + " av " + pending.total +
+                " matcher saknar fortfarande speltid",
+          ". Arrangören fyller på med fler klasser och tider ända fram till cupstart, " +
           "så antalen här växer de närmaste veckorna."),
         h("p", null,
           "Titta in igen om några dagar. När tiderna är på plats kan du filtrera fram " +
