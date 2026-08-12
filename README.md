@@ -112,6 +112,20 @@ Sedan finns sidan på `https://<ditt-konto>.github.io/hboll/`.
 Inget mer behövs — datan hämtas från cupmanager.net direkt i besökarens
 webbläsare.
 
+### Egen domän
+
+Sajten kör på **cupschema.se**. `CNAME`-filen i repo-roten talar om för Pages
+vilken domän som gäller — den måste ligga kvar, annars faller sajten tillbaka
+till `.github.io`-adressen. Alla sökvägar i koden är relativa, så samma repo
+fungerar både under `/hboll/` och på domänroten.
+
+DNS ligger hos Cloudflare (Loopia-kontot är av typen LoopiaDomän och kan bara
+byta namnservrar, inte redigera poster). Apex pekar på GitHubs fyra A- och
+fyra AAAA-adresser, `www` är en CNAME till `<ditt-konto>.github.io`, alla i
+läget *DNS only* — proxyläget lägger bara ett extra SSL-lager framför GitHubs
+eget certifikat. DNSSEC är avstängt: Loopia signerar bara åt sina egna
+namnservrar.
+
 ## Cachning och uppdateringsfrekvens
 
 Tre lager, i den ordning sidan letar:
