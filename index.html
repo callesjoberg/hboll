@@ -108,6 +108,27 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cupschema">
+  <!-- Länkförhandsvisning i Messenger/SMS/WhatsApp/Slack. Absoluta URL:er
+       är ett krav — skrapor läser sidan utan att veta var den hämtades, så
+       en relativ sökväg ger ingen bild alls. Kortet byggs av
+       scripts/make_og_image.mjs och är medvetet statiskt: skraporna cachar
+       det hårt och ?cup= i länken kan ändå inte påverka bilden. -->
+  <link rel="canonical" href="https://cupschema.se/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Cupschema">
+  <meta property="og:locale" content="sv_SE">
+  <meta property="og:url" content="https://cupschema.se/">
+  <meta property="og:title" content="Cupschema · Alingsås HK">
+  <meta property="og:description" content="Spelschema, resultat, tabeller och slutspel för handbollscuper — Åhus Beach, Partille, Potatiscupen, Hallbybollen med flera. Följ vilken klubb som helst.">
+  <meta property="og:image" content="https://cupschema.se/assets/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cupschema — Alingsås HK:s klubbmärke bredvid rubriken Cupschema.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cupschema · Alingsås HK">
+  <meta name="twitter:description" content="Spelschema, resultat, tabeller och slutspel för handbollscuper. Följ vilken klubb som helst.">
+  <meta name="twitter:image" content="https://cupschema.se/assets/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
