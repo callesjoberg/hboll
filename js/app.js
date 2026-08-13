@@ -3299,29 +3299,38 @@ window.HB = window.HB || {};
   // favoritlag först, annars klubbens namn. Motståndare hoppas över — man
   // vill inte prenumerera på alla 40 lag i klassen. Lag där
   // calendarSubscribeUrl är null (ProCup/Gothia utanför favoritklubben)
-  // hoppas över tyst. Finns inga sådana lag visas inget block alls.
+  // hoppas över tyst. Arrangörens kalendertjänst hoppar över otidsatta
+  // matcher, så länkar visas bara för lag som har minst en satt speltid.
   function buildExportSubscribeBlock() {
-    const seen = new Set();
-    const links = [];
+    const teams = new Map();
     for (const m of sorted(filtered())) {
       for (const side of [m.home, m.away]) {
-        if (!side || !side.id || seen.has(side.id)) continue;
-        seen.add(side.id);
+        if (!side || !side.id) continue;
         if (!isFavoriteTeam(side.name, m.catName) && !isClubName(side.name)) continue;
-        const calUrl = calendarWebcalUrl(side);
-        if (!calUrl) continue;
-        links.push({ team: side, calUrl });
+        let entry = teams.get(side.id);
+        if (!entry) {
+          const calUrl = calendarWebcalUrl(side);
+          if (!calUrl) continue;
+          entry = { team: side, calUrl, timed: 0 };
+          teams.set(side.id, entry);
+        }
+        if (m.start) entry.timed++;
       }
     }
-    if (!links.length) return null;
+    if (!teams.size) return null;
+
+    const links = [...teams.values()].filter(({ timed }) => timed > 0);
+    const untimedTeams = teams.size - links.length;
     links.sort((a, b) => a.team.name.localeCompare(b.team.name, "sv"));
     return h("div", { class: "export-subscribe" },
       links.map(({ team, calUrl }) => h("a", {
         class: "export-item", href: calUrl, rel: "noopener",
         title: "Öppnar din kalenderapp och prenumererar på lagets matcher — nya/ändrade tider uppdateras sen automatiskt (funkar bäst på mobil).",
       }, "📅 Prenumerera — " + team.name)),
-      h("p", { class: "export-note muted" },
-        "En prenumeration uppdateras av sig själv när arrangören ändrar tid, dag eller hall, till skillnad från .ics-filen ovanför."));
+      links.length ? h("p", { class: "export-note muted" },
+        "En prenumeration uppdateras av sig själv när arrangören ändrar tid, dag eller hall, till skillnad från .ics-filen ovanför.") : null,
+      untimedTeams ? h("p", { class: "export-note muted" },
+        "Lag utan speltid visas inte: prenumerationen är tom tills arrangören satt tiderna. Kom tillbaka då.") : null);
   }
 
   function buildMatchExportPanel(item) {
