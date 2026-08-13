@@ -116,12 +116,17 @@ window.HB = window.HB || {};
   // Prenumererbar kalender-URL för ETT lags matcher, eller null om ingen
   // finns för den här cupen/laget. Cup Manager har en egen inbyggd
   // livetjänst (regenereras vid varje hämtning, alltid färsk) som funkar
-  // för ALLA lag; dataUrl-cuper (ProCup/Gothia) saknar en sådan tjänst, så
-  // där finns bara statiska filer (byggda av scripts/_ics.py, uppdaterade
-  // i samma takt som resten av cupens data) och bara för klubbens egna lag
-  // (annars skulle t.ex. Partilles ~1400 lag ge lika många småfiler).
+  // för ALLA lag. calendarHost pekar ut livetjänstens värd när den skiljer
+  // sig från cupens vanliga host (Partille kör den via Cup Manager). ProCup
+  // (procup.se) saknar kalenderexport helt — verifierat genom att deras sidor
+  // inte innehåller några ics/ical/webcal-länkar — så där finns bara statiska
+  // filer (byggda av scripts/_ics.py, uppdaterade i samma takt som resten av
+  // cupens data) och bara för klubbens egna lag.
   function calendarSubscribeUrl(team) {
     const c = cup();
+    if (c.calendarHost) {
+      return "https://" + c.calendarHost + "/service/GetTeamCalendarService?teamId=" + team.id;
+    }
     if (!c.dataUrl) {
       return "https://" + c.host + "/service/GetTeamCalendarService?teamId=" + team.id;
     }

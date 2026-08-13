@@ -78,6 +78,7 @@
       "place": "Partille",
       "edition": "2026",
       "host": "results.partillecup.com",
+      "calendarHost": "results.cupmanager.net",
       "dataUrl": "data/partille-2026.json",
       "hasPlayoffs": true,
       "hasRosters": true,
