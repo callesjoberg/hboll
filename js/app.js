@@ -9528,10 +9528,8 @@ window.HB = window.HB || {};
   //   2. annars närmast kommande
   //   3. annars senast spelade
   //
-  // Uppskattade fönster ("est": cuper som ännu inte publicerat några tider,
-  // inplacerade efter förra upplagans datum) kan bara vinna som kommande.
-  // En gissning ska aldrig kunna hävda att en cup PÅGÅR och därmed kapa
-  // startvyn från en cup med riktigt schema.
+  // Uppskattade fönster ("est") väljs aldrig: en gissad upplaga utan
+  // publicerat schema ger en tom app.
   const DEFAULT_CUP_GRACE_MS = 24 * 3600 * 1000;
 
   function pickDefaultCup(windows) {
@@ -9541,8 +9539,9 @@ window.HB = window.HB || {};
     for (const c of HB.allCups()) {
       const w = windows[c.id];
       if (!w || !w.first) continue;
+      if (w.est) continue;
       const last = w.last || w.first;
-      if (!w.est && w.first <= now && now <= last + DEFAULT_CUP_GRACE_MS) {
+      if (w.first <= now && now <= last + DEFAULT_CUP_GRACE_MS) {
         // Två cuper kan överlappa (t.ex. Göteborg Cup och Örebrocupen
         // samma helg) — den som startade senast är den mest aktuella.
         if (!ongoing || w.first > ongoing.first) ongoing = { id: c.id, first: w.first };
