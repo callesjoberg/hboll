@@ -101,7 +101,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--co
 .tb-btn:hover{border-color:var(--gold)}
 @media (max-width:720px){
   .tb-brand small{display:none}
-  .tb-btn.wide{display:none}
+  /* Vägen tillbaka till appen får ALDRIG gömmas: manualen öppnas ofta i
+     samma flik, och som installerad app (manifest.json, display:standalone)
+     finns ingen bakåtknapp i webbläsaren att falla tillbaka på. Kortas till
+     bara pilen i stället för att döljas. */
+  .tb-btn.wide{padding:7px 10px;font-size:0}
+  .tb-btn.wide::before{content:"←";font-size:16px}
   .topbar-inner{flex-wrap:wrap;gap:10px}
   .tb-search{order:3;flex-basis:100%;max-width:none}
 }

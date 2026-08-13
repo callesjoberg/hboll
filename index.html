@@ -144,6 +144,12 @@
         <span class="spacer"></span>
         <button id="currentCupBtn" type="button" class="current-cup-btn" title="Byt cup"></button>
         <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
+        <!-- Hjälpen låg tidigare bara i sidfoten, och på mobil flyttas
+             sidfoten in i inställningsdialogen (placeFooterLinks) — alltså
+             ~1500 px ner i en scrollande dialog. Här är den alltid ett klick
+             bort. Ny flik så man inte tappar sin plats i appen. -->
+        <a id="helpBtn" class="help-btn" href="hjalp.html" target="_blank" rel="noopener"
+           title="Hjälp och manual (öppnas i ny flik)" aria-label="Hjälp och manual">?</a>
         <button id="refreshBtn" type="button" title="Hämta senaste schemat">↻ Uppdatera</button>
       </div>
     </div>
@@ -368,6 +374,7 @@
   <script src="js/ics.js"></script>
   <script src="js/export.js"></script>
   <script src="js/weather.js"></script>
+  <script src="js/qr.js"></script>
   <script src="js/welcome.js"></script>
   <script src="js/app.js"></script>
 </body>

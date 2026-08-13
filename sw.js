@@ -12,7 +12,7 @@
 // handlern nedan raderar alla cacher med ett ANNAT namn, så ett nytt
 // namn är det enda som garanterat tömmer en gammal, envis skalcache
 // (nätverk-först räcker inte om ett enskilt anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-v7";
+const CACHE_NAME = "hboll-shell-v8";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -23,6 +23,7 @@ const SHELL_FILES = [
   "./js/ics.js",
   "./js/export.js",
   "./js/weather.js",
+  "./js/qr.js",
   "./js/welcome.js",
   "./js/app.js",
   "./manifest.json",

@@ -1379,6 +1379,23 @@ dialog input {
 
 #settingsBtn:hover { border-color: var(--yellow); }
 
+/* Hjälpknappen i headern — samma form som kugghjulet, men en <a> så den
+   kan öppnas i ny flik med mittenklick/långtryck som vilken länk som helst. */
+.help-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: #eef2f8;
+  padding: 5px 11px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-right: 8px;
+  text-decoration: none;
+}
+
+.help-btn:hover { border-color: var(--yellow); text-decoration: none; }
+
 dialog#settingsDialog { max-width: 380px; }
 
 @media (max-width: 480px) {
@@ -2982,6 +2999,28 @@ dialog.history-dialog {
   padding: 0 8px 6px 8px;
 }
 .export-alarm { flex: 1; min-width: 0; font-size: 13px; padding: 3px 6px; }
+
+/* "Öppna i telefonen" med QR-kod (buildSendToPhoneBlock i js/app.js) —
+   bara på dator, så bredden får vara generös. */
+.export-phone { border-top: 1px solid var(--line); margin-top: 4px; }
+
+.export-phone-panel { padding: 8px 10px 10px; }
+
+.export-phone-panel svg {
+  display: block;
+  width: 168px;
+  height: 168px;
+  margin: 0 auto 8px;
+  border-radius: 6px;
+  /* QR-koden ritas alltid mörk på vitt: en kod med omvänd kontrast läses
+     inte av alla kameraappar, så den behåller sin vita platta även i
+     mörkt tema. */
+  background: #fff;
+}
+
+.export-phone-panel p { margin: 0 0 8px; font-size: 12px; line-height: 1.45; max-width: 30ch; }
+
+.export-phone-btns { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* Kalendertipset i exportpanelen — får inte konkurrera med knapparna, men
    ska gå att läsa innan man trycker (se buildMatchExportPanel i js/app.js). */

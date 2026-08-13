@@ -2020,6 +2020,10 @@ window.HB = window.HB || {};
   function renderSheetCupButton() {
     const bar = $("#toolbar");
     if (!bar || state.view === "stats") return;
+    // Knappen hör till mobilens filterark — all dess styling ligger i
+    // @media (max-width: 700px). På dator ritades den ändå ut och syntes
+    // som en ostylad grå bjälke med hopklistrad text under flikraden.
+    if (!sheetMode()) return;
     const c = cup();
     bar.prepend(h("button", {
       class: "sheet-cup-btn", type: "button",
@@ -3166,7 +3170,58 @@ window.HB = window.HB || {};
           HB.xmlExport.downloadTable(HB.matchFieldsFor(list, geo), HB.exportRows(list, geo),
             "matcher", "match", exportBaseName() + ".xml");
         }
-      }));
+      }),
+      buildSendToPhoneBlock());
+  }
+
+  // "Öppna i telefonen": sitter man vid datorn och har filtrerat fram sina
+  // lag är det själva URL:en man vill flytta över, inte filen — på telefonen
+  // kan man sedan lägga matcherna i kalendern där de ska ligga (och där
+  // prenumerationen fungerar). En QR-kod är den enda vägen som varken kräver
+  // inloggning, e-post eller att båda enheterna är på samma nät; Bluetooth
+  // går över huvud taget inte att nå från en webbsida.
+  //
+  // Bara på dator: står man redan i telefonen är QR-koden meningslös.
+  function buildSendToPhoneBlock() {
+    if (sheetMode() || !HB.qr) return null;
+    const box = h("div", { class: "export-phone" });
+    const toggle = h("button", { class: "export-item", type: "button" }, "📱 Öppna i telefonen");
+    const panel = h("div", { class: "export-phone-panel", hidden: "" });
+    let built = false;
+    toggle.addEventListener("click", () => {
+      const show = panel.hidden;
+      panel.hidden = !show;
+      if (!show || built) return;
+      built = true;
+      // Länken speglar exakt den vy man står i (syncUrl har redan skrivit
+      // filter, sortering och vald flik till adressfältet).
+      const url = location.href;
+      const svg = HB.qr.svg(url, { label: "QR-kod till den här vyn" });
+      panel.append(
+        svg || h("p", { class: "muted" }, "Länken är för lång för en QR-kod — kopiera den i stället."),
+        h("p", { class: "muted" },
+          "Skanna med telefonens kamera så öppnas exakt den här vyn där — " +
+          "med dina filter kvar. Lägg sedan matcherna i kalendern från telefonen."),
+        h("div", { class: "export-phone-btns" },
+          (() => {
+            const copyBtn = h("button", { class: "btn small", type: "button" }, "Kopiera länk");
+            copyBtn.addEventListener("click", () => {
+              navigator.clipboard.writeText(url).then(() => {
+                copyBtn.textContent = "Kopierad ✓";
+                setTimeout(() => (copyBtn.textContent = "Kopiera länk"), 2000);
+              }).catch(() => { copyBtn.textContent = "Kunde inte kopiera"; });
+            });
+            return copyBtn;
+          })(),
+          h("a", {
+            class: "btn small",
+            href: "mailto:?subject=" + encodeURIComponent(cup().name + " – mitt schema") +
+              "&body=" + encodeURIComponent(
+                "Här är matcherna jag filtrerat fram i cupschema:\n\n" + url + "\n"),
+          }, "Skicka med e-post")));
+    });
+    box.append(toggle, panel);
+    return box;
   }
 
   const TABLE_EXPORT_FIELDS = [
