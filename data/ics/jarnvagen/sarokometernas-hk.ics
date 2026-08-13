@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-803@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Särökometernas HK – Lidingö SK 2 2012 (F14/13 Grupp 1)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-771@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IFK Nyköping 1 – Särökometernas HK (F14/13 Grupp 1)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-732@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Särökometernas HK – NKIK Vit (F14/13 Grupp 1)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-704@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Huddinge HK Vit – Särökometernas HK (F14/13 Grupp 1)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-452@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Årsta AIK 2 – Särökometernas HK (F14/13 B-16-dels:14)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:14
+END:VEVENT
+BEGIN:VEVENT
+UID:match-506@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Hultic BK – Särökometernas HK (F14/13 B-8-dels:07)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:07
+END:VEVENT
+BEGIN:VEVENT
+UID:match-554@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Särökometernas HK – Skåre HK Vit (F14/13 B-kvartsfinal:04)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-613@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:BK Heid Röd – Särökometernas HK (F14/13 B-semifinal:02)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-semifinal:02
+END:VEVENT
+END:VCALENDAR

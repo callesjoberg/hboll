@@ -1,0 +1,167 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5765@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:IK Nord 1 – Redbergslids... (P11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5766@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:IK Nord 2 – Redbergslids... (P11(2013) Grupp 2)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-47@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094000
+DTEND;TZID=Europe/Stockholm:20250524T101000
+SUMMARY:Redbergslids... – HK Aranäs Blå (F10(2014) Grupp 4)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-18@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:Redbergslids... – Härryda HK 2 (F10(2014) Grupp 2)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5787@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T104000
+DTEND;TZID=Europe/Stockholm:20250524T111000
+SUMMARY:Redbergslids... – HK Varberg Grön (P11(2013) Grupp 1)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5798@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:Redbergslids... – HK Varberg Svart (P11(2013) Grupp 2)
+LOCATION:11 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-50@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:Halmstad Han... – Redbergslids... (F10(2014) Grupp 4)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5624@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:Önnereds HK 3 – Redbergslids... (F10(2014) Grupp 2)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5648@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T140000
+DTEND;TZID=Europe/Stockholm:20250524T143000
+SUMMARY:IK Sävehof UP2 – Redbergslids... (F10(2014) Grupp 2)
+LOCATION:13 Lilla Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-52@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:Redbergslids... – Önnereds HK 1 (F10(2014) Grupp 4)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5840@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:HK Aranäs Gul – Redbergslids... (P11(2013) Grupp 1)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5850@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:HK Aranäs Blå – Redbergslids... (P11(2013) Grupp 2)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5671@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:Redbergslids... – HK Aranäs Vit (F10(2014) Grupp 2)
+LOCATION:12 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-55@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:IK Sävehof S... – Redbergslids... (F10(2014) Grupp 4)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5860@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:HK Aranäs Vit – Redbergslids... (P11(2013) Grupp 1)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5868@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:Redbergslids... – IK Baltichov Vit (P11(2013) Grupp 2)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5892@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:Redbergslids... – HK Varberg Vit (P11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5895@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:Redbergslids... – Önnereds HK (P11(2013) Grupp 2)
+LOCATION:9 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5681@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:Redbergslids... – Särökometern... (F10(2014) Grupp 2)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-60@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:Härryda HK 1 – Redbergslids... (F10(2014) Grupp 4)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+END:VCALENDAR

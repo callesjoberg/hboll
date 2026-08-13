@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1234@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Skara HK – Sollentuna HK (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-51@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Skara HK – Vadstena HF (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1153@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:LIF Lindesberg 2015 – Skara HK (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1155@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Vintrosa IS – Skara HK (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

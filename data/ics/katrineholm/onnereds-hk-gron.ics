@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-7@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Haninge HK – Önnereds HK Grön (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-91@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:Katrineholms AIK – Önnereds HK Grön (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-151@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Önnereds HK Grön – IFK NORA (P11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-175@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T104000
+DTEND;TZID=Europe/Stockholm:20260412T111000
+SUMMARY:Önnereds HK Grön – Vintrosa IS (P11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-905@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Lidingö SK – Malmslätt Ljungsbro HF 2 (P12 Grupp 2)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-889@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Malmslätt Ljungsbro HF 2 – IK Baltichov Blå (P12 Grupp 2)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-855@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:LIF Lindesberg – Malmslätt Ljungsbro HF 2 (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-843@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Malmslätt Ljungsbro HF 2 – Skogås HK (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-526@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Malmslätt Ljungsbro HF 2 – Malmslätt Ljungsbro HF 1 (P12 B-kvartsfinal:02)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-kvartsfinal:02
+END:VEVENT
+END:VCALENDAR

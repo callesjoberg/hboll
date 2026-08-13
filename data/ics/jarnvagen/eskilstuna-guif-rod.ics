@@ -1,0 +1,127 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-794@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:RP IF – Eskilstuna Guif Röd (P16/15 Grupp 1)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:HK Eskil 2 – Eskilstuna Guif Röd (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-710@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Eskilstuna Guif Röd – Västervik HF (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-770@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif Röd – IK Baltichov (P16/15 Grupp 1)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-748@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Spånga HK – Eskilstuna Guif Röd (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Eskilstuna Guif Röd – GT Söder HK (P16/15 Grupp 1)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-743@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Eskilstuna Guif Röd – Vadstena HF 1 (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-711@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:LIF Lindesberg Blå – Eskilstuna Guif Röd (P16/15 Grupp 1)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-459@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Eskilstuna Guif Röd – Vadstena HF (P16/15 B-8-dels:04)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-847@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Eskilstuna Guif Röd – IFK Örebro 4 (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-777@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Eskilstuna Guif Röd – RP IF 1 (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-560@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:HK Järnvägen – Eskilstuna Guif Röd (P16/15 B-kvartsfinal:02)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-616@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:GT Söder HK – Eskilstuna Guif Röd (P16/15 B-semifinal:01)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-832@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:IFK Örebro 3 – Eskilstuna Guif Röd (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-802@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:BK Heid Röd – Eskilstuna Guif Röd (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

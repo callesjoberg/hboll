@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5244@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T124000
+DTEND;TZID=Europe/Stockholm:20250525T131000
+SUMMARY:Kärra HF Vit – HK Varberg Grön (F8(2016) Grupp 5)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5254@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:Torslanda HK... – Kärra HF Vit (F8(2016) Grupp 5)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5562@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T144000
+DTEND;TZID=Europe/Stockholm:20250525T151000
+SUMMARY:HK Aranäs Svart – Kärra HF Vit (F8(2016) Grupp 5)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5567@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T160000
+DTEND;TZID=Europe/Stockholm:20250525T163000
+SUMMARY:Kärra HF Vit – Önnereds HK ... (F8(2016) Grupp 5)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 5
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1198@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Vadstena HF 3 – IFK Örebro 1 (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1007@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:HK Eskil 1 – Vadstena HF 3 (P09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1045@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Vadstena HF 3 – GT Söder HK (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1063@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Vadstena HF 3 – Örebro SK U Vit (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+END:VCALENDAR

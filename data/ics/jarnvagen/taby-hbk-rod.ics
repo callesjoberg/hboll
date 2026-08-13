@@ -1,0 +1,63 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-14@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:HK Brukspöjkera – Täby HBK Röd (P14/13 Grupp 2)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-16@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Täby HBK Röd – Lidingö SK 1 2012 (P14/13 Grupp 2)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Örebro SK U 1 – Täby HBK Röd (P14/13 Grupp 2)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1230@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:Täby HBK Röd – Eskilstuna Guif 3 (P14/13 Grupp 2)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-589@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Täby HBK Röd – Finspångs HK (P14/13 A-kvartsfinal:04)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-639@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Täby HBK Blå – Täby HBK Röd (P14/13 A-semifinal:02)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1165@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:RP IF 2 – Täby HBK Röd (P14/13 A-final)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-final
+END:VEVENT
+END:VCALENDAR

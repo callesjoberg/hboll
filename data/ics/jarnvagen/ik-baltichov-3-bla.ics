@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-67@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:IFK Nyköping 2 F13 – IK Baltichov 3 Blå (F14/13 Grupp 10)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-65@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:IK Baltichov 3 Blå – Örebro SK U 2 (F14/13 Grupp 10)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-63@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:IK Baltichov 3 Blå – NKIK Grön (F14/13 Grupp 10)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-451@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:IK Baltichov 3 Blå – Lidingö SK 1 2012 (F14/13 B-16-dels:06)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:06
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1201@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IK Baltichov Vit – GT Söder HK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-780@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif – IK Baltichov Vit (P12 Grupp 1)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-763@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:IK Baltichov Vit – Hammarby IF HF 1 (P12 Grupp 1)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-985@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Örebro SK U 2 – IK Baltichov Vit (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-733@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:IK Bolton – IK Baltichov Vit (P12 Grupp 1)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-713@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:IK Baltichov Vit – Malmslätt Ljungsbro HF 1 (P12 Grupp 1)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-955@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IK Baltichov Vit – RP IF 3 (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-581@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Lidingö SK – IK Baltichov Vit (P12 A-kvartsfinal:04)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1203@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:IK Baltichov Vit – Falu HK Svart (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

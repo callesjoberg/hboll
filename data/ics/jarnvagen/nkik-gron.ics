@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-933@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:NKIK Grön – LIF Lindesberg Blå (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-68@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:NKIK Grön – Örebro SK U 2 (F14/13 Grupp 10)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-66@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:IFK Nyköping 2 F13 – NKIK Grön (F14/13 Grupp 10)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-956@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Tyresö Handboll – NKIK Grön (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-63@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:IK Baltichov 3 Blå – NKIK Grön (F14/13 Grupp 10)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-990@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:BK Heid Svart – NKIK Grön (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-536@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Skånela IF – NKIK Grön (F14/13 A-8-dels:08)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1017@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:NKIK Grön – Gökstens BK Rosa (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+END:VCALENDAR

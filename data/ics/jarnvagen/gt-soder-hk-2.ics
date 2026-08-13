@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-34@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Örebro SK U 2 – GT Söder HK 2 (P14/13 Grupp 5)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-31@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:RP IF 1 – GT Söder HK 2 (P14/13 Grupp 5)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-30@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:GT Söder HK 2 – Alingsås HK Vit (P14/13 Grupp 5)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1168@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Täby HBK Blå – GT Söder HK 2 (P14/13 A-8-dels:05)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:05
+END:VEVENT
+END:VCALENDAR

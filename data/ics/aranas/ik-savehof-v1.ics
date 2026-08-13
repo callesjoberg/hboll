@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-289@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:IK Sävehof U1 – IK Sävehof V1 (P7(2017) Grupp 3)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-325@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:IK Sävehof V1 – Kviberg HK Röd (P7(2017) Grupp 3)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-349@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T134000
+DTEND;TZID=Europe/Stockholm:20250524T141000
+SUMMARY:IK Sävehof V1 – HK Aranäs Svart (P7(2017) Grupp 3)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-368@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T144000
+DTEND;TZID=Europe/Stockholm:20250524T151000
+SUMMARY:IK Sävehof Ö2 – IK Sävehof V1 (P7(2017) Grupp 3)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5540@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T154000
+DTEND;TZID=Europe/Stockholm:20250524T161000
+SUMMARY:Kärra HF Röd – IK Sävehof V1 (P7(2017) Grupp 3)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-300@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T100000
+DTEND;TZID=Europe/Stockholm:20250525T103000
+SUMMARY:IK Sävehof V1 – IK Sävehof U2 (F7(2017) Grupp 1)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-336@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T114000
+DTEND;TZID=Europe/Stockholm:20250525T121000
+SUMMARY:IK Sävehof V1 – IK Sävehof FÖ3 (F7(2017) Grupp 1)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-353@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T132000
+DTEND;TZID=Europe/Stockholm:20250525T135000
+SUMMARY:HK Aranäs Blå – IK Sävehof V1 (F7(2017) Grupp 1)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-377@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T142000
+DTEND;TZID=Europe/Stockholm:20250525T145000
+SUMMARY:HK Aranäs Vi... – IK Sävehof V1 (F7(2017) Grupp 1)
+LOCATION:F Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-385@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T154000
+DTEND;TZID=Europe/Stockholm:20250525T161000
+SUMMARY:IK Sävehof V1 – Särökometern... (F7(2017) Grupp 1)
+LOCATION:F Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+END:VCALENDAR

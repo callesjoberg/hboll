@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1060@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:RP IF 3 – Södertälje Handboll (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-29@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Södertälje Handboll – Falu HK Svart (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-33@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Örebro SK U 2 – Södertälje Handboll (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-974@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:GT Söder HK – Södertälje Handboll (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

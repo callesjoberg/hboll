@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-824@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Skogås HK – Backa HK Vit (F12 Grupp 2)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-801@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Backa HK Vit – HK Järnvägen 2 (F12 Grupp 2)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-981@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Backa HK Vit – LIF Lindesberg Orange (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Backa HK Vit – Västervik HF (F12 Grupp 2)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-996@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:IF Swithiod – Backa HK Vit (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-524@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Backa HK Vit – Örebro SK U (F12 B-kvartsfinal:04)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1046@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Eskilstuna Guif 1 – Backa HK Vit (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-609@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Gökstens BK – Backa HK Vit (F12 B-semifinal:02)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1020@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Backa HK Vit – Lidingö SK 2 (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1102@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:H43 2 – LIF Lindesberg Orange (P16/15 Grupp 5)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-40@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:H43 2 – Mantorps IF HF (P16/15 Grupp 5)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1086@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Lidingö SK – H43 2 (P16/15 Grupp 5)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-591@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:H43 2 – BK Heid (P16/15 A-kvartsfinal:02)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-kvartsfinal:02
+END:VEVENT
+END:VCALENDAR

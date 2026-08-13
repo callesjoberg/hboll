@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-39@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:Torslanda HK 1 – Kärra HF Röd (P10(2014) Grupp 3)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-42@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T134000
+DTEND;TZID=Europe/Stockholm:20250524T141000
+SUMMARY:HK Aranäs Blå – Torslanda HK 1 (P10(2014) Grupp 3)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5691@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T152000
+DTEND;TZID=Europe/Stockholm:20250524T155000
+SUMMARY:Torslanda HK 1 – Önnereds HK ... (P10(2014) Grupp 3)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5733@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:Torslanda HK 1 – IK Baltichov... (P10(2014) Grupp 3)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5815@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:IK Sävehof VU1 – Torslanda HK 1 (P10(2014) Grupp 3)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-4@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Huddinge HK – IFK Nyköping Blå (F12 Grupp 3)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-45@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:IFK Nyköping Blå – Årsta AIK (F12 Grupp 3)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-97@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T160000
+DTEND;TZID=Europe/Stockholm:20260411T163000
+SUMMARY:IFK Nyköping Blå – HK Järnvägen 11 (F12 Grupp 3)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-156@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:IFK Nyköping Blå – AIK Gul (F12 B-kvartsfinal:02)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-194@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:HK Järnvägen 10 – IFK Nyköping Blå (F12 B-semifinal:01)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-semifinal:01
+END:VEVENT
+END:VCALENDAR

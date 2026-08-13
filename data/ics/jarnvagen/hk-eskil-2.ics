@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-2@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:HK Eskil 2 – Eskilstuna Guif Röd (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:HK Järnvägen P8 – HK Eskil 2 (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-837@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:HK Eskil 2 – Stockholmspolisen IF HF (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-789@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:HK Eskil 2 – IFK Örebro 3 (P09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+END:VCALENDAR

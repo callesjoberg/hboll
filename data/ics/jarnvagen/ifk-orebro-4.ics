@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-776@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Stockholmspolisen IF HF – IFK Örebro 4 (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1175@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:IFK Örebro 4 – HK Järnvägen P8 (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-847@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Eskilstuna Guif Röd – IFK Örebro 4 (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-809@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Vadstena HF 1 – IFK Örebro 4 (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+END:VCALENDAR

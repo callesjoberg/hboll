@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-36@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:Eskilstuna guif Svart – Årsta AIK Vit (F14 Grupp 2)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-81@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T144000
+DTEND;TZID=Europe/Stockholm:20260411T151000
+SUMMARY:Årsta AIK Vit – Akilles Handboll (F14 Grupp 2)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-116@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T180000
+DTEND;TZID=Europe/Stockholm:20260411T183000
+SUMMARY:Årsta AIK Vit – HK Järnvägen (F14 Grupp 2)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-144@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Eskilstuna Guif IF – Årsta AIK Vit (F14 B-kvartsfinal:01)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · B-kvartsfinal:01
+END:VEVENT
+END:VCALENDAR

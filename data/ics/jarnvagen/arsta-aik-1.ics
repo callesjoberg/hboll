@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1182@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:AIK HF – Årsta AIK 1 (P14/13 Grupp 1)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Årsta AIK 1 – BK Heid Svart (P14/13 Grupp 1)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-62@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Årsta AIK 1 – Lidingö SK 3 2011 (F14/13 Grupp 9)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 9
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1177@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Eskilstuna Guif 1 – Årsta AIK 1 (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-60@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:HK Brukspöjkera – Årsta AIK 1 (F14/13 Grupp 9)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 9
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Årsta AIK 1 – RP IF 2 (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1156@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Vadstena HF – Årsta AIK 1 (F14/13 Grupp 9)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 9
+END:VEVENT
+BEGIN:VEVENT
+UID:match-448@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Årsta AIK 1 – IK Baltichov 1 (F14/13 B-16-dels:12)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:12
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1170@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Finspångs HK – Årsta AIK 1 (P14/13 A-8-dels:08)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:08
+END:VEVENT
+END:VCALENDAR

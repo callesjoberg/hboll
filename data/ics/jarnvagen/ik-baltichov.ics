@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-10@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:IK Baltichov – GT Söder HK (P16/15 Grupp 1)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-39@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:LIF Lindesberg Orange – IK Baltichov (P14/13 Grupp 6)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-770@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif Röd – IK Baltichov (P16/15 Grupp 1)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1206@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:IK Baltichov – Alingsås HK Blå (P14/13 Grupp 6)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-739@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:IK Baltichov – LIF Lindesberg Blå (P16/15 Grupp 1)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-35@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:IK Baltichov – Skogås HK (P14/13 Grupp 6)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-703@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:RP IF – IK Baltichov (P16/15 Grupp 1)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-461@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Lidingö SK – IK Baltichov (P16/15 B-8-dels:08)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1169@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:IK Baltichov – Mantorps IF HF (P14/13 A-8-dels:06)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-562@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Västervik HF – IK Baltichov (P16/15 B-kvartsfinal:04)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-588@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Täby HBK Blå – IK Baltichov (P14/13 A-kvartsfinal:03)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-617@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Örebro SK U – IK Baltichov (P16/15 B-semifinal:02)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-semifinal:02
+END:VEVENT
+END:VCALENDAR

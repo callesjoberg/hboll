@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-694@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IFK Örebro – RP IF 3 (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1060@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:RP IF 3 – Södertälje Handboll (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1012@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:RP IF 3 – HK Järnvägen 3 F8 gul (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1003@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:RP IF 3 – GT Söder HK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1050@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:HK Järnvägen 2 – RP IF 3 (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-955@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IK Baltichov Vit – RP IF 3 (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1011@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Falu HK Svart – RP IF 3 (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1084@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:IFK Örebro 2 – RP IF 3 (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+END:VCALENDAR

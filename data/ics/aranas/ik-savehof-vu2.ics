@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5608@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:HK Aranäs Röd – IK Sävehof VU2 (P10(2014) Grupp 2)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5637@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:IK Sävehof VU2 – Kärra HF Gul (P10(2014) Grupp 2)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5689@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T114000
+DTEND;TZID=Europe/Stockholm:20250525T121000
+SUMMARY:HK Aranäs Vit – IK Sävehof VU2 (P10(2014) Grupp 2)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5717@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T132000
+DTEND;TZID=Europe/Stockholm:20250525T135000
+SUMMARY:IK Baltichov... – IK Sävehof VU2 (P10(2014) Grupp 2)
+LOCATION:12 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5747@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T150000
+DTEND;TZID=Europe/Stockholm:20250525T153000
+SUMMARY:IK Sävehof VU2 – IK Baltichov... (P10(2014) Grupp 2)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+END:VCALENDAR

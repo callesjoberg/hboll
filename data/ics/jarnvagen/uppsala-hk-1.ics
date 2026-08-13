@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1056@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Uppsala HK 1 – Backa HK (P16/15 Grupp 4)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1042@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Uppsala HK 1 – Vadstena HF (P16/15 Grupp 4)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1022@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Kumla HF – Uppsala HK 1 (P16/15 Grupp 4)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-592@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Uppsala HK 1 – RP IF (P16/15 A-kvartsfinal:03)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-641@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Uppsala HK 1 – H43 1 (P16/15 A-semifinal:02)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1216@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:BK Heid – Uppsala HK 1 (P16/15 A-final)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-final
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-46@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:Skå IK & Bygdegår... – Norrköpings HK (P10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-54@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:HK Järnvägen 2 – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-119@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T180000
+DTEND;TZID=Europe/Stockholm:20260411T183000
+SUMMARY:HK Järnvägen – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-125@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T184000
+DTEND;TZID=Europe/Stockholm:20260411T191000
+SUMMARY:Lindeskolans IF 2 – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-150@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Haninge HK – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-166@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:Huddinge HK Vit – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-198@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:Skå IK & Bygdegår... – Norrköpings HK (P10 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-205@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T132000
+DTEND;TZID=Europe/Stockholm:20260412T135000
+SUMMARY:HK Järnvägen 2 – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+END:VCALENDAR

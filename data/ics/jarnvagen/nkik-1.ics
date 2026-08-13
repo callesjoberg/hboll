@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1196@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:BK Heid 2 – NKIK 1 (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1008@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:NKIK 1 – Mantorps IF HF (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1016@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IFK Nyköping – NKIK 1 (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1069@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:NKIK 1 – Sollentuna HK (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+END:VCALENDAR

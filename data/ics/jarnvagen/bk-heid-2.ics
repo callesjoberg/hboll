@@ -1,0 +1,95 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1196@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:BK Heid 2 – NKIK 1 (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1144@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Årsta AIK 2 – BK Heid 2 (F14/13 Grupp 7)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1134@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:BK Heid 2 – Katrineholms AIK (F14/13 Grupp 7)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-983@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:IFK Örebro 1 – BK Heid 2 (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1126@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:BK Heid 2 – RP IF 1 (F14/13 Grupp 7)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1027@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:BK Heid 2 – Mantorps IF HF (F10 Matcher)
+LOCATION:Bana 07\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-532@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:BK Heid 2 – Örebro SK U 2 (F14/13 A-8-dels:04)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-583@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Eskilstuna Guif 1 – BK Heid 2 (F14/13 A-kvartsfinal:02)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1048@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:BK Heid 2 – IFK Nyköping (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-636@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Skåre HK Grön – BK Heid 2 (F14/13 A-semifinal:01)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1164@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:BK Heid 2 – Skånela IF (F14/13 A-final)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-final
+END:VEVENT
+END:VCALENDAR

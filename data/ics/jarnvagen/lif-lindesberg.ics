@@ -1,0 +1,215 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-884@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:LIF Lindesberg – Backa HK Röd (F14/13 Grupp 2)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-900@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Skogås HK – LIF Lindesberg (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-943@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:LIF Lindesberg – Vadstena HF (F12 Grupp 4)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-828@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Backa HK – LIF Lindesberg (P19/17 Grupp 2)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-880@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:LIF Lindesberg – Lidingö SK (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-731@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Kramfors alliansen – LIF Lindesberg (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-857@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Skåre HK Vit – LIF Lindesberg (F14/13 Grupp 2)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-923@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:GT Söder HK – LIF Lindesberg (F12 Grupp 4)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-855@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:LIF Lindesberg – Malmslätt Ljungsbro HF 2 (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-796@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Lidingö SK – LIF Lindesberg (P19/17 Grupp 2)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-13@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:LIF Lindesberg – Skånela IF (F14/13 Grupp 2)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1225@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:LIF Lindesberg – Västervik HF (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-896@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Backa HK Röd – LIF Lindesberg (F12 Grupp 4)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-698@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:GT Söder HK Blå – LIF Lindesberg (F19/17 Grupp 1)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-834@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:IK Baltichov Blå – LIF Lindesberg (P12 Grupp 2)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-783@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:LIF Lindesberg – Örebro SK Herr (P19/17 Grupp 2)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-479@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:LIF Lindesberg – Vadstena HF (P12 B-8-dels:02)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-666@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:LIF Lindesberg – IFK Nyköping 1 (F12 A-8-dels:08)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-530@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Skåre HK Grön – LIF Lindesberg (F14/13 A-8-dels:02)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-525@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Hammarby IF HF 1 – LIF Lindesberg (P12 B-kvartsfinal:01)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-550@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:HK Järnvägen 2 – LIF Lindesberg (F12 A-kvartsfinal:04)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-633@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Eskilstuna Guif 1 – LIF Lindesberg (F12 A-semifinal:02)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-621@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:HK Järnvägen – LIF Lindesberg (F19/17 A-semifinal:02)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-645@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:LIF Lindesberg – Sannadals SK (P19/17 A-semifinal:02)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1218@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:GT Söder HK Blå – LIF Lindesberg (F19/17 A-final)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · A-final
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1219@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:BK Heid – LIF Lindesberg (P19/17 A-final)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · A-final
+END:VEVENT
+END:VCALENDAR

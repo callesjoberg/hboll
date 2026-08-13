@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-9@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T084000
+DTEND;TZID=Europe/Stockholm:20260411T091000
+SUMMARY:Norrköpings HK NHK 2 – Täby HBK 2 (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-50@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:Täby HBK 2 – Årsta AIK (P14 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-100@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Täby HBK 2 – Haninge HK 2 (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-192@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:Täby HBK 2 – Norrköpings HK NHK 1 (P14 A-semifinal:02)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-213@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T143000
+DTEND;TZID=Europe/Stockholm:20260412T150000
+SUMMARY:Täby HBK 1 – Täby HBK 2 (P14 A-final)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · A-final
+END:VEVENT
+END:VCALENDAR

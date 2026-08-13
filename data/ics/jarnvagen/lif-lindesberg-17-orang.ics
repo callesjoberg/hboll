@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-856@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:LIF Lindesberg 17 Orang – Kumla HF (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-890@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:HK Järnvägen 1 – LIF Lindesberg 17 Orang (F09 Matcher)
+LOCATION:Bana 01\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-932@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:LIF Lindesberg 17 Orang – RP IF 2 (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-949@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:LIF Lindesberg 17 Orang – IFK Örebro 1 (F09 Matcher)
+LOCATION:Bana 01\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+END:VCALENDAR

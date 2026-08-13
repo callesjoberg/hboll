@@ -1,0 +1,351 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-10@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:IK Baltichov – GT Söder HK (P16/15 Grupp 1)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-755@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:GT Söder HK – HK Järnvägen (P19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-908@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:BK Heid 1 – GT Söder HK (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-939@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:GT Söder HK – Backa HK Röd (F12 Grupp 4)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-994@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:GT Söder HK – Vadstena HF (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-43@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:GT Söder HK – BK Heid Röd (F14/13 Grupp 6)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-239@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:HK Järnvägen Gul – GT Söder HK (F16/15 Grupp 4)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1201@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IK Baltichov Vit – GT Söder HK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1180@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:GT Söder HK – LIF Lindesberg Blå (P16/15 Grupp 1)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-992@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:GT Söder HK – IF Swithiod (P09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-740@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:BK Heid – GT Söder HK (P19/17 Grupp 1)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-923@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:GT Söder HK – LIF Lindesberg (F12 Grupp 4)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-312@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Katrineholms AIK – GT Söder HK (F16/15 Grupp 4)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-972@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:IFK Nyköping – GT Söder HK (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1111@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:GT Söder HK – Arbrå HK (F14/13 Grupp 6)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Eskilstuna Guif Röd – GT Söder HK (P16/15 Grupp 1)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-940@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:GT Söder HK – Eskilstuna Guif (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1003@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:RP IF 3 – GT Söder HK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-725@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:GT Söder HK – RP IF (P16/15 Grupp 1)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1024@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:IFK Örebro 1 – GT Söder HK (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-935@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:IFK Örebro – GT Söder HK (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-407@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:GT Söder HK – IF Hellton Karlstad (F16/15 Grupp 4)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Sannadals SK – GT Söder HK (P19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-910@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Vadstena HF – GT Söder HK (F12 Grupp 4)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1097@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:HK Järnvägen – GT Söder HK (F14/13 Grupp 6)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-920@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:GT Söder HK – Täby HBK (P12 Grupp 3)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-447@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Lidingö SK 2 2012 – GT Söder HK (F14/13 B-16-dels:08)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-444@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:GT Söder HK – Örebro SK U (F12 B-8-dels:08)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-446@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:GT Söder HK – IK Bolton (P12 B-8-dels:08)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1045@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Vadstena HF 3 – GT Söder HK (P09 Matcher)
+LOCATION:Bana 04\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-509@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Katrineholms AIK – GT Söder HK (F14/13 B-8-dels:04)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-463@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Gökstens BK – GT Söder HK (F16/15 B-8-dels:04)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-859@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:GT Söder HK – IFK Örebro 2 (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-528@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Hammarby IF HF 2 – GT Söder HK (P12 B-kvartsfinal:04)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-559@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:GT Söder HK – Backa HK (P16/15 B-kvartsfinal:01)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1071@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:GT Söder HK – HK Eskil 1 (P09 Matcher)
+LOCATION:Bana 05\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-974@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:GT Söder HK – Södertälje Handboll (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-616@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:GT Söder HK – Eskilstuna Guif Röd (P16/15 B-semifinal:01)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1161@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:GT Söder HK – Lidingö SK (P19/17 B-semifinal:01)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-886@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:RP IF Vit – GT Söder HK (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1204@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:GT Söder HK – Örebro SK U 2 (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-658@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:GT Söder HK – Örebro SK U (P16/15 B-final)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-final
+END:VEVENT
+BEGIN:VEVENT
+UID:match-670@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:GT Söder HK – Backa HK (P19/17 B-final)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · B-final
+END:VEVENT
+END:VCALENDAR

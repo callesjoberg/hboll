@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-884@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:LIF Lindesberg – Backa HK Röd (F14/13 Grupp 2)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-836@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Backa HK Röd – RP IF 2 (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-939@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:GT Söder HK – Backa HK Röd (F12 Grupp 4)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-871@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Backa HK Röd – Skånela IF (F14/13 Grupp 2)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-921@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Backa HK Röd – Vadstena HF (F12 Grupp 4)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-867@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Örebro SK U 1 – Backa HK Röd (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1184@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Backa HK Röd – Skåre HK Vit (F14/13 Grupp 2)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-896@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Backa HK Röd – LIF Lindesberg (F12 Grupp 4)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-663@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:IFK Hammarö – Backa HK Röd (F14/13 B-16-dels:04)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-662@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Alingsås HK Vit – Backa HK Röd (F12 A-8-dels:03)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-912@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Backa HK Röd – Lidingö SK (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-925@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Backa HK Röd – Eskilstuna Guif Svart (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

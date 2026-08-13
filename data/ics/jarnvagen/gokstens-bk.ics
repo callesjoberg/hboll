@@ -1,0 +1,111 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-200@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Örebro SK U – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1062@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IFK Nyköping 2 – Gökstens BK (F12 Grupp 6)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-262@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Vadstena HF – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1035@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Särökometernas HK blå – Gökstens BK (F12 Grupp 6)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-392@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:BK Heid Röd – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1025@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Gökstens BK – Huddinge HK Blå (F12 Grupp 6)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-433@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Skåre HK – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-442@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Gökstens BK – Mantorps IF HF (F12 B-8-dels:06)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-8-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-463@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Gökstens BK – GT Söder HK (F16/15 B-8-dels:04)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-523@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:IFK Nora – Gökstens BK (F12 B-kvartsfinal:03)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-564@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:NKIK – Gökstens BK (F16/15 B-kvartsfinal:02)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-609@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Gökstens BK – Backa HK Vit (F12 B-semifinal:02)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-654@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Eskilstuna Guif 2 – Gökstens BK (F12 B-final)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-final
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-239@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:HK Järnvägen Gul – GT Söder HK (F16/15 Grupp 4)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-311@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:HK Järnvägen Gul – IF Hellton Karlstad (F16/15 Grupp 4)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-408@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Katrineholms AIK – HK Järnvägen Gul (F16/15 Grupp 4)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-565@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:HK Järnvägen Gul – Vallentuna HK (F16/15 B-kvartsfinal:03)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-619@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:HK Järnvägen Gul – Mantorps IF HF (F16/15 B-semifinal:02)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-659@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:NKIK – HK Järnvägen Gul (F16/15 B-final)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-final
+END:VEVENT
+END:VCALENDAR

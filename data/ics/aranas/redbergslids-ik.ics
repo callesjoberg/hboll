@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-2@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:Redbergslids IK – HK Aranäs Svart (F10(2014) Grupp 1)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5774@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T100000
+DTEND;TZID=Europe/Stockholm:20250524T103000
+SUMMARY:Halmstad Han... – Redbergslids IK (F9(2015) Grupp 1)
+LOCATION:28 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-15@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:HK Varberg – Redbergslids IK (F10(2014) Grupp 1)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5794@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:Redbergslids IK – Önnereds HK 2 (F9(2015) Grupp 1)
+LOCATION:22 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5902@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:Kärra HF Svart – Redbergslids IK (F9(2015) Grupp 1)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5621@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T150000
+DTEND;TZID=Europe/Stockholm:20250524T153000
+SUMMARY:IK Sävehof UP3 – Redbergslids IK (F10(2014) Grupp 1)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5645@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:Redbergslids IK – Önnereds HK 2 (F10(2014) Grupp 1)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5935@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:Särökometern... – Redbergslids IK (F9(2015) Grupp 1)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5665@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:IK Sävehof Gul – Redbergslids IK (F10(2014) Grupp 1)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5938@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T124000
+DTEND;TZID=Europe/Stockholm:20250525T131000
+SUMMARY:Redbergslids IK – HK Aranäs Tu... (F9(2015) Grupp 1)
+LOCATION:21 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 1
+END:VEVENT
+END:VCALENDAR

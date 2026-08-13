@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1001@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:H43 1 – HK Järnvägen (P16/15 Grupp 3)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-976@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:NAIS HF – H43 1 (P16/15 Grupp 3)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-945@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:H43 1 – BK Heid (P16/15 Grupp 3)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1220@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:LIF Lindesberg Orange – H43 1 (P16/15 A-8-dels:08)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-593@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Eskilstuna Guif Svart – H43 1 (P16/15 A-kvartsfinal:04)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-641@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Uppsala HK 1 – H43 1 (P16/15 A-semifinal:02)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

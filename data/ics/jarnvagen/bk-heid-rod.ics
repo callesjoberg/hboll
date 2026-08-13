@@ -1,0 +1,247 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-705@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:BK Heid Röd – RP IF 1 (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-701@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:BK Heid Röd – Gökstens BK Gul (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1189@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Huddinge HK Vit – BK Heid röd (F12 Grupp 3)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-27@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Årsta AIK 2 – Bk Heid Röd (P14/13 Grupp 4)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-43@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:GT Söder HK – BK Heid Röd (F14/13 Grupp 6)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-261@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:BK Heid Röd – Örebro SK U (F16/15 Grupp 1)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-861@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:BK Heid röd – Mantorps IF HF (F12 Grupp 3)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-25@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Bk Heid Röd – Finspångs HK (P14/13 Grupp 4)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-736@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Västervik HF – BK Heid Röd (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-41@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:BK Heid Röd – HK Järnvägen (F14/13 Grupp 6)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-331@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:BK Heid Röd – Skåre HK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1176@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:IFK Örebro 2 – BK Heid Röd (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-392@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:BK Heid Röd – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-838@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:BK Heid röd – Eskilstuna Guif 1 (F12 Grupp 3)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-23@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Bk Heid Röd – VästeråsIrsta HF (P14/13 Grupp 4)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1089@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:BK Heid Röd – Arbrå HK (F14/13 Grupp 6)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-432@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:BK Heid Röd – Vadstena HF (F16/15 Grupp 1)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1172@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Bk Heid Röd – LIF Lindesberg Blå (P14/13 B-8-dels:07)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-8-dels:07
+END:VEVENT
+BEGIN:VEVENT
+UID:match-661@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:BK Heid röd – Västervik HF (F12 A-8-dels:02)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-507@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:BK Heid Röd – IK Baltichov 1 (F14/13 B-8-dels:06)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-779@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:BK Heid Röd – VästeråsIrsta HF (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-787@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:BK Heid Röd – Örebro SK U (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-558@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Bk Heid Röd – Örebro SK U 1 (P14/13 B-kvartsfinal:04)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-553@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:IK Baltichov 2 Vit – BK Heid Röd (F14/13 B-kvartsfinal:03)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-547@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Alingsås HK Blå – BK Heid röd (F12 A-kvartsfinal:01)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-594@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:BK Heid Röd – IF Hellton Karlstad (F16/15 A-kvartsfinal:01)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · A-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-805@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:BK Heid Röd – Hultic BK (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-613@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:BK Heid Röd – Särökometernas HK (F14/13 B-semifinal:02)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-802@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:BK Heid Röd – Eskilstuna Guif Röd (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-656@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:IFK Hammarö – BK Heid Röd (F14/13 B-final)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-final
+END:VEVENT
+END:VCALENDAR

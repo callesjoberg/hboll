@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-18@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:Avesta Brovallen HF – HK Järnvägen 2 (F16 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-33@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:Kumla HF – Avesta Brovallen HF (P16 Grupp 1)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-58@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T124000
+DTEND;TZID=Europe/Stockholm:20260411T131000
+SUMMARY:Haninge HK Blå – Avesta Brovallen HF (F16 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-87@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:AIK Handboll – Avesta Brovallen HF (P16 Grupp 1)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-107@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T172000
+DTEND;TZID=Europe/Stockholm:20260411T175000
+SUMMARY:Katrineholms AIK – Avesta Brovallen HF (F16 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-133@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T200000
+DTEND;TZID=Europe/Stockholm:20260411T203000
+SUMMARY:Avesta Brovallen HF – Kungsängens SK (P16 Grupp 1)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-177@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Avesta Brovallen HF – HK Järnvägen (P16 B-semifinal:01)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-186@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Vintrosa IS – Avesta Brovallen HF (F16 B-semifinal:01)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · B-semifinal:01
+END:VEVENT
+END:VCALENDAR

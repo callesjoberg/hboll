@@ -1,0 +1,95 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-23@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:IK Nord 2 – Kärra HF Blå (P9(2015) Grupp 2)
+LOCATION:24 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5766@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:IK Nord 2 – Redbergslids... (P11(2013) Grupp 2)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-27@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:HK Aranäs Gul – IK Nord 2 (P9(2015) Grupp 2)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5799@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:Önnereds HK – IK Nord 2 (P11(2013) Grupp 2)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-29@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T124000
+DTEND;TZID=Europe/Stockholm:20250524T131000
+SUMMARY:IK Nord 2 – Önnereds HK 1 (P9(2015) Grupp 2)
+LOCATION:25 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5816@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:IK Nord 2 – HK Aranäs Blå (P11(2013) Grupp 2)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-34@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T142000
+DTEND;TZID=Europe/Stockholm:20250524T145000
+SUMMARY:IK Nord 2 – HK Aranäs Vit (P9(2015) Grupp 2)
+LOCATION:22 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5861@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:IK Nord 2 – Ale Handboll (P11(2013) Grupp 2)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5894@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:IK Baltichov Vit – IK Nord 2 (P11(2013) Grupp 2)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5889@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:HK Varberg Vit – IK Nord 2 (P9(2015) Grupp 2)
+LOCATION:25 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5907@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T152000
+DTEND;TZID=Europe/Stockholm:20250525T155000
+SUMMARY:HK Aranäs Rosa – IK Nord 2 (P9(2015) Grupp 2)
+LOCATION:24 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 2
+END:VEVENT
+END:VCALENDAR

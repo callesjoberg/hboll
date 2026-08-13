@@ -27,7 +27,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _freshness import should_refresh  # noqa: E402
 from _sanity import check_plausible  # noqa: E402
-from _ics import write_team_ics_files  # noqa: E402
+# Ingen statisk .ics här: Partille (Gothia-plattformen) har
+# GetTeamCalendarService via calendarHost. scripts/_ics.py är bara för
+# ProCup, som saknar kalenderexport.
 
 GRAPHQL_URL = "https://results.cupmanager.net/rest/tournamentapp_graphql"
 
@@ -300,8 +302,6 @@ def main():
     root = Path(__file__).resolve().parent.parent
     out_dir = root / "data"
     out_dir.mkdir(exist_ok=True)
-    cups_by_id = {c["id"]: c for c in
-                  json.loads((root / "data" / "cups.json").read_text(encoding="utf-8"))["cups"]}
     for gothia_cup_id, edition_name, fname, cup_key in TOURNAMENTS:
         path = out_dir / fname
         old = None
@@ -332,12 +332,6 @@ def main():
         path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         print(f"skrev {path} ({len(data['matches'])} matcher, {len(data['tables'])} tabeller, "
               f"{len(data['playoffs'])} klasser med slutspel)")
-        cup_meta = cups_by_id.get(cup_key, {})
-        n = write_team_ics_files(
-            out_dir / "ics", cup_key, cup_meta.get("name", cup_key), cup_meta.get("place", ""),
-            data["matches"])
-        if n:
-            print(f"  + {n} klubblags .ics-filer i data/ics/{cup_key}/")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,175 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-804@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Backa HK – HK Järnvägen (F19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-755@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:GT Söder HK – HK Järnvägen (P19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1001@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:H43 1 – HK Järnvägen (P16/15 Grupp 3)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1064@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:HK Järnvägen – Hammarby IF HF 2 (P12 Grupp 4)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1124@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Arbrå HK – HK Järnvägen (F14/13 Grupp 6)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-984@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:HK Järnvägen – BK Heid (P16/15 Grupp 3)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-728@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Sannadals SK – HK Järnvägen (P19/17 Grupp 1)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1043@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:IFK Hammarö – HK Järnvägen (P12 Grupp 4)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-41@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:BK Heid Röd – HK Järnvägen (F14/13 Grupp 6)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-775@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Ludvika HF – HK Järnvägen (F19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-959@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:NAIS HF – HK Järnvägen (P16/15 Grupp 3)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1235@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:HK Järnvägen – Backa HK (F19/17 Grupp 2)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-716@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:HK Järnvägen – BK Heid (P19/17 Grupp 1)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1014@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Hultic BK – HK Järnvägen (P12 Grupp 4)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1097@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:HK Järnvägen – GT Söder HK (F14/13 Grupp 6)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-482@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Örebro SK U 2 – HK Järnvägen (F14/13 A-16-dels:08)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-16-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1236@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:HK Järnvägen – Ludvika HF (F19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-560@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:HK Järnvägen – Eskilstuna Guif Röd (P16/15 B-kvartsfinal:02)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-579@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Täby HBK – HK Järnvägen (P12 A-kvartsfinal:02)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-669@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Backa HK – HK Järnvägen (P19/17 B-semifinal:02)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-621@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:HK Järnvägen – LIF Lindesberg (F19/17 A-semifinal:02)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

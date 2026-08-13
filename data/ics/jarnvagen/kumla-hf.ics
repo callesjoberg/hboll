@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-856@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:LIF Lindesberg 17 Orang – Kumla HF (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-707@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Kumla HF – Vadstena HF (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1205@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Vadstena HF – Kumla HF (P16/15 Grupp 4)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1038@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Backa HK – Kumla HF (P16/15 Grupp 4)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-911@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Kumla HF – RP IF 2 (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-753@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:HK Järnvägen P10 – Kumla HF (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1022@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Kumla HF – Uppsala HK 1 (P16/15 Grupp 4)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-913@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IFK Örebro 1 – Kumla HF (F09 Matcher)
+LOCATION:Bana 01\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-767@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Kumla HF – GT Söder HK Blå (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-488@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Kumla HF – IFK Nyköping (P16/15 A-8-dels:01)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-8-dels:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-807@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:BK Heid 1 – Kumla HF (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1197@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Kumla HF – HK Brukspöjkera (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+END:VCALENDAR

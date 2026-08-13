@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-17@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:Haninge HK Blå – Katrineholms AIK (F16 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-29@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T100000
+DTEND;TZID=Europe/Stockholm:20260411T103000
+SUMMARY:Haninge HK Blå – Eskilstuna Guif IF (F14 Grupp 1)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-40@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:Haninge HK Blå – Katrineholms AIK (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-58@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T124000
+DTEND;TZID=Europe/Stockholm:20260411T131000
+SUMMARY:Haninge HK Blå – Avesta Brovallen HF (F16 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T144000
+DTEND;TZID=Europe/Stockholm:20260411T151000
+SUMMARY:Haninge HK Blå – NKIK Handboll Norrköp... (F14 Grupp 1)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-99@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T160000
+DTEND;TZID=Europe/Stockholm:20260411T163000
+SUMMARY:Haninge HK Blå – IFK Örebro handboll (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-108@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T172000
+DTEND;TZID=Europe/Stockholm:20260411T175000
+SUMMARY:HK Järnvägen 2 – Haninge HK Blå (F16 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-124@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T184000
+DTEND;TZID=Europe/Stockholm:20260411T191000
+SUMMARY:Ludvika HF – Haninge HK Blå (F14 Grupp 1)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-145@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Eskilstuna guif Svart – Haninge HK Blå (F14 B-kvartsfinal:04)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-157@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:Haninge HK Blå – IFK Rättvik (F11 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-168@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T104000
+DTEND;TZID=Europe/Stockholm:20260412T111000
+SUMMARY:Haninge HK Blå – IFK Tumba (F16 A-semifinal:02)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-197@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:Haninge HK Blå – IFK Nora Handboll F2014 (F11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+END:VCALENDAR

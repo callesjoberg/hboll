@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-8@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Huddinge HK 1 – HK Järnvägen (P12 Grupp 1)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-68@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T132000
+DTEND;TZID=Europe/Stockholm:20260411T135000
+SUMMARY:Huddinge HK 1 – Redbergslid IK Vit (P12 Grupp 1)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-103@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Skå IK Gul – Huddinge HK 1 (P12 Grupp 1)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-153@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:Huddinge HK 1 – Redbergslid IK Blå (P12 A-semifinal:01)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-184@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Huddinge HK 1 – Huddinge HK 2 (P12 A-final)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · A-final
+END:VEVENT
+END:VCALENDAR

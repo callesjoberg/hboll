@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-41@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:Katrineholms AIK – Vintrosa IS F11 (F14 Grupp 4)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-83@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T144000
+DTEND;TZID=Europe/Stockholm:20260411T151000
+SUMMARY:Vintrosa IS F11 – Årsta AIK Röd (F14 Grupp 4)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-135@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T200000
+DTEND;TZID=Europe/Stockholm:20260411T203000
+SUMMARY:Vintrosa IS F11 – Haninge HK Vit (F14 Grupp 4)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-178@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Vintrosa IS F11 – Vintrosa IS Röd (F14 A-kvartsfinal:03)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-207@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Vintrosa IS F11 – NKIK Handboll Norrköp... (F14 A-semifinal:02)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

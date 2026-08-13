@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-13@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T084000
+DTEND;TZID=Europe/Stockholm:20260411T091000
+SUMMARY:AIK Gul – IFK Nyköping Vit (F12 Grupp 2)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-69@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T132000
+DTEND;TZID=Europe/Stockholm:20260411T135000
+SUMMARY:AIK Gul – Haninge HK (F12 Grupp 2)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-104@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:AIK Gul – NKIK Handboll Norrköping (F12 Grupp 2)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-156@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:IFK Nyköping Blå – AIK Gul (F12 B-kvartsfinal:02)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-kvartsfinal:02
+END:VEVENT
+END:VCALENDAR

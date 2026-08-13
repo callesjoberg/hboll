@@ -1,0 +1,391 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-201@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Vadstena HF – Skåre HK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-707@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Kumla HF – Vadstena HF (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1233@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Vintrosa IS – Vadstena HF (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-840@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Vadstena HF – LIF Lindesberg Orange (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-943@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:LIF Lindesberg – Vadstena HF (F12 Grupp 4)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-994@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:GT Söder HK – Vadstena HF (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1205@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Vadstena HF – Kumla HF (P16/15 Grupp 4)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1214@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Vadstena HF – Eskilstuna Guif 2 (P14/13 Grupp 7)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-262@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Vadstena HF – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1207@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Vadstena HF – NKIK 2 (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-61@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:HK Brukspöjkera – Vadstena HF (F14/13 Grupp 9)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 9
+END:VEVENT
+BEGIN:VEVENT
+UID:match-51@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Skara HK – Vadstena HF (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-980@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Vadstena HF – Täby HBK (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1042@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Uppsala HK 1 – Vadstena HF (P16/15 Grupp 4)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-706@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Vadstena HF – LIF Lindesberg 16 Blå (F09 Matcher)
+LOCATION:Bana 01\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-862@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:IFK Örebro 1 – Vadstena HF (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-921@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Backa HK Röd – Vadstena HF (F12 Grupp 4)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-958@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Vadstena HF – IFK Örebro (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-332@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Vadstena HF – Örebro SK U (F16/15 Grupp 1)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-44@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Vadstena HF – Lidingö SK 2 2011 (P14/13 Grupp 7)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-59@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Vadstena HF – Lidingö SK 3 2011 (F14/13 Grupp 9)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 9
+END:VEVENT
+BEGIN:VEVENT
+UID:match-792@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:RP IF 4 – Vadstena HF (F09 Matcher)
+LOCATION:Bana 01\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-737@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Vadstena HF – BK Heid 1 (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1107@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Örebro SK U – Vadstena HF (F10 Matcher)
+LOCATION:Bana 07\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1152@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Vadstena HF – Sollentuna HK (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1015@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Backa HK – Vadstena HF (P16/15 Grupp 4)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-910@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Vadstena HF – GT Söder HK (F12 Grupp 4)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-42@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Täby HBK Blå – Vadstena HF (P14/13 Grupp 7)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1156@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Vadstena HF – Årsta AIK 1 (F14/13 Grupp 9)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 9
+END:VEVENT
+BEGIN:VEVENT
+UID:match-432@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:BK Heid Röd – Vadstena HF (F16/15 Grupp 1)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-927@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:IFK Nyköping – Vadstena HF (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-673@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Eskilstuna Guif 1 – Vadstena HF (P14/13 B-8-dels:05)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-8-dels:05
+END:VEVENT
+BEGIN:VEVENT
+UID:match-459@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Eskilstuna Guif Röd – Vadstena HF (P16/15 B-8-dels:04)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1119@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Vadstena HF – BK Heid 3 (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-668@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Eskilstuna Guif 2 – Vadstena HF (F12 B-8-dels:03)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · B-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-479@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:LIF Lindesberg – Vadstena HF (P12 B-8-dels:02)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-483@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Vadstena HF – Huddinge HK Blå (F14/13 A-16-dels:10)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-16-dels:10
+END:VEVENT
+BEGIN:VEVENT
+UID:match-746@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:LIF Lindesberg 16 Orange – Vadstena HF (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-465@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:HK Järnvägen Svart – Vadstena HF (F16/15 B-8-dels:08)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-793@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Vadstena HF – HK Järnvägen P10 (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-892@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Backa HK – Vadstena HF (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-557@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Vadstena HF – Alingsås HK Blå (P14/13 B-kvartsfinal:03)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-566@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Mantorps IF HF – Vadstena HF (F16/15 B-kvartsfinal:04)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1130@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:LIF Lindesberg Blå – Vadstena HF (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1183@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Eskilstuna Guif 3 – Vadstena HF (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1159@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:LIF Lindesberg 2015 – Vadstena HF (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-917@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Vadstena HF – Gökstens BK Svart (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-811@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Vadstena HF – RP IF 1 (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+END:VCALENDAR

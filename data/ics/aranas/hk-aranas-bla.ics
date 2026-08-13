@@ -1,0 +1,487 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5910@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:HK Aranäs Blå – Kärra HF Gul (F11(2013) Grupp 1)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-43@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:HK Aranäs Blå – Önnereds HK 3 (P9(2015) Grupp 3)
+LOCATION:25 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-21@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:HK Varberg Svart – HK Aranäs Blå (P11(2013) Grupp 2)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-240@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:Önnereds HK 5 – HK Aranäs Blå (P8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-37@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094000
+DTEND;TZID=Europe/Stockholm:20250524T101000
+SUMMARY:IK Sävehof VU1 – HK Aranäs Blå (P10(2014) Grupp 3)
+LOCATION:12 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-47@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094000
+DTEND;TZID=Europe/Stockholm:20250524T101000
+SUMMARY:Redbergslids... – HK Aranäs Blå (F10(2014) Grupp 4)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5533@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094500
+DTEND;TZID=Europe/Stockholm:20250524T101500
+SUMMARY:HK Aranäs Blå – HK Aranäs Vi... (F12/13 Grupp 2)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5316@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094500
+DTEND;TZID=Europe/Stockholm:20250524T101500
+SUMMARY:HK Aranäs Blå – IK Nord (P12(2012) Grupp 1)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-303@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T100000
+DTEND;TZID=Europe/Stockholm:20250524T103000
+SUMMARY:Kärra HF Blå – HK Aranäs Blå (P7(2017) Grupp 1)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5771@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:HK Aranäs Blå – Önnereds HK 1 (F9(2015) Grupp 3)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-247@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T104000
+DTEND;TZID=Europe/Stockholm:20250524T111000
+SUMMARY:HK Aranäs Blå – Önnereds HK 1 (P8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5788@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:HK Aranäs Blå – Ale Handboll (P11(2013) Grupp 2)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:IK Sävehof VU – HK Aranäs Blå (F11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-320@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:HK Aranäs Blå – IK Sävehof U2 (P7(2017) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5317@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T111500
+DTEND;TZID=Europe/Stockholm:20250524T114500
+SUMMARY:Halmstad Han... – HK Aranäs Blå (P12(2012) Grupp 1)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5293@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T111500
+DTEND;TZID=Europe/Stockholm:20250524T114500
+SUMMARY:Särökometern... – HK Aranäs Blå (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-49@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T112000
+DTEND;TZID=Europe/Stockholm:20250524T115000
+SUMMARY:HK Aranäs Blå – IK Sävehof S... (F10(2014) Grupp 4)
+LOCATION:13 Lilla Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5784@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T112000
+DTEND;TZID=Europe/Stockholm:20250524T115000
+SUMMARY:Kärra HF Röd – HK Aranäs Blå (P9(2015) Grupp 3)
+LOCATION:27 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-250@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:HK Varberg 3 – HK Aranäs Blå (P8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5790@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T120000
+DTEND;TZID=Europe/Stockholm:20250524T123000
+SUMMARY:Kärra HF Gul – HK Aranäs Blå (F9(2015) Grupp 3)
+LOCATION:25 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-338@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T120000
+DTEND;TZID=Europe/Stockholm:20250524T123000
+SUMMARY:HK Aranäs Blå – IK Sävehof V2 (P7(2017) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5320@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T124500
+DTEND;TZID=Europe/Stockholm:20250524T131500
+SUMMARY:HK Aranäs Vit – HK Aranäs Blå (P12(2012) Grupp 1)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5915@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:Kärra HF Röd – HK Aranäs Blå (F11(2013) Grupp 1)
+LOCATION:13 Lilla Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5810@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:HK Aranäs Blå – HK Varberg Grön (P9(2015) Grupp 3)
+LOCATION:22 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5535@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T131500
+DTEND;TZID=Europe/Stockholm:20250524T134500
+SUMMARY:HK Aranäs Blå – HK Varberg (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5816@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:IK Nord 2 – HK Aranäs Blå (P11(2013) Grupp 2)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-360@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:IK Sävehof P 2 – HK Aranäs Blå (P7(2017) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-42@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T134000
+DTEND;TZID=Europe/Stockholm:20250524T141000
+SUMMARY:HK Aranäs Blå – Torslanda HK 1 (P10(2014) Grupp 3)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5820@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T140000
+DTEND;TZID=Europe/Stockholm:20250524T143000
+SUMMARY:HK Aranäs Blå – HK Varberg (F9(2015) Grupp 3)
+LOCATION:24 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5038@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T140000
+DTEND;TZID=Europe/Stockholm:20250524T143000
+SUMMARY:HK Aranäs Blå – Halmstad Han... (P8(2016) Grupp 1)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5036@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T142000
+DTEND;TZID=Europe/Stockholm:20250524T145000
+SUMMARY:HK Aranäs Blå – HK Aranäs Vit (P7(2017) Grupp 1)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5829@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T144000
+DTEND;TZID=Europe/Stockholm:20250524T151000
+SUMMARY:HK Aranäs Blå – IK Nord 1 (P9(2015) Grupp 3)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5301@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T144500
+DTEND;TZID=Europe/Stockholm:20250524T151500
+SUMMARY:HK Aranäs Vi... – HK Aranäs Blå (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5833@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:HK Aranäs Blå – Halmstad Han... (F9(2015) Grupp 3)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5917@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:HK Aranäs Blå – VAKANT (F11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-239@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:Särökometern... – HK Aranäs Blå (F8(2016) Grupp 1)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-54@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:HK Aranäs Blå – Halmstad Han... (F10(2014) Grupp 4)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5850@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:HK Aranäs Blå – Redbergslids... (P11(2013) Grupp 2)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5692@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:HK Aranäs Blå – Kärra HF Röd (P10(2014) Grupp 3)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-301@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T100000
+DTEND;TZID=Europe/Stockholm:20250525T103000
+SUMMARY:Särökometern... – HK Aranäs Blå (F7(2017) Grupp 1)
+LOCATION:F Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5213@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T101000
+DTEND;TZID=Europe/Stockholm:20250525T104000
+SUMMARY:HK Aranäs Blå – Halmstad Han... (P12(2012) A-semifinal:02)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5925@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:HK Varberg – HK Aranäs Blå (F11(2013) Grupp 1)
+LOCATION:9 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-319@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T110000
+DTEND;TZID=Europe/Stockholm:20250525T113000
+SUMMARY:HK Aranäs Blå – IK Sävehof U2 (F7(2017) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-410@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T110000
+DTEND;TZID=Europe/Stockholm:20250525T113000
+SUMMARY:HK Aranäs Blå – Kärra HF Gul (F8(2016) Grupp 1)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5871@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T111000
+DTEND;TZID=Europe/Stockholm:20250525T114000
+SUMMARY:HK Aranäs Blå – Önnereds HK (P11(2013) Grupp 2)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-56@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:Härryda HK 1 – HK Aranäs Blå (F10(2014) Grupp 4)
+LOCATION:12 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5719@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:HK Aranäs Blå – Önnereds HK ... (P10(2014) Grupp 3)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5308@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:HK Aranäs RÖD – HK Aranäs Blå (F12/13 A-semifinal:01)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5865@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:Särökometern... – HK Aranäs Blå (P9(2015) Grupp 3)
+LOCATION:23 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5875@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:HK Aranäs Svart – HK Aranäs Blå (F9(2015) Grupp 3)
+LOCATION:27 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5930@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:HK Aranäs Blå – Mölndals HF (F11(2013) Grupp 1)
+LOCATION:9 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5039@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:HK Aranäs Blå – Halmstad Han... (F8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5248@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:IK Nord – HK Aranäs Blå (P12(2012) A-final)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · A-final
+END:VEVENT
+BEGIN:VEVENT
+UID:match-58@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T132000
+DTEND;TZID=Europe/Stockholm:20250525T135000
+SUMMARY:Önnereds HK 1 – HK Aranäs Blå (F10(2014) Grupp 4)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-353@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T132000
+DTEND;TZID=Europe/Stockholm:20250525T135000
+SUMMARY:HK Aranäs Blå – IK Sävehof V1 (F7(2017) Grupp 1)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5814@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:IK Baltichov... – HK Aranäs Blå (P10(2014) Grupp 3)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5312@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:HK Aranäs Blå – IFK Tumba Ha... (F12/13 A-3.e pris)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · A-3.e pris
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5041@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:IK Baltichov... – HK Aranäs Blå (F8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-366@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T142000
+DTEND;TZID=Europe/Stockholm:20250525T145000
+SUMMARY:IK Sävehof FÖ3 – HK Aranäs Blå (F7(2017) Grupp 1)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-384@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T152000
+DTEND;TZID=Europe/Stockholm:20250525T155000
+SUMMARY:HK Aranäs Blå – HK Aranäs Vi... (F7(2017) Grupp 1)
+LOCATION:F Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 1
+END:VEVENT
+END:VCALENDAR

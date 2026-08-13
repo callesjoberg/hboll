@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-30@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T100000
+DTEND;TZID=Europe/Stockholm:20260411T103000
+SUMMARY:Huddinge HK Vit – Lindeskolans IF 1 (P10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-112@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T172000
+DTEND;TZID=Europe/Stockholm:20260411T175000
+SUMMARY:Huddinge HK Vit – Haninge HK (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-166@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:Huddinge HK Vit – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-191@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:HK Järnvägen – Huddinge HK Vit (P10 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+END:VCALENDAR

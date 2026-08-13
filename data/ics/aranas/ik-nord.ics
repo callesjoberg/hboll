@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5316@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094500
+DTEND;TZID=Europe/Stockholm:20250524T101500
+SUMMARY:HK Aranäs Blå – IK Nord (P12(2012) Grupp 1)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5318@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T111500
+DTEND;TZID=Europe/Stockholm:20250524T114500
+SUMMARY:IK Nord – HK Aranäs Vit (P12(2012) Grupp 1)
+LOCATION:16 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5319@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T123000
+DTEND;TZID=Europe/Stockholm:20250524T130000
+SUMMARY:IK Nord – Halmstad Han... (P12(2012) Grupp 1)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5212@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T101000
+DTEND;TZID=Europe/Stockholm:20250525T104000
+SUMMARY:IK Nord – HK Aranäs Vit (P12(2012) A-semifinal:01)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5248@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:IK Nord – HK Aranäs Blå (P12(2012) A-final)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P12(2012) · A-final
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-961@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Skåre HK Grön – IK Baltichov 1 (F14/13 Grupp 3)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-947@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Skåre HK Grön – RP IF 2 (F14/13 Grupp 3)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-926@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:AIK HF – Skåre HK Grön (F14/13 Grupp 3)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-530@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Skåre HK Grön – LIF Lindesberg (F14/13 A-8-dels:02)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-582@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:NKIK Vit – Skåre HK Grön (F14/13 A-kvartsfinal:01)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-636@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Skåre HK Grön – BK Heid 2 (F14/13 A-semifinal:01)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-semifinal:01
+END:VEVENT
+END:VCALENDAR

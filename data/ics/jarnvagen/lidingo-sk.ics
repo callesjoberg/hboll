@@ -1,0 +1,183 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-202@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Mantorps IF HF – Lidingö SK (F16/15 Grupp 2)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-905@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Lidingö SK – Malmslätt Ljungsbro HF 2 (P12 Grupp 2)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-858@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Lidingö SK – Skogås HK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1211@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Mantorps IF HF – Lidingö SK (P16/15 Grupp 5)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-818@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Örebro SK Herr – Lidingö SK (P19/17 Grupp 2)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-880@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:LIF Lindesberg – Lidingö SK (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-284@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Eskilstuna Guif 2 – Lidingö SK (F16/15 Grupp 2)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1091@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:LIF Lindesberg Orange – Lidingö SK (P16/15 Grupp 5)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1190@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:RP IF 2 – Lidingö SK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-796@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Lidingö SK – LIF Lindesberg (P19/17 Grupp 2)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-850@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Lidingö SK – IK Baltichov Blå (P12 Grupp 2)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1086@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Lidingö SK – H43 2 (P16/15 Grupp 5)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-823@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:Skogås HK – Lidingö SK (P12 Grupp 2)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-441@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:HK Brukspöjkera – Lidingö SK (F16/15 Grupp 2)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-773@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:Lidingö SK – Backa HK (P19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-461@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Lidingö SK – IK Baltichov (P16/15 B-8-dels:08)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-462@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Årsta AIK – Lidingö SK (F16/15 B-8-dels:02)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-912@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Backa HK Röd – Lidingö SK (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-581@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Lidingö SK – IK Baltichov Vit (P12 A-kvartsfinal:04)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1161@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:GT Söder HK – Lidingö SK (P19/17 B-semifinal:01)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1194@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Lidingö SK – Örebro SK U 1 (P11 Matcher)
+LOCATION:Bana 14\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-635@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:IFK Hammarö – Lidingö SK (P12 A-semifinal:02)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

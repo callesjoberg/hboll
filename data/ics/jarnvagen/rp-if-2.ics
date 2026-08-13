@@ -1,0 +1,199 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-9@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:RP IF 2 – Eskilstuna Guif 1 (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-722@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Örebro SK U – RP IF 2 (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-969@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:RP IF 2 – AIK HF (F14/13 Grupp 3)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-879@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:RP IF 2 – HK Brukspöjkera (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-836@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Backa HK Röd – RP IF 2 (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-947@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Skåre HK Grön – RP IF 2 (F14/13 Grupp 3)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-751@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:RP IF 2 – Hultic BK (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1178@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:BK Heid Svart – RP IF 2 (P14/13 Grupp 1)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-911@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Kumla HF – RP IF 2 (F09 Matcher)
+LOCATION:Bana 03\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1190@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:RP IF 2 – Lidingö SK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Årsta AIK 1 – RP IF 2 (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-916@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:IK Baltichov 1 – RP IF 2 (F14/13 Grupp 3)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1173@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:RP IF 2 – AIK HF (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-484@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:RP IF 1 – RP IF 2 (F14/13 A-16-dels:12)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-16-dels:12
+END:VEVENT
+BEGIN:VEVENT
+UID:match-932@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:LIF Lindesberg 17 Orang – RP IF 2 (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-903@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Eskilstuna Guif Svart – RP IF 2 (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1181@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:IFK Örebro 2 – RP IF 2 (F11 Matcher)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-534@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Arbrå HK – RP IF 2 (F14/13 A-8-dels:06)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-586@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:RP IF 2 – IFK Nyköping (P14/13 A-kvartsfinal:01)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-826@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Gökstens BK Gul – RP IF 2 (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-960@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:RP IF 2 – HK Järnvägen 1 (F09 Matcher)
+LOCATION:Bana 02\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F09 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-946@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:RP IF 2 – Skogås HK (P11 Matcher)
+LOCATION:Bana 15\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-638@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:RP IF 2 – Alingsås HK Vit (P14/13 A-semifinal:01)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1165@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:RP IF 2 – Täby HBK Röd (P14/13 A-final)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-final
+END:VEVENT
+END:VCALENDAR

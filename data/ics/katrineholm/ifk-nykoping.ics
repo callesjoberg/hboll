@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-32@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T100000
+DTEND;TZID=Europe/Stockholm:20260411T103000
+SUMMARY:Huddinge HK 2 – IFK Nyköping (P12 Grupp 2)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-52@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:NKIK Handboll Norrköp... – IFK Nyköping (F14 Grupp 3)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-78@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T140000
+DTEND;TZID=Europe/Stockholm:20260411T143000
+SUMMARY:IFK Nyköping – Skå IK Grön (P12 Grupp 2)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-89@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:Täby HBK – IFK Nyköping (F14 Grupp 3)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-117@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T180000
+DTEND;TZID=Europe/Stockholm:20260411T183000
+SUMMARY:IFK Nyköping – Redbergslid IK Blå (P12 Grupp 2)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-122@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T184000
+DTEND;TZID=Europe/Stockholm:20260411T191000
+SUMMARY:IFK Nyköping – Vintrosa IS Röd (F14 Grupp 3)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-146@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:IFK Nyköping – Haninge HK Vit (F14 B-kvartsfinal:02)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-179@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Skå IK Gul – IFK Nyköping (P12 B-semifinal:01)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-212@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Eskilstuna Guif IF – IFK Nyköping (F14 B-semifinal:01)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · B-semifinal:01
+END:VEVENT
+END:VCALENDAR

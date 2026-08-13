@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-201@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Vadstena HF – Skåre HK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-331@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:BK Heid Röd – Skåre HK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-393@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Örebro SK U – Skåre HK (F16/15 Grupp 1)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-433@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Skåre HK – Gökstens BK (F16/15 Grupp 1)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-563@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Skåre HK – Årsta AIK (F16/15 B-kvartsfinal:01)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · B-kvartsfinal:01
+END:VEVENT
+END:VCALENDAR

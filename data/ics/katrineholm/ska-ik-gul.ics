@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-16@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T084000
+DTEND;TZID=Europe/Stockholm:20260411T091000
+SUMMARY:Redbergslid IK Vit – Skå IK Gul (P12 Grupp 1)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-71@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T132000
+DTEND;TZID=Europe/Stockholm:20260411T135000
+SUMMARY:Skå IK Gul – HK Järnvägen (P12 Grupp 1)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-103@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Skå IK Gul – Huddinge HK 1 (P12 Grupp 1)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-179@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Skå IK Gul – IFK Nyköping (P12 B-semifinal:01)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-203@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T132000
+DTEND;TZID=Europe/Stockholm:20260412T135000
+SUMMARY:Skå IK Gul – Redbergslid IK Vit (P12 B-final)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P12 · B-final
+END:VEVENT
+END:VCALENDAR

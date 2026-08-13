@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-6@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Haninge KH 1 – Haninge HK 2 (F10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-77@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T140000
+DTEND;TZID=Europe/Stockholm:20260411T143000
+SUMMARY:Haninge KH 1 – IF Hallby HK Blå (F10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-147@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Haninge KH 1 – IF Hallby HK Vit (F10 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-181@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Haninge HK 3 – Haninge KH 1 (F10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+END:VCALENDAR

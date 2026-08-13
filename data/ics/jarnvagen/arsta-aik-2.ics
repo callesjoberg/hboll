@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-27@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Årsta AIK 2 – Bk Heid Röd (P14/13 Grupp 4)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1144@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Årsta AIK 2 – BK Heid 2 (F14/13 Grupp 7)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-26@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Årsta AIK 2 – VästeråsIrsta HF (P14/13 Grupp 4)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1138@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Årsta AIK 2 – RP IF 1 (F14/13 Grupp 7)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1195@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Finspångs HK – Årsta AIK 2 (P14/13 Grupp 4)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1215@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Katrineholms AIK – Årsta AIK 2 (F14/13 Grupp 7)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-452@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Årsta AIK 2 – Särökometernas HK (F14/13 B-16-dels:14)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:14
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1166@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Alingsås HK Vit – Årsta AIK 2 (P14/13 A-8-dels:03)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:03
+END:VEVENT
+END:VCALENDAR

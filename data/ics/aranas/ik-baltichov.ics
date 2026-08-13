@@ -1,0 +1,295 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-253@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:IK Baltichov... – Önnereds HK 2 (P8(2016) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-20@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094000
+DTEND;TZID=Europe/Stockholm:20250524T101000
+SUMMARY:IK Baltichov... – Önnereds HK Vit (P10(2014) Grupp 2)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5776@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094000
+DTEND;TZID=Europe/Stockholm:20250524T101000
+SUMMARY:IK Baltichov... – HK Varberg Vit (P11(2013) Grupp 1)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-38@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:IK Baltichov... – Önnereds HK ... (P10(2014) Grupp 3)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-297@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:IK Baltichov – IK Sävehof P (P7(2017) Grupp 2)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-315@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T112000
+DTEND;TZID=Europe/Stockholm:20250524T115000
+SUMMARY:HK Aranäs Gul – IK Baltichov (P7(2017) Grupp 2)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5800@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:Särökometern... – IK Baltichov... (P11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-259@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:Önnereds HK 6 – IK Baltichov... (P8(2016) Grupp 2)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-332@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:IK Baltichov – Kviberg HK Svart (P7(2017) Grupp 2)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5629@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:HK Aranäs Vit – IK Baltichov... (P10(2014) Grupp 2)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-264@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:IK Baltichov... – HK Aranäs Gul (P8(2016) Grupp 2)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5826@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T134000
+DTEND;TZID=Europe/Stockholm:20250524T141000
+SUMMARY:IK Baltichov... – HK Aranäs Vit (P11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-41@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T134000
+DTEND;TZID=Europe/Stockholm:20250524T141000
+SUMMARY:Kärra HF Röd – IK Baltichov... (P10(2014) Grupp 3)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-397@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T140000
+DTEND;TZID=Europe/Stockholm:20250524T143000
+SUMMARY:Halmstad Han... – IK Baltichov... (P8(2016) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5654@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T144000
+DTEND;TZID=Europe/Stockholm:20250524T151000
+SUMMARY:IK Baltichov... – HK Aranäs Röd (P10(2014) Grupp 2)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-372@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T144000
+DTEND;TZID=Europe/Stockholm:20250524T151000
+SUMMARY:IK Baltichov – Kärra HF Gul (P7(2017) Grupp 2)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5668@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T152000
+DTEND;TZID=Europe/Stockholm:20250524T155000
+SUMMARY:IK Sävehof VU1 – IK Baltichov... (P10(2014) Grupp 3)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5549@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T154000
+DTEND;TZID=Europe/Stockholm:20250524T161000
+SUMMARY:IK Sävehof Ö1 – IK Baltichov (P7(2017) Grupp 2)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-238@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:IK Baltichov... – Halmstad Han... (F8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-260@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:IK Baltichov... – HK Aranäs Gul (F8(2016) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-266@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:Önnereds HK Vit – IK Baltichov... (F8(2016) Grupp 3)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5851@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:HK Varberg Grön – IK Baltichov... (P11(2013) Grupp 1)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-265@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T100000
+DTEND;TZID=Europe/Stockholm:20250525T103000
+SUMMARY:Halmstad Han... – IK Baltichov... (F8(2016) Grupp 2)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-271@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T100000
+DTEND;TZID=Europe/Stockholm:20250525T103000
+SUMMARY:HK Aranäs Lila – IK Baltichov... (F8(2016) Grupp 3)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-413@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:IK Baltichov... – Halmstad Han... (F8(2016) Grupp 3)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5733@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:Torslanda HK 1 – IK Baltichov... (P10(2014) Grupp 3)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5040@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T124000
+DTEND;TZID=Europe/Stockholm:20250525T131000
+SUMMARY:Kärra HF Gul – IK Baltichov... (F8(2016) Grupp 1)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5197@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T124000
+DTEND;TZID=Europe/Stockholm:20250525T131000
+SUMMARY:IK Baltichov... – Torslanda HK Vit (F8(2016) Grupp 2)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5896@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:IK Baltichov... – HK Aranäs Gul (P11(2013) Grupp 1)
+LOCATION:11 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5717@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T132000
+DTEND;TZID=Europe/Stockholm:20250525T135000
+SUMMARY:IK Baltichov... – IK Sävehof VU2 (P10(2014) Grupp 2)
+LOCATION:12 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5814@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:IK Baltichov... – HK Aranäs Blå (P10(2014) Grupp 3)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5041@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:IK Baltichov... – HK Aranäs Blå (F8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5228@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:Kärra HF Rosa – IK Baltichov... (F8(2016) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5747@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T150000
+DTEND;TZID=Europe/Stockholm:20250525T153000
+SUMMARY:IK Sävehof VU2 – IK Baltichov... (P10(2014) Grupp 2)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5249@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T152000
+DTEND;TZID=Europe/Stockholm:20250525T155000
+SUMMARY:Särökometern... – IK Baltichov... (F8(2016) Grupp 1)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5255@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T154000
+DTEND;TZID=Europe/Stockholm:20250525T161000
+SUMMARY:IK Baltichov... – Kärra HF Röd (F8(2016) Grupp 3)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 3
+END:VEVENT
+END:VCALENDAR

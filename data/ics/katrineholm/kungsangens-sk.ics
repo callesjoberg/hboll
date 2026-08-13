@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-43@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:AIK Handboll – Kungsängens SK (P16 Grupp 1)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-86@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:Kumla HF – Kungsängens SK (P16 Grupp 1)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-133@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T200000
+DTEND;TZID=Europe/Stockholm:20260411T203000
+SUMMARY:Avesta Brovallen HF – Kungsängens SK (P16 Grupp 1)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-161@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:Kungsängens SK – GT Söder HK (P16 A-semifinal:01)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-199@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T125000
+DTEND;TZID=Europe/Stockholm:20260412T132000
+SUMMARY:Kungsängens SK – Kumla HF (P16 A-final)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P16 · A-final
+END:VEVENT
+END:VCALENDAR

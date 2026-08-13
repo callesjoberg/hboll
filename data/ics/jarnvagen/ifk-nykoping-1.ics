@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-765@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:IFK Nyköping 1 – Örebro SK U (F12 Grupp 1)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-800@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Huddinge HK Vit – IFK Nyköping 1 (F14/13 Grupp 1)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-771@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IFK Nyköping 1 – Särökometernas HK (F14/13 Grupp 1)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-738@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Alingsås HK Blå – IFK Nyköping 1 (F12 Grupp 1)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-744@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:IFK Nyköping 1 – Lidingö SK 2 2012 (F14/13 Grupp 1)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-700@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Särökometernas HK Svart – IFK Nyköping 1 (F12 Grupp 1)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-714@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:NKIK Vit – IFK Nyköping 1 (F14/13 Grupp 1)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-666@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:LIF Lindesberg – IFK Nyköping 1 (F12 A-8-dels:08)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-535@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:BK Heid 1 – IFK Nyköping 1 (F14/13 A-8-dels:07)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:07
+END:VEVENT
+BEGIN:VEVENT
+UID:match-585@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:IFK Nyköping 1 – Skånela IF (F14/13 A-kvartsfinal:04)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-kvartsfinal:04
+END:VEVENT
+END:VCALENDAR

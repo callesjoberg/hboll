@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-721@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Lidingö SK 1 2015 – NAIS HF (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-757@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:LIF Lindesberg Orange – Lidingö SK 1 2015 (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-788@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Backa HK – Lidingö SK 1 2015 (F10 Matcher)
+LOCATION:Bana 07\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-819@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Lidingö SK 1 2015 – RP IF Röd (F10 Matcher)
+LOCATION:Bana 07\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1062@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:IFK Nyköping 2 – Gökstens BK (F12 Grupp 6)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1040@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Huddinge HK Blå – IFK Nyköping 2 (F12 Grupp 6)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1010@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Särökometernas HK blå – IFK Nyköping 2 (F12 Grupp 6)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-665@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IFK Nyköping 2 – Eskilstuna Guif 1 (F12 A-8-dels:06)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:06
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,175 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-17@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:Haninge HK Blå – Katrineholms AIK (F16 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-22@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:IF Hallby HK Blå – Katrineholms AIK (F10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-31@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T100000
+DTEND;TZID=Europe/Stockholm:20260411T103000
+SUMMARY:Katrineholms AIK – Norrköpings HK 1 (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-40@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:Haninge HK Blå – Katrineholms AIK (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-41@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:Katrineholms AIK – Vintrosa IS F11 (F14 Grupp 4)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-57@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T124000
+DTEND;TZID=Europe/Stockholm:20260411T131000
+SUMMARY:Katrineholms AIK – HK Järnvägen 2 (F16 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-76@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T140000
+DTEND;TZID=Europe/Stockholm:20260411T143000
+SUMMARY:Haninge HK Vit – Katrineholms AIK (F14 Grupp 4)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-84@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T144000
+DTEND;TZID=Europe/Stockholm:20260411T151000
+SUMMARY:Haninge HK 3 – Katrineholms AIK (F10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-91@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:Katrineholms AIK – Önnereds HK Grön (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-107@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T172000
+DTEND;TZID=Europe/Stockholm:20260411T175000
+SUMMARY:Katrineholms AIK – Avesta Brovallen HF (F16 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-113@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T172000
+DTEND;TZID=Europe/Stockholm:20260411T175000
+SUMMARY:Katrineholms AIK – Vintrosa IS (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-132@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T200000
+DTEND;TZID=Europe/Stockholm:20260411T203000
+SUMMARY:Årsta AIK Röd – Katrineholms AIK (F14 Grupp 4)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-141@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T080000
+DTEND;TZID=Europe/Stockholm:20260412T083000
+SUMMARY:Handens SK – Katrineholms AIK (F11 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-143@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T080000
+DTEND;TZID=Europe/Stockholm:20260412T083000
+SUMMARY:Haninge HK – Katrineholms AIK (P11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-155@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:Haninge HK 2 – Katrineholms AIK (F10 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-162@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:NKIK Handboll Norrköp... – Katrineholms AIK (F14 A-kvartsfinal:02)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-185@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Katrineholms AIK – HK Järnvägen 1 (F16 B-semifinal:02)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-190@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Haninge HK Vit – Katrineholms AIK (F11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-196@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:Katrineholms AIK – IF Hallby HK Vit (F10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-220@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T152000
+DTEND;TZID=Europe/Stockholm:20260412T155000
+SUMMARY:Vintrosa IS – Katrineholms AIK (F16 B-final)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · B-final
+END:VEVENT
+BEGIN:VEVENT
+UID:match-221@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T152000
+DTEND;TZID=Europe/Stockholm:20260412T155000
+SUMMARY:Vintrosa IS – Katrineholms AIK (P11 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,247 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-9@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:RP IF 2 – Eskilstuna Guif 1 (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-891@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Eskilstuna Guif 1 – Mantorps IF HF (F12 Grupp 3)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-220@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Eskilstuna Guif 1 – Vallentuna HK (F16/15 Grupp 3)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-953@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:LIF Lindesberg Orange – Eskilstuna Guif 1 (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1047@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif 1 – GT Söder HK Vit (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1179@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif 1 – AIK HF (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-56@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif 1 – Kramfors Alliansen (F14/13 Grupp 8)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 8
+END:VEVENT
+BEGIN:VEVENT
+UID:match-300@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Eskilstuna Guif 1 – NKIK (F16/15 Grupp 3)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-869@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Huddinge HK Vit – Eskilstuna Guif 1 (F12 Grupp 3)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1177@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Eskilstuna Guif 1 – Årsta AIK 1 (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-986@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Eskilstuna Guif 1 – Lidingö SK 2 (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-54@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:IFK Hammarö – Eskilstuna Guif 1 (F14/13 Grupp 8)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 8
+END:VEVENT
+BEGIN:VEVENT
+UID:match-372@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Eskilstuna Guif 1 – Vintrosa IS (F16/15 Grupp 3)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1061@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Vintrosa IS – Eskilstuna Guif 1 (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-838@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:BK Heid röd – Eskilstuna Guif 1 (F12 Grupp 3)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1149@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:IK Baltichov 2 Vit – Eskilstuna Guif 1 (F14/13 Grupp 8)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 8
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1174@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:BK Heid Svart – Eskilstuna Guif 1 (P14/13 Grupp 1)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-673@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Eskilstuna Guif 1 – Vadstena HF (P14/13 B-8-dels:05)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-8-dels:05
+END:VEVENT
+BEGIN:VEVENT
+UID:match-481@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Eskilstuna Guif 1 – Eskilstuna Guif IF 2 (F14/13 A-16-dels:06)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-16-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1013@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IF Swithiod – Eskilstuna Guif 1 (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-665@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IFK Nyköping 2 – Eskilstuna Guif 1 (F12 A-8-dels:06)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-531@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:BK Heid Svart – Eskilstuna Guif 1 (F14/13 A-8-dels:03)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1046@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Eskilstuna Guif 1 – Backa HK Vit (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1095@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:IFK Hammarö 1 – Eskilstuna Guif 1 (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-549@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:HK Järnvägen 1 – Eskilstuna Guif 1 (F12 A-kvartsfinal:03)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-583@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Eskilstuna Guif 1 – BK Heid 2 (F14/13 A-kvartsfinal:02)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-595@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Eskilstuna Guif 1 – BK Heid Vit (F16/15 A-kvartsfinal:02)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-633@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Eskilstuna Guif 1 – LIF Lindesberg (F12 A-semifinal:02)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1083@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Eskilstuna Guif 1 – RP IF 1 (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-660@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:Alingsås HK Blå – Eskilstuna Guif 1 (F12 A-final)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-final
+END:VEVENT
+END:VCALENDAR

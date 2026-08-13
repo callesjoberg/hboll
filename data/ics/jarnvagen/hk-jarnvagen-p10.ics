@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-719@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Eskilstuna Guif 3 – HK Järnvägen P10 (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-753@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:HK Järnvägen P10 – Kumla HF (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-793@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Vadstena HF – HK Järnvägen P10 (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-830@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:GT Söder HK Blå – HK Järnvägen P10 (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+END:VCALENDAR

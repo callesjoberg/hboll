@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-36@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:Eskilstuna guif Svart – Årsta AIK Vit (F14 Grupp 2)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-82@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T144000
+DTEND;TZID=Europe/Stockholm:20260411T151000
+SUMMARY:Eskilstuna guif Svart – HK Järnvägen (F14 Grupp 2)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-115@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T180000
+DTEND;TZID=Europe/Stockholm:20260411T183000
+SUMMARY:Akilles Handboll – Eskilstuna guif Svart (F14 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-145@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Eskilstuna guif Svart – Haninge HK Blå (F14 B-kvartsfinal:04)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-211@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Täby HBK – Eskilstuna guif Svart (F14 B-semifinal:02)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · B-semifinal:02
+END:VEVENT
+END:VCALENDAR

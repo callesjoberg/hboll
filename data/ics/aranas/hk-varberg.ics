@@ -1,0 +1,215 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5531@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:HK Varberg – Särökometern... (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T094000
+DTEND;TZID=Europe/Stockholm:20250524T101000
+SUMMARY:HK Varberg – Kärra HF Röd (F11(2013) Grupp 1)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5780@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T100000
+DTEND;TZID=Europe/Stockholm:20250524T103000
+SUMMARY:HK Varberg – HK Aranäs Svart (F9(2015) Grupp 3)
+LOCATION:25 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5292@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T103000
+DTEND;TZID=Europe/Stockholm:20250524T110000
+SUMMARY:HK Aranäs Vi... – HK Varberg (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T112000
+DTEND;TZID=Europe/Stockholm:20250524T115000
+SUMMARY:Kärra HF Svart – HK Varberg (F11(2013) Grupp 1)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-15@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:HK Varberg – Redbergslids IK (F10(2014) Grupp 1)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5804@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:Önnereds HK 1 – HK Varberg (F9(2015) Grupp 3)
+LOCATION:21 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5607@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:HK Aranäs Gul – HK Varberg (P10(2014) Grupp 1)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5914@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:HK Aranäs Vit – HK Varberg (F11(2013) Grupp 1)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5535@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T131500
+DTEND;TZID=Europe/Stockholm:20250524T134500
+SUMMARY:HK Aranäs Blå – HK Varberg (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5584@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:HK Varberg – IK Sävehof UP3 (F10(2014) Grupp 1)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5820@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T140000
+DTEND;TZID=Europe/Stockholm:20250524T143000
+SUMMARY:HK Aranäs Blå – HK Varberg (F9(2015) Grupp 3)
+LOCATION:24 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5636@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T144000
+DTEND;TZID=Europe/Stockholm:20250524T151000
+SUMMARY:HK Varberg – Torslanda HK 2 (P10(2014) Grupp 1)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5304@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T153000
+DTEND;TZID=Europe/Stockholm:20250524T160000
+SUMMARY:HK Varberg – HK Aranäs Vi... (F12/13 Grupp 2)
+LOCATION:17 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5916@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:HK Varberg – Kärra HF Gul (F11(2013) Grupp 1)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5307@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:HK Varberg – HK Aranäs Sv... (F12/13 B-kvartsfinal:04)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5622@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:Önnereds HK 2 – HK Varberg (F10(2014) Grupp 1)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5687@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T094000
+DTEND;TZID=Europe/Stockholm:20250525T101000
+SUMMARY:Härryda HK – HK Varberg (P10(2014) Grupp 1)
+LOCATION:12 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5854@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:HK Varberg – Kärra HF Gul (F9(2015) Grupp 3)
+LOCATION:24 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5646@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:IK Sävehof Gul – HK Varberg (F10(2014) Grupp 1)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5925@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:HK Varberg – HK Aranäs Blå (F11(2013) Grupp 1)
+LOCATION:9 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5715@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:IK Baltichov Vit – HK Varberg (P10(2014) Grupp 1)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5669@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:HK Varberg – HK Aranäs Svart (F10(2014) Grupp 1)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5927@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:VAKANT – HK Varberg (F11(2013) Grupp 1)
+LOCATION:3 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5880@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:HK Varberg – Halmstad Han... (F9(2015) Grupp 3)
+LOCATION:24 Kortplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F9(2015) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5746@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T142000
+DTEND;TZID=Europe/Stockholm:20250525T145000
+SUMMARY:HK Varberg – IK Sävehof P... (P10(2014) Grupp 1)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P10(2014) · Grupp 1
+END:VEVENT
+END:VCALENDAR

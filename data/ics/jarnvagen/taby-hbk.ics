@@ -1,0 +1,63 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1006@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Täby HBK – IFK Örebro (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-980@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Vadstena HF – Täby HBK (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-948@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Täby HBK – IFK Nyköping (P12 Grupp 3)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-920@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:GT Söder HK – Täby HBK (P12 Grupp 3)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-579@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Täby HBK – HK Järnvägen (P12 A-kvartsfinal:02)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-634@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Eskilstuna Guif – Täby HBK (P12 A-semifinal:01)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1163@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T160000
+DTEND;TZID=Europe/Stockholm:20260531T163000
+SUMMARY:Täby HBK – IFK Hammarö (P12 A-final)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · A-final
+END:VEVENT
+END:VCALENDAR

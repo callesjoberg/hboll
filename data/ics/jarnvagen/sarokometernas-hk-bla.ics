@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1054@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Huddinge HK Blå – Särökometernas HK blå (F12 Grupp 6)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1035@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Särökometernas HK blå – Gökstens BK (F12 Grupp 6)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1010@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Särökometernas HK blå – IFK Nyköping 2 (F12 Grupp 6)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1160@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Särökometernas HK blå – BK Heid svart (F12 A-8-dels:04)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:04
+END:VEVENT
+END:VCALENDAR

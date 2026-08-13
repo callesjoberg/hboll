@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-240@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:Önnereds HK 5 – HK Aranäs Blå (P8(2016) Grupp 1)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-244@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:Önnereds HK 5 – HK Varberg 3 (P8(2016) Grupp 1)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-249@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T112000
+DTEND;TZID=Europe/Stockholm:20250524T115000
+SUMMARY:Halmstad Han... – Önnereds HK 5 (P8(2016) Grupp 1)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-396@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T124000
+DTEND;TZID=Europe/Stockholm:20250524T131000
+SUMMARY:Önnereds HK 1 – Önnereds HK 5 (P8(2016) Grupp 1)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P8(2016) · Grupp 1
+END:VEVENT
+END:VCALENDAR

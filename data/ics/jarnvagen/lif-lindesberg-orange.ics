@@ -1,0 +1,175 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-697@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Backa HK – LIF Lindesberg Orange (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-840@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Vadstena HF – LIF Lindesberg Orange (F11 Matcher)
+LOCATION:Bana 17\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-39@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:LIF Lindesberg Orange – IK Baltichov (P14/13 Grupp 6)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-953@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:LIF Lindesberg Orange – Eskilstuna Guif 1 (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1102@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:H43 2 – LIF Lindesberg Orange (P16/15 Grupp 5)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1091@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:LIF Lindesberg Orange – Lidingö SK (P16/15 Grupp 5)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-757@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:LIF Lindesberg Orange – Lidingö SK 1 2015 (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-981@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Backa HK Vit – LIF Lindesberg Orange (P10 Matcher)
+LOCATION:Bana 10\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-868@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:LIF Lindesberg Orange – Backa HK (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-38@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:LIF Lindesberg Orange – Skogås HK (P14/13 Grupp 6)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1074@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:LIF Lindesberg Orange – Mantorps IF HF (P16/15 Grupp 5)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-36@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Alingsås HK Blå – LIF Lindesberg Orange (P14/13 Grupp 6)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 6
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1002@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:Lidingö SK 2 – LIF Lindesberg Orange (P10 Matcher)
+LOCATION:Bana 11\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-894@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Gökstens BK Svart – LIF Lindesberg Orange (F11 Matcher)
+LOCATION:Bana 16\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1167@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:LIF Lindesberg Orange – Lidingö SK 2 2011 (P14/13 A-8-dels:04)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1220@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:LIF Lindesberg Orange – H43 1 (P16/15 A-8-dels:08)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · A-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-774@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Gökstens BK 16 – LIF Lindesberg Orange (F10 Matcher)
+LOCATION:Bana 06\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-928@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:LIF Lindesberg Orange – IFK Örebro 1 (F11 Matcher)
+LOCATION:Bana 18\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-587@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Alingsås HK Vit – LIF Lindesberg Orange (P14/13 A-kvartsfinal:02)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1032@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:LIF Lindesberg Orange – IF Swithiod (P10 Matcher)
+LOCATION:Bana 09\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-827@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:LIF Lindesberg Orange – NAIS HF (F10 Matcher)
+LOCATION:Bana 08\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F10 · Matcher
+END:VEVENT
+END:VCALENDAR

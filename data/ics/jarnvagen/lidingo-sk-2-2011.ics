@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-46@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Lidingö SK 2 2011 – Täby HBK Blå (P14/13 Grupp 7)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-44@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Vadstena HF – Lidingö SK 2 2011 (P14/13 Grupp 7)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1210@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Eskilstuna Guif 2 – Lidingö SK 2 2011 (P14/13 Grupp 7)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1167@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:LIF Lindesberg Orange – Lidingö SK 2 2011 (P14/13 A-8-dels:04)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:04
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-28@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:VästeråsIrsta HF – Finspångs HK (P14/13 Grupp 4)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-25@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Bk Heid Röd – Finspångs HK (P14/13 Grupp 4)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1195@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Finspångs HK – Årsta AIK 2 (P14/13 Grupp 4)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1170@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Finspångs HK – Årsta AIK 1 (P14/13 A-8-dels:08)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-589@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Täby HBK Röd – Finspångs HK (P14/13 A-kvartsfinal:04)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:04
+END:VEVENT
+END:VCALENDAR

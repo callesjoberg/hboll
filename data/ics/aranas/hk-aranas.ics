@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-1803@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250522T191500
+DTEND;TZID=Europe/Stockholm:20250522T194500
+SUMMARY:HK Aranäs – IFK Skövde (Boys 18 Gruppspel)
+LOCATION:Kungsbacka Sporthall A\, Kungsbacka
+DESCRIPTION:Aranäs Open · Boys 18 · Gruppspel
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1805@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250523T173000
+DTEND;TZID=Europe/Stockholm:20250523T180000
+SUMMARY:BM. Granollers – HK Aranäs (Boys 18 Gruppspel)
+LOCATION:Kungsbacka Sporthall A\, Kungsbacka
+DESCRIPTION:Aranäs Open · Boys 18 · Gruppspel
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1807@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250523T191500
+DTEND;TZID=Europe/Stockholm:20250523T194500
+SUMMARY:HK Aranäs – Pfadi Winterthur (Boys 18 Gruppspel)
+LOCATION:Kungsbacka Sporthall A\, Kungsbacka
+DESCRIPTION:Aranäs Open · Boys 18 · Gruppspel
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5775@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T100000
+DTEND;TZID=Europe/Stockholm:20250524T103000
+SUMMARY:GF Kroppskultur – HK Aranäs (Para Gul Grupp 1)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · Para Gul · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1811@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T111500
+DTEND;TZID=Europe/Stockholm:20250524T114500
+SUMMARY:Pick Szeged – HK Aranäs (Boys 18 Gruppspel)
+LOCATION:Kungsbacka Sporthall A\, Kungsbacka
+DESCRIPTION:Aranäs Open · Boys 18 · Gruppspel
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5795@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T114000
+DTEND;TZID=Europe/Stockholm:20250524T121000
+SUMMARY:HK Aranäs – GF Kroppskultur (Para Gul Grupp 1)
+LOCATION:14 Stora Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · Para Gul · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1815@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T181500
+DTEND;TZID=Europe/Stockholm:20250524T184500
+SUMMARY:HK Aranäs – Veszprém HC (Boys 18 Gruppspel)
+LOCATION:Kungsbacka Sporthall A\, Kungsbacka
+DESCRIPTION:Aranäs Open · Boys 18 · Gruppspel
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1818@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:HK Aranäs – Pick Szeged (Boys 18 A-final)
+LOCATION:Kungsbacka Sporthall A\, Kungsbacka
+DESCRIPTION:Aranäs Open · Boys 18 · A-final
+END:VEVENT
+END:VCALENDAR

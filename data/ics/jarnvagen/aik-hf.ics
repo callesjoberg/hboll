@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1182@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:AIK HF – Årsta AIK 1 (P14/13 Grupp 1)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-969@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:RP IF 2 – AIK HF (F14/13 Grupp 3)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1179@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif 1 – AIK HF (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-936@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:IK Baltichov 1 – AIK HF (F14/13 Grupp 3)
+LOCATION:Bana 32\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:AIK HF – BK Heid Svart (P14/13 Grupp 1)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-926@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:AIK HF – Skåre HK Grön (F14/13 Grupp 3)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1173@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:RP IF 2 – AIK HF (P14/13 Grupp 1)
+LOCATION:Bana 26\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-457@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Örebro SK U 1 – AIK HF (P14/13 B-8-dels:08)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-511@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:AIK HF – IFK Hammarö (F14/13 B-8-dels:02)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:02
+END:VEVENT
+END:VCALENDAR

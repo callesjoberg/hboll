@@ -1,0 +1,95 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1231@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Eskilstuna Guif 3 – Lidingö SK 1 2012 (P14/13 Grupp 2)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1018@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Lidingö SK 1 2012 – Eskilstuna Guif IF 2 (F14/13 Grupp 4)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1185@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Örebro SK U 1 – Lidingö SK 1 2012 (P14/13 Grupp 2)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1005@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Lidingö SK 1 2012 – BK Heid 1 (F14/13 Grupp 4)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-16@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:Täby HBK Röd – Lidingö SK 1 2012 (P14/13 Grupp 2)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-989@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Hultic BK – Lidingö SK 1 2012 (F14/13 Grupp 4)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:Lidingö SK 1 2012 – HK Brukspöjkera (P14/13 Grupp 2)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1232@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Eskilstuna Guif 2 – Lidingö SK 1 2012 (P14/13 B-8-dels:04)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-451@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:IK Baltichov 3 Blå – Lidingö SK 1 2012 (F14/13 B-16-dels:06)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-16-dels:06
+END:VEVENT
+BEGIN:VEVENT
+UID:match-510@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Örebro SK U 1 – Lidingö SK 1 2012 (F14/13 B-8-dels:03)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-556@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Örebro SK U 2 – Lidingö SK 1 2012 (P14/13 B-kvartsfinal:02)
+LOCATION:Bana 25\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · B-kvartsfinal:02
+END:VEVENT
+END:VCALENDAR

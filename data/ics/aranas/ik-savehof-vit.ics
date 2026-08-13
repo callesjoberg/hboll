@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-33@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:IK Sävehof Vit – VAKANT (F10(2014) Grupp 3)
+LOCATION:6 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5627@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:Önnereds HK 4 – IK Sävehof Vit (F10(2014) Grupp 3)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5652@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T142000
+DTEND;TZID=Europe/Stockholm:20250524T145000
+SUMMARY:IK Sävehof UP1 – IK Sävehof Vit (F10(2014) Grupp 3)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5673@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T110000
+DTEND;TZID=Europe/Stockholm:20250525T113000
+SUMMARY:IK Sävehof Vit – HK Aranäs Gul (F10(2014) Grupp 3)
+LOCATION:10 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5682@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:IK Sävehof Vit – Särökometern... (F10(2014) Grupp 3)
+LOCATION:2 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 3
+END:VEVENT
+END:VCALENDAR

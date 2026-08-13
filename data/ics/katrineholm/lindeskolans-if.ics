@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-23@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:Lindeskolans IF – Vintrosa IS (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-105@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Haninge HK 2 – Lindeskolans IF (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-159@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:Lindeskolans IF – Önnereds HK Vit (P11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-216@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T144000
+DTEND;TZID=Europe/Stockholm:20260412T151000
+SUMMARY:Lindeskolans IF – Haninge HK (P11 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-258@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:Kärra HF Rosa – Halmstad Han... (F8(2016) Grupp 2)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-412@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T112000
+DTEND;TZID=Europe/Stockholm:20250525T115000
+SUMMARY:HK Aranäs Gul – Kärra HF Rosa (F8(2016) Grupp 2)
+LOCATION:B Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5228@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:Kärra HF Rosa – IK Baltichov... (F8(2016) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5256@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T152000
+DTEND;TZID=Europe/Stockholm:20250525T155000
+SUMMARY:Torslanda HK Vit – Kärra HF Rosa (F8(2016) Grupp 2)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F8(2016) · Grupp 2
+END:VEVENT
+END:VCALENDAR

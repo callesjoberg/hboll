@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-18@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T102000
+DTEND;TZID=Europe/Stockholm:20250524T105000
+SUMMARY:Redbergslids... – Härryda HK 2 (F10(2014) Grupp 2)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5623@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T120000
+DTEND;TZID=Europe/Stockholm:20250524T123000
+SUMMARY:Härryda HK 2 – Särökometern... (F10(2014) Grupp 2)
+LOCATION:13 Lilla Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5660@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:HK Aranäs Vit – Härryda HK 2 (F10(2014) Grupp 2)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5672@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T110000
+DTEND;TZID=Europe/Stockholm:20250525T113000
+SUMMARY:Önnereds HK 3 – Härryda HK 2 (F10(2014) Grupp 2)
+LOCATION:8 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5678@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T124000
+DTEND;TZID=Europe/Stockholm:20250525T131000
+SUMMARY:Härryda HK 2 – IK Sävehof UP2 (F10(2014) Grupp 2)
+LOCATION:4 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F10(2014) · Grupp 2
+END:VEVENT
+END:VCALENDAR

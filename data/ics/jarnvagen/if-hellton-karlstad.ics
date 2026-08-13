@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-240@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Katrineholms AIK – IF Hellton Karlstad (F16/15 Grupp 4)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-311@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:HK Järnvägen Gul – IF Hellton Karlstad (F16/15 Grupp 4)
+LOCATION:Bana 38\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-407@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:GT Söder HK – IF Hellton Karlstad (F16/15 Grupp 4)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-491@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:IF Hellton Karlstad – HK Brukspöjkera (F16/15 A-8-dels:02)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · A-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-594@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:BK Heid Röd – IF Hellton Karlstad (F16/15 A-kvartsfinal:01)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · A-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-642@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:IF Hellton Karlstad – BK Heid Vit (F16/15 A-semifinal:01)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · A-semifinal:01
+END:VEVENT
+END:VCALENDAR

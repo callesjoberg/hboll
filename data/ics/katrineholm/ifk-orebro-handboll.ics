@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-48@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:Huddinge HK – IFK Örebro handboll (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-99@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T160000
+DTEND;TZID=Europe/Stockholm:20260411T163000
+SUMMARY:Haninge HK Blå – IFK Örebro handboll (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-149@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T084000
+DTEND;TZID=Europe/Stockholm:20260412T091000
+SUMMARY:Haninge HK Vit – IFK Örebro handboll (F11 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-182@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Handens SK – IFK Örebro handboll (F11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+END:VCALENDAR

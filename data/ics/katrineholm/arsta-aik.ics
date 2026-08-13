@@ -1,0 +1,95 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-1@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Haninge HK 2 – Årsta AIK (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:HK Järnvägen 11 – Årsta AIK (F12 Grupp 3)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-45@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T112000
+DTEND;TZID=Europe/Stockholm:20260411T115000
+SUMMARY:IFK Nyköping Blå – Årsta AIK (F12 Grupp 3)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-50@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:Täby HBK 2 – Årsta AIK (P14 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-90@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:Huddinge HK – Årsta AIK (F12 Grupp 3)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-93@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T160000
+DTEND;TZID=Europe/Stockholm:20260411T163000
+SUMMARY:Årsta AIK – Norrköpings HK NHK 2 (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-138@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T080000
+DTEND;TZID=Europe/Stockholm:20260412T083000
+SUMMARY:Årsta AIK – Skåre HK (P14 B-kvartsfinal:02)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-163@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:Årsta AIK – HK Bollebygd (F12 B-kvartsfinal:04)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-187@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Haninge HK 3 – Årsta AIK (P14 B-semifinal:01)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-193@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:NKIK Handboll Norrköping – Årsta AIK (F12 B-semifinal:02)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-210@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Årsta AIK – Haninge HK 2 (P14 B-final)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-final
+END:VEVENT
+END:VCALENDAR

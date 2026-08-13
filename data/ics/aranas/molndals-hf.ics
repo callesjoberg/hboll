@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5911@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:Mölndals HF – IK Sävehof VU (F11(2013) Grupp 1)
+LOCATION:11 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T104000
+DTEND;TZID=Europe/Stockholm:20250524T111000
+SUMMARY:Kärra HF Gul – Mölndals HF (F11(2013) Grupp 1)
+LOCATION:13 Lilla Centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5913@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T130000
+DTEND;TZID=Europe/Stockholm:20250524T133000
+SUMMARY:Mölndals HF – VAKANT (F11(2013) Grupp 1)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5919@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T090000
+DTEND;TZID=Europe/Stockholm:20250525T093000
+SUMMARY:HK Aranäs Vit – Mölndals HF (F11(2013) Grupp 1)
+LOCATION:7 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5921@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T104000
+DTEND;TZID=Europe/Stockholm:20250525T111000
+SUMMARY:Mölndals HF – Kärra HF Röd (F11(2013) Grupp 1)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5930@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T122000
+DTEND;TZID=Europe/Stockholm:20250525T125000
+SUMMARY:HK Aranäs Blå – Mölndals HF (F11(2013) Grupp 1)
+LOCATION:9 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F11(2013) · Grupp 1
+END:VEVENT
+END:VCALENDAR

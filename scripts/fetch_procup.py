@@ -253,7 +253,7 @@ def main():
             out_dir / "ics", cup_id, cup_meta.get("name", cup_id), cup_meta.get("place", ""),
             data["matches"])
         if n:
-            print(f"  + {n} klubblags .ics-filer i data/ics/{cup_id}/")
+            print(f"  + {n} lags .ics-filer i data/ics/{cup_id}/")
 
 
 if __name__ == "__main__":

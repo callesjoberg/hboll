@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-46@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Lidingö SK 2 2011 – Täby HBK Blå (P14/13 Grupp 7)
+LOCATION:Bana 27\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1212@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T150000
+DTEND;TZID=Europe/Stockholm:20260530T153000
+SUMMARY:Eskilstuna Guif 2 – Täby HBK Blå (P14/13 Grupp 7)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-42@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Täby HBK Blå – Vadstena HF (P14/13 Grupp 7)
+LOCATION:Bana 28\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1168@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Täby HBK Blå – GT Söder HK 2 (P14/13 A-8-dels:05)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-8-dels:05
+END:VEVENT
+BEGIN:VEVENT
+UID:match-588@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Täby HBK Blå – IK Baltichov (P14/13 A-kvartsfinal:03)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-639@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:Täby HBK Blå – Täby HBK Röd (P14/13 A-semifinal:02)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P14/13 · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

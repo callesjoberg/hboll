@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-21@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:HK Järnvägen 10 – Ludvika HF (F12 Grupp 1)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-64@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T124000
+DTEND;TZID=Europe/Stockholm:20260411T131000
+SUMMARY:AIK Svart – HK Järnvägen 10 (F12 Grupp 1)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-129@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T192000
+DTEND;TZID=Europe/Stockholm:20260411T195000
+SUMMARY:HK Järnvägen 10 – HK Bollebygd (F12 Grupp 1)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-194@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:HK Järnvägen 10 – IFK Nyköping Blå (F12 B-semifinal:01)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-217@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T144000
+DTEND;TZID=Europe/Stockholm:20260412T151000
+SUMMARY:HK Järnvägen 10 – NKIK Handboll Norrköping (F12 B-final)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-final
+END:VEVENT
+END:VCALENDAR

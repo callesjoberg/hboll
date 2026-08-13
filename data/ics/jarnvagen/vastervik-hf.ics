@@ -1,0 +1,183 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-825@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Västervik HF – HK Järnvägen 2 (F12 Grupp 2)
+LOCATION:Bana 19\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-710@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Eskilstuna Guif Röd – Västervik HF (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-898@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Västervik HF – Örebro SK U (P16/15 Grupp 2)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1082@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Västervik HF – Örebro SK U 1 (F14/13 Grupp 5)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-813@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T114000
+DTEND;TZID=Europe/Stockholm:20260530T121000
+SUMMARY:Skogås HK – Västervik HF (F12 Grupp 2)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1067@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Huddinge HK Blå – Västervik HF (F14/13 Grupp 5)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1224@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Västervik HF – GT Söder HK Blå (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-736@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Västervik HF – BK Heid Röd (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-865@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:IFK Nyköping – Västervik HF (P16/15 Grupp 2)
+LOCATION:Bana 36\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Backa HK Vit – Västervik HF (F12 Grupp 2)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-844@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Eskilstuna Guif Svart – Västervik HF (P16/15 Grupp 2)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1225@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:LIF Lindesberg – Västervik HF (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1034@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:BK Heid Svart – Västervik HF (F14/13 Grupp 5)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-822@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Västervik HF – Sollentuna HK (P16/15 Grupp 2)
+LOCATION:Bana 37\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1223@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Kramfors alliansen – Västervik HF (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1222@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T073000
+DTEND;TZID=Europe/Stockholm:20260531T080000
+SUMMARY:Västervik HF – NAIS HF (P16/15 B-8-dels:07)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-8-dels:07
+END:VEVENT
+BEGIN:VEVENT
+UID:match-661@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:BK Heid röd – Västervik HF (F12 A-8-dels:02)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F12 · A-8-dels:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-508@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:IK Baltichov 2 Vit – Västervik HF (F14/13 B-8-dels:05)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:05
+END:VEVENT
+BEGIN:VEVENT
+UID:match-799@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Västervik HF – Spånga HK (P11 Matcher)
+LOCATION:Bana 13\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-562@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Västervik HF – IK Baltichov (P16/15 B-kvartsfinal:04)
+LOCATION:Bana 35\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P16/15 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-820@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:VästeråsIrsta HF – Västervik HF (P11 Matcher)
+LOCATION:Bana 12\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-685@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Västervik HF – Backa HK (F19/17 B-final)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · B-final
+END:VEVENT
+END:VCALENDAR

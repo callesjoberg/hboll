@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-750@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:Kramfors alliansen – GT Söder HK Blå (F19/17 Grupp 1)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-56@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Eskilstuna Guif 1 – Kramfors Alliansen (F14/13 Grupp 8)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 8
+END:VEVENT
+BEGIN:VEVENT
+UID:match-731@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Kramfors alliansen – LIF Lindesberg (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-53@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:IK Baltichov 2 Vit – Kramfors Alliansen (F14/13 Grupp 8)
+LOCATION:Bana 30\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 8
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1150@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Kramfors Alliansen – IFK Hammarö (F14/13 Grupp 8)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 8
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1223@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Kramfors alliansen – Västervik HF (F19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-533@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T100000
+DTEND;TZID=Europe/Stockholm:20260531T103000
+SUMMARY:Kramfors Alliansen – Huddinge HK Blå (F14/13 A-8-dels:05)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · A-8-dels:05
+END:VEVENT
+BEGIN:VEVENT
+UID:match-689@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Backa HK – Kramfors alliansen (F19/17 B-semifinal:02)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · B-semifinal:02
+END:VEVENT
+END:VCALENDAR

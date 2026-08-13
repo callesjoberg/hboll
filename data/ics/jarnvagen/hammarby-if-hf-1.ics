@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-797@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Hammarby IF HF 1 – Malmslätt Ljungsbro HF 1 (P12 Grupp 1)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-763@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:IK Baltichov Vit – Hammarby IF HF 1 (P12 Grupp 1)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-720@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T155000
+DTEND;TZID=Europe/Stockholm:20260530T162000
+SUMMARY:Eskilstuna Guif – Hammarby IF HF 1 (P12 Grupp 1)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-699@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:Hammarby IF HF 1 – IK Bolton (P12 Grupp 1)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-525@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Hammarby IF HF 1 – LIF Lindesberg (P12 B-kvartsfinal:01)
+LOCATION:Bana 20\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-610@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Hammarby IF HF 1 – Malmslätt Ljungsbro HF 1 (P12 B-semifinal:01)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-semifinal:01
+END:VEVENT
+END:VCALENDAR

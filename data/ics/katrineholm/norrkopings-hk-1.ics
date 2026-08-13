@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-31@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T100000
+DTEND;TZID=Europe/Stockholm:20260411T103000
+SUMMARY:Katrineholms AIK – Norrköpings HK 1 (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-98@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T160000
+DTEND;TZID=Europe/Stockholm:20260411T163000
+SUMMARY:Norrköpings HK 1 – Vintrosa IS (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-167@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:Norrköpings HK 1 – Haninge HK 2 (P11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-202@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T132000
+DTEND;TZID=Europe/Stockholm:20260412T135000
+SUMMARY:Önnereds HK Vit – Norrköpings HK 1 (P11 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+END:VCALENDAR

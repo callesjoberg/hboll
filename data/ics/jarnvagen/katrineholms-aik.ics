@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-240@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:Katrineholms AIK – IF Hellton Karlstad (F16/15 Grupp 4)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1147@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:RP IF 1 – Katrineholms AIK (F14/13 Grupp 7)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-312@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Katrineholms AIK – GT Söder HK (F16/15 Grupp 4)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1134@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T141000
+DTEND;TZID=Europe/Stockholm:20260530T144000
+SUMMARY:BK Heid 2 – Katrineholms AIK (F14/13 Grupp 7)
+LOCATION:Bana 34\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-408@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Katrineholms AIK – HK Järnvägen Gul (F16/15 Grupp 4)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1215@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Katrineholms AIK – Årsta AIK 2 (F14/13 Grupp 7)
+LOCATION:Bana 31\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · Grupp 7
+END:VEVENT
+BEGIN:VEVENT
+UID:match-509@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T091000
+DTEND;TZID=Europe/Stockholm:20260531T094000
+SUMMARY:Katrineholms AIK – GT Söder HK (F14/13 B-8-dels:04)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-8-dels:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-552@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Örebro SK U 1 – Katrineholms AIK (F14/13 B-kvartsfinal:02)
+LOCATION:Bana 29\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-596@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T120000
+DTEND;TZID=Europe/Stockholm:20260531T123000
+SUMMARY:Katrineholms AIK – Örebro SK U (F16/15 A-kvartsfinal:03)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F16/15 · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-612@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:IFK Hammarö – Katrineholms AIK (F14/13 B-semifinal:01)
+LOCATION:Bana 33\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F14/13 · B-semifinal:01
+END:VEVENT
+END:VCALENDAR

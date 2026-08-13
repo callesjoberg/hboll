@@ -1,0 +1,119 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-1@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Haninge HK 2 – Årsta AIK (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:Haninge KH 1 – Haninge HK 2 (F10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-49@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:Norrköpings HK NHK 2 – Haninge HK 2 (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-55@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:Önnereds HK Vit – Haninge HK 2 (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-70@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T132000
+DTEND;TZID=Europe/Stockholm:20260411T135000
+SUMMARY:IF Hallby HK Vit – Haninge HK 2 (F10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-100@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Täby HBK 2 – Haninge HK 2 (P14 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-105@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Haninge HK 2 – Lindeskolans IF (P11 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-137@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T080000
+DTEND;TZID=Europe/Stockholm:20260412T083000
+SUMMARY:IFK Nora Handboll – Haninge HK 2 (P14 B-kvartsfinal:03)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-155@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T092000
+DTEND;TZID=Europe/Stockholm:20260412T095000
+SUMMARY:Haninge HK 2 – Katrineholms AIK (F10 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-167@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:Norrköpings HK 1 – Haninge HK 2 (P11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-189@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Haninge HK 2 – IF Hallby HK Blå (F10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-188@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Haninge HK 2 – HK Eskil (P14 B-semifinal:02)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-209@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Haninge HK 2 – IFK NORA (P11 Matcher)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-210@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Årsta AIK – Haninge HK 2 (P14 B-final)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-final
+END:VEVENT
+END:VCALENDAR

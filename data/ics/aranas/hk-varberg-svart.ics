@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-21@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:HK Varberg Svart – HK Aranäs Blå (P11(2013) Grupp 2)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5798@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:Redbergslids... – HK Varberg Svart (P11(2013) Grupp 2)
+LOCATION:11 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5827@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T134000
+DTEND;TZID=Europe/Stockholm:20250524T141000
+SUMMARY:Önnereds HK – HK Varberg Svart (P11(2013) Grupp 2)
+LOCATION:5 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5885@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T130000
+DTEND;TZID=Europe/Stockholm:20250525T133000
+SUMMARY:Ale Handboll – HK Varberg Svart (P11(2013) Grupp 2)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5834@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T143000
+DTEND;TZID=Europe/Stockholm:20250525T150000
+SUMMARY:HK Varberg Svart – IK Baltichov Vit (P11(2013) Grupp 2)
+LOCATION:1 Konstgräs\, Kungsbacka
+DESCRIPTION:Aranäs Open · P11(2013) · Grupp 2
+END:VEVENT
+END:VCALENDAR

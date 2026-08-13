@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-12@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T084000
+DTEND;TZID=Europe/Stockholm:20260411T091000
+SUMMARY:Haninge HK – NKIK Handboll Norrköping (F12 Grupp 2)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-56@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:NKIK Handboll Norrköping – IFK Nora Handboll F2014 (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-61@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T124000
+DTEND;TZID=Europe/Stockholm:20260411T131000
+SUMMARY:IFK Nyköping Vit – NKIK Handboll Norrköping (F12 Grupp 2)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-106@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:Huddinge HK – NKIK Handboll Norrköping (F11 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-104@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T164000
+DTEND;TZID=Europe/Stockholm:20260411T171000
+SUMMARY:AIK Gul – NKIK Handboll Norrköping (F12 Grupp 2)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-173@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T104000
+DTEND;TZID=Europe/Stockholm:20260412T111000
+SUMMARY:NKIK Handboll Norrköping – Vintrosa IS (F11 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-193@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T124000
+DTEND;TZID=Europe/Stockholm:20260412T131000
+SUMMARY:NKIK Handboll Norrköping – Årsta AIK (F12 B-semifinal:02)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-214@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T144000
+DTEND;TZID=Europe/Stockholm:20260412T151000
+SUMMARY:IFK Rättvik – NKIK Handboll Norrköping (F11 Matcher)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F11 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-217@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T144000
+DTEND;TZID=Europe/Stockholm:20260412T151000
+SUMMARY:HK Järnvägen 10 – NKIK Handboll Norrköping (F12 B-final)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F12 · B-final
+END:VEVENT
+END:VCALENDAR

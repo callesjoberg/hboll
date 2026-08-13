@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-5532@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T090000
+DTEND;TZID=Europe/Stockholm:20250524T093000
+SUMMARY:HK Bollebygd – IFK Tumba Ha... (F12/13 Grupp 1)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5291@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T103000
+DTEND;TZID=Europe/Stockholm:20250524T110000
+SUMMARY:IFK Tumba Ha... – HK Aranäs RÖD (F12/13 Grupp 1)
+LOCATION:16 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5296@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T133000
+DTEND;TZID=Europe/Stockholm:20250524T140000
+SUMMARY:HK Aranäs Sv... – IFK Tumba Ha... (F12/13 Grupp 1)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5303@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T150000
+DTEND;TZID=Europe/Stockholm:20250524T153000
+SUMMARY:IFK Tumba Ha... – HK Aranäs Sv... (F12/13 Grupp 1)
+LOCATION:16 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5309@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T120000
+DTEND;TZID=Europe/Stockholm:20250525T123000
+SUMMARY:HK Aranäs Vi... – IFK Tumba Ha... (F12/13 A-semifinal:02)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5312@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T140000
+DTEND;TZID=Europe/Stockholm:20250525T143000
+SUMMARY:HK Aranäs Blå – IFK Tumba Ha... (F12/13 A-3.e pris)
+LOCATION:15 Fullplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F12/13 · A-3.e pris
+END:VEVENT
+END:VCALENDAR

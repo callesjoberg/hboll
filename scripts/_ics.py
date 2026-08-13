@@ -1,23 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Delad .ics-byggare för dataUrl-cuper (ProCup/Gothia) — samma
-kalenderformat som js/ics.js ger vid en manuell export, men skriven som
-STATISKA filer under data/ics/<cupid>/<teamId>.ics av skrapskripten, så de
-får en stabil URL en kalenderapp kan prenumerera på (auto-uppdateras i takt
-med att skrapan kör om — Cup Manager-cuper har redan en riktig live-tjänst
-för det här inbyggd, se GetTeamCalendarService i teamStatBlock i app.js,
-den här filen behövs bara för cuper utan en sådan)."""
+"""Delad .ics-byggare för ProCup-cuper — samma kalenderformat som
+js/ics.js ger vid en manuell export, men skriven som STATISKA filer under
+data/ics/<cupid>/<teamId>.ics av skrapskripten, så de får en stabil URL
+en kalenderapp kan prenumerera på (auto-uppdateras i takt med att skrapan
+kör om).
 
+Cup Manager-cuper (inkl. Partille) har redan en riktig live-tjänst
+(GetTeamCalendarService) och rörs inte här. ProCup.se saknar
+kalenderexport helt, därför behövs de här filerna — för ALLA lag, inte
+bara en klubb: appen delas av vilken klubb som helst."""
+
+import json
 import re
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 TZ = ZoneInfo("Europe/Stockholm")
 
-# Samma klubbmönster som HB.CLUB.pattern i js/config.js — bygger bara
-# kalendrar för klubbens egna lag (annars skulle t.ex. Partilles ~1400 lag
-# ge lika många småfiler i repot).
-CLUB_PATTERN = re.compile(r"^alings[åa]s\s*hk", re.I)
+# Klubbfilter (Alingsås HK / HB.CLUB.pattern) togs bort. Appen delas av
+# alla klubbar nu, så en Sävehof-förälder i Järnvägen Cup ska också få en
+# prenumerationsfil. Partille-argumentet (att ~1400 lag skulle ge lika
+# många småfiler i repot) gäller inte längre — Partille hämtar kalendern
+# från Cup Manager sedan den fick calendarHost, och de här filerna byggs
+# bara för ProCup-cuper (~325 lag, hanterbart).
 
 
 def _wall_stamp(ms):
@@ -74,28 +81,112 @@ def build_team_ics(cup_name, cup_place, host_or_id, matches, team_id, minutes=30
     return "\r\n".join(lines) + "\r\n"
 
 
-def club_teams(matches):
-    """Klubbens egna lag-id:n + namn ({teamId: name}) ur en matchlista."""
+def write_if_changed(path, text):
+    """Skriv text till path bara om innehållet faktiskt skiljer sig.
+    Samma idé som write_if_changed i archive_results.py — CI committar
+    på git diff, så en omskrivning av identiskt innehåll skulle bli en
+    tom-men-ändrad fil varje 20:e minut. Ingen DTSTAMP i .ics just
+    därför: en tidsstämpel per körning skulle göra allt 'ändrat'."""
+    # Bytejämförelse: Path.read_text() översätter CRLF → LF och skulle
+    # annars se varje .ics som ändrad (filerna skrivs med \r\n per RFC 5545).
+    data = text.encode("utf-8")
+    if path.exists():
+        try:
+            if path.read_bytes() == data:
+                return False
+        except Exception:
+            pass
+    path.write_bytes(data)
+    return True
+
+
+def teams_with_kickoff(matches):
+    """Lag-id:n + namn ({teamId: name}) för lag som har minst en match
+    med speltid. Lag utan tider ger en tom kalender och hoppas över."""
     teams = {}
     for m in matches:
+        if not m.get("start"):
+            continue
         for side in ("home", "away"):
             t = m.get(side) or {}
-            if t.get("id") is not None and t.get("name") and CLUB_PATTERN.match(t["name"]):
+            if t.get("id") is not None and t.get("name"):
                 teams[t["id"]] = t["name"]
     return teams
 
 
 def write_team_ics_files(out_dir, cup_id, cup_name, cup_place, matches):
-    """Skriver en .ics per klubblag till out_dir/<cupId>/<teamId>.ics.
-    Returnerar antal skrivna filer (för loggning)."""
-    teams = club_teams(matches)
-    if not teams:
-        return 0
+    """Skriver en .ics per lag (med minst en tidsatt match) till
+    out_dir/<cupId>/<teamId>.ics. Skriver bara om innehållet ändrats
+    och tar bort .ics i cupens katalog som inte hör hit den här
+    körningen (ny upplaga får annars gamla lagfiler kvar för alltid).
+    Returnerar antal filer som finns kvar efteråt."""
+    teams = teams_with_kickoff(matches)
+    # ProCup använder lagnamnet som id, med inkonsekvent kolon/versaler
+    # ("Backa HK:Röd" vs "Backa HK Röd"). De slår till samma filnamn —
+    # slå ihop matcherna så kalendern inte saknar halva schemat.
+    ids_by_slug = {}
+    for team_id in teams:
+        ids_by_slug.setdefault(slugify_team_id(team_id), []).append(team_id)
+
     cup_dir = out_dir / cup_id
-    cup_dir.mkdir(parents=True, exist_ok=True)
-    for team_id, _name in teams.items():
-        team_matches = [m for m in matches
-                         if (m["home"].get("id") == team_id or m["away"].get("id") == team_id)]
-        ics = build_team_ics(cup_name, cup_place, cup_id, team_matches, team_id)
-        (cup_dir / f"{slugify_team_id(team_id)}.ics").write_text(ics, encoding="utf-8")
-    return len(teams)
+    wanted = {}
+    written = 0
+    if ids_by_slug:
+        cup_dir.mkdir(parents=True, exist_ok=True)
+        for slug, ids in ids_by_slug.items():
+            idset = set(ids)
+            team_matches = [
+                m for m in matches
+                if m.get("start") and (
+                    (m.get("home") or {}).get("id") in idset
+                    or (m.get("away") or {}).get("id") in idset)
+            ]
+            fname = f"{slug}.ics"
+            ics = build_team_ics(cup_name, cup_place, cup_id, team_matches, ids[0])
+            path = cup_dir / fname
+            wanted[fname] = path
+            if write_if_changed(path, ics):
+                written += 1
+
+    removed = 0
+    if cup_dir.is_dir():
+        for existing in cup_dir.glob("*.ics"):
+            if existing.name not in wanted:
+                existing.unlink()
+                removed += 1
+
+    n_files = len(wanted)
+    total_bytes = sum(p.stat().st_size for p in wanted.values()) if wanted else 0
+    print(f"ics {cup_id}: {n_files} filer, {total_bytes} byte "
+          f"({written} skrivna, {removed} borttagna)")
+    return n_files
+
+
+def main():
+    """Bygger om .ics från redan hämtade ProCup-JSON-filer (ingen nätverk)."""
+    root = Path(__file__).resolve().parent.parent
+    cups = json.loads((root / "data" / "cups.json").read_text(encoding="utf-8"))["cups"]
+    out_dir = root / "data" / "ics"
+    total_files = 0
+    total_bytes = 0
+    for cup in cups:
+        if cup.get("host") != "procup.se" or not cup.get("dataUrl"):
+            continue
+        path = root / cup["dataUrl"]
+        if not path.exists():
+            print(f"{cup['id']}: saknar {path.name} — hoppar över")
+            continue
+        data = json.loads(path.read_text(encoding="utf-8"))
+        n = write_team_ics_files(
+            out_dir, cup["id"], cup.get("name", cup["id"]),
+            cup.get("place", ""), data.get("matches") or [])
+        cup_dir = out_dir / cup["id"]
+        if n and cup_dir.is_dir():
+            total_bytes += sum(p.stat().st_size for p in cup_dir.glob("*.ics"))
+        total_files += n
+    print(f"ics totalt: {total_files} filer, {total_bytes} byte")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

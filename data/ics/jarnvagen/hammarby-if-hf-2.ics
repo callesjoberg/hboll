@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-1064@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T091000
+DTEND;TZID=Europe/Stockholm:20260530T094000
+SUMMARY:HK Järnvägen – Hammarby IF HF 2 (P12 Grupp 4)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1033@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T123000
+DTEND;TZID=Europe/Stockholm:20260530T130000
+SUMMARY:Hultic BK – Hammarby IF HF 2 (P12 Grupp 4)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1028@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T173000
+DTEND;TZID=Europe/Stockholm:20260530T180000
+SUMMARY:Hammarby IF HF 2 – IFK Hammarö (P12 Grupp 4)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-528@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Hammarby IF HF 2 – GT Söder HK (P12 B-kvartsfinal:04)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-611@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Hultic BK – Hammarby IF HF 2 (P12 B-semifinal:02)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-655@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Malmslätt Ljungsbro HF 1 – Hammarby IF HF 2 (P12 B-final)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-final
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Aranäs Open
+BEGIN:VEVENT
+UID:match-296@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T100000
+DTEND;TZID=Europe/Stockholm:20250524T103000
+SUMMARY:Kviberg HK Svart – HK Aranäs Gul (P7(2017) Grupp 2)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-313@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T110000
+DTEND;TZID=Europe/Stockholm:20250524T113000
+SUMMARY:Kärra HF Gul – Kviberg HK Svart (P7(2017) Grupp 2)
+LOCATION:C Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-332@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T122000
+DTEND;TZID=Europe/Stockholm:20250524T125000
+SUMMARY:IK Baltichov – Kviberg HK Svart (P7(2017) Grupp 2)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-354@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T132000
+DTEND;TZID=Europe/Stockholm:20250524T135000
+SUMMARY:IK Sävehof P – Kviberg HK Svart (P7(2017) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-373@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250524T142000
+DTEND;TZID=Europe/Stockholm:20250524T145000
+SUMMARY:Kviberg HK Svart – IK Sävehof Ö1 (P7(2017) Grupp 2)
+LOCATION:D Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · P7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-292@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T102000
+DTEND;TZID=Europe/Stockholm:20250525T105000
+SUMMARY:Kviberg HK Svart – IK Sävehof V2 (F7(2017) Grupp 2)
+LOCATION:F Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-330@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T114000
+DTEND;TZID=Europe/Stockholm:20250525T121000
+SUMMARY:Kviberg HK Svart – IK Sävehof P1 (F7(2017) Grupp 2)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-359@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T134000
+DTEND;TZID=Europe/Stockholm:20250525T141000
+SUMMARY:HK Aranäs Gul – Kviberg HK Svart (F7(2017) Grupp 2)
+LOCATION:F Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-382@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T160000
+DTEND;TZID=Europe/Stockholm:20250525T163000
+SUMMARY:Kviberg HK Svart – Önnereds HK 1 (F7(2017) Grupp 2)
+LOCATION:E Miniplan\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5118@aranas.hboll
+DTSTART;TZID=Europe/Stockholm:20250525T164000
+DTEND;TZID=Europe/Stockholm:20250525T171000
+SUMMARY:HK Aranäs Vit – Kviberg HK Svart (F7(2017) Grupp 2)
+LOCATION:A Miniplan centercourt\, Kungsbacka
+DESCRIPTION:Aranäs Open · F7(2017) · Grupp 2
+END:VEVENT
+END:VCALENDAR

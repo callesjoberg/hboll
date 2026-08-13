@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-3@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T080000
+DTEND;TZID=Europe/Stockholm:20260411T083000
+SUMMARY:HK Eskil – Spånga HK (P14 Grupp 3)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-35@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:IFK Nora Handboll – HK Eskil (P14 Grupp 3)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-67@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T132000
+DTEND;TZID=Europe/Stockholm:20260411T135000
+SUMMARY:HK Eskil – Skåre HK (P14 Grupp 3)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-120@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T184000
+DTEND;TZID=Europe/Stockholm:20260411T191000
+SUMMARY:Haninge HK 1 – HK Eskil (P14 Grupp 3)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-136@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T080000
+DTEND;TZID=Europe/Stockholm:20260412T083000
+SUMMARY:HK Eskil – Vintrosa IS (P14 B-kvartsfinal:04)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-188@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T120000
+DTEND;TZID=Europe/Stockholm:20260412T123000
+SUMMARY:Haninge HK 2 – HK Eskil (P14 B-semifinal:02)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P14 · B-semifinal:02
+END:VEVENT
+END:VCALENDAR

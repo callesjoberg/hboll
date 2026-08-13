@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-752@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T082000
+DTEND;TZID=Europe/Stockholm:20260530T085000
+SUMMARY:BK Heid – Sannadals SK (P19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-728@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T105000
+DTEND;TZID=Europe/Stockholm:20260530T112000
+SUMMARY:Sannadals SK – HK Järnvägen (P19/17 Grupp 1)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T164000
+DTEND;TZID=Europe/Stockholm:20260530T171000
+SUMMARY:Sannadals SK – GT Söder HK (P19/17 Grupp 1)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-645@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:LIF Lindesberg – Sannadals SK (P19/17 A-semifinal:02)
+LOCATION:Bana 42\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P19/17 · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

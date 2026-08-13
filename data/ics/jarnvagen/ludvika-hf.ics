@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-817@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Backa HK – Ludvika HF (F19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-775@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Ludvika HF – HK Järnvägen (F19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1237@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T191000
+DTEND;TZID=Europe/Stockholm:20260530T194000
+SUMMARY:Ludvika HF – Backa HK (F19/17 Grupp 2)
+LOCATION:Bana 40\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1236@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T082000
+DTEND;TZID=Europe/Stockholm:20260531T085000
+SUMMARY:HK Järnvägen – Ludvika HF (F19/17 Grupp 2)
+LOCATION:Bana 41\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-620@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T140000
+DTEND;TZID=Europe/Stockholm:20260531T143000
+SUMMARY:GT Söder HK Blå – Ludvika HF (F19/17 A-semifinal:01)
+LOCATION:Bana 39\, Hallsberg
+DESCRIPTION:Järnvägen Cup · F19/17 · A-semifinal:01
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,95 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-37@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T104000
+DTEND;TZID=Europe/Stockholm:20260411T111000
+SUMMARY:NKIK Handboll Norrköp... – Ludvika HF (F14 Grupp 1)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-52@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:NKIK Handboll Norrköp... – IFK Nyköping (F14 Grupp 3)
+LOCATION:Duveholmshallen D\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-79@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T144000
+DTEND;TZID=Europe/Stockholm:20260411T151000
+SUMMARY:Haninge HK Blå – NKIK Handboll Norrköp... (F14 Grupp 1)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-88@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T152000
+DTEND;TZID=Europe/Stockholm:20260411T155000
+SUMMARY:Vintrosa IS Röd – NKIK Handboll Norrköp... (F14 Grupp 3)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-118@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T180000
+DTEND;TZID=Europe/Stockholm:20260411T183000
+SUMMARY:Eskilstuna Guif IF – NKIK Handboll Norrköp... (F14 Grupp 1)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-128@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T192000
+DTEND;TZID=Europe/Stockholm:20260411T195000
+SUMMARY:Täby HBK – NKIK Handboll Norrköp... (F14 Grupp 3)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-162@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T100000
+DTEND;TZID=Europe/Stockholm:20260412T103000
+SUMMARY:NKIK Handboll Norrköp... – Katrineholms AIK (F14 A-kvartsfinal:02)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-180@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T112000
+DTEND;TZID=Europe/Stockholm:20260412T115000
+SUMMARY:Akilles Handboll – NKIK Handboll Norrköp... (F14 A-kvartsfinal:04)
+LOCATION:Skogsborgshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-207@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Vintrosa IS F11 – NKIK Handboll Norrköp... (F14 A-semifinal:02)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-208@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T140000
+DTEND;TZID=Europe/Stockholm:20260412T143000
+SUMMARY:Ludvika HF – NKIK Handboll Norrköp... (F14 A-semifinal:01)
+LOCATION:Duveholmshallen C\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-223@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T161000
+DTEND;TZID=Europe/Stockholm:20260412T164000
+SUMMARY:Ludvika HF – NKIK Handboll Norrköp... (F14 A-final)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F14 · A-final
+END:VEVENT
+END:VCALENDAR

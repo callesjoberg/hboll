@@ -1,0 +1,63 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Järnvägen Cup
+BEGIN:VEVENT
+UID:match-797@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T073000
+DTEND;TZID=Europe/Stockholm:20260530T080000
+SUMMARY:Hammarby IF HF 1 – Malmslätt Ljungsbro HF 1 (P12 Grupp 1)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-766@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T100000
+DTEND;TZID=Europe/Stockholm:20260530T103000
+SUMMARY:Malmslätt Ljungsbro HF 1 – IK Bolton (P12 Grupp 1)
+LOCATION:Bana 24\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-745@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T132000
+DTEND;TZID=Europe/Stockholm:20260530T135000
+SUMMARY:Malmslätt Ljungsbro HF 1 – Eskilstuna Guif (P12 Grupp 1)
+LOCATION:Bana 23\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-713@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260530T182000
+DTEND;TZID=Europe/Stockholm:20260530T185000
+SUMMARY:IK Baltichov Vit – Malmslätt Ljungsbro HF 1 (P12 Grupp 1)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-526@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T105000
+DTEND;TZID=Europe/Stockholm:20260531T112000
+SUMMARY:Malmslätt Ljungsbro HF 2 – Malmslätt Ljungsbro HF 1 (P12 B-kvartsfinal:02)
+LOCATION:Bana 21\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-610@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T130000
+DTEND;TZID=Europe/Stockholm:20260531T133000
+SUMMARY:Hammarby IF HF 1 – Malmslätt Ljungsbro HF 1 (P12 B-semifinal:01)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-655@jarnvagen.hboll
+DTSTART;TZID=Europe/Stockholm:20260531T150000
+DTEND;TZID=Europe/Stockholm:20260531T153000
+SUMMARY:Malmslätt Ljungsbro HF 1 – Hammarby IF HF 2 (P12 B-final)
+LOCATION:Bana 22\, Hallsberg
+DESCRIPTION:Järnvägen Cup · P12 · B-final
+END:VEVENT
+END:VCALENDAR

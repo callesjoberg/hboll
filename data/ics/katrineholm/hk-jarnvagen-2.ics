@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Katrineholm Handboll Cup
+BEGIN:VEVENT
+UID:match-18@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T092000
+DTEND;TZID=Europe/Stockholm:20260411T095000
+SUMMARY:Avesta Brovallen HF – HK Järnvägen 2 (F16 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-54@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T120000
+DTEND;TZID=Europe/Stockholm:20260411T123000
+SUMMARY:HK Järnvägen 2 – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-57@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T124000
+DTEND;TZID=Europe/Stockholm:20260411T131000
+SUMMARY:Katrineholms AIK – HK Järnvägen 2 (F16 Grupp 2)
+LOCATION:Duveholmshallen A\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-108@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T172000
+DTEND;TZID=Europe/Stockholm:20260411T175000
+SUMMARY:HK Järnvägen 2 – Haninge HK Blå (F16 Grupp 2)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-131@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260411T192000
+DTEND;TZID=Europe/Stockholm:20260411T195000
+SUMMARY:HK Järnvägen 2 – Lindeskolans IF 1 (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-169@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T104000
+DTEND;TZID=Europe/Stockholm:20260412T111000
+SUMMARY:Haninge HK Vit – HK Järnvägen 2 (F16 A-semifinal:01)
+LOCATION:Duveholmshallen B\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · F16 · A-semifinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-174@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T104000
+DTEND;TZID=Europe/Stockholm:20260412T111000
+SUMMARY:Huddinge HK Blå – HK Järnvägen 2 (P10 Matcher)
+LOCATION:Nya Järvenhallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-205@katrineholm.hboll
+DTSTART;TZID=Europe/Stockholm:20260412T132000
+DTEND;TZID=Europe/Stockholm:20260412T135000
+SUMMARY:HK Järnvägen 2 – Skå IK & Bygdegår... (P10 Matcher)
+LOCATION:Sandbäckshallen\, Katrineholm
+DESCRIPTION:Katrineholm Handboll Cup · P10 · Matcher
+END:VEVENT
+END:VCALENDAR
