@@ -209,6 +209,7 @@ header.top {
 }
 
 .current-cup-btn:hover { border-color: var(--yellow); }
+.current-cup-label { display: none; color: #d8e1ed; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* cupväljare (i inställningar) */
 
@@ -293,6 +294,20 @@ header.top {
 }
 #viewTabs::-webkit-scrollbar { height: 6px; }
 
+#currentViewBar { display: none; }
+
+.header-share-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
 .tab {
   background: none;
   border: none;
@@ -308,6 +323,79 @@ header.top {
 }
 
 .tab.on { color: var(--ink); border-bottom-color: var(--yellow); }
+
+/* Prototypens gemensamma mobilark: global sökning, Mer och export. */
+.prototype-sheet {
+  width: min(620px, calc(100vw - 24px));
+  max-height: min(82vh, 760px);
+  margin: auto auto 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 20px 20px 0 0;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 -10px 35px rgba(10, 18, 30, 0.35);
+}
+.prototype-sheet::backdrop { background: rgba(10, 18, 30, 0.48); }
+.prototype-sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 12px 52px 10px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.prototype-sheet-head h2 { margin: 0; font-size: 19px; }
+.prototype-sheet-body { padding: 14px 14px max(20px, env(safe-area-inset-bottom)); overflow-y: auto; }
+.prototype-sheet .dialog-x { top: 9px; }
+.global-search-input { width: 100%; font-size: 16px; }
+.global-search-types { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; }
+.global-search-types .chip { flex: 0 0 auto; }
+.global-search-results { display: grid; gap: 4px; }
+.global-search-result, .more-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  padding: 11px 6px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.global-search-result-main, .more-menu-item > span:last-child {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.global-search-result small, .more-menu-item small { color: var(--ink-soft); }
+.global-search-result-type {
+  flex: 0 0 auto;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.more-menu-icon { width: 28px; text-align: center; font-size: 20px; color: var(--blue); }
+.display-option-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.7fr) minmax(0, 1.3fr);
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+.display-option-row .select { width: 100%; }
+.header-export-panel { position: static !important; display: grid; width: 100% !important; box-shadow: none !important; }
 
 #meta {
   margin-left: auto;
@@ -3309,7 +3397,7 @@ dialog.history-dialog {
     /* Växer och fyller raden när det finns plats, men krymper aldrig under
        52 px — då scrollar raden i stället för att klämma ihop etiketterna
        till oläsbarhet. */
-    flex: 1 0 52px;
+    flex: 1 1 20%;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -3357,6 +3445,38 @@ dialog.history-dialog {
      visas bara i bottenraden på mobil. */
   #viewTabs { display: none; }
   #settingsBtn { display: none; }
+  #currentCupBtn, #helpBtn, #refreshBtn { display: none; }
+  .current-cup-label { display: block; max-width: 28vw; }
+  .header-share-btn { display: inline-grid; place-items: center; flex: 0 0 auto; }
+
+  #currentViewBar:not([hidden]) {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
+    z-index: 69;
+    display: flex;
+    gap: 4px;
+    padding: 6px 10px;
+    overflow-x: auto;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  #currentViewBar::-webkit-scrollbar { display: none; }
+  .current-view-tab {
+    flex: 1 0 auto;
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .current-view-tab.on { background: var(--paper); color: var(--blue); }
 
   /* Verktygsraden bor kvar på sin plats i DOM:et (renderToolbar ritar dit
      som förut) men visas bara som ark, fällt upp av filterknappen. */
@@ -3408,6 +3528,7 @@ dialog.history-dialog {
   /* Bottenraden med: båda ska förbli synliga OCH klickbara medan en väljare
      är öppen, så man kan hoppa direkt mellan brickor eller byta vy. */
   body.picker-open #bottomBar { z-index: 85; }
+  body.picker-open #currentViewBar { z-index: 85; }
 
   body.filters-open.filters-expanded #toolbar {
     max-height: 72vh;
@@ -3483,10 +3604,10 @@ dialog.history-dialog {
      den svarar på "vad tittar jag på och hur tar jag mig tillbaka", vilket
      annars bara framgick av den gömda verktygsraden. */
   .mobile-context {
+    display: none;
     position: sticky;
     top: 0;
     z-index: 5;
-    display: flex;
     align-items: center;
     gap: 8px;
     margin: 0 0 10px;

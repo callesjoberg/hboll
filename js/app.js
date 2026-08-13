@@ -1981,6 +1981,8 @@ window.HB = window.HB || {};
     // är vald just nu och öppnar samma dialog för att byta.
     const btn = $("#currentCupBtn");
     if (btn) btn.textContent = cup().name;
+    const label = $("#currentCupLabel");
+    if (label) label.textContent = cup().name;
   }
 
   function renderTabs() {
@@ -2064,6 +2066,8 @@ window.HB = window.HB || {};
   const VIEW_ICONS = {
     schema: "📅", tabeller: "▦", slutspel: "🏆", bana: "📍", stats: "📈",
   };
+  const CURRENT_VIEWS = ["schema", "tabeller", "slutspel", "bana"];
+  let lastCurrentView = "schema";
 
   // Hur många filter som faktiskt smalnar av vyn just nu — siffran på
   // filterknappen, så man ser att ett filter är aktivt utan att öppna arket.
@@ -2091,58 +2095,223 @@ window.HB = window.HB || {};
     // måste lämna plats för båda, annars göms sista raden bakom dem.
     document.body.classList.toggle("stats-tabs-fixed", state.view === "stats");
     placeFooterLinks();
-    const showFilter = state.view !== "stats";
-    const tabs = $$("#viewTabs .tab").filter((b) => !b.hidden);
-    // .filter(Boolean): replaceChildren är DOM:ets egen metod och gör om ett
-    // null till TEXTEN "null" (till skillnad från h(), som hoppar över det)
-    // — det syntes som ordet "null" i bottenraden på Stats-fliken, där
-    // filterknappen medvetet utelämnas.
-    bar.replaceChildren(...[
-      ...tabs.map((src) => h("button", {
-        class: "bottom-tab" + (src.dataset.view === state.view ? " on" : ""),
-        type: "button", "aria-selected": String(src.dataset.view === state.view),
-        onclick: () => {
-          // toggleFilterSheet (inte bara klassen): den tar även bort
-          // bakgrundstäcket, som annars blev kvar och blockerade all
-          // klickning efter ett vybyte med arket öppet.
-          toggleFilterSheet(false);
-          state.view = src.dataset.view; saveUi(); render();
-        },
-      },
-        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" },
-          VIEW_ICONS[src.dataset.view] || "•"),
-        h("span", { class: "bottom-tab-label" }, src.textContent.trim()))),
-      // Kugghjulet flyttas hit från sidhuvudet: på en telefon är överkanten
-      // svårast att nå, och sidhuvudet blir samtidigt en rad renare. Öppnar
-      // samma dialog som förut — knappen i headern finns kvar i DOM:et (bara
-      // dold via CSS) så all befintlig logik pekar på samma element.
-      h("button", {
-        class: "bottom-tab bottom-settings", type: "button",
-        onclick: () => { toggleFilterSheet(false); $("#settingsBtn").click(); },
-      },
-        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, "⚙"),
-        // "Inställningar" är 13 tecken och klipps mitt i ordet på en 56 px
-        // flik. Förkortningen är standard i svenska mobilgränssnitt och
-        // läses obehindrat bredvid kugghjulet.
-        h("span", { class: "bottom-tab-label" }, "Inställn.")),
-      showFilter ? h("button", {
-        class: "bottom-tab bottom-filter" +
-          (document.body.classList.contains("filters-open") ? " on" : ""),
-        type: "button", "aria-label": "Filter och sortering",
-        onclick: () => { toggleFilterSheet(); },
-      },
-        h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, FILTER_ICON),
-        h("span", { class: "bottom-tab-label" }, "Filter"),
-        activeFilterCount()
-          ? h("span", { class: "bottom-filter-badge" }, String(activeFilterCount()))
-          : null) : null,
-    ].filter(Boolean));
+    if (CURRENT_VIEWS.includes(state.view)) lastCurrentView = state.view;
+    const mainItem = (label, icon, active, onclick, extraClass) => h("button", {
+      class: "bottom-tab" + (active ? " on" : "") + (extraClass ? " " + extraClass : ""),
+      type: "button", "aria-selected": String(active), onclick,
+    }, h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, icon),
+    h("span", { class: "bottom-tab-label" }, label));
+    const currentActive = CURRENT_VIEWS.includes(state.view);
+    const filterButton = mainItem("Filter", FILTER_ICON,
+      document.body.classList.contains("filters-open"), () => {
+        closePrototypeDialogs();
+        if (state.view === "stats") { state.view = lastCurrentView; saveUi(); render(); }
+        toggleFilterSheet();
+      }, "bottom-filter");
+    if (activeFilterCount()) filterButton.append(
+      h("span", { class: "bottom-filter-badge" }, String(activeFilterCount())));
+    bar.replaceChildren(
+      mainItem("Aktuellt", "📅", currentActive, () => {
+        closePrototypeDialogs(); toggleFilterSheet(false);
+        if (!currentActive) { state.view = lastCurrentView; saveUi(); render(); }
+      }),
+      mainItem("Sök", "🔍", false, () => {
+        toggleFilterSheet(false); openGlobalSearchDialog();
+      }),
+      filterButton,
+      mainItem("Statistik", "📈", state.view === "stats", () => {
+        closePrototypeDialogs(); toggleFilterSheet(false);
+        state.view = "stats"; saveUi(); render();
+      }),
+      mainItem("Mer", "•••", false, () => {
+        toggleFilterSheet(false); openMoreDialog();
+      }));
+    renderCurrentViewBar();
     // Arkets underkant ska ligga dikt an mot raden. Höjden mäts i stället
     // för att hårdkodas — den varierar med teckenstorlek och safe-area, och
     // en gissad siffra gav ett synligt glapp mellan rad och ark.
     document.documentElement.style.setProperty(
       "--bottombar-h", Math.round(bar.getBoundingClientRect().height) + "px");
     syncBottomStack();
+  }
+
+  function renderCurrentViewBar() {
+    const bar = $("#currentViewBar");
+    if (!bar) return;
+    const visible = CURRENT_VIEWS.includes(state.view);
+    bar.hidden = !visible;
+    if (!visible) { bar.replaceChildren(); return; }
+    const supported = new Map($$("#viewTabs .tab").map((b) => [b.dataset.view, !b.hidden]));
+    const labels = { schema: "Schema", tabeller: "Tabeller", slutspel: "Slutspel", bana: "Bana" };
+    bar.replaceChildren(...CURRENT_VIEWS.filter((v) => supported.get(v) !== false).map((v) =>
+      h("button", {
+        class: "current-view-tab" + (state.view === v ? " on" : ""), type: "button",
+        onclick: () => { toggleFilterSheet(false); state.view = v; saveUi(); render(); },
+      }, labels[v])));
+  }
+
+  function closePrototypeDialogs() {
+    for (const dlg of document.querySelectorAll("dialog.prototype-sheet[open]")) dlg.close();
+  }
+
+  function prototypeDialog(title) {
+    closePrototypeDialogs();
+    const body = h("div", { class: "prototype-sheet-body" });
+    const dlg = h("dialog", { class: "prototype-sheet" },
+      h("div", { class: "prototype-sheet-head" },
+        h("h2", null, title),
+        h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng",
+          onclick: () => dlg.close() }, "×")), body);
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => dlg.remove());
+    document.body.append(dlg);
+    dlg.showModal();
+    return { dlg, body };
+  }
+
+  function globalSearchCandidates() {
+    const out = [];
+    const seen = new Set();
+    const add = (type, label, search, action, hint) => {
+      const key = type + "|" + slugifySv(label);
+      if (!label || seen.has(key)) return;
+      seen.add(key); out.push({ type, label, search: slugifySv(search || label), action, hint });
+    };
+    for (const c of HB.allCups()) add("Cup", c.name, c.name + " " + c.place + " " + c.edition,
+      () => switchCup(c.id), c.place + " · " + c.edition);
+
+    const clubTeams = new Map();
+    const teams = new Map();
+    const cats = new Map();
+    const arenas = new Set();
+    for (const m of state.matches) {
+      if (m.catId != null && m.catName) cats.set(m.catId, m.catName);
+      if (m.arena) arenas.add(m.arena);
+      for (const side of [m.home, m.away]) {
+        if (side.id != null && side.name && !teams.has(side.id))
+          teams.set(side.id, { ...side, catName: m.catName });
+        if (side.club && side.id != null) {
+          if (!clubTeams.has(side.club)) clubTeams.set(side.club, new Set());
+          clubTeams.get(side.club).add(side.id);
+        }
+      }
+      const matchLabel = m.home.name + " – " + m.away.name;
+      add("Match", matchLabel,
+        matchLabel + " " + m.catName + " " + m.arena + " " + (m.matchNr || ""),
+        () => openMatchDialog(m),
+        (m.start ? fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)) : "Tid ej satt") +
+          (m.arena ? " · " + m.arena : ""));
+    }
+    for (const [name, ids] of clubTeams) add("Klubb", name, name, () => {
+      state.scope = "all"; state.teams = new Set(ids); state.view = "schema"; saveUi(); render();
+    }, ids.size + " lag i " + cup().name);
+    // Klubbkatalogen sträcker sig över alla cuper och år. En klubb som
+    // inte finns i den aktuella cupen leder till Statistik/Klubb-Lag.
+    for (const name of Object.keys(clubDirectoryCache || {})) add("Klubb", name, name, () => {
+      state.view = "stats"; state.statsView = "klubb"; state.clubQuery = name;
+      clubQuerySeeded = true; saveUi(); render();
+    }, "Sök i hela historiken");
+    for (const [id, team] of teams) {
+      const kull = cohortKey(team.catName) || HB.shortCat(team.catName);
+      add("Lag", team.name, team.name + " " + team.club + " " + kull + " " + team.catName, () => {
+        state.scope = "all"; state.teams = new Set([id]); state.view = "schema"; saveUi(); render();
+      }, kull);
+    }
+    for (const [id, name] of cats) {
+      const kull = cohortKey(name) || HB.shortCat(name);
+      add("Klass", kull, kull + " " + name, () => {
+        state.scope = "all"; state.cats = new Set([id]); state.view = "schema"; saveUi(); render();
+      }, name);
+    }
+    const geo = HB.api.arenaGeo[state.cupId] || {};
+    for (const arena of arenas) {
+      const g = geo[arena] || {};
+      const place = [g.venue, g.street, g.city].filter(Boolean).join(" · ");
+      add("Plats", arena, arena + " " + place, () => openArenaQuickView(arena), place);
+    }
+    return out;
+  }
+
+  function openGlobalSearchDialog() {
+    const { dlg, body } = prototypeDialog("Sök i hela appen");
+    const input = h("input", { class: "search global-search-input", type: "search",
+      placeholder: "Klubb, lag, F2011, cup, match eller plats …", autocomplete: "off" });
+    const filters = ["Alla", "Klubb", "Lag", "Klass", "Cup", "Match", "Plats"];
+    let selected = "Alla";
+    let timer = null;
+    const chipRow = h("div", { class: "global-search-types" });
+    const results = h("div", { class: "global-search-results" },
+      h("p", { class: "muted" }, "Skriv minst två tecken. Sökningen omfattar aktuell cup och appens cup- och klubbregister."));
+    const paintChips = () => chipRow.replaceChildren(...filters.map((type) => chip(type,
+      selected === type, () => { selected = type; paintChips(); run(); })));
+    const run = () => {
+      const q = slugifySv(input.value.trim());
+      if (q.length < 2) {
+        results.replaceChildren(h("p", { class: "muted" }, "Skriv minst två tecken.")); return;
+      }
+      const hits = globalSearchCandidates().filter((r) =>
+        (selected === "Alla" || r.type === selected) && r.search.includes(q)).slice(0, 60);
+      results.replaceChildren(...(hits.length ? hits.map((r) => h("button", {
+        class: "global-search-result", type: "button", onclick: () => { dlg.close(); r.action(); },
+      }, h("span", { class: "global-search-result-main" },
+        h("strong", null, r.label), r.hint ? h("small", null, r.hint) : null),
+      h("span", { class: "global-search-result-type" }, r.type))) :
+      [h("p", { class: "muted" }, "Inga träffar.")]));
+    };
+    input.addEventListener("input", () => {
+      clearTimeout(timer); timer = setTimeout(run, 180);
+    });
+    paintChips(); body.append(input, chipRow, results);
+    requestAnimationFrame(() => input.focus());
+  }
+
+  function moreAction(label, icon, action, hint) {
+    return h("button", { class: "more-menu-item", type: "button", onclick: action },
+      h("span", { class: "more-menu-icon", "aria-hidden": "true" }, icon),
+      h("span", null, h("strong", null, label), hint ? h("small", null, hint) : null));
+  }
+
+  function openMoreDialog() {
+    const { dlg, body } = prototypeDialog("Mer");
+    const closeThen = (fn) => () => { dlg.close(); requestAnimationFrame(fn); };
+    body.append(
+      moreAction("Byt cup", "🏆", closeThen(() => $("#currentCupBtn").click()), cup().name),
+      moreAction("Dela eller exportera", "⇧", closeThen(openHeaderExportDialog), "Aktuell vy och aktuella filter"),
+      moreAction("Visning och sortering", "⇅", closeThen(openDisplayOptionsDialog), "Omfattning, matchstatus, hall och ordning"),
+      moreAction("Uppdatera data", "↻", closeThen(() => $("#refreshBtn").click())),
+      moreAction("Inställningar", "⚙", closeThen(() => $("#settingsBtn").click())),
+      moreAction("Hjälp", "?", closeThen(() => $("#helpBtn").click())),
+      moreAction("Om appen", "i", closeThen(() => HB.openWelcome())));
+  }
+
+  function openDisplayOptionsDialog() {
+    const { body } = prototypeDialog("Visning och sortering");
+    const apply = () => { saveUi(); render(); };
+    const scope = h("select", { class: "select", "aria-label": "Omfattning",
+      onchange: (e) => { state.scope = e.target.value; apply(); } },
+    [["club", state.favoriteClub], ["all", "Hela cupen"]].map(([v, label]) =>
+      h("option", { value: v, ...(state.scope === v ? { selected: "" } : {}) }, label)));
+    const status = h("select", { class: "select", "aria-label": "Matchstatus",
+      onchange: (e) => { state.matchFilter = e.target.value; apply(); } },
+    [["all", "Alla matcher"], ["upcoming", "Kommande"], ["played", "Spelade"]].map(([v, label]) =>
+      h("option", { value: v, ...(state.matchFilter === v ? { selected: "" } : {}) }, label)));
+    const arenas = [...new Set(scoped().map((m) => m.arena).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "sv", { numeric: true }));
+    const arena = h("select", { class: "select", "aria-label": "Hall eller plan",
+      onchange: (e) => { state.arena = e.target.value; apply(); } },
+    h("option", { value: "" }, "Alla hallar och planer"), arenas.map((a) =>
+      h("option", { value: a, ...(state.arena === a ? { selected: "" } : {}) }, a)));
+    const sort = h("select", { class: "select", "aria-label": "Sortering",
+      onchange: (e) => { state.sort = e.target.value; apply(); } },
+    [["tid", "Tid"], ["klass", "Klass"], ["plan", "Plan"], ["resultat", "Resultat"], ["mal", "Mål"]]
+      .map(([v, label]) => h("option", { value: v, ...(state.sort === v ? { selected: "" } : {}) }, label)));
+    const row = (label, control) => h("label", { class: "display-option-row" },
+      h("span", null, label), control);
+    body.append(row("Omfattning", scope), row("Matcher", status), row("Hall/plan", arena));
+    if (state.view === "schema") body.append(row("Sortera efter", sort),
+      h("button", { class: "btn", type: "button", onclick: () => {
+        state.timeOrder = state.timeOrder === "desc" ? "asc" : "desc"; apply();
+      } }, state.timeOrder === "desc" ? "↓ Nyast/kommande överst" : "↑ Äldst överst"));
   }
 
   // Total höjd på ALLT som ligger fast i botten just nu: bottenraden plus
@@ -2157,7 +2326,7 @@ window.HB = window.HB || {};
     // uppfälld, och Stats-underflikarna på den fliken. Mäts i stället för
     // att räknas ut — höjderna beror på antal brickor, teckenstorlek och
     // safe-area, och en gissad siffra gömmer slutet på matchlistan.
-    for (const sel of ["#toolbar", '#content .history-tabs[aria-label="Stats"]']) {
+    for (const sel of ["#toolbar", "#currentViewBar", '#content .history-tabs[aria-label="Stats"]']) {
       const el = document.querySelector(sel);
       if (el && getComputedStyle(el).position === "fixed") {
         h += el.getBoundingClientRect().height;
@@ -3126,10 +3295,6 @@ window.HB = window.HB || {};
         // med etikett och värde (se .filter-group i style.css), där det är
         // uppenbart att raden går att trycka på. CSS-only-omslag: samma
         // element, samma lyssnare, bara en behållare runt.
-        // "Mer" sist i remsan: på mobil är remsan allt man ser när man
-        // trycker Filter, så resten av verktygsraden (sök, status, plan,
-        // sortering, export) måste ha en väg in. Brickan göms över 700 px,
-        // där hela raden ändå står framme.
         // Rensa allt: visas bara när det FINNS något att rensa, annars vore
         // den en död knapp i en remsa där varje bricka kostar bredd. Rensar
         // exakt det siffran på filterknappen räknar (se activeFilterCount) —
@@ -3152,17 +3317,8 @@ window.HB = window.HB || {};
             render();
           },
         }, "Rensa");
-
-        const merTile = h("button", {
-          class: "filter-more-tile", type: "button", "data-icon": "⋯",
-          onclick: () => {
-            document.body.classList.toggle("filters-expanded");
-            syncFilterBackdrop();
-            requestAnimationFrame(syncBottomStack);
-          },
-        }, "Mer");
         row.append(h("div", { class: "filter-group" },
-          ...urval, teamSlot, rensaTile, merTile));
+          ...urval, teamSlot, rensaTile));
       }
       row.append(h("span", { class: "row-sep" }), statusSeg);
       body.append(row);
@@ -3266,6 +3422,22 @@ window.HB = window.HB || {};
       : buildMatchExportPanel(item);
     dd.append(summary, panel);
     return dd;
+  }
+
+  function openHeaderExportDialog() {
+    const { dlg, body } = prototypeDialog("Dela eller exportera");
+    const item = (label, onClick) => h("button", {
+      class: "export-item", type: "button", onclick: () => { onClick(); dlg.close(); },
+    }, label);
+    if (state.view === "stats") {
+      body.append(buildShareLinkBlock());
+      return;
+    }
+    const panel = state.view === "tabeller" ? buildTablesExportPanel(item)
+      : state.view === "slutspel" ? buildPlayoffExportPanel(item)
+      : buildMatchExportPanel(item);
+    panel.classList.add("header-export-panel");
+    body.append(panel);
   }
 
   // Hallarnas adressdata för INNEVARANDE cup, i den form exporterna vill ha
@@ -7108,11 +7280,7 @@ window.HB = window.HB || {};
         h("p", null,
           "Titta in igen om några dagar. När tiderna är på plats kan du filtrera fram " +
           "just dina matcher och lägga dem i kalendern via " +
-          // Exportmenyn sitter i verktygsraden, som på mobil är hopfälld i
-          // två steg bakom bottenradens Filter-knapp (se filters-open/
-          // filters-expanded i style.css) — hänvisa till hela vägen, annars
-          // står man i remsan och hittar ingen export.
-          (sheetMode() ? "“Filter” → “Mer” → “Exportera”" : "“Exportera”") +
+          (sheetMode() ? "delningsknappen upptill" : "“Exportera”") +
           " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon."));
       main.append(info);
     }
@@ -10215,6 +10383,8 @@ window.HB = window.HB || {};
         state.view = b.dataset.view; saveUi(); render();
       }));
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
+    const headerShareBtn = $("#headerShareBtn");
+    if (headerShareBtn) headerShareBtn.addEventListener("click", openHeaderExportDialog);
     setupAddCup();
     setupSettings();
     setupBracketPan();

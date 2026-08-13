@@ -156,7 +156,10 @@
         <img src="assets/ahk-logo.svg" alt="" width="34" height="38" id="clubLogo">
         <h1>Cupschema<small id="clubName">Alingsås HK</small></h1>
         <span class="spacer"></span>
+        <span id="currentCupLabel" class="current-cup-label"></span>
         <button id="currentCupBtn" type="button" class="current-cup-btn" title="Byt cup"></button>
+        <button id="headerShareBtn" type="button" class="header-share-btn"
+                title="Dela eller exportera aktuell vy" aria-label="Dela eller exportera">⇧</button>
         <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
         <!-- Hjälpen låg tidigare bara i sidfoten, och på mobil flyttas
              sidfoten in i inställningsdialogen (placeFooterLinks) — alltså
@@ -189,6 +192,7 @@
        Speglar #viewTabs (samma data-view, samma dolda flikar) och lägger
        till en filterknapp som fäller upp verktygsraden som ett ark. -->
   <nav id="bottomBar" aria-label="Vy och filter" hidden></nav>
+  <nav id="currentViewBar" aria-label="Aktuellt" hidden></nav>
 
   <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
 
