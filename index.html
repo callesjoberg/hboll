@@ -211,7 +211,22 @@
     <div class="settings-group full">
       <span class="settings-label">Cup</span>
       <div class="seg" id="sportToggle" role="group" aria-label="Sport"></div>
+      <!-- Sökfält ovanför cupraden: 22 kort i en horisontell rad är
+           uppmätt 2 925 px i en 352 px vy — ungefär åtta svep på mobil
+           för att nå den sista. Att välja cup är det första nästan
+           varje besök börjar med, så man ska kunna skriva sig fram
+           i stället för att svepa. Fältet ligger här i HTML (inte i
+           renderCups) så det inte ritas om och tappar fokus per tecken. -->
+      <div class="search-wrap">
+        <input type="search" id="cupSearch" placeholder="Sök cup …"
+               autocomplete="off" aria-label="Sök cup"
+               aria-controls="cupRow">
+        <button type="button" class="search-clear" id="cupSearchClear"
+                aria-label="Rensa" tabindex="-1">×</button>
+      </div>
       <nav id="cupRow" aria-label="Välj cup"></nav>
+      <p id="cupSearchEmpty" class="muted cup-search-empty" hidden
+         role="status">Ingen cup matchar sökningen.</p>
     </div>
 
     <div class="settings-group">

@@ -212,6 +212,15 @@ header.top {
 
 /* cupväljare (i inställningar) */
 
+/* Sökfält ovanför cupraden. 22 kort i en horisontell rad är uppmätt
+   2 925 px i en 352 px vy — ungefär åtta svep på mobil för att nå den
+   sista. Fältet filtrerar korten medan man skriver så man slipper svepa.
+   Samma search-wrap-mönster som favoritklubb; dialog input ger utseendet.
+   #cupRow[hidden] behövs eftersom display:flex annars slår UA:ns [hidden]. */
+#cupSearch {
+  width: 100%;
+}
+
 #cupRow {
   display: flex;
   gap: 8px;
@@ -221,7 +230,11 @@ header.top {
   scrollbar-width: thin;
 }
 
+#cupRow[hidden] { display: none; }
+
 #cupRow::-webkit-scrollbar { height: 6px; }
+
+#cupSearchEmpty { margin: 2px 0 0; }
 
 .cup {
   flex: 0 0 auto;

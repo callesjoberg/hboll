@@ -1887,6 +1887,17 @@ window.HB = window.HB || {};
   // själva dialogen, inget att spara mellan besök.
   let cupSwitcherSport = null;
 
+  // Sökningen i cupväljaren går över alla sporter så länge man skriver.
+  // Minst förvånande: arrangören letar efter sitt namn/sin ort, inte efter
+  // vilken sport-flik som råkar vara aktiv — "göteborg" ska lämna både
+  // handbolls- och fotbollscuperna, och "sundsvall" ska gå att välja även
+  // om handboll är förvalt. Sportväljaren följer INTE med automatiskt
+  // (fliken skulle hoppa medan man skriver). Den fungerar som i dag när
+  // fältet är tomt, och avgränsar träffarna om man klickar den under en
+  // pågående sökning (annars vore knapparna döda). false efter sådant klick,
+  // true igen vid nästa tecken / när dialogen öppnas.
+  let cupSearchAllSports = true;
+
   function renderCups() {
     const allCups = HB.allCups();
     // En sportväljare bara om det faktiskt FINNS mer än en sport bland
@@ -1900,13 +1911,27 @@ window.HB = window.HB || {};
       sportToggleEl.replaceChildren(
         ...sports.map((sp) => chip(SPORT_LABELS[sp] || sp, sp === activeSport, () => {
           cupSwitcherSport = sp;
+          cupSearchAllSports = false;
           renderCups();
         })));
     }
 
+    // Filtrera korten här — inte hela dialogen. Sökfältet (#cupSearch) bor
+    // i index.html, utanför #cupRow, så replaceChildren nedan rör det inte
+    // och fokus stannar kvar medan man skriver.
+    const searchEl = $("#cupSearch");
+    const query = slugifySv(searchEl && searchEl.value);
+    const cups = allCups.filter((c) => {
+      if ((!query || !cupSearchAllSports) &&
+          (c.sport || "handboll") !== activeSport) return false;
+      if (!query) return true;
+      return slugifySv(c.name).includes(query) ||
+             slugifySv(c.place).includes(query);
+    });
+
     const row = $("#cupRow");
     row.replaceChildren(
-      ...allCups.filter((c) => (c.sport || "handboll") === activeSport).map((c) =>
+      ...cups.map((c) =>
         h("button", {
           class: "cup" + (c.id === state.cupId ? " on" : ""),
           type: "button", onclick: () => switchCup(c.id),
@@ -1914,6 +1939,9 @@ window.HB = window.HB || {};
           h("span", { class: "cup-name" }, c.name),
           h("span", { class: "cup-place" }, c.place + " " + c.edition))
       ));
+    row.hidden = cups.length === 0;
+    const emptyEl = $("#cupSearchEmpty");
+    if (emptyEl) emptyEl.hidden = cups.length > 0;
     // Cupväljaren själv bor i inställningarna (för att inte ta plats högst
     // upp på sidan) — den här knappen i headern visar bara vilken cup som
     // är vald just nu och öppnar samma dialog för att byta.
@@ -9657,6 +9685,13 @@ window.HB = window.HB || {};
       // råkade bläddra i senast dialogen var öppen — annars kan den se ut
       // att "glömt" vilken cup som faktiskt är aktiv.
       cupSwitcherSport = null;
+      cupSearchAllSports = true;
+      // Gårdagens sökning ska inte möta nästa öppning — 22 kort i en
+      // horisontell rad kräver åtta svep på mobil, och fältet finns just
+      // för att slippa det, inte för att gömma cuperna bakom en gammal
+      // söksträng.
+      const cupSearch = $("#cupSearch");
+      if (cupSearch) cupSearch.value = "";
       // Favoritklubb/-lag väljs ur data som inte hör till den öppna cupen
       // (klubbkatalogen och arkivets lagnamnsindex, se clubNameCandidates/
       // favoriteTeamCandidates). Båda hämtas lat och en gång — starta dem
@@ -9670,6 +9705,26 @@ window.HB = window.HB || {};
     $("#settingsBtn").addEventListener("click", openSettings);
     $("#currentCupBtn").addEventListener("click", openSettings);
     $("#settingsClose").addEventListener("click", () => dlg.close());
+
+    // Cup-sökfältet filtrerar korten via renderCups() — som bara byter ut
+    // #cupRow/#sportToggle, inte fältet självt, så fokus stannar kvar.
+    // Att tappa fokus efter varje tecken är den vanligaste buggen i den
+    // här sortens fält i den här kodbasen.
+    const cupSearchInput = $("#cupSearch");
+    if (cupSearchInput) {
+      cupSearchInput.addEventListener("input", () => {
+        cupSearchAllSports = true;
+        renderCups();
+      });
+    }
+    const cupSearchClear = $("#cupSearchClear");
+    if (cupSearchClear && cupSearchInput) {
+      cupSearchClear.addEventListener("click", () => {
+        cupSearchInput.value = "";
+        cupSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        cupSearchInput.focus();
+      });
+    }
 
     placeFooterLinks();
 
