@@ -3008,10 +3008,17 @@ dialog.history-dialog {
 
 .export-phone-panel svg {
   display: block;
-  width: 168px;
-  height: 168px;
-  margin: 0 auto 8px;
-  border-radius: 6px;
+  /* Större än den ser ut att behöva: en kod som fyller mindre än ~55 mm på
+     skärmen kräver att man håller telefonen still och nära, vilket läser som
+     "dålig upplösning" även när koden är matematiskt perfekt. Modulerna är
+     kvadrater — det finns ingen upplösning att höja, bara yta att ge. */
+  width: 232px;
+  height: 232px;
+  margin: 0 auto 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
   /* QR-koden ritas alltid mörk på vitt: en kod med omvänd kontrast läses
      inte av alla kameraappar, så den behåller sin vita platta även i
      mörkt tema. */
@@ -3074,6 +3081,15 @@ dialog.history-dialog {
        filterarket måste lägga sig ovanpå det, annars hamnar den bakom och
        blir helt oåtkomlig. */
     z-index: 80;
+  }
+
+  /* Med filterarket UTFÄLLT ("Mer") är --bottomstack-h hela arkets höjd —
+     425 px av en 844 px skärm. En panel staplad ovanpå det hamnade då
+     153 px OVANFÖR skärmkanten, med sina översta knappar (bl.a. hela
+     kalenderexporten) utom räckhåll. Pickern ligger ändå ÖVER arket tack
+     vare z-index, så i det läget ska den bara lyftas över bottenraden. */
+  body.filters-expanded .team-picker-dd[open] > .team-picker-panel {
+    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
   }
 
   .team-picker-dd[open] > .team-picker-panel > .team-picker-list {
