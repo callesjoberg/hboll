@@ -123,10 +123,12 @@
        poängen med djuplänkarna. Bilden och texten nedan är ändå desamma
        för alla vyer, så kortet ser likadant ut.
 
-       canonical pekar på startsidan med flit: filtren är vyer av samma
-       sida och ska inte indexeras var för sig. Den styr sökmotorer, inte
-       vart ett delat kort leder. -->
-  <link rel="canonical" href="https://cupschema.se/">
+       Ingen canonical heller, av samma skäl. Den pekade på startsidan för
+       att filtrerade vyer inte ska indexeras var för sig — men flera
+       delningsytor och meddelandeappar använder canonical för att
+       "normalisera" en länk innan den öppnas, och skickade då mottagaren
+       till startsidan. Att en delad länk faktiskt bär sitt filter väger
+       tyngre än att slippa några snarlika träffar i en sökmotor. -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Cupschema">
   <meta property="og:locale" content="sv_SE">
