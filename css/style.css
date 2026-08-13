@@ -150,6 +150,9 @@ header.top {
   display: flex;
   align-items: center;
   gap: 10px;
+  /* Loggan är 34px och tvåradstiteln ungefär lika hög. min-height håller
+     headern stilla när märket döljs (ny besökare har inte valt klubb). */
+  min-height: 38px;
 }
 
 .brand img { height: 34px; width: auto; }
@@ -170,6 +173,9 @@ header.top {
   font-size: 11px;
   letter-spacing: 0.14em;
   color: #b9c6d8;
+  /* Tom underrubrik ska ändå ta en rad, annars hoppar headern i höjd
+     mellan "bara Cupschema" och "Cupschema + klubbnamn". */
+  min-height: 1.35em;
 }
 
 .brand .spacer { flex: 1; }

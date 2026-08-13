@@ -265,18 +265,49 @@ window.HB = window.HB || {};
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
   }
 
+  // Har besökaren FAKTISKT valt klubb? state.favoriteClub är alltid ifylld
+  // (default HB.CLUB.name), så den kan inte användas som signal. En annan
+  // förenings märke i headern gör att cuparrangörer och andra klubbar inte
+  // vågar länka hit till sina föräldrar — det ser ut som en konkurrents
+  // verktyg. Nyckeln hb:favoriteClub betyder "har valt", men saveSettings
+  // skriver den även vid temabyte; därför läser vi EN gång vid start och
+  // sätter flaggan bara när klubben faktiskt väljs (fältet i Inställningar
+  // eller stjärnknappen i en lagruta).
+  let hasChosenClub = false;
+  try { hasChosenClub = localStorage.getItem("hb:favoriteClub") != null; }
+  catch { /* privat läge / blockerad lagring: behandla som ej valt */ }
+
+  function markClubChosen() {
+    hasChosenClub = true;
+  }
+
   // Bytt ut mot en genererad badge så fort favoritklubben skiljer sig från
   // sajtens förvalda (Alingsås HK, med sin riktiga logga) — annars ingen
   // logga att visa för en godtycklig klubb. Uppdaterar både sidhuvudets
   // <img> och webbläsarflikens favicon.
+  //
+  // Utan valt klubb: dölj märket (display:none, inte bara osynligt — det
+  // ska inte ta plats) och visa appens egen favicon. Underrubriken töms
+  // härifrån (den är statisk i index.html och behöver ett id för att
+  // kunna styras). Befintlig badge-logik nedan är oförändrad.
+  const APP_FAVICON = "assets/icon-192.png";
+
   function updateClubLogo() {
     const name = (state.favoriteClub || HB.CLUB.name).trim();
     const isDefaultClub = name.toLowerCase() === HB.CLUB.name.toLowerCase();
     const src = isDefaultClub ? HB.CLUB.logo : clubBadgeDataUri(name);
     const img = $("#clubLogo");
-    if (img) { img.src = src; img.alt = isDefaultClub ? "" : name; }
+    const sub = $("#clubName");
     const favicon = $("#faviconLink");
-    if (favicon) favicon.href = src;
+    if (!hasChosenClub) {
+      if (img) img.hidden = true;
+      if (sub) sub.textContent = "";
+      if (favicon) { favicon.href = APP_FAVICON; favicon.type = "image/png"; }
+      return;
+    }
+    if (img) { img.hidden = false; img.src = src; img.alt = isDefaultClub ? "" : name; }
+    if (sub) sub.textContent = name;
+    if (favicon) { favicon.href = src; favicon.type = "image/svg+xml"; }
   }
 
   // --- resultatvisning ----------------------------------------------------
@@ -590,7 +621,10 @@ window.HB = window.HB || {};
 
   function saveSettings() {
     persist("hb:theme", state.theme);
-    persist("hb:favoriteClub", state.favoriteClub);
+    // Skriv inte nyckeln förrän klubben faktiskt valts — annars skulle ett
+    // temabyte göra att nästa sidladdning tror att Alingsås HK är valt
+    // och visa den klubbens märke för en besökare som aldrig valt.
+    if (hasChosenClub) persist("hb:favoriteClub", state.favoriteClub);
     persist("hb:favoriteTeams", JSON.stringify(state.favoriteTeams));
     rebuildClubPattern();
     updateClubLogo();
@@ -609,6 +643,7 @@ window.HB = window.HB || {};
   // Sätts direkt vid skriptkörning (inte i async init()) så temat är rätt
   // redan vid första målningen — annars hinner sidan flimra i fel tema.
   applyTheme();
+  updateClubLogo();
 
   function cup() {
     return HB.allCups().find((c) => c.id === state.cupId) || HB.allCups()[0];
@@ -3811,7 +3846,10 @@ window.HB = window.HB || {};
       // cupen") och lagets stjärna peka åt olika håll. Följ laget användaren
       // just pekade på — men bara när man LÄGGER TILL, annars skulle ett
       // borttag också flytta klubbvalet.
-      if (i < 0 && team.club && team.club.trim()) state.favoriteClub = team.club.trim();
+      if (i < 0 && team.club && team.club.trim()) {
+        state.favoriteClub = team.club.trim();
+        markClubChosen();
+      }
       saveSettings();
       renderFavoriteTeamList();
       const clubField = $("#favoriteClubInput");
@@ -9451,6 +9489,7 @@ window.HB = window.HB || {};
       const v = clubInput.value.trim();
       state.favoriteClub = v || HB.CLUB.name;
       clubInput.value = state.favoriteClub;
+      markClubChosen();
       saveSettings();
       render();
     };
