@@ -3436,17 +3436,42 @@ window.HB = window.HB || {};
   // direkt vid klick, och då hade kvittensen ("Kopierad ✓") aldrig synts.
   // Samma text-i-knappen-mönster som ProCue-knappen och "Kopiera länk".
   function buildShareLinkBlock() {
-    const label = "🔗 Dela";
+    // Från hemskärmen kan systemets egen delning skicka en annan adress än
+    // den appen visar. Web Share får därför uttryckligen vår beständiga URL.
+    const canShare = typeof navigator.share === "function";
+    const label = canShare ? "🔗 Dela" : "🔗 Kopiera länk";
     const btn = h("button", { class: "export-item", type: "button" }, label);
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const url = buildNamedShareUrl();
-      const write = navigator.clipboard && navigator.clipboard.writeText
-        ? navigator.clipboard.writeText(url)
-        : Promise.reject(new Error("inget urklipp"));
-      write.then(() => {
-        btn.textContent = "Kopierad ✓";
-        setTimeout(() => (btn.textContent = label), 2000);
-      }).catch(() => { btn.textContent = "Kunde inte kopiera"; });
+      const copyToClipboard = () => {
+        const write = navigator.clipboard && navigator.clipboard.writeText
+          ? navigator.clipboard.writeText(url)
+          : Promise.reject(new Error("inget urklipp"));
+        return write.then(() => {
+          btn.textContent = "Kopierad ✓";
+          setTimeout(() => (btn.textContent = label), 2000);
+        }).catch(() => { btn.textContent = "Kunde inte kopiera"; });
+      };
+      if (!canShare) {
+        await copyToClipboard();
+        return;
+      }
+      btn.textContent = "Delar…";
+      try {
+        await navigator.share({
+          title: cup().name,
+          text: "Se den här vyn för " + cup().name + ".",
+          url,
+        });
+        btn.textContent = label;
+      } catch (err) {
+        if (err && err.name === "AbortError") {
+          btn.textContent = label;
+          return;
+        }
+        // Andra Web Share-fel ska inte hindra användaren från att få länken.
+        await copyToClipboard();
+      }
     });
     return h("div", null, btn,
       h("p", { class: "export-note muted" },
