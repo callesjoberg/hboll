@@ -514,6 +514,10 @@ window.HB = window.HB || {};
     arenaMapOpen: false,
     showAllPlayedBracket: false, // slutspelstabellen: samma, men för dess egna rader
     schemaOlderRevealCount: 0,   // schemat: hur många extra äldre matcher "visa fler tidigare" öppnat upp
+    // Tillfälligt avsteg från Schemas automatiska favoriturval. Sparas inte:
+    // användaren har inte ändrat sina filter eller favoriter, bara bett den
+    // aktuella cupvyn att visa allt tills cupen laddas om/byts.
+    schemaShowAllCup: false,
     matches: [],
     loadedAt: 0,
     loading: false,
@@ -927,7 +931,8 @@ window.HB = window.HB || {};
     state.includeCurrentYear = true;
     state.viewCats = new Set(); state.viewTeams = new Set();
     state.arena = ""; state.viewArena = ""; state.q = ""; state.sort = "tid"; state.matchFilter = "all";
-    state.timeOrder = "asc"; state.schemaOlderRevealCount = 0; state.filterLocked = false;
+    state.timeOrder = "asc"; state.schemaOlderRevealCount = 0; state.schemaShowAllCup = false;
+    state.filterLocked = false;
     try {
       const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
       if (s.view) state.view = s.view;
@@ -6616,17 +6621,69 @@ window.HB = window.HB || {};
           (sheetMode() ? "“Filter” → “Mer” → “Exportera”" : "“Exportera”") +
           " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon.")));
     }
-    if (!hasFilterSelection()) {
-      main.append(h("div", { class: "banner" },
-        // Knappen heter olika saker beroende på layout — "Filter och
-        // sortering" i verktygsraden på dator, bara "Filter" i mobilens
-        // bottenrad. Att hänvisa till fel namn hjälper ingen.
-        sheetMode()
-          ? "Välj klass, lag eller plan under “Filter” för att visa schemat."
-          : "Välj klass, lag eller plan ovan (“Filter och sortering”) för att visa schemat."));
-      return;
+    const hasSelection = hasFilterSelection();
+    let automaticMatches = null;
+    let automaticLabel = "";
+    if (!hasSelection) {
+      const cupMatches = allActiveMatches();
+      const isFavoriteMatch = (m) =>
+        isFavoriteTeam(m.home.name, m.catName) ||
+        isFavoriteTeam(m.away.name, m.catName);
+      const favoriteMatches = cupMatches.filter(isFavoriteMatch);
+      const clubMatches = favoriteMatches.length ? [] : cupMatches.filter(isClubMatch);
+      // Dag och matchstatus räcker avsiktligt inte för att öppna schemat på
+      // egen hand (se hasFilterSelection), men om användaren redan valt dem
+      // ska även det automatiska favorit-/klubburvalet respektera valet.
+      const visibleCupMatches = cupMatches.filter((m) => {
+        if (state.days.size && !state.days.has(dayKey(m.start))) return false;
+        if (state.matchFilter === "upcoming" && m.res && m.res.fin) return false;
+        if (state.matchFilter === "played" && !(m.res && m.res.fin)) return false;
+        return true;
+      });
+
+      if (state.schemaShowAllCup) {
+        // filtered() börjar i scoped(), vilket normalt är favoritklubben.
+        // Här är avsikten uttryckligen hela cupen, så behåll bara de övriga
+        // vyvalen som fortfarande kan vara aktiva (dag/matchstatus).
+        automaticMatches = visibleCupMatches;
+        // Hela cupen är över tusen matcher i en stor cup — vägen tillbaka
+        // måste finnas kvar, annars sitter man fast i den listan tills man
+        // laddar om eller byter cup. Etiketten sätts bara när det FINNS ett
+        // favoriturval att gå tillbaka till.
+        if (favoriteMatches.length) automaticLabel = "back:dina lag";
+        else if (cupMatches.some(isClubMatch)) automaticLabel = "back:din klubb";
+      } else if (favoriteMatches.length) {
+        automaticMatches = visibleCupMatches.filter(isFavoriteMatch);
+        automaticLabel = "Visar dina lag";
+      } else if (clubMatches.length) {
+        automaticMatches = visibleCupMatches.filter(isClubMatch);
+        automaticLabel = "Visar din klubb";
+      } else {
+        main.append(h("div", { class: "banner" },
+          // Knappen heter olika saker beroende på layout — "Filter och
+          // sortering" i verktygsraden på dator, bara "Filter" i mobilens
+          // bottenrad. Att hänvisa till fel namn hjälper ingen.
+          sheetMode()
+            ? "Välj klass, lag eller plan under “Filter” för att visa schemat."
+            : "Välj klass, lag eller plan ovan (“Filter och sortering”) för att visa schemat."));
+        return;
+      }
     }
-    const list = sorted(filtered().filter(matchesViewFilter));
+
+    if (automaticLabel) {
+      const tillbaka = automaticLabel.startsWith("back:");
+      main.append(h("div", { class: "banner" },
+        h("div", { class: "row" },
+          h("span", null, tillbaka ? "Visar hela cupen" : automaticLabel),
+          h("button", {
+            class: "btn", type: "button",
+            onclick: () => {
+              state.schemaShowAllCup = !tillbaka;
+              renderContent();
+            },
+          }, tillbaka ? "Visa bara " + automaticLabel.slice(5) : "Visa hela cupen"))));
+    }
+    const list = sorted((automaticMatches || filtered()).filter(matchesViewFilter));
     if (!list.length) {
       if (state.scope === "club" && !scoped().length && state.matches.length) {
         main.append(h("div", { class: "banner" },
