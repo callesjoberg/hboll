@@ -577,6 +577,16 @@ header.top {
 
 .export-item:hover { background: var(--paper); }
 
+/* Prenumerationsraderna i exportpanelen är <a class="export-item">
+   (webcal://), inte knappar — ta bort länkunderstreck så de ser ut som
+   de andra export-raderna. */
+a.export-item { text-decoration: none; cursor: pointer; }
+
+/* Prenumerera-raderna under .ics i exportpanelen (buildExportSubscribeBlock).
+   Samma gap som panelens övriga rader, så blocket inte ser ut som en
+   annan sorts lista. */
+.export-subscribe { display: grid; gap: 2px; }
+
 .seg { display: flex; gap: 0; flex: none; }
 
 .seg .chip { border-radius: 0; }

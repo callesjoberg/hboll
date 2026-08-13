@@ -131,6 +131,15 @@ window.HB = window.HB || {};
     return null;
   }
 
+  // webcal:// gör att kalenderappen PRENUMERERAR (auto-uppdaterar) i stället
+  // för att bara ladda ner en engångsfil. Samma omvandling i lagrutan och
+  // exportpanelen, så byts den här följer båda med.
+  function calendarWebcalUrl(team) {
+    const raw = calendarSubscribeUrl(team);
+    if (!raw) return null;
+    return new URL(raw, location.href).href.replace(/^https?:/i, "webcal:");
+  }
+
   // Färgord i lagnamnet (t.ex. "Alingsås HK Blå", "Lödde Vikings HK Svart/Röd")
   // → en representativ hex-färg, för en liten prick bredvid lagnamnet.
   const TEAM_COLOR_WORDS = {
@@ -3282,6 +3291,39 @@ window.HB = window.HB || {};
     return location.origin + location.pathname + "?" + p.toString();
   }
 
+  // Prenumerationen hör hemma i exportmenyn — det är där man står när man
+  // vill ha kalendern. Lagrutans "📅 Prenumerera" finns kvar, men den hittar
+  // man bara om man redan vet att man ska klicka upp ett enskilt lag.
+  //
+  // Bara egna lag ur det aktuella urvalet (samma lista som .ics-exporten):
+  // favoritlag först, annars klubbens namn. Motståndare hoppas över — man
+  // vill inte prenumerera på alla 40 lag i klassen. Lag där
+  // calendarSubscribeUrl är null (ProCup/Gothia utanför favoritklubben)
+  // hoppas över tyst. Finns inga sådana lag visas inget block alls.
+  function buildExportSubscribeBlock() {
+    const seen = new Set();
+    const links = [];
+    for (const m of sorted(filtered())) {
+      for (const side of [m.home, m.away]) {
+        if (!side || !side.id || seen.has(side.id)) continue;
+        seen.add(side.id);
+        if (!isFavoriteTeam(side.name, m.catName) && !isClubName(side.name)) continue;
+        const calUrl = calendarWebcalUrl(side);
+        if (!calUrl) continue;
+        links.push({ team: side, calUrl });
+      }
+    }
+    if (!links.length) return null;
+    links.sort((a, b) => a.team.name.localeCompare(b.team.name, "sv"));
+    return h("div", { class: "export-subscribe" },
+      links.map(({ team, calUrl }) => h("a", {
+        class: "export-item", href: calUrl, rel: "noopener",
+        title: "Öppnar din kalenderapp och prenumererar på lagets matcher — nya/ändrade tider uppdateras sen automatiskt (funkar bäst på mobil).",
+      }, "📅 Prenumerera — " + team.name)),
+      h("p", { class: "export-note muted" },
+        "En prenumeration uppdateras av sig själv när arrangören ändrar tid, dag eller hall, till skillnad från .ics-filen ovanför."));
+  }
+
   function buildMatchExportPanel(item) {
     // Starta adresshämtningen redan när verktygsraden byggs, inte först vid
     // klicket: nedladdningen är synkron, så en geodata som fortfarande är på
@@ -3320,6 +3362,7 @@ window.HB = window.HB || {};
         "— då kan du radera allt i ett svep efteråt. ",
         h("a", { href: "hjalp.html#export", target: "_blank", rel: "noopener" },
           "Så gör du")),
+      buildExportSubscribeBlock(),
       item("📊 Kalkylark (.xlsx)", () => {
         const list = sorted(filtered());
         if (list.length) HB.xlsx.download(cup(), list, exportBaseName() + ".xlsx", exportArenaGeo());
@@ -3915,12 +3958,7 @@ window.HB = window.HB || {};
   function teamStatBlock(m, team, side) {
     const counts = teamMatchCounts(team.id);
     const statLine = h("p", { class: "muted team-stat-line" }, "Hämtar tabellplacering …");
-    // webcal:// gör att kalenderappen PRENUMERERAR (auto-uppdaterar) i stället
-    // för att bara ladda ner en engångsfil — det som knappen faktiskt lovar.
-    const rawCalUrl = calendarSubscribeUrl(team);
-    const calUrl = rawCalUrl
-      ? new URL(rawCalUrl, location.href).href.replace(/^https?:/i, "webcal:")
-      : null;
+    const calUrl = calendarWebcalUrl(team);
     const box = h("div", { class: "team-stat-block" },
       h("h3", { class: isClubName(team.name) ? "us" : "" }, team.name),
       statLine,
