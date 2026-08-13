@@ -801,6 +801,7 @@ window.HB = window.HB || {};
   let lastNavSig = null;
   let navInitialized = false;   // sätts sant när init är klar (så första synken ersätter, inte pushar)
   let applyingPopstate = false; // sant medan popstate återställer state (ingen ny push då)
+  let pendingNamedUrlFilters = null;
 
   // Läser URL-parametrar → state (delad/bokmärkt länk och popstate delar
   // denna). Sätter bara det som faktiskt finns i URL:en; nollställning görs
@@ -822,6 +823,54 @@ window.HB = window.HB || {};
     if (["all", "upcoming", "played"].includes(params.get("mf"))) state.matchFilter = params.get("mf");
     if (params.get("q")) state.q = params.get("q");
     applySubViewUrl(params);
+  }
+
+  // Lag- och klass-id byts mellan cupupplagor, så delningslänkar får även
+  // ange stabilare namn. Namnen kan inte lösas här tillsammans med övriga
+  // URL-parametrar: först efter loadCup() finns den aktuella upplagans
+  // matcher och därmed dess nya id:n. Behåll därför namnvalen i minnet tills
+  // matcherna har laddats. Den exakta id-formen vinner om båda finns.
+  function queueNamedUrlFilters(params) {
+    const team = params.has("team") && !params.has("teams");
+    const klass = params.has("klass") && !params.has("cats");
+    pendingNamedUrlFilters = team || klass
+      ? { cupId: state.cupId, params: new URLSearchParams(params), team, klass }
+      : null;
+    // En namnbaserad delningslänk ska inte blandas med ett gammalt, sparat
+    // filter. Om namnet saknas i cupen blir mängden kvar tom, helt tyst.
+    if (team) state.teams = new Set();
+    if (klass) state.cats = new Set();
+  }
+
+  function applyPendingNamedUrlFilters() {
+    const pending = pendingNamedUrlFilters;
+    if (!pending || pending.cupId !== state.cupId || !state.matches.length) return false;
+
+    if (pending.team) {
+      const names = new Set(pending.params.get("team").split(",")
+        .map((name) => slugifySv(name.trim())).filter(Boolean));
+      const ids = new Set();
+      for (const m of state.matches) {
+        if (names.has(slugifySv(m.home.name))) ids.add(m.home.id);
+        if (names.has(slugifySv(m.away.name))) ids.add(m.away.id);
+      }
+      state.teams = ids;
+    }
+
+    if (pending.klass) {
+      const names = new Set(pending.params.get("klass").split(",")
+        .map((name) => slugifySv(name.trim())).filter(Boolean));
+      const ids = new Set();
+      for (const m of state.matches) {
+        if (names.has(slugifySv(m.catName)) || names.has(slugifySv(HB.shortCat(m.catName)))) {
+          ids.add(m.catId);
+        }
+      }
+      state.cats = ids;
+    }
+
+    pendingNamedUrlFilters = null;
+    return true;
   }
 
   // Motsvarigheten till syncSubViewUrl — läser underflikarnas egna val ur
@@ -1069,6 +1118,7 @@ window.HB = window.HB || {};
         }
       } catch { /* ingen snapshot — hämta från API:t nedan */ }
     }
+    if (applyPendingNamedUrlFilters()) saveUi();
     const fresh = state.matches.length &&
       Date.now() - state.loadedAt < refreshTtl(state.matches);
     if (fresh && !force) { render(); return; }
@@ -1106,6 +1156,7 @@ window.HB = window.HB || {};
       }
       state.matches = matches;
       state.loadedAt = Date.now();
+      if (applyPendingNamedUrlFilters()) saveUi();
       if (!c.dataUrl) HB.api.writeCache(c, matches);
       if (!hasSyncedFreshData) {
         hasSyncedFreshData = true;
@@ -9709,6 +9760,7 @@ window.HB = window.HB || {};
     if (hasUrlFilters) {
       // En delad länk vinner över det som råkar ligga sparat i webbläsaren.
       applyUrlToState(params);
+      queueNamedUrlFilters(params);
       saveUi(); // spara den delade vyn som din egen, och normalisera URL:en
     }
 
@@ -9727,10 +9779,13 @@ window.HB = window.HB || {};
         state.matches = []; state.loadedAt = 0; heroIndex = 0; stashedFilter = null;
         autoScrolledToNow = false; hasSyncedFreshData = false;
         applyUrlToState(pp);
+        queueNamedUrlFilters(pp);
         lastNavSig = navSig();
         loadCup();
       } else {
         applyUrlToState(pp);
+        queueNamedUrlFilters(pp);
+        if (applyPendingNamedUrlFilters()) saveUi();
         lastNavSig = navSig();
         render();
       }
