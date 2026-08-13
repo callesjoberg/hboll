@@ -6773,6 +6773,102 @@ window.HB = window.HB || {};
     };
   }
 
+  // För den som ännu inte har valt favoritlag är frågan "vilket lag?"
+  // själva ingången till schemat. Sökningen använder samma state-filter som
+  // verktygsraden, men ritar bara om sin redan monterade träfflista medan man
+  // skriver — en render per tangent skulle bygga om inputen och tappa fokus.
+  function renderSchemaStartSearch(main) {
+    const candidates = [];
+    const teams = new Map();
+    const cats = new Map();
+    // Bara den laddade cupens matcher: arkivår och andra cuper ska inte smyga
+    // in bland förslagen i den här första vägen in i det aktuella schemat.
+    for (const m of state.matches) {
+      if (m.catId != null && m.catName && !cats.has(m.catId)) cats.set(m.catId, m.catName);
+      for (const side of [m.home, m.away]) {
+        if (side.id != null && side.name && !teams.has(side.id)) {
+          // Klassen måste följa med: samma lagnamn finns i flera klasser
+          // (104 av namnen i Göteborg Cup 2026), och utan den blir listan
+          // tre identiska rader där bara en är laget man menar.
+          teams.set(side.id, { name: side.name, catName: m.catName });
+        }
+      }
+    }
+    for (const [id, team] of teams) {
+      const kort = team.catName ? HB.shortCat(team.catName) : "";
+      candidates.push({
+        type: "team", id, label: team.name, hint: kort,
+        search: slugifySv(team.name + " " + (team.catName || "")),
+      });
+    }
+    for (const [id, name] of cats) {
+      candidates.push({
+        type: "cat", id, label: name,
+        // "F13" ska hitta även ett långt namn som "Flickor 13 ...".
+        search: slugifySv(HB.shortCat(name) + " " + name),
+      });
+    }
+
+    const inputId = "schemaStartSearch";
+    const listId = "schemaStartSearchResults";
+    const input = h("input", {
+      id: inputId, class: "search", type: "search",
+      placeholder: "Skriv ett lag eller en klass, t.ex. F13",
+      autocomplete: "off", "aria-autocomplete": "list", "aria-controls": listId,
+    });
+    const list = h("div", {
+      id: listId, class: "autocomplete-list schema-start-results", role: "listbox",
+      "aria-label": "Lag och klasser",
+    });
+    list.hidden = true;
+
+    const choose = (candidate) => {
+      // Hela cupens lag och klasser söks igenom. Växla därför även till
+      // cupomfattning så att scoped() inte tar bort den valda träffen igen.
+      state.scope = "all";
+      if (candidate.type === "team") state.teams = new Set([candidate.id]);
+      else state.cats = new Set([candidate.id]);
+      saveUi();
+      render();
+    };
+    input.addEventListener("input", () => {
+      const q = slugifySv(input.value.trim());
+      if (!q) {
+        list.hidden = true;
+        list.replaceChildren();
+        return;
+      }
+      const matches = candidates
+        .filter((candidate) => candidate.search.includes(q))
+        .sort((a, b) => {
+          const ai = a.search.indexOf(q);
+          const bi = b.search.indexOf(q);
+          return ai - bi || a.label.localeCompare(b.label, "sv");
+        })
+        .slice(0, 12);
+      list.hidden = !matches.length;
+      list.replaceChildren(...matches.map((candidate) =>
+        h("button", {
+          class: "autocomplete-item schema-start-result", type: "button", role: "option",
+          onclick: () => choose(candidate),
+        },
+        h("span", null, candidate.label,
+          candidate.hint
+            ? h("span", { class: "schema-start-result-cat" }, " " + candidate.hint)
+            : null),
+        h("span", { class: "schema-start-result-kind" },
+          candidate.type === "team" ? "Lag" : "Klass"))));
+    });
+
+    main.append(h("section", { class: "schema-start-search", "aria-labelledby": inputId + "Label" },
+      h("label", { id: inputId + "Label", for: inputId }, "Vilket lag vill du följa?"),
+      h("div", { class: "autocomplete-wrap" }, input, list),
+      h("button", {
+        class: "btn", type: "button",
+        onclick: () => { state.schemaShowAllCup = true; renderContent(); },
+      }, "Visa hela cupen")));
+  }
+
   function renderSchema(main) {
     renderHero(main);
     const pending = pendingSchedule();
@@ -6813,7 +6909,13 @@ window.HB = window.HB || {};
         isFavoriteTeam(m.home.name, m.catName) ||
         isFavoriteTeam(m.away.name, m.catName);
       const favoriteMatches = cupMatches.filter(isFavoriteMatch);
-      const clubMatches = favoriteMatches.length ? [] : cupMatches.filter(isClubMatch);
+      // Klubbgrenen gäller bara den som FAKTISKT valt klubb (samma flagga
+      // som headerns klubbmärke, se hasChosenClub). state.favoriteClub är
+      // annars förifylld med sajtens egen klubb, och då hade varje ny
+      // besökare fått Alingsås HK:s matcher serverade — med en neutral
+      // header ovanför — i stället för frågan om vilket lag hen följer.
+      const clubMatches = favoriteMatches.length || !hasChosenClub
+        ? [] : cupMatches.filter(isClubMatch);
       // Dag och matchstatus räcker avsiktligt inte för att öppna schemat på
       // egen hand (se hasFilterSelection), men om användaren redan valt dem
       // ska även det automatiska favorit-/klubburvalet respektera valet.
@@ -6834,7 +6936,7 @@ window.HB = window.HB || {};
         // laddar om eller byter cup. Etiketten sätts bara när det FINNS ett
         // favoriturval att gå tillbaka till.
         if (favoriteMatches.length) automaticLabel = "back:dina lag";
-        else if (cupMatches.some(isClubMatch)) automaticLabel = "back:din klubb";
+        else if (hasChosenClub && cupMatches.some(isClubMatch)) automaticLabel = "back:din klubb";
       } else if (favoriteMatches.length) {
         automaticMatches = visibleCupMatches.filter(isFavoriteMatch);
         automaticLabel = "Visar dina lag";
@@ -6842,13 +6944,7 @@ window.HB = window.HB || {};
         automaticMatches = visibleCupMatches.filter(isClubMatch);
         automaticLabel = "Visar din klubb";
       } else {
-        main.append(h("div", { class: "banner" },
-          // Knappen heter olika saker beroende på layout — "Filter och
-          // sortering" i verktygsraden på dator, bara "Filter" i mobilens
-          // bottenrad. Att hänvisa till fel namn hjälper ingen.
-          sheetMode()
-            ? "Välj klass, lag eller plan under “Filter” för att visa schemat."
-            : "Välj klass, lag eller plan ovan (“Filter och sortering”) för att visa schemat."));
+        renderSchemaStartSearch(main);
         return;
       }
     }

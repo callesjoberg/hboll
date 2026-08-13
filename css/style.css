@@ -723,6 +723,48 @@ input[type="search"]::-webkit-search-cancel-button {
 .banner-info p + p { margin-top: 8px; }
 .banner-info strong { color: var(--ink); }
 
+/* Förstavyn i Schema är innehåll, inte en hänvisning till filterremsan:
+   ett stort sökfält låter nya besökare gå direkt till sitt lag eller sin
+   klass. Träffarna ligger i flödet så knappen under inte täcks över. */
+.schema-start-search {
+  max-width: 620px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 12px 0;
+}
+
+.schema-start-search label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.schema-start-search .search { width: 100%; padding: 10px 12px; }
+.schema-start-search .autocomplete-list { position: static; margin-top: 4px; }
+.schema-start-search .btn { margin-top: 12px; }
+
+.schema-start-result {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+}
+
+.schema-start-result-kind { flex: none; color: var(--ink-soft); font-size: 12px; }
+/* Klassen efter lagnamnet — samma lagnamn finns i flera klasser, och
+   utan den blir träfflistan identiska rader (se renderSchemaStartSearch). */
+.schema-start-result-cat { color: var(--ink-soft); font-size: 12px; }
+
 /* Karta ------------------------------------------------------------------ */
 
 .map-count { margin: 0 0 8px; }
