@@ -1752,8 +1752,24 @@ window.HB = window.HB || {};
     // om det inte finns NÅGOT att visa alls, inte bara att just innevarande
     // upplaga råkar sakna schema än.
     if (!allActiveMatches().length && !state.loading && !state.error) {
+      // Rutan sa tidigare bara att schemat saknas, och Schema-fliken lade
+      // dessutom sin egen "välj klass, lag eller plan under Filter" ovanpå —
+      // en instruktion som pekar på en TOM filterremsa när cupen inte har
+      // några matcher. Man följde den, ingenting hände, och appen såg trasig
+      // ut. Nu står i stället när datan senast hämtades (så man ser att appen
+      // fungerar och letat) plus en väg vidare till en annan cup. Gäller
+      // alla flikar, inte bara Schema.
+      const hamtad = state.loadedAt
+        ? "Senast hämtat " + fmtDayLong.format(new Date(state.loadedAt)) +
+          " " + fmtClock.format(new Date(state.loadedAt))
+        : null;
       main.append(h("div", { class: "banner" },
-        cup().name + " har inte publicerat något spelschema ännu."));
+        h("p", null, cup().name + " har inte publicerat något spelschema ännu."),
+        hamtad ? h("p", { class: "muted" }, hamtad) : null,
+        h("button", {
+          class: "btn", type: "button",
+          onclick: () => { toggleFilterSheet(false); $("#currentCupBtn").click(); },
+        }, "Byt cup")));
       return;
     }
     if (state.view === "schema") renderSchema(main);
