@@ -830,6 +830,16 @@ window.HB = window.HB || {};
   // URL-parametrar: först efter loadCup() finns den aktuella upplagans
   // matcher och därmed dess nya id:n. Behåll därför namnvalen i minnet tills
   // matcherna har laddats. Den exakta id-formen vinner om båda finns.
+  // Namnlistor separeras med NAME_SEP (~), inte komma: två lagnamn i datan
+  // innehåller faktiskt komma ("Runar, IL" och "When in Europe, don't miss
+  // Skurup"), och de skulle annars klyvas mitt itu och inte matcha något.
+  // Samma separator som Stats-underflikarnas namnlistor redan använder.
+  function splitNameList(raw) {
+    return (raw || "").split(NAME_SEP)
+      .map((name) => slugifySv(name.trim()))
+      .filter(Boolean);
+  }
+
   function queueNamedUrlFilters(params) {
     const team = params.has("team") && !params.has("teams");
     const klass = params.has("klass") && !params.has("cats");
@@ -847,8 +857,7 @@ window.HB = window.HB || {};
     if (!pending || pending.cupId !== state.cupId || !state.matches.length) return false;
 
     if (pending.team) {
-      const names = new Set(pending.params.get("team").split(",")
-        .map((name) => slugifySv(name.trim())).filter(Boolean));
+      const names = new Set(splitNameList(pending.params.get("team")));
       const ids = new Set();
       for (const m of state.matches) {
         if (names.has(slugifySv(m.home.name))) ids.add(m.home.id);
@@ -858,8 +867,7 @@ window.HB = window.HB || {};
     }
 
     if (pending.klass) {
-      const names = new Set(pending.params.get("klass").split(",")
-        .map((name) => slugifySv(name.trim())).filter(Boolean));
+      const names = new Set(splitNameList(pending.params.get("klass")));
       const ids = new Set();
       for (const m of state.matches) {
         if (names.has(slugifySv(m.catName)) || names.has(slugifySv(HB.shortCat(m.catName)))) {
@@ -3174,10 +3182,10 @@ window.HB = window.HB || {};
         if (state.teams.has(m.away.id) && m.away.name) teams.add(m.away.name);
       }
       if (klasses.size) {
-        p.set("klass", [...klasses].sort((a, b) => a.localeCompare(b, "sv")).join(","));
+        p.set("klass", [...klasses].sort((a, b) => a.localeCompare(b, "sv")).join(NAME_SEP));
       }
       if (teams.size) {
-        p.set("team", [...teams].sort((a, b) => a.localeCompare(b, "sv")).join(","));
+        p.set("team", [...teams].sort((a, b) => a.localeCompare(b, "sv")).join(NAME_SEP));
       }
     }
     if (state.view !== "schema") p.set("view", state.view);

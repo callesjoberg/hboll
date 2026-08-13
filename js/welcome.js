@@ -30,14 +30,13 @@ window.HB = window.HB || {};
     return el;
   }
 
-  // Samma regel som hasUrlFilters i app.js/init() — hålls medvetet som en
-  // egen kopia (inte en delad konstant) eftersom de två filerna laddas
-  // oberoende av varandra och skriptordningen inte ska behöva spela någon
-  // roll. "Något mer än bara cup" räknas som en delad vy-länk; tune är
-  // överläggets eget felsökningsflagga (se nedan), inte ett vyval.
+  // Alla URL-val utom tune och versionsparametern _v betyder att besökaren
+  // har ett ärende och ska landa direkt i vyn. tune är överläggets egen
+  // felsökningsflagga (se nedan), inte ett vyval.
   function hasUrlFilters() {
     const params = new URLSearchParams(location.search);
-    return [...params.keys()].some((k) => !["cup", "tune", "_v"].includes(k));
+    // Även en ren cuplänk är ett ärende: besökaren vill direkt till cupen.
+    return [...params.keys()].some((k) => !["tune", "_v"].includes(k));
   }
 
   function fmtNum(n) {
@@ -1166,6 +1165,11 @@ window.HB = window.HB || {};
   HB.openWelcome = openWelcome;
 
   document.addEventListener("DOMContentLoaded", () => {
-    if (!localStorage.getItem(SEEN_KEY) && !hasUrlFilters()) openWelcome();
+    const tune = new URLSearchParams(location.search).has("tune");
+    const hasSavedSelection = localStorage.getItem("hb:cup") ||
+      localStorage.getItem("hb:favoriteTeams");
+    if (tune || (!localStorage.getItem(SEEN_KEY) && !hasSavedSelection && !hasUrlFilters())) {
+      openWelcome();
+    }
   });
 })();
