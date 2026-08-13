@@ -1136,7 +1136,12 @@ window.HB = window.HB || {};
               "Favoritmarkera din klubb, exportera schemat till din egen kalender, och välj mörkt eller ljust tema.")),
           h("div", { class: "welcome-cta-row" },
             h("button", { class: "welcome-cta", type: "button", onclick: () => closeWelcome(overlay) },
-              "Utforska →")))));
+              "Utforska →"),
+            // Andrahandsvalet: den som inte vet vad appen är för något ska
+            // kunna läsa vidare i stället för att bara mötas av en cup den
+            // inte valt. Går till hjälpsidans "Varför cupschema?".
+            h("a", { class: "welcome-cta-secondary", href: "hjalp.html#varfor" },
+              "Läs mer")))));
 
     document.body.append(overlay);
     document.addEventListener("keydown", onKeydown);

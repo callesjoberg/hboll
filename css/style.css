@@ -2788,7 +2788,26 @@ dialog.history-dialog {
   color: var(--ink-soft);
 }
 
-.welcome-cta-row { display: flex; justify-content: center; }
+.welcome-cta-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+
+/* "Läs mer" ska läsas som ett andrahandsval bredvid den gula knappen —
+   samma tyngd som en länk, inte en andra call-to-action. */
+.welcome-cta-secondary {
+  color: inherit;
+  opacity: 0.82;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.welcome-cta-secondary:hover { opacity: 1; }
 
 .welcome-cta {
   background: var(--yellow);
@@ -2963,6 +2982,17 @@ dialog.history-dialog {
   padding: 0 8px 6px 8px;
 }
 .export-alarm { flex: 1; min-width: 0; font-size: 13px; padding: 3px 6px; }
+
+/* Kalendertipset i exportpanelen — får inte konkurrera med knapparna, men
+   ska gå att läsa innan man trycker (se buildMatchExportPanel i js/app.js). */
+.export-note {
+  margin: 2px 8px 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 34ch;
+}
 
 /* Hjälptexten under "Appversion" i Inställningar — samma dämpade ton som
    övriga förklaringar i dialogen, men på egen rad under kontrollerna. */

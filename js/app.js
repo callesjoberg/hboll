@@ -3112,6 +3112,14 @@ window.HB = window.HB || {};
       }),
       h("div", { class: "export-alarm-row" },
         h("span", { class: "muted" }, "🔔"), alarmSel),
+      // Ångrar man en import av femtio matcher till sin vanliga kalender
+      // finns ingen "ångra" — de måste plockas bort en och en. Tipset står
+      // här, i själva ögonblicket före nedladdningen, inte bara i manualen.
+      h("p", { class: "export-note muted" },
+        "Tips: skapa en egen kalender i telefonen för cupen och importera dit " +
+        "— då kan du radera allt i ett svep efteråt. ",
+        h("a", { href: "hjalp.html#export", target: "_blank", rel: "noopener" },
+          "Så gör du")),
       item("📊 Kalkylark (.xlsx)", () => {
         const list = sorted(filtered());
         if (list.length) HB.xlsx.download(cup(), list, exportBaseName() + ".xlsx", exportArenaGeo());
