@@ -112,12 +112,24 @@
        är ett krav — skrapor läser sidan utan att veta var den hämtades, så
        en relativ sökväg ger ingen bild alls. Kortet byggs av
        scripts/make_og_image.mjs och är medvetet statiskt: skraporna cachar
-       det hårt och ?cup= i länken kan ändå inte påverka bilden. -->
+       det hårt och ?cup= i länken kan ändå inte påverka bilden.
+
+       INGEN og:url här, och det är avsiktligt. Den var tidigare hårdkodad
+       till startsidan, och eftersom sajten är statisk svarade även en
+       filtrerad länk med den. Delningsytor som bygger sitt kort mot og:url
+       skickade då mottagaren till startsidan i stället för till den delade
+       vyn — en klass man just filtrerat fram försvann på vägen genom SMS.
+       Utan taggen används adressen som faktiskt delades, vilket är hela
+       poängen med djuplänkarna. Bilden och texten nedan är ändå desamma
+       för alla vyer, så kortet ser likadant ut.
+
+       canonical pekar på startsidan med flit: filtren är vyer av samma
+       sida och ska inte indexeras var för sig. Den styr sökmotorer, inte
+       vart ett delat kort leder. -->
   <link rel="canonical" href="https://cupschema.se/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Cupschema">
   <meta property="og:locale" content="sv_SE">
-  <meta property="og:url" content="https://cupschema.se/">
   <meta property="og:title" content="Cupschema · Alingsås HK">
   <meta property="og:description" content="Spelschema, resultat, tabeller och slutspel för handbollscuper — Åhus Beach, Partille, Potatiscupen, Hallbybollen med flera. Följ vilken klubb som helst.">
   <meta property="og:image" content="https://cupschema.se/assets/og.png">
