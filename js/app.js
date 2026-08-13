@@ -149,8 +149,31 @@ window.HB = window.HB || {};
   // markeras med en ⭐ på matchkort och i nästa match-kortet. Jämförs
   // slugifierat (som lagfärgsöverstyrningarna) så stavning/skiftläge inte
   // spelar roll.
-  function isFavoriteTeamName(name) {
-    return !!state.favoriteTeam && slugifySv(name) === slugifySv(state.favoriteTeam);
+  // catName är matchens klass och avgör vilken årskull laget spelar i.
+  //
+  // Har favoriten en årskull måste den stämma EXAKT — även mot en klass som
+  // inte går att tolka. Annars läcker stjärnan: väljer man "Alingsås HK 1
+  // (Flickor 2010)" och klassen "Herrjunior (födda 07-09)" saknar entydigt
+  // födelseår, så skulle en tillåtande jämförelse stjärnmärka herrjunior-
+  // laget också — vilket är precis den sammanblandning årskullen finns för
+  // att lösa. Favoriter UTAN årskull (inskrivna som fritext, eller migrerade
+  // från det gamla enskilda fältet) matchar som förr på enbart namnet.
+  function isFavoriteTeam(name, catName) {
+    if (!name || !state.favoriteTeams.length) return false;
+    const slug = slugifySv(name);
+    const ck = cohortKey(catName);
+    return state.favoriteTeams.some((f) =>
+      slugifySv(f.name) === slug && (!f.cohort || f.cohort === ck));
+  }
+
+  // Nyckel för att jämföra/avduplicera favoritposter (namn + årskull).
+  function favoriteTeamKey(name, cohort) {
+    return slugifySv(name) + "|" + (cohort || "");
+  }
+
+  function favoriteTeamIndex(name, cohort) {
+    const key = favoriteTeamKey(name, cohort);
+    return state.favoriteTeams.findIndex((f) => favoriteTeamKey(f.name, f.cohort) === key);
   }
 
   function detectTeamColor(name) {
@@ -509,7 +532,29 @@ window.HB = window.HB || {};
     advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
     showPlayoffProjection: localStorage.getItem("hb:showPlayoffProjection") === "on",
     favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
-    favoriteTeam: localStorage.getItem("hb:favoriteTeam") || "", // tomt = ingen stjärna
+    // Stjärnmärkta lag: [{name, cohort}] där cohort är årskullsnyckeln ur
+    // klassnamnet ("F2011", se cohortKey) eller null när klassen inte går
+    // att tolka. Klubb+lagnamn ensamt räcker INTE som identitet: "Alingsås
+    // HK 1" finns samtidigt i F16, P16 och Herrjunior i samma cup (104
+    // lagnamn i Göteborg Cup 2026 är tvetydiga på det viset), så en ren
+    // namnmatchning stjärnmärkte alla på en gång. Årskullen är däremot
+    // stabil mellan både cuper och år — ett lag fött 2011 är F2011 oavsett
+    // om klassen råkar heta "F13" eller "Flickor 13" det året.
+    //
+    // Lista, inte ett enda lag: man har ofta flera barn eller följer flera
+    // årskullar. hb:favoriteTeam (en sträng) migreras in nedan och lämnas
+    // kvar orörd, så en nedgradering inte tappar valet.
+    favoriteTeams: (() => {
+      try {
+        const raw = JSON.parse(localStorage.getItem("hb:favoriteTeams") || "null");
+        if (Array.isArray(raw)) {
+          return raw.filter((t) => t && t.name)
+            .map((t) => ({ name: String(t.name), cohort: t.cohort || null }));
+        }
+      } catch { /* trasigt värde: falla tillbaka på det gamla fältet */ }
+      const legacy = (localStorage.getItem("hb:favoriteTeam") || "").trim();
+      return legacy ? [{ name: legacy, cohort: null }] : [];
+    })(),
     fullCardColors: localStorage.getItem("hb:fullCardColors") === "on",
     // Minuter före matchstart som .ics-exporten lägger in en påminnelse
     // (VALARM), 0 = ingen. Väljs i exportmenyn men sparas här, se
@@ -542,7 +587,7 @@ window.HB = window.HB || {};
   function saveSettings() {
     persist("hb:theme", state.theme);
     persist("hb:favoriteClub", state.favoriteClub);
-    persist("hb:favoriteTeam", state.favoriteTeam);
+    persist("hb:favoriteTeams", JSON.stringify(state.favoriteTeams));
     rebuildClubPattern();
     updateClubLogo();
     persist("hb:teamColors", state.teamColors ? "on" : "off");
@@ -1432,25 +1477,76 @@ window.HB = window.HB || {};
     return [...set].sort((a, b) => a.localeCompare(b, "sv"));
   }
 
-  // Kandidater för favoritlag-autocomplete: klubbens lag, oberoende av
-  // vilken cup som är öppen. Innevarande cups lag (clubTeams) först, sedan
-  // alla lagnamn ur arkivets lagnamnsindex (data/archive/team-index.json)
-  // som hör till favoritklubben — annars går det inte att välja sitt lag i
-  // en cup som inte startat, vilket är just när man vill ställa in det.
+  // Kandidater för favoritlag-autocomplete.
+  //
+  // Ett lagnamn ensamt duger inte som val: "Alingsås HK 1" finns samtidigt i
+  // F16, P16 och Herrjunior. Varje förslag bär därför sin ÅRSKULL och visas
+  // som "Alingsås HK 1 (Flickor 2011)", sökbart på både namnet och kullen
+  // ("f2011"). Ordningen är medveten: lagen ur cupernas INNEVARANDE upplagor
+  // först — det är dem man vill följa nu — och de äldre namnen ur arkivet
+  // sist, som en möjlighet att stjärnmärka ett lag man mött förr.
+  //
+  // Klassen finns bara i matchdatan, inte i lagnamnsindexet, så de arkiverade
+  // namnen saknar årskull (cohort null) och matchar då på namnet allena.
   function favoriteTeamCandidates() {
-    const set = new Set(clubTeams().map((t) => t.name));
     const club = (state.favoriteClub || "").trim().toLowerCase();
-    const idx = state.teamIndex || {};
-    for (const byEdition of Object.values(idx)) {
+    const seen = new Set();
+    const out = [];
+    const add = (name, catName) => {
+      const n = (name || "").trim();
+      if (!n || isPlaceholderTeam({ name: n })) return;
+      if (club && !n.toLowerCase().startsWith(club)) return;
+      const cohort = cohortKey(catName);
+      const key = favoriteTeamKey(n, cohort);
+      if (seen.has(key)) return;
+      seen.add(key);
+      const kull = cohort ? cohortLabel(catName) : (catName || "").trim();
+      out.push({
+        label: n + (kull ? " (" + kull + ")" : ""),
+        // sök­texten rymmer både kortformen (F2011) och den skrivna
+        // ("Flickor 2011"), så båda skrivsätten hittar laget
+        search: [n, cohort, kull, HB.shortCat(catName || "")].filter(Boolean).join(" "),
+        value: { name: n, cohort },
+      });
+    };
+    // Innevarande upplaga: klubbens lag med sin klass
+    for (const m of state.matches) {
+      for (const side of [m.home, m.away]) add(side.name, m.catName);
+    }
+    // Alla andra cupers lagnamn ur arkivets index (ingen klass tillgänglig)
+    for (const byEdition of Object.values(state.teamIndex || {})) {
       for (const names of Object.values(byEdition || {})) {
-        for (const name of names || []) {
-          const n = (name || "").trim();
-          if (!n || isPlaceholderTeam({ name: n })) continue;
-          if (club && n.toLowerCase().startsWith(club)) set.add(n);
-        }
+        for (const name of names || []) add(name, null);
       }
     }
-    return [...set].sort((a, b) => a.localeCompare(b, "sv"));
+    return out;
+  }
+
+  // Valda favoritlag som borttagbara chips under sökfältet. Ritas om av
+  // både inställningsfältet och stjärnknappen i lagrutan, så de två vägarna
+  // in alltid visar samma lista.
+  function renderFavoriteTeamList() {
+    const box = $("#favoriteTeamList");
+    if (!box) return;
+    if (!state.favoriteTeams.length) {
+      box.replaceChildren(h("span", { class: "muted" }, "Inga favoritlag valda."));
+      return;
+    }
+    box.replaceChildren(...state.favoriteTeams.map((f, i) =>
+      h("span", { class: "fav-team-chip" },
+        f.name,
+        f.cohort ? h("span", { class: "fav-team-cohort" }, " " + f.cohort) : null,
+        h("button", {
+          class: "fav-team-remove", type: "button",
+          "aria-label": "Ta bort " + f.name + " ur favoritlagen",
+          title: "Ta bort",
+          onclick: () => {
+            state.favoriteTeams.splice(i, 1);
+            saveSettings();
+            renderFavoriteTeamList();
+            render();
+          },
+        }, "×"))));
   }
 
   // arenaOverride: Bana-fliken har sin EGEN banväljare (state.viewArena,
@@ -3311,10 +3407,10 @@ window.HB = window.HB || {};
       },
         h("div", { class: "hero-teams" },
           h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name,
-            isFavoriteTeamName(m.home.name) ? h("span", { class: "fav-team-star" }, "⭐") : null),
+            isFavoriteTeam(m.home.name, m.catName) ? h("span", { class: "fav-team-star" }, "⭐") : null),
           h("span", { class: "vs" }, live && scoreText(m.res) ? scoreText(m.res) : "mot"),
           h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name,
-            isFavoriteTeamName(m.away.name) ? h("span", { class: "fav-team-star" }, "⭐") : null)),
+            isFavoriteTeam(m.away.name, m.catName) ? h("span", { class: "fav-team-star" }, "⭐") : null)),
         h("div", { class: "hero-info" },
           fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
           h("span", { class: "dot" }, "·"), m.arena || "plan ej satt",
@@ -3480,38 +3576,43 @@ window.HB = window.HB || {};
           p.goals ? h("span", { class: "roster-goals" }, p.goals + " mål") : null))));
   }
 
-  // Andra vägen in till favoritlaget: hittar man laget i schemat eller en
-  // tabell och klickar upp dess ruta ska man kunna stjärnmärka det direkt,
-  // i stället för att memorera namnet och skriva in det i Inställningar.
-  // Samma state (state.favoriteTeam) och samma slugjämförelse som fältet
-  // där — knappen speglar alltså vad som står i inställningarna, och tvärtom.
-  function favoriteTeamToggle(team) {
+  // Andra vägen in till favoritlagen: hittar man laget i schemat, en tabell
+  // eller i historikbläddrarens gamla upplagor ska man kunna stjärnmärka det
+  // på plats, i stället för att memorera namnet och skriva in det i
+  // Inställningar. Lägger till i state.favoriteTeams — samma lista som
+  // fältet där, så de två alltid speglar varandra.
+  //
+  // catName kommer från matchen laget klickades upp ur och ger årskullen
+  // (F2011), så stjärnan sätts på RÄTT "Alingsås HK 1" av de tre som finns.
+  function favoriteTeamToggle(team, catName) {
     const name = (team.name || "").trim();
     if (!name) return null;
+    const cohort = cohortKey(catName);
     const btn = h("button", { class: "btn small", type: "button" });
     // Rutan är en fristående dialog som render() inte ritar om, så knappen
     // måste spegla sitt eget läge — annars såg den likadan ut efter klicket
     // och man kunde varken se att stjärnan satt eller ångra den på plats.
+    const label = name + (cohort ? " (" + cohortLabel(catName) + ")" : "");
     const sync = () => {
-      const on = isFavoriteTeamName(name);
+      const on = favoriteTeamIndex(name, cohort) >= 0;
       btn.classList.toggle("on", on);
       btn.textContent = on ? "★ Favoritlag" : "☆ Gör till favoritlag";
       btn.title = on
-        ? "Ta bort stjärnan från " + name
-        : "Markera " + name + " som ditt favoritlag — det får en ⭐ i schemat";
+        ? "Ta bort " + label + " ur dina favoritlag"
+        : "Lägg till " + label + " bland dina favoritlag — det får en ⭐ i schemat";
     };
     btn.addEventListener("click", () => {
-      const on = isFavoriteTeamName(name);
-      state.favoriteTeam = on ? "" : name;
-      // Favoritlaget hör ihop med en klubb: sätter man stjärnan på ett lag
-      // ur en ANNAN klubb än den valda skulle klubbfiltret ("Alingsås HK"/
-      // "Hela cupen") och lagets stjärna peka åt olika håll. Flytta därför
-      // klubbvalet med — rimligare att följa laget användaren just pekade på
-      // än att låta de två glida isär.
-      if (!on && team.club && team.club.trim()) state.favoriteClub = team.club.trim();
+      const i = favoriteTeamIndex(name, cohort);
+      if (i >= 0) state.favoriteTeams.splice(i, 1);
+      else state.favoriteTeams.push({ name, cohort });
+      // Favoritlagen hör ihop med en klubb: stjärnmärker man ett lag ur en
+      // ANNAN klubb än den valda skulle klubbfiltret ("Alingsås HK"/"Hela
+      // cupen") och lagets stjärna peka åt olika håll. Följ laget användaren
+      // just pekade på — men bara när man LÄGGER TILL, annars skulle ett
+      // borttag också flytta klubbvalet.
+      if (i < 0 && team.club && team.club.trim()) state.favoriteClub = team.club.trim();
       saveSettings();
-      const teamField = $("#favoriteTeamInput");
-      if (teamField) teamField.value = state.favoriteTeam;
+      renderFavoriteTeamList();
       const clubField = $("#favoriteClubInput");
       if (clubField) clubField.value = state.favoriteClub;
       sync();
@@ -3551,7 +3652,7 @@ window.HB = window.HB || {};
           class: "btn small", href: calUrl, rel: "noopener",
           title: "Öppnar din kalenderapp och prenumererar på lagets matcher — nya/ändrade tider uppdateras sen automatiskt (funkar bäst på mobil).",
         }, "📅 Prenumerera") : null,
-        favoriteTeamToggle(team)),
+        favoriteTeamToggle(team, m.catName)),
       rosterBlock(team, m.edition));
 
     if (!m.divId) {
@@ -3716,6 +3817,39 @@ window.HB = window.HB || {};
     return arr;
   }
 
+  // Liten stjärnknapp vid ett lagnamn i historikens rader. Arkiverade
+  // matcher har ingen livetabell att slå upp, så lagrutan (teamStatBlock)
+  // går inte att öppna här — men man ska ändå kunna stjärnmärka ett lag man
+  // hittar bland tidigare års resultat, utan att gå omvägen via
+  // Inställningar. Årskullen tas ur matchens klass precis som överallt
+  // annars, så rätt lag träffas.
+  function archiveFavStar(name, catName) {
+    const clean = (name || "").trim();
+    if (!clean || isPlaceholderTeam({ name: clean })) return null;
+    const cohort = cohortKey(catName);
+    const btn = h("button", { class: "arch-fav", type: "button" });
+    const sync = () => {
+      const on = favoriteTeamIndex(clean, cohort) >= 0;
+      btn.classList.toggle("on", on);
+      btn.textContent = on ? "⭐" : "☆";
+      btn.title = (on ? "Ta bort " : "Lägg till ") + clean +
+        (cohort ? " (" + cohortLabel(catName) + ")" : "") +
+        (on ? " ur dina favoritlag" : " bland dina favoritlag");
+      btn.setAttribute("aria-pressed", String(on));
+    };
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const i = favoriteTeamIndex(clean, cohort);
+      if (i >= 0) state.favoriteTeams.splice(i, 1);
+      else state.favoriteTeams.push({ name: clean, cohort });
+      saveSettings();
+      renderFavoriteTeamList();
+      sync();
+    });
+    sync();
+    return btn;
+  }
+
   function archiveMatchRow(m) {
     const sc = scoreText(m.res);
     return h("div", { class: "arch-row" },
@@ -3723,8 +3857,10 @@ window.HB = window.HB || {};
         fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start))),
       h("span", { class: "arch-teams" },
         h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name),
+        archiveFavStar(m.home.name, m.catName),
         " – ",
-        h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name)),
+        h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name),
+        archiveFavStar(m.away.name, m.catName)),
       m.outcome ? h("span",
         { class: "outcome-badge outcome-" + m.outcome.toLowerCase() }, m.outcome) : null,
       h("span", { class: "arch-score" }, sc || "–"),
@@ -6179,7 +6315,7 @@ window.HB = window.HB || {};
       },
         color ? h("span", { class: "team-color-dot", style: "background:" + color }) : null,
         side.name || "–",
-        isFavoriteTeamName(side.name) ? h("span", { class: "fav-team-star" }, "⭐") : null);
+        isFavoriteTeam(side.name, m.catName) ? h("span", { class: "fav-team-star" }, "⭐") : null);
     };
     const tint = cardTintColor(m);
     return h("article", {
@@ -9023,13 +9159,18 @@ window.HB = window.HB || {};
   // hur många tecken som krävs innan förslag visas — Klubbjämförelsens
   // sökruta (se renderClubCompareView) höjer den till 2 så listan (som
   // spänner alla cupers klubbar) inte känns brusig efter bara en bokstav.
+  // getCandidates får ge antingen rena strängar eller objekt
+  // {label, search, value} — det senare när det som VISAS skiljer sig från
+  // det som matchas eller väljs (favoritlagen visar "Alingsås HK 1 (Flickor
+  // 2011)", matchar även på "f2011" och lämnar tillbaka {name, cohort}).
   function attachAutocomplete(input, list, getCandidates, onPick, minLen = 1) {
     const hide = () => { list.hidden = true; list.replaceChildren(); };
     input.addEventListener("input", () => {
       const q = input.value.trim().toLowerCase();
       if (q.length < minLen) { hide(); return; }
       const matches = getCandidates()
-        .filter((c) => c.toLowerCase().includes(q))
+        .map((c) => (typeof c === "string" ? { label: c, search: c, value: c } : c))
+        .filter((c) => (c.search || c.label).toLowerCase().includes(q))
         .slice(0, 8);
       if (!matches.length) { hide(); return; }
       list.hidden = false;
@@ -9037,8 +9178,13 @@ window.HB = window.HB || {};
         h("div", {
           class: "autocomplete-item",
           // mousedown (inte click) så den hinner före inputs "blur"-döljning
-          onmousedown: (e) => { e.preventDefault(); input.value = m; hide(); onPick(m); },
-        }, m)));
+          onmousedown: (e) => {
+            e.preventDefault();
+            input.value = typeof m.value === "string" ? m.value : "";
+            hide();
+            onPick(m.value);
+          },
+        }, m.label)));
     });
     input.addEventListener("blur", () => setTimeout(hide, 150));
   }
@@ -9062,19 +9208,34 @@ window.HB = window.HB || {};
       clubInput.value = ""; applyFavoriteClub(); clubInput.focus();
     });
 
+    // Sökfältet LÄGGER TILL i listan i stället för att hålla ett värde —
+    // därför töms det efter varje val, och de valda lagen visas som chips
+    // under (renderFavoriteTeamList).
     const teamInput = $("#favoriteTeamInput");
-    teamInput.value = state.favoriteTeam;
-    const applyFavoriteTeam = () => {
-      state.favoriteTeam = teamInput.value.trim();
+    const addFavoriteTeam = (picked) => {
+      const name = (typeof picked === "string" ? picked : (picked && picked.name) || "").trim();
+      if (!name) { teamInput.value = ""; return; }
+      const cohort = typeof picked === "string" ? null : (picked.cohort || null);
+      if (favoriteTeamIndex(name, cohort) < 0) state.favoriteTeams.push({ name, cohort });
+      teamInput.value = "";
       saveSettings();
-      renderContent();
+      renderFavoriteTeamList();
+      render();
     };
-    teamInput.addEventListener("change", applyFavoriteTeam);
-    attachAutocomplete($("#favoriteTeamInput"), $("#favoriteTeamOptions"),
-      favoriteTeamCandidates, applyFavoriteTeam);
-    $("#favoriteTeamClear").addEventListener("click", () => {
-      teamInput.value = ""; applyFavoriteTeam(); teamInput.focus();
+    // Fritext (utan att välja ur listan) räknas också — men bara på Enter,
+    // annars skulle varje halvskrivet ord bli ett favoritlag.
+    teamInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && teamInput.value.trim()) {
+        e.preventDefault();
+        addFavoriteTeam(teamInput.value.trim());
+      }
     });
+    attachAutocomplete($("#favoriteTeamInput"), $("#favoriteTeamOptions"),
+      favoriteTeamCandidates, addFavoriteTeam);
+    $("#favoriteTeamClear").addEventListener("click", () => {
+      teamInput.value = ""; teamInput.focus();
+    });
+    renderFavoriteTeamList();
 
     const themeBtns = $$("#themeSeg [data-theme-opt]");
     const syncThemeBtns = () => {

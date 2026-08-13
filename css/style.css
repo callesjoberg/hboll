@@ -1904,6 +1904,24 @@ dialog.history-dialog {
 .arch-date { color: var(--ink-soft); flex: 0 0 auto; }
 .arch-teams { flex: 1 1 auto; min-width: 140px; }
 .arch-teams .us { font-weight: 600; color: var(--blue-deep); }
+
+/* Stjärnknapp vid lagnamn i historikens rader (archiveFavStar i js/app.js).
+   Dämpad tills den är påslagen eller pekas på — annars konkurrerar två
+   stjärnor per rad med resultatet om uppmärksamheten. */
+.arch-fav {
+  border: none;
+  background: none;
+  padding: 0 2px;
+  margin-left: 2px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.28;
+  transition: opacity 0.12s;
+}
+
+.arch-fav:hover, .arch-fav:focus-visible { opacity: 1; }
+.arch-fav.on { opacity: 1; }
 .arch-score { font-weight: 700; font-variant-numeric: tabular-nums; }
 .arch-cat { color: var(--ink-soft); font-size: 11px; }
 
@@ -1935,6 +1953,41 @@ dialog.history-dialog {
   background: color-mix(in srgb, var(--yellow) 18%, transparent);
   font-weight: 600;
 }
+
+/* Valda favoritlag i inställningarna (renderFavoriteTeamList i js/app.js) */
+.fav-team-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+
+.fav-team-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--yellow);
+  border-radius: 999px;
+  background: var(--card);
+  font-size: 13px;
+}
+
+.fav-team-cohort { color: var(--ink-soft); font-size: 12px; }
+
+.fav-team-remove {
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.fav-team-remove:hover { color: var(--live); background: var(--paper); }
 
 .team-roster {
   margin-top: 10px;

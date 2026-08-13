@@ -229,15 +229,19 @@
       <label class="settings-label" for="favoriteTeamInput">Favoritlag (valfritt)</label>
       <div class="autocomplete-wrap">
         <div class="search-wrap">
-          <input type="text" id="favoriteTeamInput" placeholder="t.ex. Alingsås HK Blå"
+          <input type="text" id="favoriteTeamInput" placeholder="Sök lag eller årskull, t.ex. F2011"
                  autocomplete="off">
           <button type="button" class="search-clear" id="favoriteTeamClear" aria-label="Rensa" tabindex="-1">×</button>
         </div>
         <div id="favoriteTeamOptions" class="autocomplete-list" hidden></div>
       </div>
-      <p class="muted">Ett specifikt eget lag att hålla extra koll på — det
-         får en ⭐ bredvid namnet på matchkort och i nästa match-kortet.
-         Lämna tomt för att inte visa någon stjärna.</p>
+      <div id="favoriteTeamList" class="fav-team-list"></div>
+      <p class="muted">Egna lag att hålla extra koll på — de får en ⭐ bredvid
+         namnet på matchkort och i nästa match-kortet. Du kan välja flera.
+         Sök på lagnamn eller årskull (t.ex. <code>F2011</code>) — årskullen
+         följer med, så rätt lag stjärnmärks även när flera lag i klubben
+         heter likadant. Du kan också stjärnmärka ett lag direkt genom att
+         klicka upp det i schemat eller en tabell.</p>
     </div>
 
     <div class="settings-group full">
