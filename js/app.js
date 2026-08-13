@@ -3158,6 +3158,36 @@ window.HB = window.HB || {};
     ["60", "1 timme innan"], ["120", "2 timmar innan"], ["1440", "1 dygn innan"],
   ];
 
+  // Adressfältet (syncUrl) skriver cats=/teams= med arrangörens numeriska
+  // id, som byts mellan upplagor — en kopierad adress slutar filtrera nästa
+  // säsong. Den här länken skriver samma urval som klass=/team= med namn,
+  // som applyPendingNamedUrlFilters slår upp mot den nya upplagan.
+  function buildNamedShareUrl() {
+    const p = new URLSearchParams();
+    p.set("cup", state.cupId);
+    if (state.cats.size || state.teams.size) {
+      const klasses = new Set();
+      const teams = new Set();
+      for (const m of state.matches) {
+        if (state.cats.has(m.catId) && m.catName) klasses.add(HB.shortCat(m.catName));
+        if (state.teams.has(m.home.id) && m.home.name) teams.add(m.home.name);
+        if (state.teams.has(m.away.id) && m.away.name) teams.add(m.away.name);
+      }
+      if (klasses.size) {
+        p.set("klass", [...klasses].sort((a, b) => a.localeCompare(b, "sv")).join(","));
+      }
+      if (teams.size) {
+        p.set("team", [...teams].sort((a, b) => a.localeCompare(b, "sv")).join(","));
+      }
+    }
+    if (state.view !== "schema") p.set("view", state.view);
+    // Stats har elva underflikar — utan den här hamnar en delad Karta- eller
+    // Historiklänk på Trend, som är förvalet.
+    if (state.view === "stats" && state.statsView !== "trend") p.set("stats", state.statsView);
+    if (state.scope === "all") p.set("scope", "all");
+    return location.origin + location.pathname + "?" + p.toString();
+  }
+
   function buildMatchExportPanel(item) {
     // Starta adresshämtningen redan när verktygsraden byggs, inte först vid
     // klicket: nedladdningen är synkron, så en geodata som fortfarande är på
@@ -3243,7 +3273,33 @@ window.HB = window.HB || {};
             "matcher", "match", exportBaseName() + ".xml");
         }
       }),
+      buildShareLinkBlock(),
       buildSendToPhoneBlock());
+  }
+
+  // Delaknapp + förklaring, samma i alla tre exportpanelerna (matcher,
+  // tabeller, slutspel) — vyn man vill skicka vidare är lika ofta en tabell
+  // som en matchlista.
+  //
+  // Byggs för hand i stället för via panelernas item(): den stänger menyn
+  // direkt vid klick, och då hade kvittensen ("Kopierad ✓") aldrig synts.
+  // Samma text-i-knappen-mönster som ProCue-knappen och "Kopiera länk".
+  function buildShareLinkBlock() {
+    const label = "🔗 Dela";
+    const btn = h("button", { class: "export-item", type: "button" }, label);
+    btn.addEventListener("click", () => {
+      const url = buildNamedShareUrl();
+      const write = navigator.clipboard && navigator.clipboard.writeText
+        ? navigator.clipboard.writeText(url)
+        : Promise.reject(new Error("inget urklipp"));
+      write.then(() => {
+        btn.textContent = "Kopierad ✓";
+        setTimeout(() => (btn.textContent = label), 2000);
+      }).catch(() => { btn.textContent = "Kunde inte kopiera"; });
+    });
+    return h("div", null, btn,
+      h("p", { class: "export-note muted" },
+        "Länken fungerar även nästa år, till skillnad från den i adressfältet."));
   }
 
   // "Öppna i telefonen": sitter man vid datorn och har filtrerat fram sina
@@ -3341,7 +3397,8 @@ window.HB = window.HB || {};
       item("XML (.xml)", () => {
         const { fields, rows } = tablesExportData();
         if (rows.length) HB.xmlExport.downloadTable(fields, rows, "tabeller", "rad", exportBaseName() + "-tabeller.xml");
-      }));
+      }),
+      buildShareLinkBlock());
   }
 
   const PLAYOFF_EXPORT_FIELDS = [
@@ -3432,7 +3489,8 @@ window.HB = window.HB || {};
       item("JSON (.json)", () => run((fields, rows) =>
         HB.json.downloadTable(fields, rows, exportBaseName() + "-slutspel.json"))),
       item("XML (.xml)", () => run((fields, rows) =>
-        HB.xmlExport.downloadTable(fields, rows, "slutspel", "match", exportBaseName() + "-slutspel.xml"))));
+        HB.xmlExport.downloadTable(fields, rows, "slutspel", "match", exportBaseName() + "-slutspel.xml"))),
+      buildShareLinkBlock());
   }
 
   // --- render: hero (nästa match) ------------------------------------------
