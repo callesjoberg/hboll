@@ -729,9 +729,23 @@ input[type="search"]::-webkit-search-cancel-button {
 .banner p { margin: 0 0 4px; }
 /* Upplysning om ett ännu ofärdigt schema (se pendingSchedule i js/app.js) —
    ska läsas, inte varna: klubbens blå kantmarkering i stället för rött. */
-.banner-info { border-left: 4px solid var(--blue); }
+.banner-info { position: relative; border-left: 4px solid var(--blue); padding-right: 48px; }
 .banner-info p + p { margin-top: 8px; }
 .banner-info strong { color: var(--ink); }
+.banner-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.banner-close:hover { color: var(--ink); }
 
 /* Förstavyn i Schema är innehåll, inte en hänvisning till filterremsan:
    ett stort sökfält låter nya besökare gå direkt till sitt lag eller sin

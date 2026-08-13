@@ -1244,6 +1244,9 @@ window.HB = window.HB || {};
     // Sökrutan hör till den cup man stod i — en ny cup ska mötas av sitt
     // eget favoriturval, inte av föregående cups halvskrivna sökning.
     schemaSearchOpen = false;
+    schemaSearchQuery = "";
+    schemaSearchRenderDeferred = false;
+    clearTimeout(schemaSearchDebounceTimer);
     loadUi();
     saveUi();
     loadCup();
@@ -1769,6 +1772,20 @@ window.HB = window.HB || {};
   // hade missat dem. syncUrl() hoppar över identiska URL:er, så de många
   // "onödiga" anropen (bakgrundsuppdateringar) kostar ingenting.
   function renderContent() {
+    // Startsökningen ligger inne i #content och skulle rivas vid varje
+    // bakgrundsomritning (t.ex. när ny cupdata eller väder blir klart).
+    // Ersätt inte en fokuserad input alls: programmatisk återfokusering på
+    // den nya noden är inte tillräcklig på mobil, där tangentbordet ändå
+    // kan fällas ned. Omritningen tas igen av blur-lyssnaren nedan.
+    const activeSchemaSearch = document.activeElement &&
+      document.activeElement.id === "schemaStartSearch"
+      ? document.activeElement : null;
+    if (activeSchemaSearch) {
+      schemaSearchQuery = activeSchemaSearch.value;
+      schemaSearchRenderDeferred = true;
+      syncUrl();
+      return;
+    }
     renderContentBody();
     renderMobileContextBar();
     reconcilePickerChrome();
@@ -6873,6 +6890,11 @@ window.HB = window.HB || {};
     };
   }
 
+  // Ett kryss gömmer upplysningen för resten av den här appsessionen,
+  // per cup. Spara den inte permanent: när arrangören fyllt på schemat
+  // kan innehållet vara relevant igen vid ett senare besök.
+  const dismissedPendingScheduleCups = new Set();
+
   // För den som ännu inte har valt favoritlag är frågan "vilket lag?"
   // själva ingången till schemat. Sökningen använder samma state-filter som
   // verktygsraden, men ritar bara om sin redan monterade träfflista medan man
@@ -6881,6 +6903,11 @@ window.HB = window.HB || {};
   // appen inte vet något om besökaren). Modulnivå, inte state: rent
   // UI-läge som ska nollställas vid sidladdning och cupbyte.
   let schemaSearchOpen = false;
+  let schemaSearchQuery = "";
+  let schemaSearchDebounceTimer = null;
+  let schemaSearchRenderDeferred = false;
+  const SCHEMA_SEARCH_MIN_LENGTH = 2;
+  const SCHEMA_SEARCH_DEBOUNCE_MS = 180;
 
   // medTillbaka: sökrutan öppnades av någon som HAR ett favoriturval att
   // återvända till, och behöver därför en väg tillbaka.
@@ -6923,6 +6950,7 @@ window.HB = window.HB || {};
       placeholder: "Skriv ett lag eller en klass, t.ex. F13",
       autocomplete: "off", "aria-autocomplete": "list", "aria-controls": listId,
     });
+    input.value = schemaSearchQuery;
     const list = h("div", {
       id: listId, class: "autocomplete-list schema-start-results", role: "listbox",
       "aria-label": "Lag och klasser",
@@ -6930,6 +6958,9 @@ window.HB = window.HB || {};
     list.hidden = true;
 
     const choose = (candidate) => {
+      clearTimeout(schemaSearchDebounceTimer);
+      schemaSearchQuery = "";
+      schemaSearchRenderDeferred = false;
       // Hela cupens lag och klasser söks igenom. Växla därför även till
       // cupomfattning så att scoped() inte tar bort den valda träffen igen.
       state.scope = "all";
@@ -6938,13 +6969,11 @@ window.HB = window.HB || {};
       saveUi();
       render();
     };
-    input.addEventListener("input", () => {
-      const q = slugifySv(input.value.trim());
-      if (!q) {
-        list.hidden = true;
-        list.replaceChildren();
-        return;
-      }
+    const showMatches = (q, allowDetached = false) => {
+      // Timern kan hinna löpa precis efter att en bakgrundsomritning bytt
+      // ut fältet. Den gamla instansen ska då inte bygga en osynlig lista.
+      if ((!allowDetached && !input.isConnected) ||
+          q !== slugifySv(schemaSearchQuery.trim())) return;
       const matches = candidates
         .filter((candidate) => candidate.search.includes(q))
         .sort((a, b) => {
@@ -6965,7 +6994,32 @@ window.HB = window.HB || {};
             : null),
         h("span", { class: "schema-start-result-kind" },
           candidate.type === "team" ? "Lag" : "Klass"))));
+    };
+    input.addEventListener("input", () => {
+      schemaSearchQuery = input.value;
+      const q = slugifySv(schemaSearchQuery.trim());
+      clearTimeout(schemaSearchDebounceTimer);
+      if (q.length < SCHEMA_SEARCH_MIN_LENGTH) {
+        list.hidden = true;
+        list.replaceChildren();
+        return;
+      }
+      schemaSearchDebounceTimer = setTimeout(
+        () => showMatches(q), SCHEMA_SEARCH_DEBOUNCE_MS);
     });
+    input.addEventListener("blur", () => setTimeout(() => {
+      // Ett val i förslagslistan hinner köra först och tar bort fältet.
+      // Bara en vanlig blur (t.ex. tryck utanför eller "Klar" på mobilens
+      // tangentbord) ska verkställa den uppskjutna bakgrundsomritningen.
+      if (!schemaSearchRenderDeferred || !input.isConnected) return;
+      schemaSearchRenderDeferred = false;
+      renderContent();
+    }, 0));
+    // Om en bakgrundsomritning skedde medan användaren skrev finns texten
+    // redan kvar. Återskapa förslagen direkt; debounce har redan skett på
+    // tangenttryckningen som satte värdet.
+    const initialQuery = slugifySv(schemaSearchQuery.trim());
+    if (initialQuery.length >= SCHEMA_SEARCH_MIN_LENGTH) showMatches(initialQuery, true);
 
     main.append(h("section", { class: "schema-start-search", "aria-labelledby": inputId + "Label" },
       h("label", { id: inputId + "Label", for: inputId }, "Vilket lag vill du följa?"),
@@ -6973,19 +7027,34 @@ window.HB = window.HB || {};
       h("div", { class: "row" },
         h("button", {
           class: "btn", type: "button",
-          onclick: () => { schemaSearchOpen = false; state.schemaShowAllCup = true; renderContent(); },
+          onclick: () => {
+            schemaSearchOpen = false; schemaSearchQuery = "";
+            schemaSearchRenderDeferred = false;
+            state.schemaShowAllCup = true; renderContent();
+          },
         }, "Visa hela cupen"),
         medTillbaka ? h("button", {
           class: "btn", type: "button",
-          onclick: () => { schemaSearchOpen = false; renderContent(); },
+          onclick: () => {
+            schemaSearchOpen = false; schemaSearchQuery = "";
+            schemaSearchRenderDeferred = false; renderContent();
+          },
         }, "Tillbaka till dina lag") : null)));
   }
 
   function renderSchema(main) {
     renderHero(main);
     const pending = pendingSchedule();
-    if (pending) {
-      main.append(h("div", { class: "banner banner-info" },
+    if (pending && !dismissedPendingScheduleCups.has(state.cupId)) {
+      const info = h("div", { class: "banner banner-info" },
+        h("button", {
+          class: "banner-close", type: "button",
+          "aria-label": "Stäng informationen om schemat",
+          onclick: () => {
+            dismissedPendingScheduleCups.add(state.cupId);
+            info.remove();
+          },
+        }, "×"),
         h("p", null,
           h("strong", null, "Schemat är inte klart än. "),
           pending.timed === 0
@@ -7010,7 +7079,8 @@ window.HB = window.HB || {};
           // filters-expanded i style.css) — hänvisa till hela vägen, annars
           // står man i remsan och hittar ingen export.
           (sheetMode() ? "“Filter” → “Mer” → “Exportera”" : "“Exportera”") +
-          " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon.")));
+          " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon."));
+      main.append(info);
     }
     // Har man bett om sökrutan går den före det automatiska favoriturvalet.
     // Utan den vägen fanns bara "Visa hela cupen" (över tusen kort) för den
