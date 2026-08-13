@@ -1923,9 +1923,18 @@ dialog.history-dialog {
 
 .team-stat-line { min-height: 15px; }
 
-.team-stat-actions { display: flex; gap: 8px; margin-top: 6px; }
+/* wrap: raden rymmer nu även favoritlagsknappen och blev för trång på
+   mobil (se favoriteTeamToggle i js/app.js) */
+.team-stat-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 
 .team-stat-actions .btn[disabled] { opacity: 0.4; cursor: default; }
+
+/* Påslaget favoritlag — samma gula markering som stjärnan i schemat */
+.team-stat-actions .btn.on {
+  border-color: var(--yellow);
+  background: color-mix(in srgb, var(--yellow) 18%, transparent);
+  font-weight: 600;
+}
 
 .team-roster {
   margin-top: 10px;

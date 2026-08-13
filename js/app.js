@@ -1404,19 +1404,50 @@ window.HB = window.HB || {};
       a.suffix.localeCompare(b.suffix, "sv"));
   }
 
-  // Kandidater för favoritklubb-autocomplete: lagnamn utan sista ordet
-  // (som oftast är en färg/siffra), plus hela namnet — klubbar skrivs olika
-  // i olika cuper ("AHK" vs "Alingsås HK"), så förslagen hämtas ur den
-  // cup som just nu är öppen i stället för att gissas generellt.
-  function clubPrefixCandidates() {
-    const set = new Set();
+  // Kandidater för favoritklubb-autocomplete.
+  //
+  // Favoritklubben är en egenskap hos ANVÄNDAREN, inte hos den cup som
+  // råkar vara vald — men listan byggdes förr enbart ur state.matches, den
+  // öppna cupens matcher. Det gav två fel: en cup där ens klubb inte är
+  // med i år (eller som ännu inte publicerat något, t.ex. Örebrocupen med
+  // 0 matcher) erbjöd inte klubben alls, och ett ospelat slutspelsträd
+  // fyllde listan med platshållare ("1:an i Grupp A", "Vinn.").
+  //
+  // Nu är klubbkatalogen (data/club-directory.json, alla klubbar från alla
+  // cuper och år) grundkällan, med den öppna cupens egna namn ovanpå —
+  // klubbar stavas olika i olika cuper ("AHK" vs "Alingsås HK") och en
+  // alldeles ny klubb hinner inte in i katalogen förrän den byggts om.
+  function clubNameCandidates() {
+    const set = new Set(Object.keys(clubDirectoryCache || {}));
     for (const m of state.matches) {
       for (const side of [m.home, m.away]) {
         const name = (side.name || "").trim();
-        if (!name) continue;
+        if (!name || isPlaceholderTeam(side)) continue;
+        if (side.club) set.add(side.club);
         set.add(name);
         const words = name.split(/\s+/);
         if (words.length > 1) set.add(words.slice(0, -1).join(" "));
+      }
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, "sv"));
+  }
+
+  // Kandidater för favoritlag-autocomplete: klubbens lag, oberoende av
+  // vilken cup som är öppen. Innevarande cups lag (clubTeams) först, sedan
+  // alla lagnamn ur arkivets lagnamnsindex (data/archive/team-index.json)
+  // som hör till favoritklubben — annars går det inte att välja sitt lag i
+  // en cup som inte startat, vilket är just när man vill ställa in det.
+  function favoriteTeamCandidates() {
+    const set = new Set(clubTeams().map((t) => t.name));
+    const club = (state.favoriteClub || "").trim().toLowerCase();
+    const idx = state.teamIndex || {};
+    for (const byEdition of Object.values(idx)) {
+      for (const names of Object.values(byEdition || {})) {
+        for (const name of names || []) {
+          const n = (name || "").trim();
+          if (!n || isPlaceholderTeam({ name: n })) continue;
+          if (club && n.toLowerCase().startsWith(club)) set.add(n);
+        }
       }
     }
     return [...set].sort((a, b) => a.localeCompare(b, "sv"));
@@ -3449,6 +3480,47 @@ window.HB = window.HB || {};
           p.goals ? h("span", { class: "roster-goals" }, p.goals + " mål") : null))));
   }
 
+  // Andra vägen in till favoritlaget: hittar man laget i schemat eller en
+  // tabell och klickar upp dess ruta ska man kunna stjärnmärka det direkt,
+  // i stället för att memorera namnet och skriva in det i Inställningar.
+  // Samma state (state.favoriteTeam) och samma slugjämförelse som fältet
+  // där — knappen speglar alltså vad som står i inställningarna, och tvärtom.
+  function favoriteTeamToggle(team) {
+    const name = (team.name || "").trim();
+    if (!name) return null;
+    const btn = h("button", { class: "btn small", type: "button" });
+    // Rutan är en fristående dialog som render() inte ritar om, så knappen
+    // måste spegla sitt eget läge — annars såg den likadan ut efter klicket
+    // och man kunde varken se att stjärnan satt eller ångra den på plats.
+    const sync = () => {
+      const on = isFavoriteTeamName(name);
+      btn.classList.toggle("on", on);
+      btn.textContent = on ? "★ Favoritlag" : "☆ Gör till favoritlag";
+      btn.title = on
+        ? "Ta bort stjärnan från " + name
+        : "Markera " + name + " som ditt favoritlag — det får en ⭐ i schemat";
+    };
+    btn.addEventListener("click", () => {
+      const on = isFavoriteTeamName(name);
+      state.favoriteTeam = on ? "" : name;
+      // Favoritlaget hör ihop med en klubb: sätter man stjärnan på ett lag
+      // ur en ANNAN klubb än den valda skulle klubbfiltret ("Alingsås HK"/
+      // "Hela cupen") och lagets stjärna peka åt olika håll. Flytta därför
+      // klubbvalet med — rimligare att följa laget användaren just pekade på
+      // än att låta de två glida isär.
+      if (!on && team.club && team.club.trim()) state.favoriteClub = team.club.trim();
+      saveSettings();
+      const teamField = $("#favoriteTeamInput");
+      if (teamField) teamField.value = state.favoriteTeam;
+      const clubField = $("#favoriteClubInput");
+      if (clubField) clubField.value = state.favoriteClub;
+      sync();
+      render();
+    });
+    sync();
+    return btn;
+  }
+
   function teamStatBlock(m, team, side) {
     const counts = teamMatchCounts(team.id);
     const statLine = h("p", { class: "muted team-stat-line" }, "Hämtar tabellplacering …");
@@ -3478,7 +3550,8 @@ window.HB = window.HB || {};
         calUrl ? h("a", {
           class: "btn small", href: calUrl, rel: "noopener",
           title: "Öppnar din kalenderapp och prenumererar på lagets matcher — nya/ändrade tider uppdateras sen automatiskt (funkar bäst på mobil).",
-        }, "📅 Prenumerera") : null),
+        }, "📅 Prenumerera") : null,
+        favoriteTeamToggle(team)),
       rosterBlock(team, m.edition));
 
     if (!m.divId) {
@@ -8984,7 +9057,7 @@ window.HB = window.HB || {};
     };
     clubInput.addEventListener("change", applyFavoriteClub);
     attachAutocomplete($("#favoriteClubInput"), $("#favoriteClubOptions"),
-      clubPrefixCandidates, applyFavoriteClub);
+      clubNameCandidates, applyFavoriteClub);
     $("#favoriteClubClear").addEventListener("click", () => {
       clubInput.value = ""; applyFavoriteClub(); clubInput.focus();
     });
@@ -8998,7 +9071,7 @@ window.HB = window.HB || {};
     };
     teamInput.addEventListener("change", applyFavoriteTeam);
     attachAutocomplete($("#favoriteTeamInput"), $("#favoriteTeamOptions"),
-      () => [...new Set(clubTeams().map((t) => t.name))], applyFavoriteTeam);
+      favoriteTeamCandidates, applyFavoriteTeam);
     $("#favoriteTeamClear").addEventListener("click", () => {
       teamInput.value = ""; applyFavoriteTeam(); teamInput.focus();
     });
@@ -9131,6 +9204,13 @@ window.HB = window.HB || {};
       // råkade bläddra i senast dialogen var öppen — annars kan den se ut
       // att "glömt" vilken cup som faktiskt är aktiv.
       cupSwitcherSport = null;
+      // Favoritklubb/-lag väljs ur data som inte hör till den öppna cupen
+      // (klubbkatalogen och arkivets lagnamnsindex, se clubNameCandidates/
+      // favoriteTeamCandidates). Båda hämtas lat och en gång — starta dem
+      // här så de finns när man börjar skriva, i stället för att listan ska
+      // vara tom just i en cup som inte publicerat sina lag än.
+      ensureClubDirectory();
+      ensureTeamIndex();
       renderCups();
       dlg.showModal();
     };
