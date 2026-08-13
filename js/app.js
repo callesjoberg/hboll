@@ -1227,6 +1227,9 @@ window.HB = window.HB || {};
     stashedFilter = null;
     autoScrolledToNow = false;
     hasSyncedFreshData = false;
+    // Sökrutan hör till den cup man stod i — en ny cup ska mötas av sitt
+    // eget favoriturval, inte av föregående cups halvskrivna sökning.
+    schemaSearchOpen = false;
     loadUi();
     saveUi();
     loadCup();
@@ -2391,17 +2394,37 @@ window.HB = window.HB || {};
     const diff = window.innerHeight - (vv.offsetTop + vv.height);
     const px = Math.abs(diff) < 1 ? 0 : Math.round(diff);
     document.documentElement.style.setProperty("--vv-offset", px + "px");
+    // Väljarpanelernas höjd sattes i vh, alltså mot LAYOUT-viewporten. Med
+    // tangentbordet uppe (eller ett utfällt adressfält) är den synliga ytan
+    // mycket lägre än så, och panelen växte då ut under skärmkanten med
+    // sina översta knappar utom räckhåll. Publicera den synliga höjden så
+    // CSS kan begränsa panelen mot den i stället.
+    document.documentElement.style.setProperty("--vv-height", Math.round(vv.height) + "px");
+  }
+
+  // Alla mått som beror på skärmens storlek, i ETT anrop. Bottenraden och
+  // bottenstacken mättes bara om när brytpunkten (max-width: 700px) korsades
+  // — men en rotation mellan porträtt och landskap på en telefon (t.ex.
+  // 375x667 → 667x375) ligger i mobilläge i BÅDA riktningarna. matchMedia
+  // ändrade alltså inte värde, lyssnaren kördes aldrig, och panelerna
+  // positionerades mot gårdagens höjder efter varje vridning.
+  function syncViewportMetrics() {
+    syncViewportOffset();
+    syncBottomStack();
   }
 
   function setupViewportOffset() {
+    // resize/orientationchange gäller ALLA enheter och behövs även utan
+    // Visual Viewport-API:t — därför utanför vv-kontrollen nedan.
+    window.addEventListener("resize", syncViewportMetrics);
+    window.addEventListener("orientationchange", () => setTimeout(syncViewportMetrics, 250));
     const vv = window.visualViewport;
-    if (!vv) return;
+    if (!vv) { syncBottomStack(); return; }
     // scroll OCH resize: adressfältet ändrar höjd under scrollning, inte
     // bara vid ett omritningstillfälle.
-    vv.addEventListener("resize", syncViewportOffset);
+    vv.addEventListener("resize", syncViewportMetrics);
     vv.addEventListener("scroll", syncViewportOffset);
-    window.addEventListener("orientationchange", () => setTimeout(syncViewportOffset, 250));
-    syncViewportOffset();
+    syncViewportMetrics();
   }
 
   function setupPickerSheets() {
@@ -6777,7 +6800,14 @@ window.HB = window.HB || {};
   // själva ingången till schemat. Sökningen använder samma state-filter som
   // verktygsraden, men ritar bara om sin redan monterade träfflista medan man
   // skriver — en render per tangent skulle bygga om inputen och tappa fokus.
-  function renderSchemaStartSearch(main) {
+  // Öppnad via "Sök annat lag" (till skillnad från när den visas för att
+  // appen inte vet något om besökaren). Modulnivå, inte state: rent
+  // UI-läge som ska nollställas vid sidladdning och cupbyte.
+  let schemaSearchOpen = false;
+
+  // medTillbaka: sökrutan öppnades av någon som HAR ett favoriturval att
+  // återvända till, och behöver därför en väg tillbaka.
+  function renderSchemaStartSearch(main, medTillbaka) {
     const candidates = [];
     const teams = new Map();
     const cats = new Map();
@@ -6863,10 +6893,15 @@ window.HB = window.HB || {};
     main.append(h("section", { class: "schema-start-search", "aria-labelledby": inputId + "Label" },
       h("label", { id: inputId + "Label", for: inputId }, "Vilket lag vill du följa?"),
       h("div", { class: "autocomplete-wrap" }, input, list),
-      h("button", {
-        class: "btn", type: "button",
-        onclick: () => { state.schemaShowAllCup = true; renderContent(); },
-      }, "Visa hela cupen")));
+      h("div", { class: "row" },
+        h("button", {
+          class: "btn", type: "button",
+          onclick: () => { schemaSearchOpen = false; state.schemaShowAllCup = true; renderContent(); },
+        }, "Visa hela cupen"),
+        medTillbaka ? h("button", {
+          class: "btn", type: "button",
+          onclick: () => { schemaSearchOpen = false; renderContent(); },
+        }, "Tillbaka till dina lag") : null)));
   }
 
   function renderSchema(main) {
@@ -6899,6 +6934,14 @@ window.HB = window.HB || {};
           // står man i remsan och hittar ingen export.
           (sheetMode() ? "“Filter” → “Mer” → “Exportera”" : "“Exportera”") +
           " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon.")));
+    }
+    // Har man bett om sökrutan går den före det automatiska favoriturvalet.
+    // Utan den vägen fanns bara "Visa hela cupen" (över tusen kort) för den
+    // som ville titta på ett ANNAT lag än sina egna — och ingen väg alls
+    // tillbaka till frågan "vilket lag?".
+    if (!hasFilterSelection() && schemaSearchOpen) {
+      renderSchemaStartSearch(main, true);
+      return;
     }
     const hasSelection = hasFilterSelection();
     let automaticMatches = null;
@@ -6960,7 +7003,18 @@ window.HB = window.HB || {};
               state.schemaShowAllCup = !tillbaka;
               renderContent();
             },
-          }, tillbaka ? "Visa bara " + automaticLabel.slice(5) : "Visa hela cupen"))));
+          }, tillbaka ? "Visa bara " + automaticLabel.slice(5) : "Visa hela cupen"),
+          // Vägen till frågan "vilket lag?" för den som vill titta på ett
+          // ANNAT lag än sina egna — utan den fanns bara hela cupens
+          // tusen kort att bläddra i.
+          h("button", {
+            class: "btn", type: "button",
+            onclick: () => {
+              schemaSearchOpen = true;
+              state.schemaShowAllCup = false;
+              renderContent();
+            },
+          }, "Sök annat lag"))));
     }
     const list = sorted((automaticMatches || filtered()).filter(matchesViewFilter));
     if (!list.length) {

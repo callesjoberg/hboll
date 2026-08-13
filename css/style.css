@@ -3128,7 +3128,13 @@ dialog.history-dialog {
     /* --sheet-h sätts av draghandtaget (se setupPickerSheets i app.js) och
        sparas mellan besök; 62vh är utgångsläget. */
     height: var(--sheet-h, 62vh);
-    max-height: 92vh;
+    /* Taket mäts mot den SYNLIGA ytan (--vv-height, se syncViewportOffset),
+       inte layoutens: med tangentbordet uppe eller ett utfällt adressfält är
+       92vh långt mer än vad som faktiskt syns, och panelen växte då ut under
+       skärmkanten med sina översta knappar utom räckhåll. Utan API:t (äldre
+       webbläsare) faller den tillbaka på vh som förut. Minus bottenstacken,
+       som panelen ändå ligger ovanför. */
+    max-height: min(92vh, calc(var(--vv-height, 100vh) - var(--bottombar-h, 56px) - 12px));
     overflow-y: auto;
     overscroll-behavior: contain;
     border-radius: 18px 18px 0 0;
