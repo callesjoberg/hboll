@@ -6915,31 +6915,58 @@ window.HB = window.HB || {};
     const candidates = [];
     const teams = new Map();
     const cats = new Map();
+    const clubs = new Map();
     // Bara den laddade cupens matcher: arkivår och andra cuper ska inte smyga
     // in bland förslagen i den här första vägen in i det aktuella schemat.
     for (const m of state.matches) {
       if (m.catId != null && m.catName && !cats.has(m.catId)) cats.set(m.catId, m.catName);
       for (const side of [m.home, m.away]) {
+        if (side.club && side.club.trim() && side.id != null) {
+          const clubName = side.club.trim();
+          const key = slugifySv(clubName);
+          if (!clubs.has(key)) clubs.set(key, { name: clubName, teamIds: new Set() });
+          clubs.get(key).teamIds.add(side.id);
+        }
         if (side.id != null && side.name && !teams.has(side.id)) {
           // Klassen måste följa med: samma lagnamn finns i flera klasser
           // (104 av namnen i Göteborg Cup 2026), och utan den blir listan
           // tre identiska rader där bara en är laget man menar.
-          teams.set(side.id, { name: side.name, catName: m.catName });
+          teams.set(side.id, { name: side.name, club: side.club || "", catName: m.catName });
         }
       }
     }
-    for (const [id, team] of teams) {
-      const kort = team.catName ? HB.shortCat(team.catName) : "";
+    // Klubb är en egen träfftyp: valet visar samtliga klubbens lag i
+    // cupen. Lägg den före de enskilda lagen så en sökning på t.ex.
+    // "Sävehof" inte begraver klubbvalet under tolv lagträffar.
+    for (const club of clubs.values()) {
       candidates.push({
-        type: "team", id, label: team.name, hint: kort,
-        search: slugifySv(team.name + " " + (team.catName || "")),
+        type: "club", label: club.name,
+        hint: club.teamIds.size + " lag",
+        teamIds: [...club.teamIds], search: slugifySv(club.name),
+      });
+    }
+    for (const [id, team] of teams) {
+      // Födelseåret är stabilt mellan cupupplagor; "F15" blir fel
+      // redan nästa säsong medan "F2011" fortfarande beskriver samma kull.
+      // Falla bara tillbaka på ålderskoden när arrangörens klassnamn
+      // faktiskt saknar ett entydigt födelseår.
+      const kull = team.catName
+        ? (cohortKey(team.catName) || HB.shortCat(team.catName)) : "";
+      candidates.push({
+        type: "team", id, label: team.name, hint: kull,
+        // Klubbnamnet ingår inte alltid i arrangörens lagnamn. Laget ska
+        // ändå hittas när man skriver klubbens namn.
+        search: slugifySv(team.name + " " + team.club + " " + kull + " " +
+          (team.catName || "")),
       });
     }
     for (const [id, name] of cats) {
+      const kull = cohortKey(name) || HB.shortCat(name);
       candidates.push({
-        type: "cat", id, label: name,
-        // "F13" ska hitta även ett långt namn som "Flickor 13 ...".
-        search: slugifySv(HB.shortCat(name) + " " + name),
+        type: "cat", id, label: name, hint: kull,
+        // "F2011" ska hitta det långa arrangörsnamnet oavsett vilken
+        // åldersetikett just den här cupupplagan använder.
+        search: slugifySv(kull + " " + name),
       });
     }
 
@@ -6947,13 +6974,13 @@ window.HB = window.HB || {};
     const listId = "schemaStartSearchResults";
     const input = h("input", {
       id: inputId, class: "search", type: "search",
-      placeholder: "Skriv ett lag eller en klass, t.ex. F13",
+      placeholder: "Skriv en klubb, ett lag eller en klass, t.ex. F2011",
       autocomplete: "off", "aria-autocomplete": "list", "aria-controls": listId,
     });
     input.value = schemaSearchQuery;
     const list = h("div", {
       id: listId, class: "autocomplete-list schema-start-results", role: "listbox",
-      "aria-label": "Lag och klasser",
+      "aria-label": "Klubbar, lag och klasser",
     });
     list.hidden = true;
 
@@ -6964,7 +6991,8 @@ window.HB = window.HB || {};
       // Hela cupens lag och klasser söks igenom. Växla därför även till
       // cupomfattning så att scoped() inte tar bort den valda träffen igen.
       state.scope = "all";
-      if (candidate.type === "team") state.teams = new Set([candidate.id]);
+      if (candidate.type === "club") state.teams = new Set(candidate.teamIds);
+      else if (candidate.type === "team") state.teams = new Set([candidate.id]);
       else state.cats = new Set([candidate.id]);
       saveUi();
       render();
@@ -6977,9 +7005,14 @@ window.HB = window.HB || {};
       const matches = candidates
         .filter((candidate) => candidate.search.includes(q))
         .sort((a, b) => {
+          const exactA = slugifySv(a.label) === q ? 0 : 1;
+          const exactB = slugifySv(b.label) === q ? 0 : 1;
+          if (exactA !== exactB) return exactA - exactB;
           const ai = a.search.indexOf(q);
           const bi = b.search.indexOf(q);
-          return ai - bi || a.label.localeCompare(b.label, "sv");
+          const typeRank = { club: 0, team: 1, cat: 2 };
+          return ai - bi || typeRank[a.type] - typeRank[b.type] ||
+            a.label.localeCompare(b.label, "sv");
         })
         .slice(0, 12);
       list.hidden = !matches.length;
@@ -6993,7 +7026,8 @@ window.HB = window.HB || {};
             ? h("span", { class: "schema-start-result-cat" }, " " + candidate.hint)
             : null),
         h("span", { class: "schema-start-result-kind" },
-          candidate.type === "team" ? "Lag" : "Klass"))));
+          candidate.type === "club" ? "Klubb" :
+            candidate.type === "team" ? "Lag" : "Klass"))));
     };
     input.addEventListener("input", () => {
       schemaSearchQuery = input.value;
@@ -7022,7 +7056,7 @@ window.HB = window.HB || {};
     if (initialQuery.length >= SCHEMA_SEARCH_MIN_LENGTH) showMatches(initialQuery, true);
 
     main.append(h("section", { class: "schema-start-search", "aria-labelledby": inputId + "Label" },
-      h("label", { id: inputId + "Label", for: inputId }, "Vilket lag vill du följa?"),
+      h("label", { id: inputId + "Label", for: inputId }, "Vad vill du följa?"),
       h("div", { class: "autocomplete-wrap" }, input, list),
       h("div", { class: "row" },
         h("button", {
