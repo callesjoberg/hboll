@@ -3210,7 +3210,10 @@ window.HB = window.HB || {};
       const vh = window.innerHeight / 100;
       const raw = (startH + (startY - e.clientY)) / vh;
       const clamped = Math.min(SHEET_MAX_VH, Math.max(SHEET_MIN_VH, raw));
-      panel.style.setProperty("--sheet-h", clamped.toFixed(1) + "vh");
+      // Standardläget är auto-höjd (panelen följer innehållet). Ett manuellt
+      // drag får däremot vara ett uttryckligt önskemål och låser höjden tills
+      // nästa panel byggs om.
+      panel.style.height = clamped.toFixed(1) + "vh";
       persist("hb:sheetVh", String(Math.round(clamped)));
     });
     const end = (e) => {
@@ -3334,7 +3337,7 @@ window.HB = window.HB || {};
         const head = ensureSheetHead(dd);
         const saved = savedSheetHeight();
         if (head && saved) {
-          dd.querySelector(".team-picker-panel").style.setProperty("--sheet-h", saved + "vh");
+          dd.querySelector(".team-picker-panel").style.height = saved + "vh";
         }
         portalPickerPanel(dd);
       } else restorePickerPanel(dd);

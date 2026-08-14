@@ -552,6 +552,17 @@ header.top {
 .prototype-sheet-head h2 { margin: 0; font-size: 19px; }
 .prototype-sheet-body { flex: 1; min-height: 0; padding: 14px 14px 20px; overflow-y: auto; }
 .prototype-sheet .dialog-x { top: 9px; }
+/* Cupväljaren är ett filterval, inte en informationsdialog: låt den bli
+   lika kompakt som innehållet och börja scrolla först när skärmen inte
+   räcker till. */
+.prototype-sheet[data-sheet-key="cup"] {
+  height: auto;
+  max-height: min(82dvh, 760px);
+}
+.prototype-sheet[data-sheet-key="cup"] .prototype-sheet-body {
+  flex: 0 1 auto;
+  max-height: calc(82dvh - 62px);
+}
 .global-search-input { width: 100%; font-size: 16px; }
 .header-export-panel { position: static !important; display: grid; width: 100% !important; box-shadow: none !important; }
 
@@ -3863,16 +3874,18 @@ dialog.history-dialog {
     bottom: calc(var(--bottomstack-h, 0px) + var(--vv-offset, 0px));
     width: auto;
     max-width: none;
-    /* --sheet-h sätts av draghandtaget (se setupPickerSheets i app.js) och
-       sparas mellan besök; 62vh är utgångsläget. */
-    height: var(--sheet-h, 62vh);
+    /* Panelen växer efter innehållet. När listan blir längre än den synliga
+       ytan begränsas den i stället av max-height och får intern scroll —
+       korta filter blir alltså inte onödigt höga, medan långa listor aldrig
+       kapas utanför skärmen. */
+    height: auto;
     /* Taket mäts mot den SYNLIGA ytan (--vv-height, se syncViewportOffset),
        inte layoutens: med tangentbordet uppe eller ett utfällt adressfält är
        92vh långt mer än vad som faktiskt syns, och panelen växte då ut under
        skärmkanten med sina översta knappar utom räckhåll. Utan API:t (äldre
        webbläsare) faller den tillbaka på vh som förut. Minus bottenstacken,
        som panelen ändå ligger ovanför. */
-    max-height: min(92vh, calc(var(--vv-height, 100vh) - var(--bottombar-h, 56px) - 12px));
+    max-height: min(92dvh, calc(var(--vv-height, 100vh) - var(--bottombar-h, 56px) - 12px));
     overflow-y: auto;
     overscroll-behavior: contain;
     border-radius: 18px 18px 0 0;
@@ -3896,6 +3909,7 @@ dialog.history-dialog {
   body.filters-expanded .team-picker-dd[open] > .team-picker-panel,
   body.filters-expanded .team-picker-panel.picker-panel-portaled {
     bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
+    max-height: min(92dvh, calc(var(--vv-height, 100vh) - var(--bottombar-h, 56px) - 12px));
   }
 
   .team-picker-dd[open] > .team-picker-panel > .team-picker-list,
@@ -3998,6 +4012,13 @@ dialog.history-dialog {
     /* Menyraderna ska alltid gå att använda för att växla bort från arket,
        även om sparad arkhöjd eller mobilens visual viewport mäts om. */
     z-index: 67;
+  }
+  .prototype-sheet[data-sheet-key="cup"] {
+    height: auto;
+    max-height: calc(100dvh - var(--bottomstack-h, 56px) - 12px);
+  }
+  .prototype-sheet[data-sheet-key="cup"] .prototype-sheet-body {
+    max-height: calc(100dvh - var(--bottomstack-h, 56px) - 74px);
   }
   .prototype-sheet-backdrop {
     bottom: calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px));
