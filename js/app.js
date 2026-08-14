@@ -4184,7 +4184,12 @@ window.HB = window.HB || {};
       class: "export-item", type: "button", onclick: () => { onClick(); dlg.close(); },
     }, label);
     if (state.view === "stats") {
-      body.append(buildShareLinkBlock());
+      // Statistikens underflikar visar sammanställningar, men den valda
+      // cupens matchurval är fortfarande samma filtrerade källa. Erbjud
+      // därför hela match-exportpanelen även här — inte bara delningslänken.
+      // Då finns Kalender (.ics), kalkylark, CSV, JSON, XML och ProCue även
+      // när användaren står på Trend/Kalender/Karta eller annan statistik.
+      body.append(buildMatchExportPanel(item));
       return;
     }
     const panel = state.view === "tabeller" ? buildTablesExportPanel(item)
