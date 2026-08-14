@@ -10,6 +10,8 @@
   --paper: #f5f7fa;
   --card: #ffffff;
   --line: #dfe5ec;
+  --menu-surface: #ffffff;
+  --menu-line: #cbd5e1;
   --live: #d22f27;
   --won: #2f9e44;
   --purple: #8854d0;
@@ -50,6 +52,8 @@
     --paper: #0f1723;
     --card: #16202e;
     --line: #26313f;
+    --menu-surface: #202d3f;
+    --menu-line: #405269;
     --shadow: none;
     --purple: #b98cf2;
     --orange: #e8873a;
@@ -66,6 +70,8 @@
   --paper: #0f1723;
   --card: #16202e;
   --line: #26313f;
+  --menu-surface: #202d3f;
+  --menu-line: #405269;
   --shadow: none;
   --purple: #b98cf2;
   --orange: #e8873a;
@@ -79,6 +85,8 @@
   --paper: #f5f7fa;
   --card: #ffffff;
   --line: #dfe5ec;
+  --menu-surface: #ffffff;
+  --menu-line: #cbd5e1;
   --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
   --purple: #8854d0;
   --orange: #c8660a;
@@ -143,39 +151,92 @@ header.top {
 .top-inner {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 10px 14px 0;
+  padding: 8px 14px;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  /* Loggan är 34px och tvåradstiteln ungefär lika hög. min-height håller
-     headern stilla när märket döljs (ny besökare har inte valt klubb). */
   min-height: 38px;
 }
 
-.brand img { height: 34px; width: auto; }
-
-.brand h1 {
-  margin: 0;
-  font-family: "Barlow Condensed", "Barlow", sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.header-identity {
+  max-width: min(58vw, 650px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.brand h1 small {
+.app-wordmark {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: #fff;
+}
+
+.app-wordmark-mark {
   display: block;
-  font-family: "Barlow", sans-serif;
-  font-weight: 400;
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  width: 32px;
+  height: 32px;
+}
+
+.logo-tile { fill: var(--yellow); }
+.logo-cup,
+.logo-schedule {
+  fill: none;
+  stroke: #16283f;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.logo-cup { stroke-width: 2; }
+.logo-schedule { stroke-width: 1.5; }
+
+.header-context {
+  min-width: 0;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.current-cup-label,
+.header-club-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-club {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #eef2f8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.header-club img {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.current-cup-label {
+  display: block;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
   color: #b9c6d8;
-  /* Tom underrubrik ska ändå ta en rad, annars hoppar headern i höjd
-     mellan "bara Cupschema" och "Cupschema + klubbnamn". */
-  min-height: 1.35em;
+  font-size: 12px;
+}
+
+.header-club-name {
+  color: inherit;
+  font-size: inherit;
 }
 
 .brand .spacer { flex: 1; }
@@ -209,7 +270,7 @@ header.top {
 }
 
 .current-cup-btn:hover { border-color: var(--yellow); }
-.current-cup-label { display: none; color: #d8e1ed; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.current-cup-btn { display: none; }
 
 /* cupväljare (i inställningar) */
 
@@ -236,6 +297,17 @@ header.top {
 #cupRow::-webkit-scrollbar { height: 6px; }
 
 #cupSearchEmpty { margin: 2px 0 0; }
+
+.cup-picker-sports { margin-bottom: 10px; }
+.cup-picker-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  padding: 10px 0;
+}
+.cup-picker-row[hidden] { display: none; }
+.cup-picker-row .cup { width: 100%; min-height: 54px; }
+.cup-search-empty { margin: 2px 0 0; }
 
 .cup {
   flex: 0 0 auto;
@@ -294,7 +366,7 @@ header.top {
 }
 #viewTabs::-webkit-scrollbar { height: 6px; }
 
-#currentViewBar { display: none; }
+#currentViewBar, #currentSelectionBar, #moreMenuBar, #bottomNavIsland { display: none; }
 
 .header-share-btn {
   border: 1px solid var(--line);
@@ -326,9 +398,19 @@ header.top {
 
 /* Prototypens gemensamma mobilark: global sökning, Mer och export. */
 .prototype-sheet {
+  position: fixed;
+  top: auto;
+  left: 50%;
+  right: auto;
+  bottom: 0;
+  z-index: 76;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
   width: min(620px, calc(100vw - 24px));
-  max-height: min(82vh, 760px);
-  margin: auto auto 0;
+  height: min(72dvh, 680px);
+  max-height: min(82dvh, 760px);
+  margin: 0;
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 20px 20px 0 0;
@@ -336,25 +418,87 @@ header.top {
   color: var(--ink);
   box-shadow: 0 -10px 35px rgba(10, 18, 30, 0.35);
 }
-.prototype-sheet::backdrop { background: rgba(10, 18, 30, 0.48); }
+.prototype-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 63;
+  background: rgba(10, 18, 30, 0.48);
+}
+.prototype-sheet-backdrop-menu { background: transparent; }
 .prototype-sheet-head {
   position: sticky;
   top: 0;
   z-index: 2;
   display: flex;
   align-items: center;
-  min-height: 54px;
-  padding: 12px 52px 10px 16px;
+  min-height: 62px;
+  padding: 20px 52px 9px 16px;
   background: var(--card);
   border-bottom: 1px solid var(--line);
 }
+.prototype-sheet-grip {
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 72px;
+  height: 22px;
+  transform: translateX(-50%);
+  border: 0;
+  background: none;
+  touch-action: none;
+  cursor: ns-resize;
+}
+.prototype-sheet-grip span {
+  display: block;
+  width: 42px;
+  height: 4px;
+  margin: 6px auto;
+  border-radius: 99px;
+  background: var(--line);
+}
 .prototype-sheet-head h2 { margin: 0; font-size: 19px; }
-.prototype-sheet-body { padding: 14px 14px max(20px, env(safe-area-inset-bottom)); overflow-y: auto; }
+.prototype-sheet-body { flex: 1; min-height: 0; padding: 14px 14px 20px; overflow-y: auto; }
 .prototype-sheet .dialog-x { top: 9px; }
 .global-search-input { width: 100%; font-size: 16px; }
-.global-search-types { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; }
-.global-search-types .chip { flex: 0 0 auto; }
+.global-search-types { display: flex; gap: 4px; overflow-x: auto; padding: 6px 0; }
+.global-search-type-tab {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.global-search-type-tab.on { color: var(--blue); }
+.global-search-type-tab.on::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--blue);
+  transform: translateX(-50%);
+}
 .global-search-results { display: grid; gap: 4px; }
+.global-search-sheet-body { display: flex; flex-direction: column; }
+.global-search-sheet-body .global-search-results { flex: 1 0 auto; }
+.global-search-sticky {
+  position: sticky;
+  bottom: -20px;
+  z-index: 3;
+  margin: 10px -14px -20px;
+  padding: 0 14px 12px;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 14px rgba(10, 18, 30, 0.12);
+}
+.global-search-sticky .search-wrap { width: 100%; }
 .global-search-result, .more-menu-item {
   width: 100%;
   display: flex;
@@ -664,6 +808,10 @@ header.top {
 }
 
 .export-item:hover { background: var(--paper); }
+
+.filter-choice-item { display: flex; align-items: center; gap: 8px; }
+.filter-choice-item.on { font-weight: 600; background: var(--paper); }
+.filter-choice-check { flex: 0 0 16px; color: var(--blue); text-align: center; }
 
 /* Prenumerationsraderna i exportpanelen är <a class="export-item">
    (webcal://), inte knappar — ta bort länkunderstreck så de ser ut som
@@ -985,6 +1133,25 @@ input[type="search"]::-webkit-search-cancel-button {
 .hero-carousel { touch-action: pan-y; }
 .hero-carousel[open] { padding-left: 40px; padding-right: 40px; }
 
+.hero-close {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #eef2f8;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.hero-close:hover { background: rgba(255, 255, 255, 0.24); }
+.hero:not(.hero-carousel)[open] { padding-right: 46px; }
+
 .hero-nav {
   position: absolute;
   top: 50%;
@@ -1236,11 +1403,29 @@ input[type="search"]::-webkit-search-cancel-button {
 .match-head .arena {
   min-width: 0;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-overflow: clip;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   font-size: 13px;
   font-weight: 600;
   color: var(--ink);
+}
+
+.match-head .arena::-webkit-scrollbar { display: none; }
+
+@media (max-width: 700px) {
+  /* Arenan får hela kortbredden under klass-/väderetiketterna. Är namnet
+     ändå längre går just namnet att svepa i sidled utan att kortet växer. */
+  .match-head { flex-wrap: wrap; row-gap: 2px; }
+  .match-head-right {
+    flex: 1 0 100%;
+    width: 100%;
+    margin-left: 0;
+  }
+  .match-head-right .arena { flex: 1 1 auto; }
 }
 
 .match-head .arena-link { cursor: pointer; }
@@ -1350,6 +1535,111 @@ input[type="search"]::-webkit-search-cancel-button {
 
 /* tabeller */
 
+.table-class-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.table-class-heading .day-h { margin: 0; }
+.table-class-cohort {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+  color: var(--blue);
+  font: 600 11px "Barlow", sans-serif;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.table-class-stats { flex: 0 0 min(360px, 52%); }
+.table-class-stats summary {
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.table-class-stats-body {
+  display: grid;
+  gap: 3px;
+  margin-top: 6px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.table-class-stats-body strong { color: var(--ink); }
+
+.table-group-tabs-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  margin: 0 0 10px;
+  background: var(--paper);
+}
+
+.table-group-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  gap: 4px;
+  padding: 0 0 8px;
+  scrollbar-width: none;
+}
+
+.table-group-tabs::-webkit-scrollbar { display: none; }
+
+.table-group-tab {
+  position: relative;
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.table-group-tab.on {
+  color: var(--blue);
+}
+
+.table-group-tab.on::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  right: auto;
+  bottom: 0;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--blue);
+  transform: translateX(-50%);
+}
+
+.table-group-tab:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .table-class-heading { display: block; }
+  .table-class-stats { margin: 4px 0 10px; }
+  .table-class-stats summary { text-align: left; }
+}
+
 /* overflow-x: auto (bara vågrät scroll avsedd, för breda tabeller på
    smala skärmar) — men CSS-specen tvingar den ANDRA axeln (overflow-y,
    annars "visible") att räknas om till "auto" också så fort en axel är
@@ -1446,6 +1736,100 @@ input[type="search"]::-webkit-search-cancel-button {
 /* sortableTable() med onRowClick (t.ex. Klubb/Lag-flikens nedborrning) */
 .sortable-row-clickable { cursor: pointer; }
 .sortable-row-clickable:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
+.sortable-expanded-row > td {
+  padding: 0 !important;
+  background: color-mix(in srgb, var(--blue) 5%, var(--card));
+  border-bottom: 2px solid var(--line);
+  text-align: left !important;
+}
+.cup-edition-expanded {
+  padding: 14px;
+}
+.cup-edition-detail-tabs {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0;
+  background: var(--card);
+  scrollbar-width: none;
+}
+.cup-edition-detail-tabs::-webkit-scrollbar { display: none; }
+.cup-edition-detail-tab {
+  position: relative;
+  flex: 1 0 auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.cup-edition-detail-tab small {
+  margin-left: 5px;
+  color: inherit;
+  font-size: 10px;
+  font-weight: 500;
+}
+.cup-edition-detail-tab.on { color: var(--blue); }
+.cup-edition-detail-tab.on::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--blue);
+  transform: translateX(-50%);
+}
+.cup-edition-detail-body {
+  min-height: 48px;
+  padding: 0 11px 11px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  background: var(--card);
+}
+.cup-edition-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+}
+.cup-edition-detail-list.clubs {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 5px 14px;
+}
+.cup-edition-detail-list li {
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.cup-edition-detail-list strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cup-edition-detail-list li > span { flex: 0 0 auto; white-space: nowrap; }
+.cup-edition-show-more {
+  margin-top: 9px;
+  padding: 5px 0;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+@media (max-width: 560px) {
+  .cup-edition-detail-list.clubs { grid-template-columns: 1fr; }
+}
 
 .muted { color: var(--ink-soft); font-size: 13px; }
 
@@ -1571,18 +1955,49 @@ dialog input {
 
 dialog#settingsDialog { max-width: 380px; }
 
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   dialog#settingsDialog {
+    position: fixed;
     margin: 0;
     inset: 0;
-    max-width: 100%;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
+    z-index: 60;
+    box-sizing: border-box;
+    max-width: none;
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
     border-radius: 0;
     padding: max(18px, env(safe-area-inset-top)) 18px
-             max(14px, env(safe-area-inset-bottom)) 18px;
+             calc(var(--bottomstack-h, 56px) + 18px) 18px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  dialog#settingsDialog .dialog-x {
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top));
+    right: 10px;
+    z-index: 2;
+  }
+  dialog#settingsDialog.settings-view {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: calc(100dvh - var(--bottomstack-h, 56px));
+    max-height: none;
+    margin: 0;
+    padding: 18px 18px calc(var(--bottomstack-h, 56px) + 24px);
+    overflow: visible;
+    overscroll-behavior: auto;
+    background: var(--paper);
+  }
+  dialog#settingsDialog.settings-view .dialog-x {
+    position: absolute;
+    top: 10px;
+    right: 10px;
   }
 }
 
@@ -1592,7 +2007,7 @@ dialog#settingsDialog { max-width: 380px; }
    Naturliga par (favoritklubb/-lag, matchlängd/paus) hamnar automatiskt
    sida vid sida via grid-auto-placement; allt annat (.full) tar hela
    bredden — cupväljaren och kryssrutorna vinner inget på att delas upp. */
-@media (min-width: 700px) {
+@media (min-width: 701px) {
   dialog#settingsDialog[open] {
     max-width: 660px;
     display: grid;
@@ -1761,6 +2176,13 @@ dialog#settingsDialog { max-width: 380px; }
 /* Klubb/Lags "År"-kolumn (renderYearsWithGaps) — ett år cupen arkiverat
    men klubben INTE deltog i, blandat in bland åren de faktiskt var med. */
 .club-year-gap { color: var(--live); }
+.club-year-ranges { white-space: nowrap; }
+
+/* Klubb/Lag-tabellens tre mängdkolumner: totalen är primär, snitt och
+   median per deltagande cupår ligger kompakt på en andra rad. */
+.club-metric-cell { display: inline-grid; gap: 1px; min-width: 92px; white-space: nowrap; }
+.club-metric-cell strong { font-size: 14px; color: var(--ink); }
+.club-metric-cell small { font-size: 10.5px; font-weight: 400; color: var(--ink-soft); }
 
 /* lagfärgprick på matchkort */
 
@@ -1814,14 +2236,16 @@ dialog.match-dialog {
 
 /* Fullskärm på mobil — mer plats för lagstatistik/inbördes möten, och
    enklare att träffa "Stäng" med tummen än en liten centrerad kortmodal. */
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   dialog.match-dialog {
+    position: fixed;
     margin: 0;
-    inset: 0;
+    inset: 0 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
+    z-index: 60;
     max-width: 100%;
     width: 100%;
-    height: 100%;
-    max-height: 100%;
+    height: auto;
+    max-height: none;
     border-radius: 0;
     padding: max(20px, env(safe-area-inset-top)) 18px
              max(14px, env(safe-area-inset-bottom)) 18px;
@@ -2144,6 +2568,22 @@ dialog.history-dialog {
   font-weight: 600;
 }
 
+.playoff-source-groups {
+  border-top: 1px solid var(--line);
+  padding: 12px 0 2px;
+}
+
+.playoff-source-groups > h3 { margin: 0 0 10px; font-size: 17px; }
+.playoff-source-table { margin: 0 0 12px; overflow-x: auto; }
+.playoff-source-table h4 { margin: 0; padding: 9px 10px; font-size: 14px; }
+.playoff-source-table h4 .muted { font-weight: 400; }
+.playoff-source-table .standings { min-width: 330px; }
+.playoff-source-rank {
+  background: color-mix(in srgb, var(--yellow) 22%, var(--card));
+  box-shadow: inset 3px 0 0 var(--yellow);
+  font-weight: 700;
+}
+
 /* Valda favoritlag i inställningarna (renderFavoriteTeamList i js/app.js) */
 .fav-team-list {
   display: flex;
@@ -2275,6 +2715,24 @@ dialog.history-dialog {
   cursor: grab;
 }
 
+/* En finger får fortsätta skrolla trädet/sidan. Två fingrar tas om hand av
+   setupBracketPan och ändrar trädets egen zoom i stället för webbsidans. */
+.bracket-box { touch-action: pan-x pan-y; }
+.bracket-box.pinching { user-select: none; }
+:root.bracket-pinching { overscroll-behavior: none; }
+
+.team-playoff-placement {
+  margin: 2px 0 8px;
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.playoff-placement-box > .muted { margin: -4px 12px 10px; }
+.playoff-placement-table .pts { white-space: nowrap; }
+.playoff-placement-table tr.us td:first-child {
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
 /* dra-för-att-panorera (js/app.js: setupBracketPan) — grabbing-markören och
    avstängd textmarkering bara medan man faktiskt drar. */
 .bracket-box.panning { cursor: grabbing; user-select: none; }
@@ -2393,6 +2851,45 @@ dialog.history-dialog {
   box-shadow: none;
 }
 .bracket-match.predicted-match:hover { box-shadow: none; transform: none; }
+
+.bracket-match.relevant-path {
+  border-color: color-mix(in srgb, var(--yellow) 72%, var(--line));
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+
+.bracket-relevance-tag {
+  display: block;
+  margin-bottom: 2px;
+  color: color-mix(in srgb, var(--yellow) 72%, var(--ink));
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.bracket-table-row.relevant-path {
+  background: color-mix(in srgb, var(--yellow) 16%, var(--card));
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+
+.bracket-relevance-inline { color: #a77c00; }
+.playoff-relevance-note { margin: 4px 0 8px; }
+.playoff-display-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 4px 0 10px;
+}
+.playoff-display-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.playoff-display-toggle input { margin: 0; accent-color: var(--blue); }
+.playoff-display-toggle:has(input:checked) { color: var(--ink); }
 .bracket-table-row.predicted-match { opacity: 0.85; }
 
 .bracket-teams { display: grid; gap: 3px; margin-bottom: 5px; }
@@ -2416,6 +2913,56 @@ dialog.history-dialog {
 .bracket-team.won::after { content: " ✓"; color: var(--won); font-size: 11px; }
 .bracket-team.predicted, span.predicted { font-style: italic; color: var(--ink-soft); }
 .bracket-team.predicted.won { color: var(--ink); }
+.playoff-candidate-rotation {
+  display: inline-flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  vertical-align: middle;
+}
+.playoff-candidate-rotation[role="button"] {
+  cursor: pointer;
+  border-radius: 4px;
+}
+.playoff-candidate-rotation[role="button"]:hover .playoff-candidate-count,
+.playoff-candidate-rotation[role="button"]:focus-visible .playoff-candidate-count {
+  text-decoration: underline;
+}
+.playoff-candidate-rotation[role="button"]:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.playoff-rotating-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.playoff-candidate-count {
+  color: var(--blue);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.group-candidate-summary { margin: -4px 12px 8px; font-size: 12px; }
+.group-candidate-mark {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.standings tr.possible-group-winner td:first-child {
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--blue) 65%, transparent);
+}
+.playoff-candidates-dialog { width: min(720px, calc(100vw - 24px)); }
+.playoff-candidates-table { overflow-x: auto; }
 
 .bracket-score {
   font-family: "Barlow Condensed", sans-serif;
@@ -3027,7 +3574,13 @@ dialog.history-dialog {
 }
 
 @media (max-width: 480px) {
-  .brand h1 { font-size: 20px; }
+  .top-inner { padding: 7px 10px; }
+  .brand { gap: 8px; }
+  .header-identity { width: max-content; max-width: calc(100vw - 20px); gap: 8px; }
+  .app-wordmark-mark { width: 29px; height: 29px; }
+  .header-context { flex: 0 1 auto; padding-left: 8px; }
+  .header-club { max-width: 37vw; }
+  .current-cup-label { max-width: 37vw; }
   .slot { grid-template-columns: 44px 1fr; }
   #meta { display: none; }
   .welcome-content { padding-left: 18px; padding-right: 18px; }
@@ -3053,6 +3606,7 @@ dialog.history-dialog {
 .tro-cls { font-weight: 600; font-size: 14px; color: var(--ink); }
 .tro-team { font-size: 13.5px; color: var(--blue); font-weight: 600; margin-top: 2px; }
 .champ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 12px; }
+.shared-bronze-note { margin: 10px 0 0; }
 .champ { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 13px 14px; box-shadow: var(--shadow); }
 .champ-cls { font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 6px; }
@@ -3086,12 +3640,56 @@ dialog.history-dialog {
 @media (hover: none) { .tro-go { opacity: .8; } }
 
 /* ── Kalender (Stats-underflik): Gantt över cupernas speldagar ── */
-.gantt { margin-top: 6px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--card); }
-.gantt-row { display: grid; grid-template-columns: 150px 1fr; align-items: stretch; min-height: 32px; }
+/* Kalendern är en datamatris, inte en responsiv kortlista. Årsaxeln får en
+   stabil arbetsbredd och hela ytan skrollar i båda riktningarna. Rubrikraden
+   och cupkolumnen ligger kvar som i ett kalkylark, så man inte tappar vilken
+   månad eller cup en stapel hör till. */
+.gantt {
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-height: min(62dvh, 620px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  touch-action: pan-x pan-y;
+  background: var(--card);
+}
+.gantt-row {
+  display: grid;
+  grid-template-columns: 150px minmax(900px, 1fr);
+  align-items: stretch;
+  min-width: 1050px;
+  min-height: 32px;
+}
 .gantt-row + .gantt-row { border-top: 1px solid var(--line); }
-.gantt-headrow { min-height: 24px; background: var(--paper); border-bottom: 1px solid var(--line); }
-.gantt-label { padding: 6px 10px; font-size: 13px; font-weight: 600; color: var(--ink);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-self: center; }
+.gantt-headrow {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-height: 28px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.gantt-label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  padding: 6px 10px;
+  border-right: 1px solid var(--line);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+.gantt-headrow .gantt-label { z-index: 5; background: var(--paper); }
 .gantt-track { position: relative; }
 .gantt-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
 .gantt-month { position: absolute; top: 5px; font-size: 11px; color: var(--ink-soft); transform: translateX(3px); }
@@ -3102,11 +3700,13 @@ dialog.history-dialog {
 .gantt-bar-txt { font-size: 11px; line-height: 1; color: #fff; font-weight: 600; padding: 0 6px; white-space: nowrap; }
 .gantt-row-click { cursor: pointer; }
 .gantt-row-click:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
+.gantt-row-click:hover .gantt-label { background: color-mix(in srgb, var(--blue) 8%, var(--card)); }
 .gantt-row-click:hover .gantt-bar { filter: brightness(1.1); }
 .gantt-row-click:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
 .gantt-hint { margin-top: 8px; font-size: 13px; }
 @media (max-width: 560px) {
-  .gantt-row { grid-template-columns: 104px 1fr; }
+  .gantt { max-height: 58dvh; }
+  .gantt-row { grid-template-columns: 112px minmax(840px, 1fr); min-width: 952px; }
   .gantt-label { font-size: 12px; padding: 6px; }
 }
 .gantt-bar.gantt-preview { box-shadow: none; border: 1px dashed var(--blue);
@@ -3225,7 +3825,8 @@ dialog.history-dialog {
    underifrån i full bredd, med draghandtag för att välja höjd själv.
    Gäller ALLA pickers, inklusive exportmenyn, eftersom de delar klass. */
 @media (max-width: 700px) {
-  .team-picker-dd[open] > .team-picker-panel {
+  .team-picker-dd[open] > .team-picker-panel,
+  .team-picker-panel.picker-panel-portaled {
     position: fixed;
     top: auto;
     left: 0;
@@ -3267,11 +3868,13 @@ dialog.history-dialog {
      153 px OVANFÖR skärmkanten, med sina översta knappar (bl.a. hela
      kalenderexporten) utom räckhåll. Pickern ligger ändå ÖVER arket tack
      vare z-index, så i det läget ska den bara lyftas över bottenraden. */
-  body.filters-expanded .team-picker-dd[open] > .team-picker-panel {
+  body.filters-expanded .team-picker-dd[open] > .team-picker-panel,
+  body.filters-expanded .team-picker-panel.picker-panel-portaled {
     bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
   }
 
-  .team-picker-dd[open] > .team-picker-panel > .team-picker-list {
+  .team-picker-dd[open] > .team-picker-panel > .team-picker-list,
+  .team-picker-panel.picker-panel-portaled > .team-picker-list {
     max-height: none; /* arket sköter scrollen, inte listan */
   }
 
@@ -3357,6 +3960,42 @@ dialog.history-dialog {
      saknas eller de två viewporterna sammanfaller. */
   #bottomBar[hidden] { display: flex; } /* [hidden] är utgångsläget i markupen */
 
+  .prototype-sheet {
+    inset: auto 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
+    top: auto;
+    bottom: calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px));
+    width: 100vw;
+    max-width: none;
+    height: min(62dvh, 600px);
+    max-height: calc(100dvh - var(--bottomstack-h, 56px) - 12px);
+    margin: 0;
+    transform: none;
+    border-left: 0;
+    border-right: 0;
+    /* Menyraderna ska alltid gå att använda för att växla bort från arket,
+       även om sparad arkhöjd eller mobilens visual viewport mäts om. */
+    z-index: 67;
+  }
+  .prototype-sheet-backdrop {
+    bottom: calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px));
+  }
+  /* Export är en egen Mer-vy på mobil, precis som Inställningar: den fyller
+     hela ytan ovanför navigeringen och kan inte dras till en mellanhöjd. */
+  .prototype-sheet.prototype-sheet-fullscreen {
+    inset: 0 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
+    width: 100vw;
+    height: auto !important;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .prototype-sheet-fullscreen .prototype-sheet-head {
+    min-height: calc(54px + env(safe-area-inset-top));
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .prototype-sheet-fullscreen .prototype-sheet-grip { display: none; }
+
   #bottomBar {
     position: fixed;
     left: 0;
@@ -3369,9 +4008,10 @@ dialog.history-dialog {
        de raden utan att scrolla, se flex-basis på .bottom-tab. */
     overflow-x: auto;
     overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    background: var(--card);
-    border-top: 1px solid var(--line);
+    background: var(--menu-surface);
+    border-top: 1px solid var(--menu-line);
     padding-bottom: env(safe-area-inset-bottom);
     /* Andra skuggan är ingen skugga: en solid, oskarp yta 260 px NEDANFÖR
        raden i samma färg som den själv. Firefox på iOS krymper inte layout-
@@ -3389,31 +4029,68 @@ dialog.history-dialog {
        slutar 260 px under dess underkant. Spridningen växer även i sidled,
        vilket är ofarligt: den hamnar utanför skärmens kanter. */
     box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22),
-                0 130px 0 130px var(--card);
+                0 130px 0 130px var(--menu-surface);
   }
   #bottomBar::-webkit-scrollbar { display: none; }
 
   .bottom-tab {
     /* Växer och fyller raden när det finns plats, men krymper aldrig under
-       52 px — då scrollar raden i stället för att klämma ihop etiketterna
+       40 px — då scrollar raden i stället för att klämma ihop etiketterna
        till oläsbarhet. */
-    flex: 1 1 20%;
+    flex: 1 1 25%;
     min-width: 0;
+    min-height: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 7px 2px 6px;
+    padding: 7px 10px 6px;
     background: none;
     border: none;
     color: var(--ink-soft);
     font: inherit;
-    font-size: 10.5px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     position: relative;
   }
-  .bottom-tab.on { color: var(--blue); }
-  .bottom-tab-icon { font-size: 18px; line-height: 1; }
+  .bottom-tab.page-on,
+  .bottom-tab.menu-on { color: var(--blue); }
+  .bottom-tab-icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    line-height: 0;
+  }
+  .bottom-tab-icon-svg { display: block; width: 20px; height: 20px; }
+  /* Två samtidiga signaler: strecket visar vilken innehållssida som ligger
+     bakom panelerna, punkten vilken huvudmeny som för tillfället är öppen. */
+  .bottom-tab.page-on::after {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--blue);
+    transform: translateX(-50%);
+  }
+  .bottom-tab.menu-on::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    z-index: 1;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 0 1px var(--menu-surface);
+    transform: translateX(-50%);
+  }
   .bottom-tab-label {
     max-width: 100%;
     overflow: hidden;
@@ -3446,10 +4123,11 @@ dialog.history-dialog {
   #viewTabs { display: none; }
   #settingsBtn { display: none; }
   #currentCupBtn, #helpBtn, #refreshBtn { display: none; }
-  .current-cup-label { display: block; max-width: 28vw; }
+  .header-context { flex: 0 1 auto; }
   .header-share-btn { display: inline-grid; place-items: center; flex: 0 0 auto; }
 
-  #currentViewBar:not([hidden]) {
+  #currentViewBar:not([hidden]),
+  #moreMenuBar:not([hidden]) {
     position: fixed;
     left: 0;
     right: 0;
@@ -3459,15 +4137,109 @@ dialog.history-dialog {
     gap: 4px;
     padding: 6px 10px;
     overflow-x: auto;
-    background: var(--card);
-    border-top: 1px solid var(--line);
+    background: var(--menu-surface);
+    border-top: 1px solid var(--menu-line);
     scrollbar-width: none;
   }
-  #currentViewBar::-webkit-scrollbar { display: none; }
+  #currentViewBar::-webkit-scrollbar,
+  #moreMenuBar::-webkit-scrollbar { display: none; }
+  /* Mer är samma fristående menynivå som Filter och ska avgränsas lika
+     tydligt från sidinnehållet ovanför. */
+  #moreMenuBar:not([hidden]) {
+    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+  }
+
+  /* Tredje nivån under Aktuellt: aktiv klass/lag i Tabeller. Ligger ovanför
+     Aktuellt-raden och använder samma höjd/textsystem som övriga nivåer. */
+  #currentSelectionBar:not([hidden]) {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--bottombar-h, 56px) + var(--mobile-submenu-h, 53px) + var(--vv-offset, 0px));
+    z-index: 68;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--mobile-submenu-h, 53px);
+    min-height: var(--mobile-submenu-h, 53px);
+    padding: 6px 10px;
+    overflow: hidden;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: var(--menu-surface);
+    border-top: 1px solid var(--menu-line);
+    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+  }
+  #currentSelectionBar::-webkit-scrollbar { display: none; }
+  #currentSelectionBar .table-group-tab { height: 40px; padding: 7px 12px 6px; }
+  #currentSelectionBar .selection-view-label {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 5px 0 2px;
+    color: var(--ink-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+  #currentSelectionBar .selection-tabs-scroll {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 40px;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #currentSelectionBar .selection-tabs-scroll::-webkit-scrollbar { display: none; }
+  #currentSelectionBar .selection-order-toggle {
+    flex: 0 0 auto;
+    height: 40px;
+    padding: 7px 10px 6px;
+    border: 0;
+    border-left: 1px solid var(--menu-line);
+    background: color-mix(in srgb, var(--menu-surface) 90%, var(--ink));
+    color: var(--blue);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  #currentSelectionBar .selection-order-controls {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+    height: 40px;
+    border-left: 1px solid var(--menu-line);
+    background: color-mix(in srgb, var(--menu-surface) 90%, var(--ink));
+  }
+  #currentSelectionBar .selection-order-controls .selection-order-toggle {
+    border-left: 1px solid var(--menu-line);
+  }
+  #currentSelectionBar .selection-sort-select {
+    width: auto;
+    max-width: 92px;
+    height: 40px;
+    padding: 6px 24px 6px 9px;
+    border: 0;
+    background-color: color-mix(in srgb, var(--menu-surface) 90%, var(--ink));
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+  }
   .current-view-tab {
     flex: 1 0 auto;
     border: 0;
     border-radius: 999px;
+    min-height: 40px;
     padding: 7px 12px;
     background: transparent;
     color: var(--ink-soft);
@@ -3475,8 +4247,26 @@ dialog.history-dialog {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    position: relative;
   }
-  .current-view-tab.on { background: var(--paper); color: var(--blue); }
+  .current-view-tab.on { background: transparent; color: var(--blue); }
+  .current-view-tab.on::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--blue);
+    transform: translateX(-50%);
+  }
+  .more-submenu-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
 
   /* Verktygsraden bor kvar på sin plats i DOM:et (renderToolbar ritar dit
      som förut) men visas bara som ark, fällt upp av filterknappen. */
@@ -3495,9 +4285,9 @@ dialog.history-dialog {
     margin: 0;
     /* Ingen egen fyllning: brickorna bär sin padding själva, precis som
        bottenradens flikar, så de två raderna blir exakt lika höga. */
-    padding: 0 6px;
-    background: var(--card);
-    border-top: 1px solid var(--line);
+    padding: 6px 10px;
+    background: var(--menu-surface);
+    border-top: 1px solid var(--menu-line);
     box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
   }
   /* I remsläget visas BARA ikonerna. Resten av verktygsraden finns kvar i
@@ -3505,10 +4295,28 @@ dialog.history-dialog {
   body.filters-open:not(.filters-expanded) #toolbar .toolbar-summary,
   body.filters-open:not(.filters-expanded) #toolbar .sheet-cup-btn,
   body.filters-open:not(.filters-expanded) #toolbar .row > *:not(.filter-group),
-  body.filters-open:not(.filters-expanded) #toolbar .row ~ * { display: none; }
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-body > *:not(.filter-primary-row) {
+    display: none;
+  }
   body.filters-open:not(.filters-expanded) #toolbar .row {
-    display: block;
+    display: flex;
+    align-items: center;
     margin: 0;
+    min-height: 40px;
+    height: auto;
+  }
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group {
+    margin: 0;
+    gap: 4px;
+    height: auto;
+  }
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-cup-tile {
+    min-height: 40px;
+    padding: 7px 12px 6px;
+    align-items: center;
   }
   /* Mellanliggande omslag (details > .toolbar-body > .row) bidrog med 24 px
      marginal och gap som gjorde remsan 73 px mot bottenradens 49. I remsläget
@@ -3539,30 +4347,32 @@ dialog.history-dialog {
     box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
   }
 
-  /* "Mer"-brickan: samma form som väljarbrickorna, egen klass eftersom den
-     inte är en <details>. */
+  /* Vanliga textflikar i filterraden. Egen klass eftersom Cup/Rensa och de
+     inaktiva platshållarna är knappar, medan övriga val är <details>. */
   .filter-more-tile {
     flex: 0 0 auto;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    width: 64px;
-    padding: 7px 2px 6px;
+    width: auto;
+    max-width: 150px;
+    min-height: 40px;
+    padding: 8px 12px;
     background: none;
     border: none;
     font: inherit;
-    font-size: 10.5px;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--ink-soft);
     cursor: pointer;
   }
-  .filter-more-tile::before {
-    content: attr(data-icon);
-    font-size: 18px;
-    line-height: 1;
+  .filter-more-tile::before { content: none; }
+  .filter-placeholder-tile:disabled {
+    opacity: .38;
+    cursor: default;
   }
   body.filters-expanded .filter-more-tile { color: var(--blue); }
+  body.filters-expanded .filter-scope-tile { display: none; }
   /* Rensa-brickan skiljs från väljarna med en tunn linje: den ÄNDRAR något
      när man trycker, till skillnad från de andra som bara öppnar en panel. */
   .filter-clear-tile {
@@ -3604,7 +4414,7 @@ dialog.history-dialog {
      den svarar på "vad tittar jag på och hur tar jag mig tillbaka", vilket
      annars bara framgick av den gömda verktygsraden. */
   .mobile-context {
-    display: none;
+    display: flex;
     position: sticky;
     top: 0;
     z-index: 5;
@@ -3675,14 +4485,31 @@ dialog.history-dialog {
     z-index: 69;
     margin: 0;
     padding: 6px 10px;
-    background: var(--card);
-    border-top: 1px solid var(--line);
+    background: var(--menu-surface);
+    border-top: 1px solid var(--menu-line);
+    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
     overflow-x: auto;
     flex-wrap: nowrap;
     scrollbar-width: none;
   }
   #content .history-tabs[aria-label="Stats"]::-webkit-scrollbar { display: none; }
-  #content .history-tabs[aria-label="Stats"] .tab { flex: 0 0 auto; }
+  #content .history-tabs[aria-label="Stats"] .tab {
+    position: relative;
+    flex: 0 0 auto;
+    border-bottom-color: transparent;
+  }
+  #content .history-tabs[aria-label="Stats"] .tab.on::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--blue);
+    transform: translateX(-50%);
+  }
+  body.stats-tabs-collapsed #content .history-tabs[aria-label="Stats"] { display: none; }
 
   /* (Stats-radens höjd ingår numera i --bottomstack-h, se syncBottomStack.) */
 
@@ -3711,41 +4538,26 @@ dialog.history-dialog {
     cursor: pointer;
   }
 
-  /* Brickan ska se ut EXAKT som en flik i bottenraden (.bottom-tab): platt,
-     utan ram och utan kortbakgrund. Med ram och fyllning läste remsan som
-     en rad knappar i stället för som en meny, och blev dessutom nästan
-     dubbelt så hög som raden den ligger ovanpå. Samma padding, samma
-     teckenstorlek, samma färger — bara fast bredd i stället för flex, så
-     remsan kan scrolla i sidled. */
+  /* Samma textflikar som under Aktuellt: inga ikoner, pills eller pilar. */
   .filter-group .team-picker-dd > .team-picker-summary {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    width: 64px;
-    padding: 7px 2px 6px;
+    width: auto;
+    max-width: 150px;
+    min-height: 40px;
+    padding: 8px 12px;
     background: none;
     border: none;
     border-radius: 0;
     font: inherit;
-    font-size: 10.5px;
-    line-height: 1.15;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--ink-soft);
     text-align: center;
     cursor: pointer;
   }
-  /* Ikonen kommer från data-icon (satt i buildPicker) — inget extra element
-     att bygga, och desktopvyn påverkas inte alls. */
-  /* Samma ikonstorlek som bottenradens (.bottom-tab-icon) så de två
-     raderna läser som samma system. */
-  .filter-group .team-picker-summary[data-icon]::before {
-    content: attr(data-icon);
-    font-size: 18px;
-    line-height: 1;
-  }
-  /* "Innevarande år" ryms inte på en 64 px-bricka — korta med ellips i
-     stället för att klippa mitt i ordet. */
+  .filter-group .team-picker-summary[data-icon]::before { content: none; }
   .filter-group .picker-label {
     max-width: 100%;
     overflow: hidden;
@@ -3764,14 +4576,11 @@ dialog.history-dialog {
   .sheet-cup-meta { font-size: 12px; color: var(--ink-soft); }
   .sheet-cup-arrow { font-size: 22px; color: var(--ink-soft); }
 
-  /* Urvalsgruppen: år, dagar, klasser och lag som en horisontell ikonremsa.
-     Fullbreddsrader tog 52 px styck och åt upp arket; som brickor ryms de
-     på EN rad, och remsan scrollar i sidled om de blir fler. Ikonen bär
-     igenkänningen, etiketten under bär värdet ("Klasser (2)"). */
+  /* Cup, år, dagar, klasser och lag som en scrollbar textmeny på en rad. */
   .filter-group {
     display: flex;
     flex-wrap: nowrap;
-    gap: 0;
+    gap: 4px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     /* Föräldern (.row) är flex — utan flex-basis 100 % krymper remsan till
@@ -3780,21 +4589,181 @@ dialog.history-dialog {
     width: 100%;
     margin: 0;
     scrollbar-width: none;
-    /* Brickorna ska kunna dras i sidled utan att gesten kapas av arkets
-       egen vertikala scroll. */
-    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
   }
   .filter-group::-webkit-scrollbar { display: none; }
   /* Efterkommande, inte direkt barn: lagväljaren ligger i en span med
      display:contents (teamSlot i renderToolbar). Den försvinner ur
      layouten men finns kvar i DOM:et, så en >-selektor missar den. */
   .filter-group .team-picker-dd { flex: 0 0 auto; }
-  /* Standardpilen (▾) är brus på en bricka som redan har ikon och etikett. */
+  /* Standardpilen (▾) behövs inte när hela textfliken är klickbar. */
   .filter-group .team-picker-dd > .team-picker-summary::after { content: none; }
   /* Öppen bricka markeras med färg, precis som .bottom-tab.on. */
   .filter-group .team-picker-dd[open] > .team-picker-summary {
     background: none;
+    background-image: linear-gradient(var(--blue), var(--blue));
+    background-repeat: no-repeat;
+    background-position: center calc(100% - 2px);
+    background-size: 18px 2px;
     color: var(--blue);
+  }
+
+  /* Kompakt filterremsa ska vara exakt lika hög som övriga mobilundermenyer.
+     Dessa regler kommer efter standardvärdena ovan för att inte övertrumkas. */
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-cup-tile {
+    padding-top: 7px;
+    padding-bottom: 6px;
+  }
+
+  /* Alla huvudmenyernas undernivåer är samma komponent visuellt och ska
+     därför också ha samma faktiska boxhöjd. Tidigare räknades Aktuellt/Mer
+     från ytterpadding, Statistik från .tab-padding och Filter från flera
+     nästlade wrappers. Små ändringar i någon av reglerna gav då olika höjd.
+     53 px = 40 px tryckyta + 6 px luft ovan/under + 1 px kantlinje. */
+  :root { --mobile-submenu-h: 53px; }
+
+  #currentViewBar:not([hidden]),
+  #moreMenuBar:not([hidden]),
+  #content .history-tabs[aria-label="Stats"],
+  body.filters-open:not(.filters-expanded) #toolbar {
+    height: var(--mobile-submenu-h);
+    min-height: var(--mobile-submenu-h);
+    max-height: var(--mobile-submenu-h);
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  #content .history-tabs[aria-label="Stats"] .tab,
+  #currentViewBar .current-view-tab,
+  #moreMenuBar .current-view-tab {
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+  }
+
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-cup-tile {
+    height: 40px;
+    min-height: 40px;
+  }
+
+  /* Samma menynivå ska också ha samma textbehandling. Stats-flikarna
+     ärver annars desktopflikarnas versaler, kondenserade typsnitt och
+     teckenavstånd medan Aktuellt, Filter och Mer använder vanlig text. */
+  #content .history-tabs[aria-label="Stats"] .tab,
+  #currentViewBar .current-view-tab,
+  #moreMenuBar .current-view-tab,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-collapse,
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-body,
+  body.filters-open:not(.filters-expanded) #toolbar .row,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group {
+    width: 100%;
+    max-height: none;
+  }
+
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-collapse,
+  body.filters-open:not(.filters-expanded) #toolbar .toolbar-body {
+    height: 100%;
+    min-height: 0;
+  }
+
+  body.filters-open:not(.filters-expanded) #toolbar .row,
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group {
+    height: 40px;
+    min-height: 40px;
+  }
+
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group {
+    min-width: 0;
+    align-items: stretch;
+  }
+
+  /* Samma konstruktion som Statistik/Mer: den FASTA menyraden är själv
+     scrollcontainer. JS flyttar den enda breda brickraden direkt hit och
+     tar bort details/body/row-omslagen; den inre raden har overflow:visible
+     och kan därför aldrig konkurrera om själva scrollgesten. */
+  body.filters-open:not(.filters-expanded) #toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  body.filters-open:not(.filters-expanded) #toolbar::-webkit-scrollbar { display: none; }
+  body.filters-open:not(.filters-expanded) #toolbar > .filter-group {
+    display: flex;
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: max-content;
+    height: 40px;
+    min-height: 40px;
+    overflow: visible;
+  }
+  /* Vid tydlig nedåtrullning krymper hela bottenstacken till en liten
+     "dynamic island". display:none gör att syncBottomStack mäter noll för
+     de undanlagda raderna; island-knappen ligger separat ovanpå innehållet. */
+  body.bottom-nav-collapsed #bottomBar,
+  body.bottom-nav-collapsed #currentViewBar,
+  body.bottom-nav-collapsed #currentSelectionBar,
+  body.bottom-nav-collapsed #moreMenuBar,
+  body.bottom-nav-collapsed #toolbar,
+  body.bottom-nav-collapsed #content .history-tabs[aria-label="Stats"] {
+    display: none !important;
+  }
+
+  #bottomNavIsland:not([hidden]) {
+    position: fixed;
+    left: 50%;
+    bottom: calc(6px + env(safe-area-inset-bottom) + var(--vv-offset, 0px));
+    z-index: 72;
+    display: grid;
+    place-content: center;
+    gap: 3px;
+    width: 58px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, #fff 18%, transparent);
+    border-radius: 999px;
+    background: #16283f;
+    color: #fff;
+    box-shadow: none;
+    transform: translateX(-50%);
+    animation: bottom-island-in .16s ease-out;
+  }
+  #bottomNavIsland span {
+    display: block;
+    width: 19px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+  body.bottom-nav-collapsed #content { padding-bottom: 72px; }
+  /* 44px-knappen centreras mot den 38px höga menyön: 3px lägre nederkant
+     ger exakt samma lodräta mittpunkt, med samma safe-area/viewport-offset. */
+  body.bottom-nav-collapsed #scrollTopBtn {
+    bottom: calc(3px + env(safe-area-inset-bottom) + var(--vv-offset, 0px));
+  }
+
+  @keyframes bottom-island-in {
+    from { opacity: 0; transform: translate(-50%, 8px) scale(.88); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
   }
 }
 

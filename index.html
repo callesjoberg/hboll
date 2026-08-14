@@ -153,13 +153,25 @@
   <header class="top">
     <div class="top-inner">
       <div class="brand">
-        <img src="assets/ahk-logo.svg" alt="" width="34" height="38" id="clubLogo">
-        <h1>Cupschema<small id="clubName">Alingsås HK</small></h1>
+        <div class="header-identity">
+          <div class="app-wordmark" aria-label="Cupschema" title="Cupschema">
+            <svg class="app-wordmark-mark" aria-hidden="true" viewBox="0 0 36 36" role="img">
+              <rect x="1" y="1" width="34" height="34" rx="9" class="logo-tile"></rect>
+              <path class="logo-cup" d="M11 8.5h14v5.2c0 4.8-2.8 7.8-7 7.8s-7-3-7-7.8V8.5Z"></path>
+              <path class="logo-cup" d="M11 11H7.5v2.2c0 3.2 1.8 5.1 4.7 5.1M25 11h3.5v2.2c0 3.2-1.8 5.1-4.7 5.1M18 21.5v5M13.5 27h9"></path>
+              <path class="logo-schedule" d="M14 12h3.2M19.4 12H22M14 15h5.2M14 18h3.2M19.4 18H22"></path>
+            </svg>
+          </div>
+          <div class="header-context" aria-label="Aktuellt urval">
+            <span class="header-club">
+              <img src="assets/ahk-logo.svg" alt="" width="18" height="18" id="clubLogo">
+              <span id="clubName" class="header-club-name"></span>
+            </span>
+            <span id="currentCupLabel" class="current-cup-label"></span>
+          </div>
+        </div>
         <span class="spacer"></span>
-        <span id="currentCupLabel" class="current-cup-label"></span>
         <button id="currentCupBtn" type="button" class="current-cup-btn" title="Byt cup"></button>
-        <button id="headerShareBtn" type="button" class="header-share-btn"
-                title="Dela eller exportera aktuell vy" aria-label="Dela eller exportera">⇧</button>
         <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
         <!-- Hjälpen låg tidigare bara i sidfoten, och på mobil flyttas
              sidfoten in i inställningsdialogen (placeFooterLinks) — alltså
@@ -193,6 +205,11 @@
        till en filterknapp som fäller upp verktygsraden som ett ark. -->
   <nav id="bottomBar" aria-label="Vy och filter" hidden></nav>
   <nav id="currentViewBar" aria-label="Aktuellt" hidden></nav>
+  <nav id="currentSelectionBar" aria-label="Vald klass eller lag" hidden></nav>
+  <nav id="moreMenuBar" aria-label="Mer" hidden></nav>
+  <button id="bottomNavIsland" type="button" aria-label="Visa navigeringen" hidden>
+    <span></span><span></span><span></span>
+  </button>
 
   <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
 
@@ -225,27 +242,6 @@
   <dialog id="settingsDialog">
     <button class="dialog-x" type="button" id="settingsClose" aria-label="Stäng">×</button>
     <h2>Inställningar</h2>
-
-    <div class="settings-group full">
-      <span class="settings-label">Cup</span>
-      <div class="seg" id="sportToggle" role="group" aria-label="Sport"></div>
-      <!-- Sökfält ovanför cupraden: 22 kort i en horisontell rad är
-           uppmätt 2 925 px i en 352 px vy — ungefär åtta svep på mobil
-           för att nå den sista. Att välja cup är det första nästan
-           varje besök börjar med, så man ska kunna skriva sig fram
-           i stället för att svepa. Fältet ligger här i HTML (inte i
-           renderCups) så det inte ritas om och tappar fokus per tecken. -->
-      <div class="search-wrap">
-        <input type="search" id="cupSearch" placeholder="Sök cup …"
-               autocomplete="off" aria-label="Sök cup"
-               aria-controls="cupRow">
-        <button type="button" class="search-clear" id="cupSearchClear"
-                aria-label="Rensa" tabindex="-1">×</button>
-      </div>
-      <nav id="cupRow" aria-label="Välj cup"></nav>
-      <p id="cupSearchEmpty" class="muted cup-search-empty" hidden
-         role="status">Ingen cup matchar sökningen.</p>
-    </div>
 
     <div class="settings-group">
       <label class="settings-label" for="favoriteClubInput">Favoritklubb</label>
@@ -310,9 +306,16 @@
       </label>
       <label class="settings-check">
         <input type="checkbox" id="playoffProjectionToggle">
-        Fyll i ännu ospelade slutspelsplatser med en prognos baserad på
-        nuvarande tabellplacering (bäst placerade laget antas gå vidare) —
-        markeras tydligt som prognos, inte ett riktigt resultat
+        Visa riktiga lagnamn i stället för platshållare som
+        &quot;1:an i Grupp B&quot; och &quot;Vinnare match&quot; när laget går att avgöra
+      </label>
+      <label class="settings-check">
+        <input type="checkbox" id="playoffPathToggle">
+        Markera möjlig kommande slutspelsväg för vald klubb eller favoritlag
+      </label>
+      <label class="settings-check">
+        <input type="checkbox" id="upcomingCarouselToggle">
+        Visa karusellen med kommande matcher överst i Aktuellt → Schema
       </label>
     </div>
 
@@ -386,6 +389,16 @@
     <div class="settings-group full" id="settingsLinksGroup">
       <label class="settings-label">Om och hjälp</label>
       <div class="settings-inline" id="settingsLinks"></div>
+    </div>
+
+    <div class="settings-group full">
+      <label class="settings-label">Schemadata</label>
+      <div class="settings-inline">
+        <button class="btn small" type="button" id="settingsRefreshBtn">↻ Uppdatera schema</button>
+      </div>
+      <p class="muted settings-hint">
+        Hämtar den senaste publicerade versionen av den valda cupens schema.
+      </p>
     </div>
 
     <div class="settings-group full">

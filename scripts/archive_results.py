@@ -210,6 +210,7 @@ def build_index():
         if not cid or not edition:
             continue
         matches = d.get("matches") or []
+        timed = sum(1 for m in matches if m.get("start"))
         champions.extend(extract_champions(
             matches, cid, d.get("cupName") or cid, edition))
         finished = sum(1 for m in matches if (m.get("res") or {}).get("fin"))
@@ -250,19 +251,27 @@ def build_index():
         # driver Kalender-fliken (Gantt över cupernas speldagar, se
         # renderKalenderView i js/app.js).
         first = last = None
+        date_list = []
         if days:
-            first = datetime.fromtimestamp(min(days) * 86400, tz=timezone.utc).strftime("%Y-%m-%d")
-            last = datetime.fromtimestamp(max(days) * 86400, tz=timezone.utc).strftime("%Y-%m-%d")
+            date_list = [datetime.fromtimestamp(day * 86400, tz=timezone.utc).strftime("%Y-%m-%d")
+                         for day in sorted(days)]
+            first, last = date_list[0], date_list[-1]
         by_cup.setdefault(cid, {"cupName": d.get("cupName") or cid, "editions": []})
         by_cup[cid]["cupName"] = d.get("cupName") or by_cup[cid]["cupName"]
         by_cup[cid]["editions"].append({
             "edition": edition,
             "file": f"data/archive/{f.name}",
             "matches": len(matches),
+            # Ett turneringssystem kan publicera matchstrukturen långt innan
+            # tiderna är satta. Behåll båda talen så gränssnittet kan skilja
+            # ett faktiskt publicerat schema från preliminära matchskal.
+            "timed": timed,
+            "untimed": len(matches) - timed,
             "finished": finished,
             "teams": len(teams),
             "classes": len(classes),
             "days": len(days),
+            "dates": date_list,
             "first": first,
             "last": last,
             "clubs": len(clubs),
