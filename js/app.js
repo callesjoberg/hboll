@@ -776,6 +776,16 @@ window.HB = window.HB || {};
   function buildViewUrlParams() {
     const p = new URLSearchParams();
     p.set("cup", state.cupId);
+    // Favoritklubben är en del av den delade upplevelsen: mottagaren ska få
+    // samma klubbnamn och klubbmärke i headern, inte sin egen lokala klubb.
+    // Förvalet (AHK) behöver inte skrivas ut — det finns redan i appens
+    // grundkonfiguration — men alla aktivt valda eller avvikande klubbar görs
+    // explicita i länken.
+    const favoriteClub = (state.favoriteClub || "").trim();
+    if (favoriteClub && (hasChosenClub ||
+        favoriteClub.toLowerCase() !== HB.CLUB.name.toLowerCase())) {
+      p.set("fav", favoriteClub);
+    }
     if (state.view !== "schema") p.set("view", state.view);
     if (state.view === "stats" && state.statsView !== "trend") p.set("stats", state.statsView);
     if (state.scope !== "club") p.set("scope", state.scope);
@@ -944,6 +954,16 @@ window.HB = window.HB || {};
   // denna). Sätter bara det som faktiskt finns i URL:en; nollställning görs
   // separat (resetUrlState) före popstate-återställning.
   function applyUrlToState(params) {
+    if (params.has("fav")) {
+      const favoriteClub = params.get("fav").trim();
+      if (favoriteClub) {
+        state.favoriteClub = favoriteClub;
+        markClubChosen();
+        persist("hb:favoriteClub", favoriteClub);
+        rebuildClubPattern();
+        updateClubLogo();
+      }
+    }
     if (params.get("view")) state.view = params.get("view");
     if (params.get("stats")) state.statsView = params.get("stats");
     normalizeStatsView();
