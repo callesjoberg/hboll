@@ -4192,7 +4192,9 @@ window.HB = window.HB || {};
       // därför hela match-exportpanelen även här — inte bara delningslänken.
       // Då finns Kalender (.ics), kalkylark, CSV, JSON, XML och ProCue även
       // när användaren står på Trend/Kalender/Karta eller annan statistik.
-      body.append(buildMatchExportPanel(item));
+      const panel = buildMatchExportPanel(item);
+      panel.classList.add("header-export-panel");
+      body.append(panel);
       return;
     }
     const panel = state.view === "tabeller" ? buildTablesExportPanel(item)
