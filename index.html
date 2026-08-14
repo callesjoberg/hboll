@@ -150,6 +150,8 @@
 </head>
 <body>
 
+  <h1 class="visually-hidden">Cupschema – spelschema, tabeller och slutspel</h1>
+
   <header class="top">
     <div class="top-inner">
       <div class="brand">
@@ -171,7 +173,12 @@
           </div>
         </div>
         <span class="spacer"></span>
-        <button id="currentCupBtn" type="button" class="current-cup-btn" title="Byt cup"></button>
+        <button id="currentCupBtn" type="button" class="current-cup-btn"
+                title="Byt cup" aria-haspopup="dialog">Byt cup</button>
+        <button id="headerExportBtn" class="header-action-btn" type="button"
+                title="Dela eller exportera">Export</button>
+        <button id="headerAboutBtn" class="header-action-btn" type="button"
+                title="Om Cupschema">Om</button>
         <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
         <!-- Hjälpen låg tidigare bara i sidfoten, och på mobil flyttas
              sidfoten in i inställningsdialogen (placeFooterLinks) — alltså
@@ -179,12 +186,18 @@
              bort. Ny flik så man inte tappar sin plats i appen. -->
         <a id="helpBtn" class="help-btn" href="hjalp.html" target="_blank" rel="noopener"
            title="Hjälp och manual (öppnas i ny flik)" aria-label="Hjälp och manual">?</a>
-        <button id="refreshBtn" type="button" title="Hämta senaste schemat">↻ Uppdatera</button>
+        <button id="refreshBtn" type="button" title="Kontrollera CupSchemas gemensamma schema">↻ Kontrollera senaste</button>
       </div>
     </div>
   </header>
 
   <div class="subbar">
+    <!-- Desktop använder mobilens viktigaste informationsarkitektur:
+         Filter / Aktuellt / Statistik. Mobilens Mer behövs inte på den breda
+         ytan; dess åtgärder ligger i topphuvudet. #viewTabs finns kvar som
+         gemensam, osynlig sanning för stöd/behörighet per aktuell vy. -->
+    <nav id="desktopMainNav" aria-label="Huvudmeny"></nav>
+    <nav id="desktopSubNav" aria-label="Undermeny" hidden></nav>
     <nav id="viewTabs" role="tablist" aria-label="Vy">
       <button class="tab on" role="tab" data-view="schema" type="button">Schema</button>
       <button class="tab" role="tab" data-view="tabeller" type="button">Tabeller</button>
@@ -199,10 +212,9 @@
 
   <main id="content"></main>
 
-  <!-- Mobilens bottenrad (renderBottomBar i js/app.js). Dold över 700 px,
-       där vyflikarna och verktygsraden ligger kvar i toppen som förut.
-       Speglar #viewTabs (samma data-view, samma dolda flikar) och lägger
-       till en filterknapp som fäller upp verktygsraden som ett ark. -->
+  <!-- Mobilens bottenrad (renderBottomBar i js/app.js). Desktop visar de tre
+       navigationsgrupperna i toppen via #desktopMainNav och har Mer-
+       åtgärderna direkt i sidhuvudet. Båda speglar #viewTabs. -->
   <nav id="bottomBar" aria-label="Vy och filter" hidden></nav>
   <nav id="currentViewBar" aria-label="Aktuellt" hidden></nav>
   <nav id="currentSelectionBar" aria-label="Vald klass eller lag" hidden></nav>
@@ -214,34 +226,15 @@
   <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
 
   <footer>
-    <span>Data hämtas live från cupmanager.net · tider kan ändras av arrangören.</span>
+    <span>Data uppdateras centralt, cirka var 20:e minut under cupdagar · tider kan ändras.</span>
     <button id="welcomeReopenBtn" class="welcome-reopen" type="button">Om appen</button>
     <a href="hjalp.html">Hjälp &amp; manual</a>
-    <button id="addCupBtn" class="btn small" type="button">+ Lägg till cup</button>
     <a href="admin.html">Admin</a>
   </footer>
 
-  <dialog id="addCupDialog">
-    <h2>Lägg till cup</h2>
-    <p>Öppna cupens resultatsida på cupmanager.net, visa sidans källkod och
-       leta upp <code>tournamentId</code>. Klistra in värdnamn och ID här.</p>
-    <form id="addCupForm">
-      <input name="cupname" placeholder="Cupens namn (t.ex. Bohus Cup)" required>
-      <input name="host" placeholder="Värd (t.ex. bohuscup.cupmanager.net)" required>
-      <input name="tid" placeholder="Tournament-ID (siffror)" inputmode="numeric" pattern="\d+" required>
-      <input name="place" placeholder="Ort (valfritt)">
-      <input name="edition" placeholder="År (valfritt)">
-      <div class="dialog-actions">
-        <button type="button" class="btn" id="addCupClose">Avbryt</button>
-        <button type="submit" class="btn primary">Spara</button>
-      </div>
-    </form>
-    <div id="customCupList"></div>
-  </dialog>
-
-  <dialog id="settingsDialog">
+  <dialog id="settingsDialog" aria-labelledby="settingsTitle">
     <button class="dialog-x" type="button" id="settingsClose" aria-label="Stäng">×</button>
-    <h2>Inställningar</h2>
+    <h2 id="settingsTitle">Inställningar</h2>
 
     <div class="settings-group">
       <label class="settings-label" for="favoriteClubInput">Favoritklubb</label>
@@ -394,7 +387,7 @@
     <div class="settings-group full">
       <label class="settings-label">Schemadata</label>
       <div class="settings-inline">
-        <button class="btn small" type="button" id="settingsRefreshBtn">↻ Uppdatera schema</button>
+        <button class="btn small" type="button" id="settingsRefreshBtn">↻ Kontrollera senaste</button>
       </div>
       <p class="muted settings-hint">
         Hämtar den senaste publicerade versionen av den valda cupens schema.

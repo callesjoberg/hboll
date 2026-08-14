@@ -42,9 +42,9 @@ allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
   Kalkylark (.xlsx) eller CSV.
 - **Delbara länkar**: adressfältet speglar alltid aktuellt filter och
   sortering — kopiera länken och mottagaren får exakt samma vy.
-- **Live-uppdatering** av pågående cuper, utan att i onödan hämta om
-  avslutade eller ännu inte startade cuper (se nedan) — Uppdatera-knappen
-  visar tydligt när en hämtning pågår (kan ta 20–30 s för en stor cup).
+- **Central uppdatering** av pågående cuper utan att varje besökare belastar
+  arrangörens system. Klienten kontrollerar ett litet versionsindex och
+  laddar bara om en stor cupfil när den faktiskt har ändrats.
 - **Installningar**: valfri favoritklubb och favoritlag (⭐ på matchkort,
   med autocomplete från cupens egna lagnamn — samma klubb heter ofta olika
   saker i olika cuper), ljust/mörkt/auto-tema, färgkodning av lag som heter
@@ -85,14 +85,14 @@ De flesta svenska handbollscuper kör Cup Manager. Så hittar du uppgifterna:
 1. Gå till cupens sida, t.ex. `https://potatiscupen.cupmanager.net/`, och klicka
    dig till **resultat/spelschema**.
 2. Visa sidans källkod och sök på `tournamentId` — ett 8-siffrigt tal.
-3. Lägg in värd + ID i admin-sidan (för alla besökare), redigera
-   `data/cups.json` för hand, eller använd **"+ Lägg till cup"** i sidfoten
-   (sparas bara i din webbläsare).
+3. Lägg in värd + ID i admin-sidan eller redigera `data/cups.json`. Cuper
+   måste publiceras centralt för att få en gemensam snapshot.
 
 **ProCup-cuper** (t.ex. Järnvägen Cup) saknar öppet API och CORS. De förhämtas
 i stället av `scripts/fetch_procup.py` till `data/`-katalogen — GitHub Actions
-(`.github/workflows/procup.yml`) kör skrapan var 6:e timme och committar när
-datan ändrats. Lägg till fler ProCup-turneringar i `TOURNAMENTS`-listan i
+(`.github/workflows/procup.yml`) kör kontrolljobbet var 20:e minut och
+committar när datan ändrats; cuper långt från sina speldagar hoppas över.
+Lägg till fler ProCup-turneringar i `TOURNAMENTS`-listan i
 skriptet (ev-numret syns i turneringens procup.se-URL) plus en post med
 `dataUrl` i `js/config.js`.
 
@@ -109,8 +109,8 @@ gh api repos/{owner}/hboll/pages -X POST -f build_type=workflow \
 ```
 
 Sedan finns sidan på `https://<ditt-konto>.github.io/hboll/`.
-Inget mer behövs — datan hämtas från cupmanager.net direkt i besökarens
-webbläsare.
+Cupdata hämtas centralt av GitHub Actions och publiceras som gemensamma
+snapshots; besökarnas webbläsare kontaktar inte Cup Manager för schemat.
 
 ### Egen domän
 
@@ -135,11 +135,12 @@ Tre lager, i den ordning sidan letar:
 2. **CI-byggda snapshots** i repot (`data/snapshot-<cupId>.json` för
    Cup Manager-cuper, `data/<cupId>.json` för ProCup-cuper). Genereras av
    `scripts/fetch_cupmanager.py` respektive `scripts/fetch_procup.py`, som
-   GitHub Actions kör var 6:e timme (`.github/workflows/procup.yml`, kan
-   även startas manuellt från admin-sidan). Gör att *förstabesöket* laddar
+   GitHub Actions kontrollerar var 20:e minut (`.github/workflows/procup.yml`,
+   kan även startas manuellt från admin-sidan). Gör att *förstabesöket* laddar
    direkt i stället för att vänta på Cup Manager-API:t (~15 s för Åhus
    6 000+ matcher).
-3. **Live-API:t** hos cupen, som sista utväg eller vid explicit uppdatering.
+3. **Källsystemet** kontaktas bara av det centrala GitHub Actions-jobbet.
+   Besökarens knapp kontrollerar den senast publicerade gemensamma snapshotten.
 
 Hur ofta en cup hämtas om avgörs av matchernas tidsspann, inte ett fast
 intervall:
@@ -147,10 +148,11 @@ intervall:
 | Cupens läge | Ny hämtning |
 |---|---|
 | Avslutad (senaste matchen > 24 h bakåt) | Aldrig automatiskt |
-| Framtida (första matchen > 24 h fram) | Var 6:e timme |
-| Pågår | Var 3:e minut medan fliken är öppen |
+| Framtida (första matchen > 72 h fram) | Ungefär var 6:e timme |
+| Börjar inom 72 h eller pågår | Ungefär var 20:e minut centralt |
 
-Tryck **↻ Uppdatera** för att alltid tvinga fram en färsk hämtning.
+Tryck **↻ Kontrollera senaste** för att läsa den senast centralt publicerade
+snapshotten. Knappen startar inte en egen hämtning från Cup Manager.
 
 ## Tekniska noter
 

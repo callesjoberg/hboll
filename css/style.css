@@ -27,7 +27,7 @@
 /* padda (liggande) och uppåt: lite mer luft, och matchkorten i en tidslucka
    får bilda flera kolumner sida vid sida i stället för att alltid staplas
    — auto-fill räknar själv ut hur många som får plats. */
-@media (min-width: 700px) {
+@media (min-width: 701px) {
   :root { --container-max: 1000px; }
   .slot-matches { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   .table-group {
@@ -54,6 +54,7 @@
     --line: #26313f;
     --menu-surface: #202d3f;
     --menu-line: #405269;
+    --live: #ff746c;
     --shadow: none;
     --purple: #b98cf2;
     --orange: #e8873a;
@@ -72,6 +73,7 @@
   --line: #26313f;
   --menu-surface: #202d3f;
   --menu-line: #405269;
+  --live: #ff746c;
   --shadow: none;
   --purple: #b98cf2;
   --orange: #e8873a;
@@ -87,6 +89,7 @@
   --line: #dfe5ec;
   --menu-surface: #ffffff;
   --menu-line: #cbd5e1;
+  --live: #d22f27;
   --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
   --purple: #8854d0;
   --orange: #c8660a;
@@ -146,6 +149,19 @@ header.top {
   background: #16283f;
   color: #eef2f8;
   border-bottom: 3px solid var(--yellow);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 .top-inner {
@@ -241,7 +257,8 @@ header.top {
 
 .brand .spacer { flex: 1; }
 
-#refreshBtn {
+#refreshBtn,
+.header-action-btn {
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
@@ -250,53 +267,49 @@ header.top {
   font-size: 13px;
   white-space: nowrap;
   flex: none;
+  cursor: pointer;
 }
 
-#refreshBtn:hover { border-color: var(--yellow); }
+#refreshBtn:hover,
+.header-action-btn:hover,
+.header-action-btn:focus-visible { border-color: var(--yellow); }
 
 /* aktuell cup (header) — själva väljaren bor i inställningarna */
 
 .current-cup-btn {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 8px;
   color: #eef2f8;
-  padding: 5px 10px;
+  padding: 6px 11px;
   font-size: 13px;
-  max-width: 30vw;
+  font-weight: 600;
+  max-width: min(32vw, 360px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
 }
 
-.current-cup-btn:hover { border-color: var(--yellow); }
-.current-cup-btn { display: none; }
-
-/* cupväljare (i inställningar) */
-
-/* Sökfält ovanför cupraden. 22 kort i en horisontell rad är uppmätt
-   2 925 px i en 352 px vy — ungefär åtta svep på mobil för att nå den
-   sista. Fältet filtrerar korten medan man skriver så man slipper svepa.
-   Samma search-wrap-mönster som favoritklubb; dialog input ger utseendet.
-   #cupRow[hidden] behövs eftersom display:flex annars slår UA:ns [hidden]. */
-#cupSearch {
-  width: 100%;
+.current-cup-btn::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
 }
-
-#cupRow {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 4px 0;
-  scrollbar-width: thin;
+.current-cup-btn:hover,
+.current-cup-btn:focus-visible {
+  border-color: var(--yellow);
+  background: rgba(255, 255, 255, 0.11);
 }
-
-#cupRow[hidden] { display: none; }
-
-#cupRow::-webkit-scrollbar { height: 6px; }
-
-#cupSearchEmpty { margin: 2px 0 0; }
 
 .cup-picker-sports { margin-bottom: 10px; }
 .cup-picker-row {
@@ -345,13 +358,105 @@ header.top {
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 14px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
+  column-gap: 14px;
+}
+
+#desktopMainNav {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  min-width: 0;
+  gap: 6px;
+}
+
+.desktop-primary-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 48px;
+  padding: 8px 13px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.desktop-primary-tab:hover,
+.desktop-primary-tab:focus-visible,
+.desktop-primary-tab.page-on { color: var(--ink); }
+.desktop-primary-tab.menu-on {
+  color: var(--blue);
+  border-bottom-color: var(--yellow);
+}
+.desktop-primary-filter.menu-on {
+  /* Filter öppnar en panel men flyttar inte användaren i navigationen.
+     Ikonens pil visar läget; ett flikstreck skulle signalera fel sak. */
+  border-bottom-color: transparent;
+}
+.desktop-primary-icon { display: grid; place-items: center; width: 19px; height: 19px; }
+.desktop-primary-icon .bottom-tab-icon-svg { width: 19px; height: 19px; }
+.desktop-filter-badge {
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+}
+
+#desktopSubNav:not([hidden]) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  min-width: 0;
+  gap: 4px;
+  padding: 3px 0 5px;
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.desktop-subtab {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 7px 11px;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.desktop-subtab:hover,
+.desktop-subtab:focus-visible,
+.desktop-subtab.on { color: var(--blue); }
+.desktop-subtab.on::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--blue);
+  transform: translateX(-50%);
 }
 
 #viewTabs {
-  display: flex;
+  display: none;
   gap: 2px;
   /* Fler flikar (Trend/Karta/Klubb/Lag) fick raden bredare än mobila
      skärmar — utan min-width:0 krymper ett flex-item aldrig under sitt
@@ -367,18 +472,6 @@ header.top {
 #viewTabs::-webkit-scrollbar { height: 6px; }
 
 #currentViewBar, #currentSelectionBar, #moreMenuBar, #bottomNavIsland { display: none; }
-
-.header-share-btn {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  width: 36px;
-  height: 36px;
-  background: var(--card);
-  color: var(--ink);
-  font: inherit;
-  font-size: 20px;
-  cursor: pointer;
-}
 
 .tab {
   background: none;
@@ -460,88 +553,11 @@ header.top {
 .prototype-sheet-body { flex: 1; min-height: 0; padding: 14px 14px 20px; overflow-y: auto; }
 .prototype-sheet .dialog-x { top: 9px; }
 .global-search-input { width: 100%; font-size: 16px; }
-.global-search-types { display: flex; gap: 4px; overflow-x: auto; padding: 6px 0; }
-.global-search-type-tab {
-  position: relative;
-  flex: 0 0 auto;
-  padding: 8px 12px;
-  border: 0;
-  background: transparent;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.global-search-type-tab.on { color: var(--blue); }
-.global-search-type-tab.on::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 2px;
-  width: 18px;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--blue);
-  transform: translateX(-50%);
-}
-.global-search-results { display: grid; gap: 4px; }
-.global-search-sheet-body { display: flex; flex-direction: column; }
-.global-search-sheet-body .global-search-results { flex: 1 0 auto; }
-.global-search-sticky {
-  position: sticky;
-  bottom: -20px;
-  z-index: 3;
-  margin: 10px -14px -20px;
-  padding: 0 14px 12px;
-  background: var(--card);
-  border-top: 1px solid var(--line);
-  box-shadow: 0 -6px 14px rgba(10, 18, 30, 0.12);
-}
-.global-search-sticky .search-wrap { width: 100%; }
-.global-search-result, .more-menu-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: none;
-  color: var(--ink);
-  padding: 11px 6px;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-}
-.global-search-result-main, .more-menu-item > span:last-child {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.global-search-result small, .more-menu-item small { color: var(--ink-soft); }
-.global-search-result-type {
-  flex: 0 0 auto;
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.more-menu-icon { width: 28px; text-align: center; font-size: 20px; color: var(--blue); }
-.display-option-row {
-  display: grid;
-  grid-template-columns: minmax(100px, 0.7fr) minmax(0, 1.3fr);
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink-soft);
-}
-.display-option-row .select { width: 100%; }
 .header-export-panel { position: static !important; display: grid; width: 100% !important; box-shadow: none !important; }
 
 #meta {
+  grid-column: 2;
+  grid-row: 1;
   margin-left: auto;
   min-width: 0;
   font-size: 12px;
@@ -549,6 +565,15 @@ header.top {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (min-width: 701px) {
+  /* Filter är nu en riktig huvudgrupp även på desktop. Panelen tar bara
+     plats när gruppen är vald; siffran i huvudmenyn visar aktiva filter
+     även när panelen är stängd. */
+  body:not(.desktop-filter-open) #toolbar { display: none; }
+  body.desktop-filter-open #toolbar { display: grid; }
+  #content .history-tabs[aria-label="Stats"] { display: none !important; }
 }
 
 /* Öppnar loggen över hämtade matcher (openMatchLogDialog) — samma tysta
@@ -1650,7 +1675,7 @@ input[type="search"]::-webkit-search-cancel-button {
    sluka scrollen helt utan att den kedjas vidare till sidan, i stället
    för att bara scrolla noll pixlar och lämna över till föräldern som
    förväntat. Explicit overflow-y: hidden förhindrar att webbläsaren
-   någonsin gör den omtolkningen. Samma fix på #cupRow/#viewTabs/
+   någonsin gör den omtolkningen. Samma fix på #viewTabs/
    .bracket-box nedan (samma mönster, overflow-x: auto utan uttryckligt
    overflow-y). */
 .table-box {
@@ -3958,8 +3983,6 @@ dialog.history-dialog {
      med sidinnehåll synligt under — som en banner mitt i sidan. Sätts av
      syncViewportOffset() i app.js via Visual Viewport-API:t; 0 när API:t
      saknas eller de två viewporterna sammanfaller. */
-  #bottomBar[hidden] { display: flex; } /* [hidden] är utgångsläget i markupen */
-
   .prototype-sheet {
     inset: auto 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
     top: auto;
@@ -4122,9 +4145,8 @@ dialog.history-dialog {
      visas bara i bottenraden på mobil. */
   #viewTabs { display: none; }
   #settingsBtn { display: none; }
-  #currentCupBtn, #helpBtn, #refreshBtn { display: none; }
+  #currentCupBtn, #headerExportBtn, #headerAboutBtn, #helpBtn, #refreshBtn { display: none; }
   .header-context { flex: 0 1 auto; }
-  .header-share-btn { display: inline-grid; place-items: center; flex: 0 0 auto; }
 
   #currentViewBar:not([hidden]),
   #moreMenuBar:not([hidden]) {
@@ -4467,6 +4489,28 @@ dialog.history-dialog {
     bottom: calc(var(--bottomstack-h, 56px) + 12px + var(--vv-offset, 0px));
     z-index: 68;
   }
+}
+
+@media (pointer: coarse) {
+  .dialog-x,
+  .picker-sheet-close,
+  .mobile-context-back,
+  .mobile-context-clear,
+  .current-cup-btn,
+  .header-action-btn,
+  #settingsBtn,
+  #refreshBtn,
+  .help-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+  }
+  #bottomNavIsland:not([hidden]) { animation: none; }
 }
 
 /* --- bottenradens följdändringar --------------------------------------- */

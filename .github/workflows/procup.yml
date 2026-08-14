@@ -35,6 +35,8 @@ jobs:
         run: python3 scripts/fetch_gothia.py
       - name: Snapshotta Cup Manager-cuperna
         run: python3 scripts/fetch_cupmanager.py
+      - name: Bygg litet versionsindex för snapshots
+        run: python3 scripts/build_snapshot_index.py
       - name: Bygg klubbkatalog (adresser, för Kartan på ProCup/Gothia-cuper)
         run: python3 scripts/build_club_directory.py
       - name: Arkivera årets resultat (för jämförelse mellan år)

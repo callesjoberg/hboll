@@ -11,7 +11,7 @@ window.HB = window.HB || {};
 // en cachad service worker kan annars servera gammal kod hur länge som
 // helst utan att vare sig användaren eller utvecklaren märker det.
 // Bumpa tillsammans med CACHE_NAME i sw.js.
-HB.VERSION = "2026-08-09c";
+HB.VERSION = "2026-08-14e";
 
 HB.CLUB = {
   name: "Alingsås HK",
@@ -119,12 +119,9 @@ HB.CUPS = [
   },
 ];
 
-// Egna cuper som användaren lagt till via UI:t (sparas i localStorage).
-HB.customCups = function () {
-  try { return JSON.parse(localStorage.getItem("hb:customCups") || "[]"); }
-  catch { return []; }
-};
-
 HB.allCups = function () {
-  return HB.CUPS.concat(HB.customCups());
+  // Alla publika cuper måste ha en centralt byggd snapshot. Den tidigare
+  // lokala "lägg till cup"-vägen gjorde varje besökares webbläsare till en
+  // egen API-klient och är därför avsiktligt borttagen.
+  return HB.CUPS;
 };

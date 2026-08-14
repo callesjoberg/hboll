@@ -26,12 +26,15 @@ ARCHIVE_DIR = ROOT / "data" / "archive"
 
 # --- platshållarlag i ospelade slutspel -------------------------------------
 # Ett genererat men oavgjort slutspelsträd har platshållare i stället för lag
-# ("Vinn.", "Förl. 1/4 Final - 2", "1:an i Grupp A", "10:e bästa 3:an"), och
+# ("Vinn.", "Förl. 1/4 Final - 2", "1:an i Grupp A", "10:e bästa 3:an",
+# "Plats 5 i 6"), och
 # varje platshållare har ett EGET unikt lag-id i turneringssystemet. Utan
 # filtrering nästan tredubblas lagräkningen för en ännu inte spelad upplaga
 # (Göteborg Cup 2026: 957 "lag" varav bara 335 riktiga). Samma mönster finns
 # i js/app.js (isPlaceholderTeam) — håll dem i synk.
-_PLACEHOLDER_RE = re.compile(r"^(?:vinn\.|förl\.|\d+:an i |\d+:e bästa )", re.I)
+_PLACEHOLDER_RE = re.compile(
+    r"^(?:vinn\.|förl\.|\d+:an i |\d+:e bästa |plats \d+ i \d+$)", re.I
+)
 
 
 def is_placeholder_team(side):
@@ -277,6 +280,15 @@ def build_index():
             "clubs": len(clubs),
             "countries": len(countries) if countries else None,
             "ts": d.get("ts"),
+            # Historiska källor kan ligga i ett annat turneringssystem än
+            # dagens cup. Behåll proveniens och uttrycklig upplagestatus i
+            # indexet så frontend kan förklara både systembyten och inställda
+            # år utan att användaren behöver gissa utifrån en tom datapunkt.
+            **({"status": d["status"]} if d.get("status") else {}),
+            **({"note": d["note"]} if d.get("note") else {}),
+            **({"sourceSystem": d["sourceSystem"]} if d.get("sourceSystem") else {}),
+            **({"sourceTournamentId": d["sourceTournamentId"]}
+               if d.get("sourceTournamentId") is not None else {}),
             # Ännu inte spelad upplaga: schemat är publicerat (matcher finns)
             # men inget är avgjort OCH sista speldagen ligger i framtiden
             # (eller saknas helt — otidsatta matcher, start=0). Talen är då en

@@ -8,6 +8,12 @@ window.HB = window.HB || {};
   const PAGE = 1000;     // matcher per sida
   const CONC = 4;        // parallella sidor per våg
   const MAX_PAGES = 40;  // säkerhetstak
+  const CACHE_SCHEMA_VERSION = 3;
+  const SUBCACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+  const SNAPSHOT_BUCKET_MS = 60 * 1000;
+  let snapshotIndexBucket = -1;
+  let snapshotIndexPromise = null;
+  const snapshotFilePromises = new Map();
 
   function apiUrl(cup, query) {
     // &_ cache-bustar: cupmanagers proxycache saknar "Vary: Origin" och
@@ -34,6 +40,91 @@ window.HB = window.HB || {};
       }
     }
     throw lastErr;
+  }
+
+  // Publika klienter läser cupens GEMENSAMMA, CI-byggda snapshot i stället
+  // för att varje webbläsare ska belasta källsystemet. Query-parametern är
+  // avsiktligt minut-bucketad (inte slumpad): den bryter en gammal
+  // webbläsarcache men ger alla användare samma CDN-nyckel under minuten.
+  // Ett stort antal samtidiga klick på "Kontrollera senaste" kan därmed
+  // absorberas av GitHub Pages/CDN och leder aldrig till motsvarande antal
+  // anrop mot Cup Manager.
+  function sharedSnapshotPath(cup) {
+    return cup.dataUrl || ("data/snapshot-" + cup.id + ".json");
+  }
+
+  function versionedUrl(base, version) {
+    const sep = base.includes("?") ? "&" : "?";
+    return base + sep + "v=" + encodeURIComponent(version);
+  }
+
+  async function fetchSnapshotIndex(now = Date.now()) {
+    const bucket = Math.floor(now / SNAPSHOT_BUCKET_MS);
+    if (snapshotIndexPromise && snapshotIndexBucket === bucket) return snapshotIndexPromise;
+    snapshotIndexBucket = bucket;
+    snapshotIndexPromise = fetch(versionedUrl("data/snapshot-index.json", bucket), {
+      headers: { accept: "application/json" }, cache: "default",
+    }).then((r) => {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then((j) => (j && j.cups) || {});
+    return snapshotIndexPromise;
+  }
+
+  async function fetchSharedSnapshot(cup, knownDataTs = 0) {
+    let entry = null;
+    try {
+      const index = await fetchSnapshotIndex();
+      entry = index[cup.id] || null;
+    } catch {
+      // Övergång/offline mot en äldre deploy utan index: prova själva
+      // snapshotfilen med en delad minutversion i stället.
+    }
+    const sourceTs = Number(entry && entry.ts) || 0;
+    if (knownDataTs > 0 && sourceTs > 0 && sourceTs === knownDataTs) {
+      return { unchanged: true, ts: sourceTs };
+    }
+
+    const base = (entry && entry.url) || sharedSnapshotPath(cup);
+    const version = sourceTs || Math.floor(Date.now() / SNAPSHOT_BUCKET_MS);
+    const requestUrl = versionedUrl(base, version);
+    let pending = snapshotFilePromises.get(requestUrl);
+    if (!pending) {
+      pending = fetch(requestUrl, {
+        headers: { accept: "application/json" }, cache: "default",
+      }).then(async (r) => {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      }).finally(() => snapshotFilePromises.delete(requestUrl));
+      snapshotFilePromises.set(requestUrl, pending);
+    }
+    const j = await pending;
+    if (!j || !Array.isArray(j.matches)) throw new Error("Ogiltig snapshot");
+
+    if (cup.dataUrl) {
+      localTables[cup.id] = j.tables || {};
+      localPlayoffs[cup.id] = j.playoffs || {};
+      localRosters[cup.id] = j.rosters || {};
+    }
+    localDataTs[cup.id] = Number(j.ts) || 0;
+    const hasClubs = Object.prototype.hasOwnProperty.call(j, "clubs");
+    const hasArenas = Object.prototype.hasOwnProperty.call(j, "arenas");
+    // ProCup/Gothia saknar normalt dessa fält. Lämna då objekten OSETTA så
+    // appens klubbkatalog-/arenafallback faktiskt får köra; en truthy `{}`
+    // hade felaktigt signalerat "redan laddat".
+    if (hasClubs) clubGeo[cup.id] = j.clubs || {};
+    else delete clubGeo[cup.id];
+    if (hasArenas) arenaGeo[cup.id] = j.arenas || {};
+    else delete arenaGeo[cup.id];
+    return {
+      unchanged: false,
+      ts: Number(j.ts) || sourceTs || 0,
+      matches: j.matches,
+      clubs: j.clubs || {},
+      arenas: j.arenas || {},
+      hasClubs,
+      hasArenas,
+    };
   }
 
   // --- entitetshjälpare -----------------------------------------------
@@ -96,6 +187,57 @@ window.HB = window.HB || {};
     );
   }
 
+  // Lätt census: samma MatchWindow, men bara ett billigt Match-fält.
+  // Entitetens id och __typename kommer alltid med i store-svaret. Den gör
+  // att inkrementell synk kan upptäcka HELT NYA matcher utan att först
+  // hämta alla lag, arenor, divisioner och resultat igen.
+  function matchIdQuery(cup, limit, offset) {
+    return (
+      "MatchWindow({limit:" + limit + ",offset:" + offset +
+      ",tournamentId:" + cup.tournamentId + "})" +
+      "{matches:[{... on Match:{start:{}}}]}"
+    );
+  }
+
+  async function fetchMatchIds(cup) {
+    const ids = new Set();
+    function absorb(resp) {
+      let count = 0;
+      for (const value of Object.values((resp && resp.responses) || {})) {
+        const entity = value && value.entity;
+        if (!entity || entity.__typename !== "Match") continue;
+        if (entity.id != null) ids.add(String(entity.id));
+        count++;
+      }
+      return count;
+    }
+
+    // De flesta cuper ryms på en sida. Hämta den ensam först i stället
+    // för att alltid starta fyra anrop som den fulla, tunga hämtningen gör.
+    let offset = 0;
+    const firstCount = absorb(await call(cup, matchIdQuery(cup, PAGE, offset)));
+    if (firstCount < PAGE) return ids;
+    offset += PAGE;
+
+    // Även sida två tas ensam: cuper med 1 000–1 999 matcher är vanliga,
+    // och ska inte behöva tre tomma sidfrågor bara för att sida ett var full.
+    const secondCount = absorb(await call(cup, matchIdQuery(cup, PAGE, offset)));
+    if (secondCount < PAGE) return ids;
+    offset += PAGE;
+
+    while (offset / PAGE < MAX_PAGES) {
+      const offsets = [];
+      for (let i = 0; i < CONC && (offset / PAGE) + i < MAX_PAGES; i++) {
+        offsets.push(offset + i * PAGE);
+      }
+      const counts = await Promise.all(offsets.map(async (pageOffset) =>
+        absorb(await call(cup, matchIdQuery(cup, PAGE, pageOffset)))));
+      if (counts.some((count) => count < PAGE)) break;
+      offset += offsets.length * PAGE;
+    }
+    return ids;
+  }
+
   // --- hämta + normalisera alla matcher --------------------------------
 
   async function fetchStore(cup, onProgress) {
@@ -150,6 +292,11 @@ window.HB = window.HB || {};
     };
   }
 
+  function normalizeStart(value) {
+    const ms = Number(value);
+    return Number.isFinite(ms) && ms > 0 ? ms : 0;
+  }
+
   // Landskod direkt från en matchsidas (home/away) team.club.nation, utan
   // att gå via adressen — samma tvåstegs-hopp som clubGeoFromStore (club ->
   // nation), håll i synk med scripts/fetch_cupmanager.py:s club_nation_code.
@@ -173,7 +320,7 @@ window.HB = window.HB || {};
       const catId = refId(division.category);
       matches.push({
         id: e.id,
-        start: e.start || 0, // svensk väggtid kodad som UTC-epoch-ms
+        start: normalizeStart(e.start), // 0 = tid ej satt
         arena: arena.completeName || arena.fieldName || "",
         divId: division.id || refId(e.division),
         divName: nameOf(division),
@@ -290,6 +437,14 @@ window.HB = window.HB || {};
     return (localRosters[cup.id] || {})[teamId] || [];
   }
 
+  function snapshotTable(cup, divisionId) {
+    return ((localTables[cup.id] || {})[divisionId] || []).slice();
+  }
+
+  function snapshotPlayoffs(cup, categoryId) {
+    return ((localPlayoffs[cup.id] || {})[categoryId] || []).slice();
+  }
+
   // Samma fältlista som matchQuery() ger per match i MatchWindow — håller
   // enskilda Match({id})-anrop och den stora fönsterfrågan strukturellt
   // identiska så normalize() kan användas rakt av på båda.
@@ -302,12 +457,22 @@ window.HB = window.HB || {};
   // ETT anrop (testat: kommatecken/array-syntax/ids-parameter ger antingen
   // bara första matchen eller HTTP 500) — varje match kräver ett eget
   // anrop. Lönar sig ändå: de allra flesta matcherna i en cup är redan
-  // AVGJORDA och kan aldrig ändras, så bara de OSPELADE behöver hämtas om
-  // vid en uppdatering i stället för att slå om hela MatchWindow-fönstret.
+  // AVGJORDA ändras sällan, så bara de OSPELADE behöver hämtas om vid
+  // vanliga liveuppdateringar. app.js gör fortfarande en full kontroll när
+  // en avslutad cups långa TTL löper ut, så efterhandsrättningar tappas inte.
   const INCREMENTAL_MAX = 300; // fler ospelade än så: enskilda anrop lönar sig inte längre
 
   async function fetchIncremental(cup, cachedMatches, onProgress) {
     if (cup.dataUrl) return null; // ProCup: stöds inte, kör full hämtning
+    const knownIds = new Set(cachedMatches
+      .map((match) => match.id)
+      .filter((id) => id != null)
+      .map(String));
+    const sourceIds = await fetchMatchIds(cup);
+    if (sourceIds.size !== knownIds.size ||
+        [...sourceIds].some((id) => !knownIds.has(id))) {
+      return null; // anroparen faller tillbaka på full fetchMatches()
+    }
     const unfinished = cachedMatches.filter((m) => !(m.res && m.res.fin));
     if (!unfinished.length) return cachedMatches; // inget kan ha ändrats — inget att hämta
     if (unfinished.length > INCREMENTAL_MAX) return null; // för många — full hämtning är snabbare
@@ -346,15 +511,16 @@ window.HB = window.HB || {};
     const store = await fetchStore(cup, onProgress);
     clubGeo[cup.id] = clubGeoFromStore(store);
     arenaGeo[cup.id] = arenaGeoFromStore(store);
-    return normalize(store);
+    const matches = normalize(store);
+    return matches;
   }
 
   // --- tabeller ---------------------------------------------------------
 
   // `cacheable` skickas in av app.js (som känner till matchresultaten) och
   // är bara true när ALLA matcher i divisionen/kategorin redan är klara —
-  // då kan svaret aldrig ändras och sparas i localStorage för evigt, precis
-  // som den avslutade-cup-regeln i refreshTtl()/writeCache() ovan. Är det
+  // då ändras svaret sällan och får sparas i localStorage. readSubCache
+  // har en 24-timmars TTL och manuell/full refresh invaliderar posterna. Är det
   // inte klarspelat hämtas alltid färskt (ingen cache-läsning, ingen skrivning).
   async function fetchTable(cup, divisionId, cacheable) {
     if (cup.dataUrl) return (localTables[cup.id] || {})[divisionId] || [];
@@ -441,7 +607,7 @@ window.HB = window.HB || {};
     const nextL = storeGet(store, e.nextMatchLoser) || {};
     return {
       id: e.id,
-      start: e.start || 0,
+      start: normalizeStart(e.start),
       arena: (storeGet(store, e.arena) || {}).completeName || "",
       home: { id: home.id || refId(home.team), name: nameOf(home) },
       away: { id: away.id || refId(away.team), name: nameOf(away) },
@@ -523,7 +689,7 @@ window.HB = window.HB || {};
       const away = storeGet(store, m.away) || {};
       return {
         id: m.id,
-        start: m.start || 0,
+        start: normalizeStart(m.start),
         home: { id: home.id || refId(home.team), name: nameOf(home) },
         away: { id: away.id || refId(away.team), name: nameOf(away) },
         res: normalizeResult(storeGet(store, m.result)),
@@ -541,7 +707,13 @@ window.HB = window.HB || {};
     try {
       const raw = localStorage.getItem(cacheKey(cup));
       if (!raw) return null;
-      return JSON.parse(raw);
+      const cached = JSON.parse(raw);
+      if (!cached || cached.schema !== CACHE_SCHEMA_VERSION ||
+          !Array.isArray(cached.matches)) {
+        localStorage.removeItem(cacheKey(cup));
+        return null;
+      }
+      return cached;
     } catch {
       return null;
     }
@@ -562,13 +734,15 @@ window.HB = window.HB || {};
   // utrymmesröjningen nedan hand om det.
   const MAX_CACHE_BYTES = 2e6;
 
-  function writeCache(cup, matches, ts) {
+  function writeCache(cup, matches, checkedAt, dataTs) {
     // clubs (Karta-vyns adressdata) och arenas (Bana-vyns) hänger med i
     // samma cache-post — de
     // fylls redan (live/inkrementellt eller från snapshotten) i
     // clubGeo[cup.id] innan writeCache() anropas, se fetchMatches/
     // fetchIncremental ovan och loadCup() i app.js.
-    const payload = JSON.stringify({ ts: ts || Date.now(), matches,
+    const payload = JSON.stringify({ schema: CACHE_SCHEMA_VERSION,
+                                     ts: checkedAt || Date.now(),
+                                     dataTs: dataTs || localDataTs[cup.id] || 0, matches,
                                      clubs: clubGeo[cup.id], arenas: arenaGeo[cup.id] });
     if (payload.length * 2 > MAX_CACHE_BYTES) { // *2: localStorage lagrar UTF-16
       try { localStorage.removeItem(cacheKey(cup)); } catch { /* ingen lagring alls */ }
@@ -600,14 +774,21 @@ window.HB = window.HB || {};
   function readSubCache(cup, kind, id) {
     try {
       const raw = localStorage.getItem(subCacheKey(cup, kind, id));
-      return raw ? JSON.parse(raw).data : null;
+      if (!raw) return null;
+      const cached = JSON.parse(raw);
+      if (!cached || cached.schema !== CACHE_SCHEMA_VERSION ||
+          !Number.isFinite(cached.ts) || Date.now() - cached.ts > SUBCACHE_MAX_AGE_MS) {
+        localStorage.removeItem(subCacheKey(cup, kind, id));
+        return null;
+      }
+      return cached.data;
     } catch {
       return null;
     }
   }
 
   function writeSubCache(cup, kind, id, data) {
-    const payload = JSON.stringify({ ts: Date.now(), data });
+    const payload = JSON.stringify({ schema: CACHE_SCHEMA_VERSION, ts: Date.now(), data });
     const key = subCacheKey(cup, kind, id);
     try {
       localStorage.setItem(key, payload);
@@ -620,6 +801,18 @@ window.HB = window.HB || {};
         localStorage.setItem(key, payload);
       } catch { /* kör vidare utan cache */ }
     }
+  }
+
+  function invalidateSubCaches(cup) {
+    const prefixes = ["table", "playoffs", "groupdivs"].map((kind) =>
+      "hb:" + kind + ":" + cup.id + ":" + cup.tournamentId + ":");
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (prefixes.some((prefix) => key.startsWith(prefix))) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch { /* blockerad lagring: minnesstate rensas fortfarande av appen */ }
   }
 
   // --- historik: arkiverade resultat från tidigare cupupplagor -------------
@@ -788,9 +981,12 @@ window.HB = window.HB || {};
     return clubDirectoryPromise;
   }
 
-  HB.api = { call, refId, nameOf, storeGet, fetchMatches, fetchIncremental, fetchTable,
+  HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
+             fetchMatches, fetchIncremental, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
+             snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,
+             invalidateSubCaches,
              fetchArchiveIndex, fetchArchiveEdition, fetchClubDirectory, fetchTeamIndex,
              fetchChampions };
 })();

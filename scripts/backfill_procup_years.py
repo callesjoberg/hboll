@@ -23,6 +23,29 @@ ARCHIVE_DIR = ROOT / "data" / "archive"
 # (ev-id, cup-id, år, visningsnamn) — år/ev hittade via web-sök
 # (site:procup.se "<cup> <år>" ev), verifierade mot faktiska matchdatum.
 JOBS = [
+    # Historiska ProCup-identiteter för cuper som numera kör Cup Manager.
+    # Samma interna cup-id används på båda sidor av systembytet, så appens
+    # Historik/Trend blir en sammanhängande tidsserie.
+    (31680, "norden", "2018", "Norden Cup"),
+    (32861, "norden", "2019", "Norden Cup"),
+    (35468, "norden", "2022", "Norden Cup"),
+    (36183, "norden", "2023", "Norden Cup"),
+    (37526, "norden", "2024", "Norden Cup"),
+    (38532, "norden", "2025", "Norden Cup"),
+    (31251, "skuru", "2018", "Skurucupen"),
+    (32287, "skuru", "2019", "Skurucupen"),
+    (34549, "skuru", "2021", "Skurucupen"),
+    (34835, "skuru", "2022", "Skurucupen"),
+    (36346, "skuru", "2023", "Skurucupen"),
+    (37139, "skuru", "2024", "Skurucupen"),
+    (38327, "skuru", "2025", "Skurucupen"),
+    (30866, "potatis", "2018", "Potatiscupen"),
+    (31949, "potatis", "2019", "Potatiscupen"),
+    (34836, "potatis", "2022", "Potatiscupen"),
+    (35535, "potatis", "2023", "Potatiscupen"),
+    (32666, "hellton", "2019", "Hellton Cup"),
+    (34598, "hellton", "2021", "Hellton Cup"),
+    (35512, "hellton", "2022", "Hellton Cup"),
     (31119, "jarnvagen", "2018", "Järnvägen Cup"),
     (32192, "jarnvagen", "2019", "Järnvägen Cup"),
     (33251, "jarnvagen", "2020", "Järnvägen Cup"),
@@ -58,6 +81,17 @@ JOBS = [
     (37039, "aranas", "2024", "Aranäs Open"),
 ]
 
+# Bekräftade inställda upplagor som saknar matchdata. De ska vara synliga
+# som nollpunkter i historiken, men uttryckligen märkta "Inställd" så att
+# användaren inte tolkar dem som skrapfel eller ett systembyte.
+CANCELLED_EDITIONS = [
+    ("hellton", "2020", "Hellton Cup", "Inställd under covid-19-pandemin."),
+    ("norden", "2020", "Norden Cup", "Inställd under covid-19-pandemin."),
+    ("norden", "2021", "Norden Cup", "Inställd under covid-19-pandemin."),
+    ("potatis", "2020", "Potatiscupen", "Inställd under covid-19-pandemin."),
+    ("potatis", "2021", "Potatiscupen", "Inställd under covid-19-pandemin."),
+]
+
 
 def majority_year(matches):
     years = [datetime.fromtimestamp(m["start"] / 1000, tz=timezone.utc).year for m in matches]
@@ -68,6 +102,18 @@ def main():
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
     cups = json.loads((ROOT / "data" / "cups.json").read_text(encoding="utf-8"))["cups"]
     current_edition = {c["id"]: c.get("edition") for c in cups}
+    now_ms = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
+    for cup_id, year, name, note in CANCELLED_EDITIONS:
+        dest = ARCHIVE_DIR / f"{cup_id}-{year}.json"
+        if dest.exists():
+            continue
+        out = {
+            "cupId": cup_id, "cupName": name, "edition": year,
+            "ts": now_ms, "matches": [], "tables": {},
+            "status": "cancelled", "note": note,
+        }
+        dest.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+        print(f"skrev {dest.name} (inställd upplaga)")
     for ev, cup_id, year, name in JOBS:
         dest = ARCHIVE_DIR / f"{cup_id}-{year}.json"
         if dest.exists():
@@ -94,7 +140,8 @@ def main():
             # känt inställda pga corona över hela Sverige, så en äkta
             # nollpunkt i Trend är rimligare än att gissa fel ID.
             out = {"cupId": cup_id, "cupName": name, "edition": year,
-                   "ts": data["ts"], "matches": [], "tables": {}}
+                   "ts": data["ts"], "matches": [], "tables": {},
+                   "sourceSystem": "procup", "sourceTournamentId": ev}
             dest.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
             print(f"{cup_id} {year} (ev {ev}): 0 matcher — skrev ändå (troligen inställd)")
             continue
@@ -107,6 +154,7 @@ def main():
         out = {
             "cupId": cup_id, "cupName": name, "edition": year,
             "ts": data["ts"], "matches": matches, "tables": data["tables"],
+            "sourceSystem": "procup", "sourceTournamentId": ev,
         }
         dest.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
         print(f"skrev {dest.name} ({len(matches)} matcher, {time.time()-t0:.0f}s)")

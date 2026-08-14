@@ -20,7 +20,11 @@ window.HB = window.HB || {};
   }
 
   function esc(s) {
-    return String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;")
+    // Normalisera först så att varken CRLF eller en ensam CR kan lämna kvar en
+    // fysisk radbrytning och injicera en ny ICS-egenskap. RFC 5545 representerar
+    // radbrytningar i TEXT-värden som den bokstavliga sekvensen "\\n".
+    return String(s == null ? "" : s).replace(/\r\n?|\n/g, "\n")
+      .replace(/\\/g, "\\\\").replace(/;/g, "\\;")
       .replace(/,/g, "\\,").replace(/\n/g, "\\n");
   }
 
@@ -97,7 +101,10 @@ window.HB = window.HB || {};
       "X-WR-CALNAME:" + esc(cup.name + " " + cup.edition),
       ...VTIMEZONE,
     ];
-    for (const m of matches) {
+    // Kalenderformatet kräver en riktig starttid. Matcher där arrangören
+    // ännu inte satt tid (start <= 0) hör hemma i schemaexporterna, men får
+    // inte bli kalenderhändelser den 1 januari 1970.
+    for (const m of matches.filter((match) => Number.isFinite(match.start) && match.start > 0)) {
       const klass = HB.shortCat(m.catName);
       const grp = m.divName ? " " + m.divName : "";
       const g = (geo || {})[m.arena] || null;

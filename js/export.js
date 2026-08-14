@@ -14,6 +14,7 @@ window.HB = window.HB || {};
   });
 
   function wallDateTime(ms) {
+    if (!Number.isFinite(ms) || ms <= 0) return { date: "", time: "Tid ej satt" };
     const p = {};
     for (const part of wallParts.formatToParts(new Date(ms))) p[part.type] = part.value;
     return { date: p.year + "-" + p.month + "-" + p.day, time: p.hour + ":" + p.minute };
@@ -85,8 +86,14 @@ window.HB = window.HB || {};
   // --- CSV -------------------------------------------------------------------
 
   function csvEscape(v) {
-    const s = v == null ? "" : String(v);
-    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    // Kalkylprogram kan tolka text som börjar med dessa tecken som en formel.
+    // Neutralisera bara strängar: riktiga negativa tal ska fortfarande vara tal
+    // i CSV-filen och övriga exportformat (framför allt XLSX) påverkas inte.
+    const raw = v == null ? "" : v;
+    const s = typeof raw === "string" && /^[=+\-@]/.test(raw)
+      ? "'" + raw
+      : String(raw);
+    return /[";\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
 
   // Semikolon som avgränsare — svensk Excel tolkar annars kommatecken som

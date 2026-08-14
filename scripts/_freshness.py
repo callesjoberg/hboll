@@ -7,7 +7,7 @@ refreshTtl() i js/app.js styr webbläsarens live-cache med, men här
 bestämmer den om det är värt att göra nätverksanropen mot källsajten
 överhuvudtaget den här körningen.
 
-Workflow-jobbet kör nu var 20:e minut (i stället för var 6:e timme) för
+Workflow-jobbet kör var 20:e minut för
 att ge nästintill-live uppdateringar UNDER en cups egna speldagar — utan
 att det kostar något extra att kolla en cup som ligger långt bort i tiden:
 den här funktionen håller själv den effektiva kadensen nere för allt som

@@ -26,10 +26,21 @@ window.HB = window.HB || {};
     timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
   });
 
+  function hasScheduledStart(value) {
+    const ms = typeof value === "object" && value !== null ? value.start : value;
+    return Number.isFinite(ms) && ms > 0;
+  }
+
+  function matchTimeLabel(m, dayFormatter) {
+    if (!hasScheduledStart(m)) return "Tid ej satt";
+    const time = fmtTime.format(new Date(m.start));
+    return dayFormatter ? dayFormatter.format(new Date(m.start)) + " " + time : time;
+  }
+
   function dayKey(ms) {
     // Svensk kalenderdag (en-CA ger yyyy-mm-dd), inte UTC-datumet — en match
     // strax efter midnatt svensk tid kan annars hamna på fel dag.
-    return dayKeyFmt.format(new Date(ms));
+    return hasScheduledStart(ms) ? dayKeyFmt.format(new Date(ms)) : "";
   }
 
   // --- kategori-hjälpare -------------------------------------------------
@@ -327,7 +338,7 @@ window.HB = window.HB || {};
   function isLive(m) {
     // Yngre klasser rapporterar inga resultat: deras matcher blir stående
     // "live" med nollor. Räkna bara pågående, ej färdiga, nutida matcher.
-    return !!(m.res && m.res.live && !m.res.fin &&
+    return !!(hasScheduledStart(m) && m.res && m.res.live && !m.res.fin &&
       Math.abs(m.start - Date.now()) < 6 * 3600000);
   }
 
@@ -398,9 +409,22 @@ window.HB = window.HB || {};
   // en ny domän (eller en ny webbläsare) ger alltså tomt blad. Saknas det
   // väljer init() den cup som ligger närmast i tiden i stället, se
   // pickDefaultCup; raden nedan är bara ett värde att stå på tills dess.
-  const savedCupId = (() => {
-    try { return localStorage.getItem("hb:cup"); } catch { return null; }
-  })();
+  function storageGet(key, fallback = null) {
+    try {
+      const value = localStorage.getItem(key);
+      return value == null ? fallback : value;
+    } catch {
+      // Safari privat läge och blockerad lagring får aldrig hindra appstart.
+      return fallback;
+    }
+  }
+
+  function storageNumber(key, fallback, min, max) {
+    const value = Number(storageGet(key, fallback));
+    return Number.isFinite(value) && value >= min && value <= max ? value : fallback;
+  }
+
+  const savedCupId = storageGet("hb:cup");
 
   const state = {
     cupId: savedCupId || (HB.allCups()[0] || {}).id,
@@ -429,15 +453,15 @@ window.HB = window.HB || {};
     matchFilter: "all",      // all | upcoming | played
     toolbarOpen: true,       // filter-/sorteringsmenyn expanderad? (session, sparas ej)
     heroMinimized: false,    // nästa match-karusellen minimerad? (session, sparas ej)
-  bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
-  playoffDivTab: {},       // catId -> vald slutspelsdivision (A-/B-/C-Slutspel) när en klass har flera (session, sparas ej)
-  playoffCatTab: null,     // vald klass i Slutspel-vyn när fler än en klass är filtrerad fram (session, sparas ej)
-  tableGroupKey: "all",   // aktiv tabellklass-flik; "all" visar alla valda tabeller
-  schemaSelectionKey: "all", // aktiv klass/lag-flik i Schema; "all" = kombinerad vy
-  tableSortKey: "points", // tabeller: rank | name | points
-  tableSortOrder: "desc", // stigande/fallande inom valt tabellfält
-  playoffTimeOrder: "asc", // slutspel: tidigaste | desc = senaste match först
-  // Fryser dagar/klasser/lag (fälls ihop till en chip bredvid "Filter och
+    bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
+    playoffDivTab: {},       // catId -> vald slutspelsdivision (A-/B-/C-Slutspel) när en klass har flera (session, sparas ej)
+    playoffCatTab: null,     // vald klass i Slutspel-vyn när fler än en klass är filtrerad fram (session, sparas ej)
+    tableGroupKey: "all",   // aktiv tabellklass-flik; "all" visar alla valda tabeller
+    schemaSelectionKey: "all", // aktiv klass/lag-flik i Schema; "all" = kombinerad vy
+    tableSortKey: "points", // tabeller: rank | name | points
+    tableSortOrder: "desc", // stigande/fallande inom valt tabellfält
+    playoffTimeOrder: "asc", // slutspel: tidigaste | desc = senaste match först
+    // Fryser dagar/klasser/lag (fälls ihop till en chip bredvid "Filter och
     // sortering", se renderToolbar) så att morgonens inställning inte rubbas
     // av misstag när man går in och kollar saker under dagen — sparas
     // därför per cup precis som filtren själva, INTE bara för sessionen.
@@ -581,20 +605,22 @@ window.HB = window.HB || {};
     groupTables: {},         // catId -> {status, byGroupNum, teamStrength} (för upplösta slutspelsnamn)
     // Globala inställningar (gäller alla cuper, sparas separat från
     // per-cup-filtren i saveUi()/loadUi()).
-    theme: localStorage.getItem("hb:theme") || "auto",       // light | dark | auto
-    teamColors: localStorage.getItem("hb:teamColors") !== "off",
-    breakMinutes: +(localStorage.getItem("hb:breakMinutes") || 0), // 0 = av
-    matchMinutes: +(localStorage.getItem("hb:matchMinutes") || 30), // schemarutans längd
-    revealBatchSize: +(localStorage.getItem("hb:revealBatchSize") || 4), // "visa fler tidigare": antal per klick
-    recentMatchCount: +(localStorage.getItem("hb:recentMatchCount") || 2), // Bana/slutspelstabell: visa senast spelade N st
-    advancedPlayoffTable: localStorage.getItem("hb:advancedPlayoffTable") === "on",
-    playoffView: localStorage.getItem("hb:playoffView") ||
-      (localStorage.getItem("hb:advancedPlayoffTable") === "on" ? "table" : "tree"),
-    showPlayoffProjection: localStorage.getItem("hb:showPlayoffProjection") === "on",
-    showPlayoffPath: localStorage.getItem("hb:showPlayoffPath") !== "off",
-    showPossibleGroupWinners: localStorage.getItem("hb:showPossibleGroupWinners") !== "off",
-    showUpcomingCarousel: localStorage.getItem("hb:showUpcomingCarousel") !== "off",
-    favoriteClub: localStorage.getItem("hb:favoriteClub") || HB.CLUB.name,
+    theme: ["auto", "light", "dark"].includes(storageGet("hb:theme"))
+      ? storageGet("hb:theme") : "auto",                    // light | dark | auto
+    teamColors: storageGet("hb:teamColors") !== "off",
+    breakMinutes: storageNumber("hb:breakMinutes", 0, 0, 240), // 0 = av
+    matchMinutes: storageNumber("hb:matchMinutes", 30, 1, 240), // schemarutans längd
+    revealBatchSize: storageNumber("hb:revealBatchSize", 4, 1, 100),
+    recentMatchCount: storageNumber("hb:recentMatchCount", 2, 0, 100),
+    advancedPlayoffTable: storageGet("hb:advancedPlayoffTable") === "on",
+    playoffView: ["tree", "table"].includes(storageGet("hb:playoffView"))
+      ? storageGet("hb:playoffView")
+      : (storageGet("hb:advancedPlayoffTable") === "on" ? "table" : "tree"),
+    showPlayoffProjection: storageGet("hb:showPlayoffProjection") === "on",
+    showPlayoffPath: storageGet("hb:showPlayoffPath") !== "off",
+    showPossibleGroupWinners: storageGet("hb:showPossibleGroupWinners") !== "off",
+    showUpcomingCarousel: storageGet("hb:showUpcomingCarousel") !== "off",
+    favoriteClub: storageGet("hb:favoriteClub", HB.CLUB.name),
     // Stjärnmärkta lag: [{name, cohort}] där cohort är årskullsnyckeln ur
     // klassnamnet ("F2011", se cohortKey) eller null när klassen inte går
     // att tolka. Klubb+lagnamn ensamt räcker INTE som identitet: "Alingsås
@@ -609,25 +635,42 @@ window.HB = window.HB || {};
     // kvar orörd, så en nedgradering inte tappar valet.
     favoriteTeams: (() => {
       try {
-        const raw = JSON.parse(localStorage.getItem("hb:favoriteTeams") || "null");
+        const raw = JSON.parse(storageGet("hb:favoriteTeams", "null"));
         if (Array.isArray(raw)) {
           return raw.filter((t) => t && t.name)
             .map((t) => ({ name: String(t.name), cohort: t.cohort || null }));
         }
       } catch { /* trasigt värde: falla tillbaka på det gamla fältet */ }
-      const legacy = (localStorage.getItem("hb:favoriteTeam") || "").trim();
+      const legacy = storageGet("hb:favoriteTeam", "").trim();
       return legacy ? [{ name: legacy, cohort: null }] : [];
     })(),
-    fullCardColors: localStorage.getItem("hb:fullCardColors") === "on",
+    fullCardColors: storageGet("hb:fullCardColors") === "on",
     // Minuter före matchstart som .ics-exporten lägger in en påminnelse
     // (VALARM), 0 = ingen. Väljs i exportmenyn men sparas här, se
     // buildMatchExportPanel.
-    icsAlarmMinutes: +(localStorage.getItem("hb:icsAlarmMinutes") || 0),
+    icsAlarmMinutes: storageNumber("hb:icsAlarmMinutes", 0, 0, 1440),
     teamColorOverrides: (() => {
-      try { return JSON.parse(localStorage.getItem("hb:teamColorOverrides") || "{}"); }
+      try {
+        const value = JSON.parse(storageGet("hb:teamColorOverrides", "{}"));
+        return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+      }
       catch { return {}; }
     })(),
   };
+
+  // Ett enda omritningsjobb per bildruta räcker när många arkivår blir
+  // klara samtidigt. Utan sammanslagning byggdes hela Klubb/Lag-vyn om en
+  // gång per fil och kändes låst trots att data redan strömmade in.
+  let archiveRenderFrame = 0;
+  function scheduleArchiveRender() {
+    if (archiveRenderFrame) return;
+    archiveRenderFrame = requestAnimationFrame(() => {
+      archiveRenderFrame = 0;
+      render();
+    });
+  }
+
+  const playoffCandidateTimers = new Set();
 
   function applyTheme() {
     document.documentElement.dataset.theme = state.theme === "auto" ? "" : state.theme;
@@ -727,7 +770,10 @@ window.HB = window.HB || {};
   // vy. Bara icke-default värden tas med, för korta URL:er. q (fritextsök)
   // sparas INTE i localStorage (den är avsiktligt tillfällig mellan besök)
   // men tas med här eftersom en delad länk ska återge sökningen också.
-  function syncUrl() {
+  // En enda källa för adressfält, bokmärken och appens Dela-knapp. Den
+  // senare byter bara ut upplagebundna klass-/lag-id:n mot namn; alla andra
+  // filter, sorteringar och underfliksval ska vara exakt desamma.
+  function buildViewUrlParams() {
     const p = new URLSearchParams();
     p.set("cup", state.cupId);
     if (state.view !== "schema") p.set("view", state.view);
@@ -745,6 +791,11 @@ window.HB = window.HB || {};
     if (state.matchFilter !== "all") p.set("mf", state.matchFilter);
     if (state.q) p.set("q", state.q);
     syncSubViewUrl(p);
+    return p;
+  }
+
+  function syncUrl() {
+    const p = buildViewUrlParams();
     const qs = p.toString();
     const url = location.pathname + (qs ? "?" + qs : "");
     // Bakåtknappen: lägg BARA en historik-post när den strukturella vyn
@@ -808,6 +859,10 @@ window.HB = window.HB || {};
     }
     if (state.view === "slutspel") {
       if (state.playoffTimeOrder !== "asc") p.set("porder", state.playoffTimeOrder);
+      if (bracketSort && bracketSort.col !== "tid") {
+        p.set("psort", bracketSort.col);
+        if (bracketSort.dir < 0) p.set("pdir", "desc");
+      }
       if (state.playoffCatTab != null) p.set("pcat", String(state.playoffCatTab));
       const divs = Object.entries(state.playoffDivTab);
       if (divs.length) p.set("pdiv", divs.map(([c, d]) => c + ":" + d).join(","));
@@ -952,7 +1007,8 @@ window.HB = window.HB || {};
       const names = new Set(splitNameList(pending.params.get("klass")));
       const ids = new Set();
       for (const m of state.matches) {
-        if (names.has(slugifySv(m.catName)) || names.has(slugifySv(HB.shortCat(m.catName)))) {
+        if (names.has(slugifySv(m.catName)) || names.has(slugifySv(HB.shortCat(m.catName))) ||
+            names.has(slugifySv(cohortKey(m.catName) || ""))) {
           ids.add(m.catId);
         }
       }
@@ -977,6 +1033,14 @@ window.HB = window.HB || {};
     if (params.get("amap") === "1") state.arenaMapOpen = true;
     if (params.get("pcat")) state.playoffCatTab = +params.get("pcat");
     if (params.get("porder") === "desc") state.playoffTimeOrder = "desc";
+    if (params.get("psort") && BRACKET_SORT_COLS[params.get("psort")]) {
+      bracketSort = {
+        col: params.get("psort"),
+        dir: params.get("pdir") === "desc" ? -1 : 1,
+      };
+    } else if (params.has("porder")) {
+      bracketSort = { col: "tid", dir: state.playoffTimeOrder === "desc" ? -1 : 1 };
+    }
     if (params.get("pdiv")) {
       const map = {};
       params.get("pdiv").split(",").forEach((pair) => {
@@ -1047,7 +1111,7 @@ window.HB = window.HB || {};
   function resetSubViewUrl() {
     state.schemaSelectionKey = "all";
     state.arenaMapOpen = false;
-    state.playoffCatTab = null; state.playoffDivTab = {};
+    state.playoffCatTab = null; state.playoffDivTab = {}; bracketSort = null;
     state.exploreCupIds = new Set();
     state.trendCats = new Set(); state.trendBaselineYear = null; state.trendCompareMetric = "matches";
     state.mapYear = null; state.mapCountryHistory = false;
@@ -1091,7 +1155,7 @@ window.HB = window.HB || {};
     state.timeOrder = "asc"; state.schemaOlderRevealCount = 0; state.schemaShowAllCup = false;
     state.filterLocked = false;
     try {
-      const s = JSON.parse(localStorage.getItem(uiKey()) || "{}");
+      const s = JSON.parse(storageGet(uiKey(), "{}"));
       if (s.view) state.view = s.view;
       if (s.statsView) state.statsView = s.statsView;
       if (s.scope) state.scope = s.scope;
@@ -1118,24 +1182,33 @@ window.HB = window.HB || {};
   // --- datainläsning --------------------------------------------------------
 
   function refreshTtl(matches) {
-    // Hur gammal data vi accepterar utan omhämtning:
-    // avslutad cup ändras aldrig; framtida cuper justeras sällan;
-    // pågående cuper live-uppdateras.
+    // Hur gammal data vi accepterar utan att kontrollera den lilla,
+    // gemensamma snapshot-versionen: pågående cuper kontrolleras tätt,
+    // var 30:e minut så nytillagda matcher upptäcks, och avslutade cuper
+    // får lång men ÄNDLIG TTL eftersom efterhandsrättningar förekommer.
     if (!matches.length) return 0;
     const now = Date.now();
-    const first = matches[0].start;
-    const last = matches[matches.length - 1].start;
-    if (now > last + 24 * 3600000) return Infinity;   // färdigspelad
-    if (now < first - 24 * 3600000) return 6 * 3600000; // framtida
-    return 60000;                                      // pågår
+    const starts = matches.filter(hasScheduledStart).map((m) => m.start);
+    // Ett publicerat schema utan tider ska kontrolleras ofta: start=0 är
+    // "tid ej satt", inte 1970 och inte ett avslutat historiskt schema.
+    if (!starts.length) return 60000;
+    const first = Math.min(...starts);
+    const last = Math.max(...starts);
+    if (now > last + 24 * 3600000) {
+      return now - last <= 14 * 24 * 3600000
+        ? 24 * 3600000     // nyligen avslutad: sena korrigeringar är vanliga
+        : 7 * 24 * 3600000; // gammal historik: kontrollera fortfarande ibland
+    }
+    if (now < first - 24 * 3600000) return 30 * 60000; // framtida/publiceras
+    return 10 * 60000;                                  // pågår
   }
 
   // Är ALLA matcher i listan klara (har ett slutgiltigt resultat)? Styr om
   // gruppställningar/slutspelsträd (ensureTable/ensurePlayoffs/
-  // ensureGroupTables nedan) kan cachas i localStorage för evigt — samma
-  // "avslutad = ändras aldrig"-tanke som refreshTtl() ovan, fast per
-  // division/kategori i stället för för hela cupen (de hämtas ju var för
-  // sig, inte i samma anrop som schemat).
+  // ensureGroupTables nedan) får cachas längre per division/kategori i
+  // stället för att hämtas vid varje vybyte. API-cachen har 24-timmars TTL
+  // och full refresh invaliderar den, så sena rättningar kommer fortfarande
+  // fram.
   function allMatchesFinished(list) {
     return list.length > 0 && list.every((m) => m.res && m.res.fin);
   }
@@ -1147,10 +1220,16 @@ window.HB = window.HB || {};
     });
   }
 
-  // Antal matcher hämtade hittills av den pågående fetchMatches()-anropet
-  // — visas i verktygsradens metatext så en flerasekunders hämtning för en
-  // stor cup känns aktiv i stället för att se ut som att sidan hängt sig.
-  let loadProgress = 0;
+  // Två separata generationer skyddar asynkrona svar. cupGeneration byts
+  // bara när CUPEN byts och används även av tabell-/slutspelsköerna.
+  // loadGeneration byts för varje schemahämtning, så två överlappande
+  // uppdateringar av samma cup inte kan skriva i omvänd ordning.
+  let cupGeneration = 0;
+  let loadGeneration = 0;
+  const isCurrentCupWork = (c, generation) =>
+    generation === cupGeneration && !!c && state.cupId === c.id;
+  const isCurrentCupLoad = (c, cupGen, loadGen) =>
+    isCurrentCupWork(c, cupGen) && loadGen === loadGeneration;
 
   // Sidan visar alltid den sparade cachen direkt (kan vara flera timmar
   // gammal) och synkar sedan i bakgrunden — men NU-linjens auto-skroll
@@ -1167,12 +1246,15 @@ window.HB = window.HB || {};
   async function loadCup(force) {
     const c = cup();
     if (!c) return;
+    const cupGen = cupGeneration;
+    const loadGen = ++loadGeneration;
     loadWeather(); // oberoende av matchdata — hämtas parallellt
     // Förhämtade cuper (dataUrl) läses alltid färskt — filen ligger lokalt.
     const cached = c.dataUrl ? null : HB.api.readCache(c);
     if (cached && cached.matches) {
       state.matches = cached.matches;
       state.loadedAt = cached.ts;
+      HB.api.localDataTs[c.id] = cached.dataTs || 0;
       // Karta-vyns klubbadresser hänger med i samma cache-post (se
       // writeCache i api.js) — utan den här raden skulle kartan vara tom
       // tills nästa live-/inkrementella hämtning råkar skriva över den.
@@ -1205,77 +1287,69 @@ window.HB = window.HB || {};
         state.mapCupClasses[c.id] = tc.classes;
         state.mapCupStatus[c.id] = "done";
       }
-    } else if (!c.dataUrl) {
-      // Ingen lokal cache: starta från CI-byggd snapshot i repot,
-      // så att förstabesöket slipper vänta på cupmanager-API:t.
-      try {
-        const r = await fetch("data/snapshot-" + c.id + ".json?_=" +
-          Date.now().toString(36));
-        if (r.ok) {
-          const j = await r.json();
-          if (Array.isArray(j.matches) && j.matches.length) {
-            state.matches = j.matches;
-            state.loadedAt = j.ts || 0;
-            HB.api.clubGeo[c.id] = j.clubs || {};
-            if (j.arenas) HB.api.arenaGeo[c.id] = j.arenas;
-            state.mapCupAllClubs[c.id] = allClubNamesFromMatches(j.matches);
-            state.mapCupCountryByClub[c.id] = clubCountryFromMatches(j.matches);
-            const tc = teamsAndClassesFromMatches(j.matches);
-            state.mapCupTeamCount[c.id] = tc.teamCount;
-            state.mapCupClasses[c.id] = tc.classes;
-            state.mapCupStatus[c.id] = "done";
-            HB.api.writeCache(c, j.matches, j.ts);
-          }
-        }
-      } catch { /* ingen snapshot — hämta från API:t nedan */ }
     }
+    if (!isCurrentCupLoad(c, cupGen, loadGen)) return;
     if (applyPendingNamedUrlFilters()) saveUi();
+    const currentTtl = refreshTtl(state.matches);
     const fresh = state.matches.length &&
-      Date.now() - state.loadedAt < refreshTtl(state.matches);
-    if (fresh && !force) { render(); return; }
-
+      Date.now() - state.loadedAt < currentTtl;
+    if (fresh && !force) { state.loading = false; render(); return; }
     state.loading = true;
     state.error = null;
-    loadProgress = 0;
     render();
     try {
-      // De flesta matcherna i en cup är redan avgjorda och kan aldrig
-      // ändras — har vi redan en cache att bygga vidare på, försök bara
-      // hämta om de OSPELADE matcherna (mycket snabbare) i stället för
-      // att alltid slå om hela MatchWindow-fönstret. fetchIncremental()
-      // ger null om det inte lönar sig (för många ospelade, eller ProCup
-      // som saknar stöd) — då faller vi tillbaka på den fulla hämtningen.
-      let matches = null;
-      if (state.matches.length) {
-        matches = await HB.api.fetchIncremental(c, state.matches, (done, total) => {
-          loadProgress = done + "/" + total + " ospelade";
-          renderMeta();
-        });
+      const previousDataTs = HB.api.localDataTs[c.id] || 0;
+      const snapshot = await HB.api.fetchSharedSnapshot(c, previousDataTs);
+      if (!isCurrentCupLoad(c, cupGen, loadGen)) return;
+      if (snapshot.unchanged) {
+        state.loadedAt = Date.now();
+        if (!c.dataUrl) {
+          HB.api.writeCache(c, state.matches, state.loadedAt, previousDataTs);
+        }
+        state.loading = false;
+        render();
+        return;
       }
-      if (!matches) {
-        matches = await HB.api.fetchMatches(c, (n) => {
-          loadProgress = n + "+";
-          const el = $("#loadNote");
-          if (el) el.textContent = "Hämtar schema … " + n + "+ matcher";
-          // Live-uppdatera "hämtar nytt …"-texten även vid en
-          // bakgrundsuppdatering (befintlig data ligger redan kvar på
-          // skärmen, #loadNote finns då inte) — annars ser en flera
-          // sekunder lång hämtning av en stor cup ut som att sidan hängt
-          // sig i stället för att faktiskt jobba.
-          renderMeta();
-        });
-      }
-      state.matches = matches;
+      const changed = snapshot.ts !== previousDataTs ||
+        snapshot.matches.length !== state.matches.length;
+      state.matches = snapshot.matches;
       state.loadedAt = Date.now();
+      if (snapshot.hasClubs) {
+        state.mapCupAllClubs[c.id] = allClubNamesFromMatches(snapshot.matches);
+        state.mapCupCountryByClub[c.id] = clubCountryFromMatches(snapshot.matches);
+        const tc = teamsAndClassesFromMatches(snapshot.matches);
+        state.mapCupTeamCount[c.id] = tc.teamCount;
+        state.mapCupClasses[c.id] = tc.classes;
+        state.mapCupStatus[c.id] = "done";
+      } else {
+        // ProCup/Gothia får sina adresser via den centralt byggda
+        // klubbkatalogen, men lag/klasser ur samma snapshot.
+        delete state.mapCupStatus[c.id];
+        ensureCupClubGeo(c.id, snapshot.matches);
+      }
+      // Tabeller/slutspel kan bero på ändrade resultat. Rensa dem bara när
+      // den GEMENSAMMA snapshotversionen faktiskt ändrats; tusen manuella
+      // kontroller av samma version ska inte skapa nytt arbete.
+      if (changed) {
+        state.tables = {};
+        state.playoffs = {};
+        state.groupTables = {};
+        dialogTableCache = {};
+        HB.api.invalidateSubCaches(c);
+      }
       if (applyPendingNamedUrlFilters()) saveUi();
-      if (!c.dataUrl) HB.api.writeCache(c, matches);
+      if (!c.dataUrl) HB.api.writeCache(c, snapshot.matches, state.loadedAt, snapshot.ts);
       if (!hasSyncedFreshData) {
         hasSyncedFreshData = true;
         autoScrolledToNow = false; // en chans att rätta till en skroll som blev fel mot cachens gamla data
       }
     } catch (e) {
-      state.error = "Kunde inte hämta schemat från " + c.host +
-        ". Kontrollera nätet och försök igen.";
+      if (!isCurrentCupLoad(c, cupGen, loadGen)) return;
+      // Stale-while-error: finns en lokal kopia fortsätter den fungera.
+      // Ett tillfälligt Pages-/nätfel ska inte ersätta användbar cupdata
+      // med en blockerande felsida.
+      state.error = state.matches.length ? null :
+        "Kunde inte hämta CupSchemas gemensamma schema. Kontrollera nätet och försök igen.";
       console.error(e);
     }
     state.loading = false;
@@ -1284,6 +1358,7 @@ window.HB = window.HB || {};
 
   function switchCup(id) {
     if (id === state.cupId) return;
+    cupGeneration++;
     state.cupId = id;
     state.tables = {};
     state.playoffs = {};
@@ -1317,19 +1392,20 @@ window.HB = window.HB || {};
   // allActiveMatches() utan att behöva kryssas i.
   function ensureArchiveEditions() {
     const cupId = state.cupId;
+    const requestedCup = HB.allCups().find((candidate) => candidate.id === cupId);
     if (state.archiveEditions[cupId]) return;
     state.archiveEditions[cupId] = { status: "loading", editions: [] };
     HB.api.fetchArchiveIndex().then((idx) => {
       const entry = idx[cupId];
       const editions = ((entry && entry.editions) || [])
         .map((e) => e.edition)
-        .filter((e) => e !== cup().edition)
+        .filter((e) => !requestedCup || e !== requestedCup.edition)
         .sort((a, b) => b.localeCompare(a, "sv", { numeric: true }));
       state.archiveEditions[cupId] = { status: "done", editions };
-      render();
+      scheduleArchiveRender();
     }).catch(() => {
       state.archiveEditions[cupId] = { status: "done", editions: [] };
-      render();
+      scheduleArchiveRender();
     });
   }
 
@@ -1355,10 +1431,10 @@ window.HB = window.HB || {};
       const matches = ((data && data.matches) || []).map((m) => ({ ...m, edition }));
       state.yearMatches[key] = { status: "done", matches };
       state.yearRosters[key] = (data && data.rosters) || {};
-      render();
+      scheduleArchiveRender();
     }).catch(() => {
       state.yearMatches[key] = { status: "error", matches: [] };
-      render();
+      scheduleArchiveRender();
     });
   }
 
@@ -1909,6 +1985,10 @@ window.HB = window.HB || {};
 
   function renderContentBody() {
     const main = $("#content");
+    // Kandidatnamn i slutspel roterar, men gamla intervall ska inte leva
+    // vidare tills var och en själv upptäcker en bortmonterad DOM-nod.
+    for (const timer of playoffCandidateTimers) clearInterval(timer);
+    playoffCandidateTimers.clear();
     // På mobil bor samma dialognod tillfälligt som en vanlig innehållsvy.
     // Flytta tillbaka den före varje omritning så replaceChildren() aldrig
     // kastar bort den (och därmed alla lyssnare som setupSettings satt).
@@ -2026,9 +2106,8 @@ window.HB = window.HB || {};
         })));
     }
 
-    // Filtrera korten här — inte hela dialogen. Sökfältet (#cupSearch) bor
-    // i index.html, utanför #cupRow, så replaceChildren nedan rör det inte
-    // och fokus stannar kvar medan man skriver.
+    // Filtrera bara kortcontainern. Sökfältet är en separat nod i arket,
+    // så replaceChildren nedan river inte inputen eller dess mobilfokus.
     const query = slugifySv(searchEl && searchEl.value);
     const cups = allCups.filter((c) => {
       if ((!query || !cupSearchAllSports) &&
@@ -2053,13 +2132,14 @@ window.HB = window.HB || {};
   }
 
   function renderCups() {
-    paintCupPicker($("#sportToggle"), $("#cupSearch"), $("#cupRow"),
-      $("#cupSearchEmpty"), switchCup);
-    // Cupväljaren själv bor i inställningarna (för att inte ta plats högst
-    // upp på sidan) — den här knappen i headern visar bara vilken cup som
-    // är vald just nu och öppnar samma dialog för att byta.
+    // Headerns kontextrad visar redan vald cup. Den separata desktopknappen
+    // ska vara en tydlig handling utan att upprepa ett potentiellt långt namn.
     const btn = $("#currentCupBtn");
-    if (btn) btn.textContent = cup().name;
+    if (btn) {
+      btn.textContent = "Byt cup";
+      btn.title = "Byt cup (" + cup().name + ")";
+      btn.setAttribute("aria-label", "Byt cup. Nu vald: " + cup().name);
+    }
     const label = $("#currentCupLabel");
     if (label) { label.textContent = cup().name; label.title = cup().name; }
   }
@@ -2169,6 +2249,11 @@ window.HB = window.HB || {};
   // renderTabs, och kan inte hamna ur synk.
   const CURRENT_VIEWS = ["schema", "tabeller", "slutspel", "bana"];
   let lastCurrentView = "schema";
+  // Desktop speglar mobilens tre navigationsgrupper som två horisontella
+  // nivåer i toppen. Mobilens Mer behövs inte där: Export/Om ligger direkt
+  // i topphuvudet och Inställningar/Hjälp hade redan egna kontroller.
+  let desktopMenuOpen = "current";
+  let desktopFilterExpanded = false;
   let currentMenuOpen = true;
   let statsMenuOpen = true;
   let moreMenuOpen = false;
@@ -2179,6 +2264,7 @@ window.HB = window.HB || {};
   // dialoglager. Den är avsiktligt tillfällig: underliggande Aktuellt-vy
   // och dess delningsbara URL lämnas orörda och krysset går tillbaka dit.
   let settingsViewOpen = false;
+  let settingsReturnFocus = null;
 
   // Hur många filter som faktiskt smalnar av vyn just nu — siffran på
   // filterknappen, så man ser att ett filter är aktivt utan att öppna arket.
@@ -2195,6 +2281,83 @@ window.HB = window.HB || {};
     if (state.q) n++;
     if (state.matchFilter !== "all") n++;
     return n;
+  }
+
+  function renderDesktopNav() {
+    const main = $("#desktopMainNav");
+    const sub = $("#desktopSubNav");
+    if (!main || !sub) return;
+    if (sheetMode()) {
+      main.hidden = true;
+      sub.hidden = true;
+      document.body.classList.remove("desktop-filter-open");
+      return;
+    }
+    main.hidden = false;
+    if (CURRENT_VIEWS.includes(state.view)) lastCurrentView = state.view;
+    // Undermenyn följer alltid innehållssidan. Filter är inte en egen
+    // navigationsnivå, utan en oberoende panel under de synliga menyraderna.
+    desktopMenuOpen = state.view === "stats" ? "stats" : "current";
+    document.body.classList.toggle("desktop-filter-open", desktopFilterExpanded);
+    const pageGroup = state.view === "stats" ? "stats" : "current";
+    const primary = (key, label, icon, onclick) => {
+      const pageActive = pageGroup === key;
+      const menuActive = key === "filter" ? desktopFilterExpanded : desktopMenuOpen === key;
+      const button = h("button", {
+        class: "desktop-primary-tab desktop-primary-" + key +
+          (pageActive ? " page-on" : "") +
+          (menuActive ? " menu-on" : ""),
+        type: "button",
+        ...(pageActive ? { "aria-current": "page" } : {}),
+        "aria-expanded": String(menuActive),
+        onclick,
+      }, h("span", { class: "desktop-primary-icon", "aria-hidden": "true" },
+        bottomMenuIcon(key === "filter"
+          ? (desktopFilterExpanded ? "filter-open" : "filter-closed") : icon)),
+      h("span", null, label));
+      if (key === "filter" && activeFilterCount()) button.append(
+        h("span", { class: "desktop-filter-badge" }, String(activeFilterCount())));
+      return button;
+    };
+    main.replaceChildren(
+      primary("filter", "Filter", "filter", () => {
+        desktopFilterExpanded = !desktopFilterExpanded;
+        if (desktopFilterExpanded) state.toolbarOpen = true;
+        saveUi(); render();
+      }),
+      primary("current", "Aktuellt", "current", () => {
+        desktopMenuOpen = "current";
+        if (!CURRENT_VIEWS.includes(state.view)) state.view = lastCurrentView;
+        saveUi(); render();
+      }),
+      primary("stats", "Statistik", "stats", () => {
+        desktopMenuOpen = "stats";
+        state.view = "stats";
+        saveUi(); render();
+      }));
+
+    const action = (label, active, onclick) => h("button", {
+      class: "desktop-subtab" + (active ? " on" : ""), type: "button",
+      ...(active ? { "aria-current": "page" } : {}), onclick,
+    }, label);
+    const supported = new Map($$("#viewTabs .tab").map((b) => [b.dataset.view, !b.hidden]));
+    if (desktopMenuOpen === "current") {
+      const labels = { schema: "Schema", tabeller: "Tabeller", slutspel: "Slutspel", bana: "Bana" };
+      sub.replaceChildren(...CURRENT_VIEWS.filter((v) => supported.get(v) !== false).map((v) =>
+        action(labels[v], state.view === v, () => {
+          if (v === "tabeller" && state.view !== "tabeller") state.tableGroupKey = "all";
+          desktopMenuOpen = "current";
+          state.view = v; saveUi(); render();
+        })));
+    } else if (desktopMenuOpen === "stats") {
+      const support = state.statsSupport || {};
+      const visible = STATS_TABS.filter(([key]) => support[key] || key === state.statsView);
+      sub.replaceChildren(...visible.map(([key, label]) =>
+        action(label, state.statsView === key, () => {
+          state.statsView = key; saveUi(); render();
+        })));
+    } else sub.replaceChildren();
+    sub.hidden = !sub.childElementCount;
   }
 
   function closeSubmenuOverlays({ closeFilters = true } = {}) {
@@ -2423,6 +2586,7 @@ window.HB = window.HB || {};
       }
       lastY = window.scrollY;
       downwardTravel = 0;
+      requestAnimationFrame(renderBottomBar);
     });
   }
 
@@ -2451,6 +2615,9 @@ window.HB = window.HB || {};
       add("path", { d: "m20 20-4-4" });
     } else if (name === "filter") {
       add("path", { d: "M4 5h16M7 12h10M10 19h4" });
+    } else if (name === "filter-closed" || name === "filter-open") {
+      add("path", { d: "M4 4h16M7 10h10M10 16h4" });
+      add("path", { d: name === "filter-open" ? "m8 22 4-4 4 4" : "m8 19 4 4 4-4" });
     } else if (name === "stats") {
       add("path", { d: "M4 20V10M10 20V4M16 20v-7M22 20H2" });
     } else {
@@ -2464,6 +2631,18 @@ window.HB = window.HB || {};
   function renderBottomBar() {
     const bar = $("#bottomBar");
     if (!bar) return;
+    // [hidden] ska vara sanningen även semantiskt. Tidigare tvingade CSS
+    // fram raden trots attributet, vilket gjorde den synlig men fortsatt
+    // dold för hjälpmedel. Desktop har sin fulla toppnavigation.
+    const mobile = sheetMode();
+    renderDesktopNav();
+    bar.hidden = !mobile;
+    if (!mobile) {
+      $("#currentViewBar").hidden = true;
+      $("#currentSelectionBar").hidden = true;
+      $("#moreMenuBar").hidden = true;
+      return;
+    }
     // Stats har ingen verktygsrad (se renderToolbar) — då ska filterknappen
     // inte heller finnas, annars öppnar den ett tomt ark.
     // Stats har en EXTRA fast rad (underflikarna, se style.css) — innehållet
@@ -2477,7 +2656,11 @@ window.HB = window.HB || {};
         (menuActive ? " menu-on" : "") + (extraClass ? " " + extraClass : ""),
       type: "button",
       ...(pageActive ? { "aria-current": "page" } : {}),
-      "aria-expanded": String(menuActive), onclick,
+      "aria-expanded": String(menuActive),
+      "aria-controls": icon === "filter" ? "toolbar" :
+        icon === "current" ? "currentViewBar" :
+        icon === "stats" ? "content" : "moreMenuBar",
+      onclick,
     }, h("span", { class: "bottom-tab-icon", "aria-hidden": "true" }, bottomMenuIcon(icon)),
     h("span", { class: "bottom-tab-label" }, label));
     const inCurrentView = CURRENT_VIEWS.includes(state.view);
@@ -2562,6 +2745,7 @@ window.HB = window.HB || {};
     bar.replaceChildren(...CURRENT_VIEWS.filter((v) => supported.get(v) !== false).map((v) =>
       h("button", {
         class: "current-view-tab" + (state.view === v ? " on" : ""), type: "button",
+        ...(state.view === v ? { "aria-current": "page" } : {}),
         onclick: () => {
           toggleFilterSheet(false);
           // När man går in i Tabeller på nytt ska hela det valda underlaget
@@ -2582,7 +2766,11 @@ window.HB = window.HB || {};
     const action = (label, fn, sheetKey) => h("button", {
       class: "current-view-tab more-submenu-tab" +
         (activeSheet === sheetKey || (sheetKey === "settings" && settingsViewOpen) ? " on" : ""),
-      type: "button", onclick: fn,
+      type: "button",
+      "aria-pressed": String(activeSheet === sheetKey ||
+        (sheetKey === "settings" && settingsViewOpen)),
+      ...(sheetKey ? { "data-sheet-key": sheetKey } : {}),
+      onclick: fn,
     }, label);
     const leaveSettingsThen = (fn) => {
       if (settingsViewOpen) {
@@ -2656,19 +2844,35 @@ window.HB = window.HB || {};
     const grip = h("button", { class: "prototype-sheet-grip", type: "button",
       "aria-label": "Dra för att ändra panelens höjd",
       ...(fullScreenOnMobile ? { hidden: true } : {}) }, h("span"));
+    const titleId = "prototypeSheetTitle-" + sheetKey;
+    const returnFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement : null;
     const dlg = h("dialog", {
       class: "prototype-sheet" + (fullScreenOnMobile ? " prototype-sheet-fullscreen" : ""),
       "data-sheet-key": sheetKey,
+      "aria-labelledby": titleId,
+      tabindex: "-1",
     },
       h("div", { class: "prototype-sheet-head" },
         grip,
-        h("h2", null, title),
+        h("h2", { id: titleId }, title),
         h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng",
           onclick: () => dlg.close() }, "×")), body);
     backdrop.addEventListener("click", () => dlg.close());
     dlg.addEventListener("close", () => {
       backdrop.remove(); dlg.remove();
-      requestAnimationFrame(renderBottomBar);
+      requestAnimationFrame(() => {
+        renderBottomBar();
+        const target = returnFocus && returnFocus.isConnected
+          ? returnFocus
+          : document.querySelector(`#moreMenuBar [data-sheet-key="${sheetKey}"]`);
+        if (target instanceof HTMLElement) target.focus({ preventScroll: true });
+      });
+    });
+    dlg.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      dlg.close();
     });
     if (!fullScreenOnMobile) grip.addEventListener("pointerdown", (e) => {
       e.preventDefault();
@@ -2698,6 +2902,9 @@ window.HB = window.HB || {};
     });
     document.body.append(backdrop, dlg);
     dlg.show();
+    requestAnimationFrame(() => {
+      if (!dlg.contains(document.activeElement)) dlg.focus({ preventScroll: true });
+    });
     try {
       const saved = +localStorage.getItem("hb:menuSheetHeight:" + sheetKey);
       if (!fullScreenOnMobile && saved >= 0.25 && saved <= 1) {
@@ -2708,187 +2915,6 @@ window.HB = window.HB || {};
     } catch { /* privat läge/full lagring: använd CSS-höjden */ }
     requestAnimationFrame(renderBottomBar);
     return { dlg, body };
-  }
-
-  function globalSearchCandidates() {
-    const out = [];
-    const seen = new Map();
-    const add = (type, label, search, action, hint, options = {}) => {
-      if (!label) return;
-      const key = type + "|" + (options.key || slugifySv(label));
-      const candidate = {
-        type, label, search: slugifySv(search || label), action, hint,
-        current: !!options.current, year: +(options.year || 0),
-      };
-      const oldIndex = seen.get(key);
-      if (oldIndex != null) {
-        const old = out[oldIndex];
-        const oldFreshness = (old.current ? 100000 : 0) + old.year;
-        const newFreshness = (candidate.current ? 100000 : 0) + candidate.year;
-        if (newFreshness <= oldFreshness) return;
-        out[oldIndex] = candidate;
-        return;
-      }
-      seen.set(key, out.length);
-      out.push(candidate);
-    };
-    for (const c of HB.allCups()) add("Cup", c.name, c.name + " " + c.place + " " + c.edition,
-      () => switchCup(c.id), c.place + " · " + c.edition, { year: c.edition });
-
-    const clubTeams = new Map();
-    const clubClasses = new Map();
-    const teams = new Map();
-    const cats = new Map();
-    const arenas = new Set();
-    for (const m of state.matches) {
-      if (m.catId != null && m.catName) cats.set(m.catId, m.catName);
-      if (m.arena) arenas.add(m.arena);
-      for (const side of [m.home, m.away]) {
-        if (side.id != null && side.name && !teams.has(side.id))
-          teams.set(side.id, { ...side, catName: m.catName });
-        if (side.club && side.id != null) {
-          if (!clubTeams.has(side.club)) clubTeams.set(side.club, new Set());
-          clubTeams.get(side.club).add(side.id);
-          if (m.catId != null && m.catName) {
-            const classKey = slugifySv(side.club) + "|" + m.catId;
-            if (!clubClasses.has(classKey)) clubClasses.set(classKey, {
-              club: side.club, catId: m.catId, catName: m.catName, teamIds: new Set(),
-            });
-            clubClasses.get(classKey).teamIds.add(side.id);
-          }
-        }
-      }
-      const matchLabel = m.home.name + " – " + m.away.name;
-      add("Match", matchLabel,
-        matchLabel + " " + m.catName + " " + m.arena + " " + (m.matchNr || ""),
-        () => openMatchDialog(m),
-        (m.start ? fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)) : "Tid ej satt") +
-          (m.arena ? " · " + m.arena : ""), { current: true, year: cup().edition });
-    }
-    for (const [name, ids] of clubTeams) add("Klubb", name, name, () => {
-      state.scope = "all"; state.teams = new Set(ids); state.view = "schema"; saveUi(); render();
-    }, ids.size + " lag i " + cup().name, { current: true, year: cup().edition });
-    // Klubbkatalogen sträcker sig över alla cuper och år. En klubb som
-    // inte finns i den aktuella cupen leder till Statistik/Klubb-Lag.
-    for (const [name, info] of Object.entries(clubDirectoryCache || {})) add("Klubb", name,
-      name + " " + (info.city || "") + " " + (info.country || ""), () => {
-      state.view = "stats"; state.statsView = "klubb"; state.clubQuery = name;
-      clubQuerySeeded = true; saveUi(); render();
-    }, info.city ? info.city + " · hela historiken" : "Sök i hela historiken");
-    // Det kompakta lagnamnsindexet täcker alla arkiverade cuper utan att
-    // de stora matchfilerna behöver laddas. Ett historiskt lagresultat
-    // leder till Klubb/Lag-vyn, som kan borra vidare till cup och matcher.
-    const cupsById = new Map(HB.allCups().map((c) => [c.id, c]));
-    for (const [cupId, byEdition] of Object.entries(state.teamIndex || {})) {
-      for (const [edition, names] of Object.entries(byEdition || {})) {
-        for (const name of names || []) {
-          if (!name || isPlaceholderTeam({ name })) continue;
-          add("Lag", name, name, () => {
-            state.view = "stats"; state.statsView = "klubb"; state.clubQuery = name;
-            clubQuerySeeded = true; saveUi(); render();
-          }, (cupsById.get(cupId) || {}).name
-            ? "Senast: " + cupsById.get(cupId).name + " " + edition
-            : "Senast: " + edition,
-          { year: edition });
-        }
-      }
-    }
-    for (const [id, team] of teams) {
-      const kull = cohortKey(team.catName) || HB.shortCat(team.catName);
-      add("Lag", team.name, team.name + " " + team.club + " " + kull + " " + team.catName, () => {
-        state.scope = "all"; state.teams = new Set([id]); state.view = "schema"; saveUi(); render();
-      }, kull + " · " + cup().name + " " + cup().edition,
-      { current: true, year: cup().edition });
-    }
-    // Relationsresultat: en klass ska vara sökbar på klubben som deltar
-    // i den, inte bara på "F2010". Valet visar just klubbens lag i klassen.
-    for (const [relationKey, entry] of clubClasses) {
-      const kull = cohortKey(entry.catName) || HB.shortCat(entry.catName);
-      add("Klass", kull,
-        entry.club + " " + kull + " " + entry.catName,
-        () => {
-          state.scope = "all";
-          state.cats = new Set([entry.catId]);
-          state.teams = new Set(entry.teamIds);
-          state.view = "schema"; saveUi(); render();
-        }, entry.club + " · " + cup().name + " " + cup().edition,
-        { key: "club|" + relationKey, current: true, year: cup().edition });
-    }
-    for (const [id, name] of cats) {
-      const kull = cohortKey(name) || HB.shortCat(name);
-      add("Klass", kull, kull + " " + name, () => {
-        state.scope = "all"; state.cats = new Set([id]); state.view = "schema"; saveUi(); render();
-      }, name + " · " + cup().name + " " + cup().edition,
-      { key: "all|" + id, current: true, year: cup().edition });
-    }
-    const geo = HB.api.arenaGeo[state.cupId] || {};
-    for (const arena of arenas) {
-      const g = geo[arena] || {};
-      const place = [g.venue, g.street, g.city].filter(Boolean).join(" · ");
-      add("Plats", arena, arena + " " + place, () => openArenaQuickView(arena), place,
-        { current: true, year: cup().edition });
-    }
-    return out;
-  }
-
-  function openGlobalSearchDialog() {
-    const shell = prototypeDialog("Sök i hela appen", "search");
-    if (!shell) return;
-    const { dlg, body } = shell;
-    body.classList.add("global-search-sheet-body");
-    const input = h("input", { class: "search global-search-input", type: "search",
-      placeholder: "Klubb, lag, F2011, cup, match eller plats …", autocomplete: "off" });
-    const filters = ["Alla", "Klubb", "Lag", "Klass", "Cup", "Match", "Plats"];
-    let selected = "Alla";
-    let timer = null;
-    const chipRow = h("div", { class: "global-search-types" });
-    const results = h("div", { class: "global-search-results" },
-      h("p", { class: "muted" }, "Laddar appens sökregister …"));
-    const paintChips = () => chipRow.replaceChildren(...filters.map((type) => h("button", {
-      class: "global-search-type-tab" + (selected === type ? " on" : ""),
-      type: "button", "aria-selected": String(selected === type),
-      onclick: () => { selected = type; paintChips(); run(); },
-    }, type)));
-    const run = () => {
-      const q = slugifySv(input.value.trim());
-      if (q.length < 2) {
-        results.replaceChildren(h("p", { class: "muted" }, "Skriv minst två tecken.")); return;
-      }
-      const hits = globalSearchCandidates().filter((r) =>
-        (selected === "Alla" || r.type === selected) && r.search.includes(q))
-        .sort((a, b) => {
-          const aLabel = slugifySv(a.label), bLabel = slugifySv(b.label);
-          const exactA = aLabel === q ? 0 : aLabel.startsWith(q) ? 1 : 2;
-          const exactB = bLabel === q ? 0 : bLabel.startsWith(q) ? 1 : 2;
-          if (exactA !== exactB) return exactA - exactB;
-          if (a.current !== b.current) return a.current ? -1 : 1;
-          if (a.year !== b.year) return b.year - a.year;
-          const posA = a.search.indexOf(q), posB = b.search.indexOf(q);
-          return posA - posB || a.label.localeCompare(b.label, "sv");
-        }).slice(0, 60);
-      results.replaceChildren(...(hits.length ? hits.map((r) => h("button", {
-        class: "global-search-result", type: "button", onclick: () => { dlg.close(); r.action(); },
-      }, h("span", { class: "global-search-result-main" },
-        h("strong", null, r.label), r.hint ? h("small", null, r.hint) : null),
-      h("span", { class: "global-search-result-type" }, r.type))) :
-      [h("p", { class: "muted" }, "Inga träffar.")]));
-    };
-    input.addEventListener("input", () => {
-      clearTimeout(timer); timer = setTimeout(run, 180);
-    });
-    const stickySearch = h("div", { class: "global-search-sticky" },
-      chipRow, withClearButton(input));
-    paintChips(); body.append(results, stickySearch);
-    requestAnimationFrame(() => input.focus());
-    // Cupresultaten och aktuell cups matcher finns omedelbart. Klubb- och
-    // lagnamnsregistren är lata i resten av appen, så sökarket måste självt
-    // invänta dem och sedan köra om den text användaren redan hunnit skriva.
-    Promise.all([HB.api.fetchClubDirectory(), HB.api.fetchTeamIndex()]).then(([dir, idx]) => {
-      if (!dlg.isConnected) return;
-      clubDirectoryCache = dir || {};
-      state.teamIndex = idx || {};
-      run();
-    });
   }
 
   // Total höjd på ALLT som ligger fast i botten just nu: bottenraden plus
@@ -3063,19 +3089,17 @@ window.HB = window.HB || {};
 
 
   function renderMeta() {
-    // Uppdatera-knappen ger tydlig feedback direkt vid klick — annars
-    // syns en pågående bakgrundsuppdatering (kan ta 20-30 s för en stor
-    // cup) bara som en liten textändring längst upp, vilket lätt ser ut
-    // som att sidan hängt sig i stället för att faktiskt jobba.
+    // Knappen ger tydlig feedback medan versionsindexet kontrolleras och,
+    // bara vid en ny version, den större snapshotfilen hämtas.
     const btn = $("#refreshBtn");
     if (btn) {
       btn.disabled = state.loading;
-      btn.textContent = state.loading ? "↻ Uppdaterar …" : "↻ Uppdatera";
+      btn.textContent = state.loading ? "↻ Kontrollerar …" : "↻ Kontrollera senaste";
     }
     const settingsRefreshBtn = $("#settingsRefreshBtn");
     if (settingsRefreshBtn) {
       settingsRefreshBtn.disabled = state.loading;
-      settingsRefreshBtn.textContent = state.loading ? "↻ Uppdaterar schema …" : "↻ Uppdatera schema";
+      settingsRefreshBtn.textContent = state.loading ? "↻ Kontrollerar schema …" : "↻ Kontrollera senaste";
     }
     const el = $("#meta");
     el.replaceChildren();
@@ -3102,7 +3126,7 @@ window.HB = window.HB || {};
       class: "meta-link", type: "button", title: "Visa vilka matcher som räknas i antalet (inte en ändringslogg)",
       onclick: openMatchLogDialog,
     }, label));
-    if (state.loading) el.append(" · hämtar nytt … (" + (loadProgress || "0") + ")");
+    if (state.loading) el.append(" · kontrollerar gemensamt schema …");
   }
 
   // --- generisk sök-, filter- och sorterbar flervalsdropdown ------------------
@@ -3140,7 +3164,7 @@ window.HB = window.HB || {};
   }
 
   function savedSheetHeight() {
-    const v = +(localStorage.getItem("hb:sheetVh") || 0);
+    const v = +storageGet("hb:sheetVh", 0);
     return v >= SHEET_MIN_VH && v <= SHEET_MAX_VH ? v : 0;
   }
 
@@ -3714,7 +3738,14 @@ window.HB = window.HB || {};
     // Stats (Trend/Karta/Klubb-Lag/Klubbjämförelse/Cuper) bygger på HELA
     // arkivet/klubbregistret oavsett dag-/klass-/lagfilter (de filtrerar
     // inte state.matches alls) — verktygsraden vore bara missvisande brus där.
-    if (state.view === "stats" || settingsViewOpen) return;
+    // På desktop är Filter en fristående, expanderbar panel och får därför
+    // öppnas även ovanpå Statistik. Valen påverkar de aktuella cupvyerna och
+    // ligger kvar när användaren återvänder dit; Statistik själv fortsätter
+    // bygga på hela arkivet. Mobilen behåller sitt tidigare beteende och
+    // visar aldrig ett tomt filterark i Statistik.
+    const desktopFilterOpen = !sheetMode() &&
+      document.body.classList.contains("desktop-filter-open");
+    if ((state.view === "stats" && !desktopFilterOpen) || settingsViewOpen) return;
     ensureArchiveEditions();
     const archiveEntry = state.archiveEditions[state.cupId];
     const archiveYears = (archiveEntry && archiveEntry.editions) || [];
@@ -4116,7 +4147,7 @@ window.HB = window.HB || {};
           saveUi(); render();
         },
       }, state.timeOrder === "desc" ? "↓ Nyast överst" : "↑ Äldst överst") : null,
-      buildExportPicker(),
+      state.view !== "stats" ? buildExportPicker() : null,
     ));
     flattenMobileFilterBar(bar);
     restoreFilterStripScroll();
@@ -4183,13 +4214,18 @@ window.HB = window.HB || {};
   // säsong. Den här länken skriver samma urval som klass=/team= med namn,
   // som applyPendingNamedUrlFilters slår upp mot den nya upplagan.
   function buildNamedShareUrl() {
-    const p = new URLSearchParams();
-    p.set("cup", state.cupId);
+    const p = buildViewUrlParams();
+    // De numeriska id-parametrarna gäller bara just den här upplagan.
+    // Ersätt dem, men behåll resten av den kompletta vy-URL:en ovan.
+    p.delete("cats");
+    p.delete("teams");
     if (state.cats.size || state.teams.size) {
       const klasses = new Set();
       const teams = new Set();
       for (const m of state.matches) {
-        if (state.cats.has(m.catId) && m.catName) klasses.add(HB.shortCat(m.catName));
+        if (state.cats.has(m.catId) && m.catName) {
+          klasses.add(cohortKey(m.catName) || m.catName);
+        }
         if (state.teams.has(m.home.id) && m.home.name) teams.add(m.home.name);
         if (state.teams.has(m.away.id) && m.away.name) teams.add(m.away.name);
       }
@@ -4200,12 +4236,12 @@ window.HB = window.HB || {};
         p.set("team", [...teams].sort((a, b) => a.localeCompare(b, "sv")).join(NAME_SEP));
       }
     }
-    if (state.view !== "schema") p.set("view", state.view);
-    // Stats har elva underflikar — utan den här hamnar en delad Karta- eller
-    // Historiklänk på Trend, som är förvalet.
-    if (state.view === "stats" && state.statsView !== "trend") p.set("stats", state.statsView);
-    if (state.scope === "all") p.set("scope", "all");
-    return location.origin + location.pathname + "?" + p.toString();
+    // URL byggs mot den egna origin/pathen; inget användarvärde kan styra
+    // protokoll eller värd och länken kan därför aldrig bli javascript: eller
+    // peka på en främmande sajt.
+    const url = new URL(location.pathname, location.origin);
+    url.search = p.toString();
+    return url.toString();
   }
 
   // Prenumerationen hör hemma i exportmenyn — det är där man står när man
@@ -4231,7 +4267,7 @@ window.HB = window.HB || {};
           entry = { team: side, calUrl, timed: 0 };
           teams.set(side.id, entry);
         }
-        if (m.start) entry.timed++;
+        if (hasScheduledStart(m)) entry.timed++;
       }
     }
     if (!teams.size) return null;
@@ -4518,7 +4554,9 @@ window.HB = window.HB || {};
       klass, slutspel: div.name || "", omgang: m.roundName || "", nr: m.matchNr || "",
       hemmalag: m.home.name || "TBD", bortalag: m.away.name || "TBD",
       resultat: scoreText(m.res) || "",
-      tid: dayKeyFmt.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
+      tid: hasScheduledStart(m)
+        ? dayKeyFmt.format(new Date(m.start)) + " " + matchTimeLabel(m)
+        : "Tid ej satt",
       bana: m.arena || "",
     }));
   }
@@ -4595,7 +4633,8 @@ window.HB = window.HB || {};
       if (state.teams.size &&
           !state.teams.has(m.home.id) && !state.teams.has(m.away.id)) return false;
       if (state.cats.size && !state.cats.has(m.catId)) return false;
-      return !(m.res && m.res.fin) && m.start >= now - 30 * 60000;
+      return !(m.res && m.res.fin) && hasScheduledStart(m) &&
+        m.start >= now - 30 * 60000;
     });
     return pool
       .sort((a, b) => a.start - b.start ||
@@ -4705,12 +4744,13 @@ window.HB = window.HB || {};
           h("span", { class: isClubName(m.away.name) ? "us" : "" }, m.away.name,
             isFavoriteTeam(m.away.name, m.catName) ? h("span", { class: "fav-team-star" }, "⭐") : null)),
         h("div", { class: "hero-info" },
-          fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)),
+          matchTimeLabel(m, fmtDayLong),
           h("span", { class: "dot" }, "·"), m.arena || "plan ej satt",
           h("span", { class: "dot" }, "·"),
           HB.shortCat(m.catName) + (m.divName ? " " + m.divName : ""),
           (() => {
-            const w = HB.weather.at(HB.weather.cached(cup()), m.start);
+            const w = hasScheduledStart(m)
+              ? HB.weather.at(HB.weather.cached(cup()), m.start) : null;
             return w ? [h("span", { class: "dot" }, "·"), w.icon + " " + w.temp + "°"] : null;
           })())),
       carousel ? h("div", { class: "hero-dots" },
@@ -5009,22 +5049,28 @@ window.HB = window.HB || {};
 
   function ensureDialogTable(divId) {
     if (!dialogTableCache[divId]) {
-      dialogTableCache[divId] = HB.api.fetchTable(cup(), divId).catch(() => []);
+      const official = HB.api.snapshotTable(cup(), divId);
+      dialogTableCache[divId] = Promise.resolve(official.length ? official :
+        computeGroupTableRows(state.matches.filter((m) => m.divId === divId)));
     }
     return dialogTableCache[divId];
   }
 
   function previousMeetingsBlock(m) {
     const box = h("div", { class: "prev-meetings" });
-    HB.api.fetchPreviousMeetings(cup(), m.id).then((meetings) => {
-      if (!meetings.length) { box.remove(); return; }
-      box.append(
-        h("h4", null, "Tidigare möten"),
-        h("ul", { class: "prev-meetings-list" },
-          meetings.map((pm) => h("li", null,
-            fmtDay.format(new Date(pm.start)) + ": " + pm.home.name + " " +
-            (scoreText(pm.res) || "–") + " " + pm.away.name))));
-    }).catch(() => box.remove());
+    const a = m.home && m.home.id, b = m.away && m.away.id;
+    const meetings = (a == null || b == null) ? [] : state.matches.filter((pm) => {
+      if (pm.id === m.id || !pm.res || !pm.res.fin) return false;
+      const ph = pm.home && pm.home.id, pa = pm.away && pm.away.id;
+      return (ph === a && pa === b) || (ph === b && pa === a);
+    }).sort((x, y) => y.start - x.start);
+    if (!meetings.length) return null;
+    box.append(
+      h("h4", null, "Tidigare möten"),
+      h("ul", { class: "prev-meetings-list" },
+        meetings.map((pm) => h("li", null,
+          matchTimeLabel(pm, fmtDay) + ": " + pm.home.name + " " +
+          (scoreText(pm.res) || "–") + " " + pm.away.name))));
     return box;
   }
 
@@ -5182,7 +5228,7 @@ window.HB = window.HB || {};
     const sc = scoreText(m.res);
     return h("div", { class: "arch-row" },
       h("span", { class: "arch-date" },
-        fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start))),
+        matchTimeLabel(m, fmtDay)),
       h("span", { class: "arch-teams" },
         h("span", { class: isClubName(m.home.name) ? "us" : "" }, m.home.name),
         archiveFavStar(m.home.name, m.catName),
@@ -5236,7 +5282,9 @@ window.HB = window.HB || {};
       return teams.get(id);
     };
     for (const m of divMatches) {
-      if (!m.res || !m.res.fin || m.res.wo) continue;
+      if (m.home.id != null) ensure(m.home.id, m.home.name);
+      if (m.away.id != null) ensure(m.away.id, m.away.name);
+      if (!m.res || !m.res.fin) continue;
       if (m.home.id == null || m.away.id == null) continue;
       const home = ensure(m.home.id, m.home.name), away = ensure(m.away.id, m.away.name);
       home.played++; away.played++;
@@ -5246,7 +5294,10 @@ window.HB = window.HB || {};
       else if (m.res.winner === "away") { away.won++; home.lost++; }
       else { home.tied++; away.tied++; }
     }
-    const rows = [...teams.values()].map((t) => ({ ...t, points: t.won * 2 + t.tied }));
+    const winPoints = (cup() && cup().sport === "fotboll") ? 3 : 2;
+    const rows = [...teams.values()].map((t) => ({
+      ...t, points: t.won * winPoints + t.tied,
+    }));
     rows.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf ||
       a.name.localeCompare(b.name, "sv"));
     return rows;
@@ -5359,7 +5410,8 @@ window.HB = window.HB || {};
         return;
       }
       list.replaceChildren(...groups.flatMap((g) => [
-        h("h2", { class: "day-h" }, fmtDayLong.format(new Date(g.items[0].start))),
+        h("h2", { class: "day-h" }, hasScheduledStart(g.items[0])
+          ? fmtDayLong.format(new Date(g.items[0].start)) : "Tid ej satt"),
         h("div", { class: "arena-quick-list" }, g.items.map(archiveMatchRow)),
       ]));
     }
@@ -5651,6 +5703,7 @@ window.HB = window.HB || {};
     const baseIdx = trendBaselineIndex(editions, overrideYear);
     const baseEd = editions[baseIdx];
     const lastEd = editions[editions.length - 1];
+    const sourceSystems = [...new Set(editions.map((e) => e.sourceSystem).filter(Boolean))];
     const legend = h("div", { class: "trend-legend" },
       metrics.map(([key, label, color]) => {
         const base = archiveEditionMetric(baseEd, key);
@@ -5688,6 +5741,10 @@ window.HB = window.HB || {};
           ? " * " + editions.filter((e) => e.preliminary).map((e) => e.edition).join(", ") +
             " är inte spelad än: schemat fylls på löpande, så talen är preliminära " +
             "och ligger lågt jämfört med färdigspelade år."
+          : "") +
+        (sourceSystems.length
+          ? " Historiken är sammanfogad över turneringssystem; källan för migrerade " +
+            "upplagor visas i tabellen."
           : "")),
       // Rådata i tabellform under diagrammet — SAMMA editions-lista (alla
       // arkiverade år, oavsett vilket som råkar vara normeringens
@@ -5769,7 +5826,20 @@ window.HB = window.HB || {};
     "kan vara ofullständigt — talen går inte att jämföra rakt av med " +
     "färdigspelade år.";
 
+  function trendEditionLabel(e) {
+    if (e.status === "cancelled") {
+      return [e.edition, h("span", {
+        class: "trend-prelim",
+        title: e.note || "Upplagan ställdes in.",
+      }, " · inställd")];
+    }
+    return e.preliminary
+      ? [e.edition, h("span", { class: "trend-prelim", title: PRELIM_TITLE }, " *")]
+      : e.edition;
+  }
+
   function trendTable(editions, metrics) {
+    const showSource = editions.some((e) => e.sourceSystem);
     const columns = [
       {
         key: "edition", label: "År", align: "l", defaultDir: -1,
@@ -5777,10 +5847,13 @@ window.HB = window.HB || {};
         // Ospelade upplagor (se preliminary i archive_results.py) får en
         // markör — deras tal är en ögonblicksbild av ett halvpublicerat
         // schema och sjunker inte, de har bara inte fyllts på än.
-        render: (e) => e.preliminary
-          ? [e.edition, h("span", { class: "trend-prelim", title: PRELIM_TITLE }, " *")]
-          : e.edition,
+        render: trendEditionLabel,
       },
+      ...(showSource ? [{
+        key: "sourceSystem", label: "Källa", align: "l", defaultDir: 1,
+        get: (e) => e.sourceSystem || "current",
+        render: (e) => e.sourceSystem === "procup" ? "ProCup" : "Nuvarande system",
+      }] : []),
       ...metrics.map(([key, label]) => ({
         key, label, defaultDir: -1,
         get: (e) => archiveEditionMetric(e, key),
@@ -5965,7 +6038,7 @@ window.HB = window.HB || {};
         if (m.home.club) clubs.add(m.home.club);
         if (m.away.club) clubs.add(m.away.club);
         if (m.catName) classes.add(m.catName);
-        if (m.start) days.add(Math.floor(m.start / 86400000));
+        if (hasScheduledStart(m)) days.add(Math.floor(m.start / 86400000));
       }
       return {
         edition: meta.edition, matches: matches.length, teams: teams.size,
@@ -6383,7 +6456,7 @@ window.HB = window.HB || {};
         const awayIsUs = matchesBooleanQuery(m.away.name.toLowerCase(), teamQuery);
         if (!homeIsUs && !awayIsUs) continue;
         totalMatches++;
-        if (m.start) days.add(Math.floor(m.start / 86400000));
+        if (hasScheduledStart(m)) days.add(Math.floor(m.start / 86400000));
         const cls = m.catName || "(okänd klass)";
         if (!byClass.has(cls)) byClass.set(cls, { teams: new Set(), matches: 0 });
         const entry = byClass.get(cls);
@@ -7826,7 +7899,7 @@ window.HB = window.HB || {};
       onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatch(m); } },
     },
       h("th", { class: "l", scope: "row" },
-        m.start ? fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start)) : "–"),
+        matchTimeLabel(m, fmtDay)),
       h("td", { class: "l" }, HB.shortCat(m.catName)),
       h("td", { class: "l" }, m.home.name),
       h("td", { class: "l" }, m.away.name),
@@ -7923,13 +7996,6 @@ window.HB = window.HB || {};
           if (!divisions.has(m.divId)) divisions.set(m.divId,
             { id: m.divId, name: m.divName || "Grupp" });
         }
-        // Cup Manager kan ha publicerat gruppdivisionen innan alla dess
-        // matcher hunnit in i schemat. Komplettera då från kategori-API:t.
-        if (!edition && !cup().dataUrl) {
-          const complete = allMatchesFinished(groupMatches);
-          const fetched = await HB.api.fetchGroupDivisions(cup(), match.catId, complete);
-          for (const div of fetched) if (!divisions.has(div.id)) divisions.set(div.id, div);
-        }
         const tokenOf = (name) => {
           const found = /grupp\s+([a-zåäö0-9]+)/i.exec(name || "");
           return found ? slugifySv(found[1]) : "";
@@ -7985,8 +8051,7 @@ window.HB = window.HB || {};
       h("div", { class: "match-dialog-head" },
         h("span", { class: "cat" }, HB.shortCat(m.catName)),
         m.divName ? h("span", { class: "div" }, m.divName) : null,
-        h("span", null,
-          fmtDayLong.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start))),
+        h("span", null, matchTimeLabel(m, fmtDayLong)),
         m.arena ? h("span", null, m.arena) : null,
         sc ? h("span", { class: "match-dialog-score" }, sc) : null),
       teamStatBlock(m, m.home, "home"),
@@ -8005,7 +8070,7 @@ window.HB = window.HB || {};
     const sc = scoreText(m.res);
     const live = isLive(m);
     // Väder bara meningsfullt för matcher som inte redan är spelade.
-    const weather = (!m.res || !m.res.fin)
+    const weather = hasScheduledStart(m) && (!m.res || !m.res.fin)
       ? HB.weather.at(HB.weather.cached(cup()), m.start) : null;
     const teamEl = (side, other) => {
       const color = teamColor(side.name);
@@ -8087,9 +8152,9 @@ window.HB = window.HB || {};
   function timeGroups(list, multiDay) {
     const groups = [];
     for (const m of list) {
-      const key = multiDay
-        ? dayKey(m.start) + " " + fmtTime.format(new Date(m.start))
-        : fmtTime.format(new Date(m.start));
+      const key = hasScheduledStart(m)
+        ? (multiDay ? dayKey(m.start) + " " + matchTimeLabel(m) : matchTimeLabel(m))
+        : "Tid ej satt";
       const last = groups[groups.length - 1];
       if (last && last.key === key) last.items.push(m);
       else groups.push({ key, start: m.start, items: [m] });
@@ -8112,7 +8177,7 @@ window.HB = window.HB || {};
     // Dagshuvuden/veckodagsetiketter visas när listan faktiskt spänner
     // över mer än en kalenderdag — oavsett om det beror på att inget
     // dagfilter är satt eller att flera dagar valts samtidigt.
-    const multiDay = new Set(list.map((m) => dayKey(m.start))).size > 1;
+    const multiDay = new Set(list.filter(hasScheduledStart).map((m) => dayKey(m.start))).size > 1;
     const now = Date.now();
     const today = dayKey(now);
     let nowPlaced = false;
@@ -8120,15 +8185,16 @@ window.HB = window.HB || {};
     let prevGroupStart = null; // för vätskepaus-indikatorn
     const wrap = h("div", { class: "timeline" });
     for (const g of timeGroups(list, multiDay)) {
+      const timed = hasScheduledStart(g.start);
       const gDay = dayKey(g.start);
-      if (multiDay && gDay !== lastDay) {
+      if (timed && multiDay && gDay !== lastDay) {
         lastDay = gDay;
         nowPlaced = nowPlaced || gDay > today;
         wrap.append(h("h2", { class: "day-h" },
           fmtDayLong.format(new Date(g.start))));
         prevGroupStart = null; // ny dag: räkna inte paus över dagsgränsen
       }
-      if (state.breakMinutes > 0 && prevGroupStart != null) {
+      if (timed && state.breakMinutes > 0 && prevGroupStart != null) {
         // Ledig tid = tid till nästa match minus föregåendes speltid,
         // inte bara mellanrummet mellan två starttider.
         const rawGapMin = Math.round((g.start - prevGroupStart) / 60000);
@@ -8140,8 +8206,8 @@ window.HB = window.HB || {};
               " till nästa match — dags för mat/vätska")));
         }
       }
-      prevGroupStart = g.start;
-      if (!nowPlaced && gDay === today && g.start > now) {
+      prevGroupStart = timed ? g.start : null;
+      if (timed && !nowPlaced && gDay === today && g.start > now) {
         nowPlaced = true;
         wrap.append(h("div", { class: "nowline", id: "nowline" },
           h("span", null,
@@ -8150,8 +8216,8 @@ window.HB = window.HB || {};
       }
       wrap.append(h("div", { class: "slot" },
         h("div", { class: "rail" },
-          fmtTime.format(new Date(g.start)),
-          multiDay
+          timed ? matchTimeLabel({ start: g.start }) : "Tid ej satt",
+          timed && multiDay
             ? h("small", null, fmtDay.format(new Date(g.start))) : null),
         h("div", { class: "slot-matches" }, g.items.map(matchCard))));
     }
@@ -8208,13 +8274,13 @@ window.HB = window.HB || {};
     const ms = state.matches;
     if (!ms.length) return null;
     if (ms.some((m) => m.res && (m.res.fin || m.res.live))) return null;
-    const timed = ms.filter((m) => m.start).length;
+    const timed = ms.filter(hasScheduledStart).length;
     const untimed = ms.length - timed;
     if (!untimed) return null;
     // start = svensk väggtid kodad som UTC-epoch-ms (se normalize i api.js),
     // så heltalsdivisionen ger rätt svenskt kalenderdatum direkt.
     const days = new Set();
-    for (const m of ms) if (m.start) days.add(Math.floor(m.start / 86400000));
+    for (const m of ms) if (hasScheduledStart(m)) days.add(Math.floor(m.start / 86400000));
     const typicalDays = typicalMatchDays();
     const short = typicalDays != null && days.size < typicalDays;
     // Utan historik att jämföra med får andelen otidsatta avgöra (samma
@@ -8420,9 +8486,13 @@ window.HB = window.HB || {};
   function mobileSelectionOrderControls(kind) {
     const schema = kind === "schema";
     const tables = kind === "tabeller";
+    const playoffSort = !schema && !tables
+      ? (bracketSort || {
+          col: "tid", dir: state.playoffTimeOrder === "desc" ? -1 : 1,
+        }) : null;
     const desc = schema ? state.timeOrder === "desc"
       : tables ? state.tableSortOrder === "desc"
-      : state.playoffTimeOrder === "desc";
+      : playoffSort.dir < 0;
     if (tables) {
       const labels = { rank: "Nummer", name: "Namn", points: "Poäng" };
       const select = h("select", {
@@ -8450,9 +8520,17 @@ window.HB = window.HB || {};
       return h("div", { class: "selection-order-controls" }, select, direction);
     }
 
-    const title = desc
-      ? "Senaste match först — byt till tidigaste först"
-      : "Tidigaste match först — byt till senaste först";
+    const playoffLabels = {
+      omgang: "Omgång", nr: "Nummer", lag: "Lag",
+      resultat: "Resultat", tid: "Tid", bana: "Bana",
+    };
+    const sortLabel = schema ? "Tid" : (playoffLabels[playoffSort.col] || "Tid");
+    const title = schema
+      ? (desc
+          ? "Senaste match först — byt till tidigaste först"
+          : "Tidigaste match först — byt till senaste först")
+      : (desc ? "Fallande ordning efter " : "Stigande ordning efter ") +
+        sortLabel.toLowerCase() + " — byt riktning";
     return h("button", {
       class: "selection-order-toggle", type: "button", title,
       "aria-label": title,
@@ -8461,13 +8539,15 @@ window.HB = window.HB || {};
           state.timeOrder = desc ? "asc" : "desc";
           saveUi();
         } else {
-          state.playoffTimeOrder = desc ? "asc" : "desc";
-          bracketSort = { col: "tid", dir: state.playoffTimeOrder === "asc" ? 1 : -1 };
+          bracketSort = { col: playoffSort.col, dir: desc ? 1 : -1 };
+          if (bracketSort.col === "tid") {
+            state.playoffTimeOrder = bracketSort.dir > 0 ? "asc" : "desc";
+          }
           saveUi();
         }
         renderContent();
       },
-    }, "Tid" + (desc ? " ↓" : " ↑"));
+    }, sortLabel + (desc ? " ↓" : " ↑"));
   }
 
   function renderMobileSelectionBar(buttons, kind) {
@@ -8574,8 +8654,7 @@ window.HB = window.HB || {};
           "så antalen här växer de närmaste veckorna."),
         h("p", null,
           "Titta in igen om några dagar. När tiderna är på plats kan du filtrera fram " +
-          "just dina matcher och lägga dem i kalendern via " +
-          (sheetMode() ? "delningsknappen upptill" : "“Exportera”") +
+          "just dina matcher och lägga dem i kalendern via “Export”" +
           " → “📅 Kalender (.ics)” — de följer sedan med automatiskt i din telefon."));
       main.append(info);
     }
@@ -8719,8 +8798,7 @@ window.HB = window.HB || {};
           wrap.append(sect);
         }
         const card = matchCard(m);
-        card.prepend(h("div", { class: "when" },
-          fmtDay.format(new Date(m.start)) + " " + fmtTime.format(new Date(m.start))));
+        card.prepend(h("div", { class: "when" }, matchTimeLabel(m, fmtDay)));
         sect.append(card);
       }
       main.append(wrap);
@@ -8918,10 +8996,9 @@ window.HB = window.HB || {};
     // inte finns.
     if (!c || c.dataUrl) { arenaGeoStatus[cupId] = "done"; return; }
     arenaGeoStatus[cupId] = "loading";
-    fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        HB.api.arenaGeo[cupId] = (j && j.arenas) || {};
+    HB.api.fetchSharedSnapshot(c, 0)
+      .then((snapshot) => {
+        HB.api.arenaGeo[cupId] = snapshot.arenas || {};
         arenaGeoStatus[cupId] = "done";
         // Skriv tillbaka till cachen så nästa besök slipper hämta om hela
         // snapshotten (Åhus är 6382 matcher) bara för adresserna.
@@ -9410,11 +9487,11 @@ window.HB = window.HB || {};
   // trupp, en klubb kan ha flera) och Set(klassnamn) ur en matchlista —
   // till Kartans sammanfattningsrad ("X lag · Y klubbar totalt · ...").
   // Platshållare i ospelade slutspelsträd ("Vinn.", "Förl. 1/4 Final - 2",
-  // "1:an i Grupp A", "10:e bästa 3:an") har egna unika lag-id och skulle
+  // "1:an i Grupp A", "10:e bästa 3:an", "Plats 5 i 6") har egna unika lag-id och skulle
   // annars nästan tredubbla lagräkningen för en ännu inte spelad upplaga.
   // Samma mönster i scripts/archive_results.py (is_placeholder_team) —
   // håll dem i synk.
-  const PLACEHOLDER_TEAM_RE = /^(?:vinn\.|förl\.|\d+:an i |\d+:e bästa )/i;
+  const PLACEHOLDER_TEAM_RE = /^(?:vinn\.|förl\.|\d+:an i |\d+:e bästa |plats \d+ i \d+$)/i;
   function isPlaceholderTeam(side) {
     const name = ((side && side.name) || "").trim();
     return !name || PLACEHOLDER_TEAM_RE.test(name);
@@ -9436,7 +9513,7 @@ window.HB = window.HB || {};
   // huvudappens matchdata, så att Karta kan visa flera cuper samtidigt utan
   // att byta vilken cup som är "aktiv" i headern. state.mapCupStatus
   // (session, sparas ej) förhindrar dubbletthämtningar.
-  function ensureCupClubGeo(cupId) {
+  function ensureCupClubGeo(cupId, providedMatches) {
     if (HB.api.clubGeo[cupId] || state.mapCupStatus[cupId]) return;
     state.mapCupStatus[cupId] = "loading";
     const done = (geo, allClubs, teamCount, classes, countryByClub) => {
@@ -9457,7 +9534,9 @@ window.HB = window.HB || {};
       // ProCup/Gothia: ingen egen adressdata alls — gissa via namnmatchning
       // mot klubbkatalogen i stället för att bara visa en tom karta.
       Promise.all([
-        fetch(c.dataUrl + "?_=" + Date.now().toString(36)).then((r) => (r.ok ? r.json() : null)),
+        providedMatches
+          ? Promise.resolve({ matches: providedMatches })
+          : HB.api.fetchSharedSnapshot(c, 0),
         HB.api.fetchClubDirectory(),
       ]).then(([data, directory]) => {
         const matches = (data && data.matches) || [];
@@ -9467,10 +9546,9 @@ window.HB = window.HB || {};
       }).catch(() => done({}, new Set(), 0, new Set(), new Map()));
       return;
     }
-    fetch("data/snapshot-" + cupId + ".json?_=" + Date.now().toString(36))
-      .then((r) => (r.ok ? r.json() : null))
+    HB.api.fetchSharedSnapshot(c, 0)
       .then((j) => {
-        const matches = (j && j.matches) || [];
+        const matches = j.matches || [];
         const { teamCount, classes } = teamsAndClassesFromMatches(matches);
         done((j && j.clubs) || {}, allClubNamesFromMatches(matches), teamCount, classes,
           clubCountryFromMatches(matches));
@@ -9693,6 +9771,45 @@ window.HB = window.HB || {};
                                  // just nu byggts för — bara EN cupändring (inte årsbyte)
                                  // motiverar att faktiskt återskapa kartinstansen.
 
+  // Ett tomt live-läge betyder ofta inte att kartan eller adressmatchningen
+  // har misslyckats, utan att arrangören bara har publicerat klasser och ett
+  // slutspelsskelett med "Vinn."/"Förl." som deltagare. Förklara det och
+  // ge en rimlig historisk jämförelse när arkivet har en äldre upplaga med
+  // riktiga lag. Noll i clubs betyder "uppgift saknas" i äldre arkiv, inte
+  // att upplagan faktiskt spelades utan klubbar (samma tolkning som Cuper-
+  // tabellen, se renderCupsOverviewDetail).
+  function mapUnpublishedParticipationNotice(cupIds) {
+    const idx = state.archiveIndex || {};
+    const rows = cupIds.map((cupId) => {
+      const cupObj = HB.allCups().find((c) => c.id === cupId);
+      const cupName = (cupObj && cupObj.name) || (idx[cupId] && idx[cupId].cupName) || cupId;
+      const currentEdition = cupObj && cupObj.edition;
+      const previous = (((idx[cupId] && idx[cupId].editions) || [])
+        .filter((e) => e.edition !== currentEdition && (e.teams || 0) > 0)
+        .sort((a, b) => String(b.edition).localeCompare(String(a.edition), "sv", { numeric: true })))[0];
+      const hasStructure = (state.mapCupClasses[cupId] || new Set()).size > 0;
+      const currentText = cupName + " har ännu inte publicerat några officiella deltagande lag eller klubbar" +
+        (currentEdition ? " för " + currentEdition : "") + ".";
+      const structureText = hasStructure
+        ? " Klasser och matchplatser finns, men deltagarna är fortfarande platshållare."
+        : "";
+      let historyText;
+      if (!previous) {
+        historyText = "CupSchema har ingen tidigare upplaga med deltagaruppgifter att jämföra med.";
+      } else if (previous.clubs) {
+        historyText = "I den senaste tidigare arkiverade upplagan (" + previous.edition +
+          ") deltog " + previous.teams + " lag från " + previous.clubs + " klubbar.";
+      } else {
+        historyText = "I den senaste tidigare arkiverade upplagan (" + previous.edition +
+          ") deltog " + previous.teams + " lag. Uppgift om antal klubbar saknas i arkivet.";
+      }
+      return h("div", { class: "map-empty-participation-row" },
+        h("p", null, h("strong", null, currentText), structureText),
+        h("p", { class: "muted" }, historyText));
+    });
+    return h("div", { class: "banner map-empty-participation" }, rows);
+  }
+
   function renderMapView(root) {
     // Alla cuper AV SAMMA SPORT som innevarande cup listas — inte bara
     // klassiska Cup Manager-cuper (ProCup/Gothia-cuper kan också få
@@ -9832,8 +9949,12 @@ window.HB = window.HB || {};
     const unknownNames = [...allClubs].filter((name) => !merged[name] && !countryMap.has(name))
       .sort((a, b) => a.localeCompare(b, "sv"));
     if (!entries.length && !countryMap.size && !unknownNames.length) {
-      root.append(h("p", { class: "muted" },
-        "Ingen klubbdata i valda cuper" + (state.mapYear ? " för " + state.mapYear : "") + "."));
+      if (!state.mapYear && totalTeams === 0 && allClubs.size === 0) {
+        root.append(mapUnpublishedParticipationNotice(selectedIds));
+      } else {
+        root.append(h("p", { class: "muted" },
+          "Ingen klubbdata i valda cuper" + (state.mapYear ? " för " + state.mapYear : "") + "."));
+      }
       return;
     }
     const cityCount = new Set(entries.map(([, info]) => info.city).filter(Boolean)).size;
@@ -10438,48 +10559,20 @@ window.HB = window.HB || {};
     return divs;
   }
 
-  // Köerna nedan (tabeller/slutspel/grupptabeller) serialiserar sina anrop
-  // genom att kedja .then på en promise som lever kvar mellan anropen. Blir
-  // ett led AVVISAT poisonas hela kön: varje efterföljande .then hoppas
-  // över, så inga fler tabeller laddas — och rejection:en är ohanterad,
-  // vilket triggar "något gick fel"-rutan (se felfångaren i index.html).
-  //
-  // Fetchen är redan try/catch:ad i varje kö, men den avslutande
-  // renderContent() låg UTANFÖR: ett renderingsfel (t.ex. i en enskild vy)
-  // förvandlades därför till ett köhaveri i stället för att bara vara det
-  // fel det är. queued() ser till att kön ALLTID lämnas i löst tillstånd
-  // och loggar felet i stället för att tysta det.
-  function queued(prev, fn) {
-    return prev.then(fn, fn).catch((e) => {
-      try { console.error("[hboll] fel i bakgrundskö:", e); } catch { /* ingen konsol */ }
-    });
-  }
-
-  let tableQueue = Promise.resolve();
   const expandedTableClassStats = new Set();
 
   function ensureTable(divId, edition) {
     if (state.tables[divId]) return;
-    if (edition) {
-      // Arkiverat år: all data redan hämtad (state.yearMatches), ingen
-      // fetch — cupens egen slutgiltiga tabell arkiveras inte (bara
-      // matcherna), så räkna fram den lokalt precis som Historik gör
-      // (computeGroupTableRows, delad med historicalGroupTables).
-      const divMatches = allActiveMatches().filter((m) => m.divId === divId);
-      state.tables[divId] = { status: "done", rows: computeGroupTableRows(divMatches) };
+    const official = !edition ? HB.api.snapshotTable(cup(), divId) : [];
+    if (official.length) {
+      state.tables[divId] = { status: "done", rows: official };
       return;
     }
-    state.tables[divId] = { status: "loading", rows: [] };
-    const complete = allMatchesFinished(state.matches.filter((m) => m.divId === divId));
-    tableQueue = queued(tableQueue, async () => {
-      try {
-        const rows = await HB.api.fetchTable(cup(), divId, complete);
-        state.tables[divId] = { status: "done", rows };
-      } catch {
-        state.tables[divId] = { status: "error", rows: [] };
-      }
-      if (state.view === "tabeller") renderContent();
-    });
+    // Snapshotten innehåller alla matcher, så tabellen kan byggas lokalt
+    // utan ett separat API-anrop per användare och grupp.
+    const divMatches = allActiveMatches().filter((m) =>
+      m.divId === divId && (m.edition || null) === (edition || null));
+    state.tables[divId] = { status: "done", rows: computeGroupTableRows(divMatches) };
   }
 
   function tableClassStats(catId, edition) {
@@ -10496,7 +10589,7 @@ window.HB = window.HB || {};
       if (m.divType === "Playoff") playoffs++;
       else if (m.divId != null) groupDivs.add(m.divId);
       if (m.res && m.res.fin) played++;
-      if (!m.start) untimed++;
+      if (!hasScheduledStart(m)) untimed++;
     }
     return {
       teams: teams.size, tables: groupDivs.size, matches: matches.length,
@@ -10715,33 +10808,19 @@ window.HB = window.HB || {};
     return cats;
   }
 
-  let playoffQueue = Promise.resolve();
-
   function ensurePlayoffs(catId, edition) {
     if (state.playoffs[catId]) return;
-    if (edition) {
-      // Arkiverat år: matcherna är redan hämtade (state.yearMatches) och
-      // bär redan roundRank/matchRank/nextWinnerId/nextLoserId — samma
-      // fält HB.api.fetchPlayoffs() ger live — så trädet kan byggas lokalt
-      // utan ny fetch, med samma gruppering (groupPlayoffDivisionsById)
-      // som Historik-modalen använder.
-      const catMatches = allActiveMatches()
-        .filter((m) => m.catId === catId && m.divType === "Playoff");
-      state.playoffs[catId] = { status: "done", divisions: groupPlayoffDivisionsById(catMatches) };
+    const official = !edition ? HB.api.snapshotPlayoffs(cup(), catId) : [];
+    if (official.length) {
+      state.playoffs[catId] = { status: "done", divisions: official };
       return;
     }
-    state.playoffs[catId] = { status: "loading", divisions: [] };
-    const complete = allMatchesFinished(
-      state.matches.filter((m) => m.catId === catId && m.divType === "Playoff"));
-    playoffQueue = queued(playoffQueue, async () => {
-      try {
-        const divisions = await HB.api.fetchPlayoffs(cup(), catId, complete);
-        state.playoffs[catId] = { status: "done", divisions };
-      } catch {
-        state.playoffs[catId] = { status: "error", divisions: [] };
-      }
-      if (state.view === "slutspel") renderContent();
-    });
+    const catMatches = allActiveMatches().filter((m) =>
+      m.catId === catId && m.divType === "Playoff" &&
+      (m.edition || null) === (edition || null));
+    state.playoffs[catId] = {
+      status: "done", divisions: groupPlayoffDivisionsById(catMatches),
+    };
   }
 
   // --- upplösta slutspelsnamn: fyller i platshållarplatser ("N:an i Grupp
@@ -10763,38 +10842,33 @@ window.HB = window.HB || {};
   const PLACEHOLDER_BEST_OF_RANK = /^b[äa]sta\s+(\d+)\s*:\s*\w+$/i;
   const PLACEHOLDER_RANK_IN_GROUP = /^(\d+)\s*:\s*\w+\s+i\s+grupp\s+([a-zåäö0-9]+)$/i;
 
-  let groupTablesQueue = Promise.resolve();
-
   function ensureGroupTables(catId) {
     if (state.groupTables[catId]) return;
-    state.groupTables[catId] = { status: "loading" };
-    const complete = allMatchesFinished(
-      state.matches.filter((m) => m.catId === catId && m.divType !== "Playoff"));
-    groupTablesQueue = queued(groupTablesQueue, async () => {
-      try {
-        const groups = await HB.api.fetchGroupDivisions(cup(), catId, complete);
-        const byGroupNum = {};
-        const teamStrength = {};
-        await Promise.all(groups.map(async (g) => {
-          const gm = /grupp\s*([a-zåäö0-9]+)/i.exec(g.name || "");
-          if (!gm) return;
-          const token = slugifySv(gm[1]);
-          const rows = await HB.api.fetchTable(cup(), g.id, complete);
-          byGroupNum[token] = rows;
-          for (const r of rows) {
-            if (r.teamId) teamStrength[r.teamId] = {
-              points: r.points, gf: r.gf, ga: r.ga, played: r.played,
-              won: r.won, tied: r.tied, lost: r.lost,
-              name: r.name, group: g.name || "Grupp " + gm[1].toUpperCase(),
-            };
-          }
-        }));
-        state.groupTables[catId] = { status: "done", byGroupNum, teamStrength };
-      } catch {
-        state.groupTables[catId] = { status: "error" };
+    const byDivision = new Map();
+    for (const m of state.matches) {
+      if (m.catId !== catId || m.divType === "Playoff" || m.divId == null) continue;
+      if (!byDivision.has(m.divId)) {
+        byDivision.set(m.divId, { id: m.divId, name: m.divName || "", matches: [] });
       }
-      if (state.view === "slutspel") renderContent();
-    });
+      byDivision.get(m.divId).matches.push(m);
+    }
+    const byGroupNum = {};
+    const teamStrength = {};
+    for (const group of byDivision.values()) {
+      const gm = /grupp\s*([a-zåäö0-9]+)/i.exec(group.name);
+      if (!gm) continue;
+      const rows = computeGroupTableRows(group.matches);
+      byGroupNum[slugifySv(gm[1])] = rows;
+      for (const r of rows) {
+        if (r.teamId == null) continue;
+        teamStrength[r.teamId] = {
+          points: r.points, gf: r.gf, ga: r.ga, played: r.played,
+          won: r.won, tied: r.tied, lost: r.lost,
+          name: r.name, group: group.name,
+        };
+      }
+    }
+    state.groupTables[catId] = { status: "done", byGroupNum, teamStrength };
   }
 
   // En grupp räknas som klar (dess tabellplats INTE längre kan ändras) när
@@ -10841,7 +10915,7 @@ window.HB = window.HB || {};
       gf: first.gf, ga: first.ga,
       certain: !!certain && list.length === 1,
       candidates: list.map((row) => ({
-        teamId: row.teamId, name: row.name, group,
+        teamId: row.teamId, name: row.name, group: row.group || group,
         played: row.played, won: row.won, tied: row.tied, lost: row.lost,
         points: row.points, gf: row.gf, ga: row.ga,
       })),
@@ -10856,15 +10930,25 @@ window.HB = window.HB || {};
     return totalMatches ? Math.max(0, Math.min(1, playedMatches / totalMatches)) : 0;
   }
 
-  // Wildcard-poolen för en given tabellposition (t.ex. alla 5:or, en per
-  // grupp) — sorterad efter samma kriterier som en vanlig tabell, så
-  // "Bästa 5:an"/"2:a bästa 5:an" kan plockas ur rätt position. Cachad per
-  // anrop av buildPlayoffProjection (wcCache), inte globalt.
+  // Wildcard-poolen för en given tabellposition (t.ex. alla möjliga 5:or i
+  // samtliga grupper). Innan grupperna är färdigspelade kan flera lag i
+  // VARJE grupp fortfarande nå positionen; att bara ta rows[rank - 1]
+  // gjorde "Bästa 2:an" skenbart säker redan före första matchen.
+  // Sorterad efter nulägets tabellsiffror för en stabil presentation, men
+  // hela kandidatfältet förs vidare tills alla bidragande grupper är klara.
   function wildcardPool(byGroupNum, rank, wcCache) {
     if (wcCache.has(rank)) return wcCache.get(rank);
-    const pool = Object.values(byGroupNum)
-      .map((rows) => ({ row: rows[rank - 1], groupComplete: isGroupComplete(rows) }))
-      .filter((e) => e.row)
+    const pool = Object.entries(byGroupNum)
+      .flatMap(([groupToken, rows]) => {
+        const complete = isGroupComplete(rows);
+        const possible = complete
+          ? (rows[rank - 1] ? [rows[rank - 1]] : [])
+          : possibleGroupCandidates(rows, rank);
+        return possible.map((row) => ({
+          row, groupComplete: complete,
+          group: "Grupp " + String(groupToken).toUpperCase(),
+        }));
+      })
       .sort((a, b) => b.row.points - a.row.points ||
         (b.row.gf - b.row.ga) - (a.row.gf - a.row.ga) || b.row.gf - a.row.gf);
     wcCache.set(rank, pool);
@@ -10885,14 +10969,24 @@ window.HB = window.HB || {};
     if ((m = PLACEHOLDER_NTH_BEST_OF_RANK.exec(s))) {
       const pool = wildcardPool(gd.byGroupNum, +m[2], wcCache);
       const e = pool[+m[1] - 1];
-      return e ? { teamId: e.row.teamId, name: e.row.name, points: e.row.points,
-        gf: e.row.gf, ga: e.row.ga, certain: pool.every((x) => x.groupComplete) } : null;
+      if (!e) return null;
+      const complete = pool.every((x) => x.groupComplete);
+      return complete
+        ? projectedGroupSide([e.row], e.row, true, e.group)
+        : projectedGroupSide(pool.map((entry) => ({
+            ...entry.row, group: entry.group,
+          })), e.row, false, "Wildcard");
     }
     if ((m = PLACEHOLDER_BEST_OF_RANK.exec(s))) {
       const pool = wildcardPool(gd.byGroupNum, +m[1], wcCache);
       const e = pool[0];
-      return e ? { teamId: e.row.teamId, name: e.row.name, points: e.row.points,
-        gf: e.row.gf, ga: e.row.ga, certain: pool.every((x) => x.groupComplete) } : null;
+      if (!e) return null;
+      const complete = pool.every((x) => x.groupComplete);
+      return complete
+        ? projectedGroupSide([e.row], e.row, true, e.group)
+        : projectedGroupSide(pool.map((entry) => ({
+            ...entry.row, group: entry.group,
+          })), e.row, false, "Wildcard");
     }
     if ((m = PLACEHOLDER_RANK_IN_GROUP.exec(s))) {
       const rows = gd.byGroupNum[slugifySv(m[2])] || [];
@@ -11130,12 +11224,17 @@ window.HB = window.HB || {};
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       let index = 0;
       const timer = setInterval(() => {
-        if (!host.isConnected) { clearInterval(timer); return; }
+        if (!host.isConnected) {
+          clearInterval(timer);
+          playoffCandidateTimers.delete(timer);
+          return;
+        }
         if (document.hidden) return;
         index = (index + 1) % candidates.length;
         name.textContent = candidates[index].name;
         status.textContent = (index + 1) + "/" + candidates.length + " möjliga" + progress + " ▾";
       }, 5000);
+      playoffCandidateTimers.add(timer);
     }
     return host;
   }
@@ -11179,7 +11278,7 @@ window.HB = window.HB || {};
         relevantIds && relevantIds.has(m.id)
           ? h("span", { class: "bracket-relevance-tag" }, "★ Möjlig väg") : null,
         (m.matchNr ? "Match " + m.matchNr + " · " : "") +
-        fmtTime.format(new Date(m.start)) + (m.arena ? " · " + m.arena : "")));
+        matchTimeLabel(m) + (m.arena ? " · " + m.arena : "")));
   }
 
   function groupPlayoffRounds(div) {
@@ -11604,7 +11703,7 @@ window.HB = window.HB || {};
                   (awaySide.certain === false ? "predicted" : ""),
               }, playoffTeamNameNode(awaySide))),
             h("td", { class: "pts" }, proj && proj.predicted ? "Prognos" : (sc || "–")),
-            h("td", null, fmtTime.format(new Date(m.start))),
+            h("td", null, matchTimeLabel(m)),
             h("td", null, m.arena || ""));
         }))),
       showAllPlayedButtonCount(hiddenCount, state.recentMatchCount, () => {
@@ -11748,10 +11847,8 @@ window.HB = window.HB || {};
           }),
           h("span", null, "Visa lagnamn"))));
 
-      // Prognosen bygger på ANNU OSPELADE mötens sannolika utgång — inget
-      // ett arkiverat (avslutat) år har, och ensureGroupTables() skulle
-      // ändå fråga live-API:t om en kategori som inte finns i innevarande
-      // tournamentId. Bara meningsfull/möjlig för innevarande upplaga.
+      // Prognosen bygger på ÄNNU OSPELADE mötens sannolika utgång och är
+      // bara meningsfull för innevarande upplaga.
       let gd = null;
       if (state.showPlayoffProjection && !c.edition) {
         ensureGroupTables(c.catId);
@@ -11955,39 +12052,6 @@ window.HB = window.HB || {};
       if (browserGestureOnBracket) e.preventDefault();
       browserGestureOnBracket = false;
     }, { passive: false, capture: true });
-  }
-
-  // --- lägg till cup ----------------------------------------------------------
-
-  function setupAddCup() {
-    const dlg = $("#addCupDialog");
-    $("#addCupBtn").addEventListener("click", () => {
-      renderCustomCupList();
-      dlg.showModal();
-    });
-    $("#addCupForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const f = e.target;
-      const host = f.host.value.trim()
-        .replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      const cupDef = {
-        id: "custom-" + Date.now(),
-        name: f.cupname.value.trim(),
-        place: f.place.value.trim() || "–",
-        edition: f.edition.value.trim() || "",
-        host,
-        tournamentId: +f.tid.value.trim(),
-        custom: true,
-      };
-      if (!cupDef.name || !cupDef.host || !cupDef.tournamentId) return;
-      const list = HB.customCups();
-      list.push(cupDef);
-      localStorage.setItem("hb:customCups", JSON.stringify(list));
-      f.reset();
-      dlg.close();
-      switchCup(cupDef.id);
-    });
-    $("#addCupClose").addEventListener("click", () => dlg.close());
   }
 
   // Egen, webbläsaroberoende autocomplete — native <datalist> stöds inte
@@ -12230,6 +12294,8 @@ window.HB = window.HB || {};
       // vara tom just i en cup som inte publicerat sina lag än.
       ensureClubDirectory();
       ensureTeamIndex();
+      settingsReturnFocus = document.activeElement instanceof HTMLElement
+        ? document.activeElement : null;
       // En modal <dialog> hamnar i webbläsarens topplager och täcker därför
       // alltid den fasta bottenmenyn, oavsett z-index. På mobil visas
       // inställningar som en helskärmsvy under navigationslagret.
@@ -12245,39 +12311,35 @@ window.HB = window.HB || {};
         setBottomNavCollapsed(false);
         render();
         window.scrollTo({ top: 0, behavior: "auto" });
+        requestAnimationFrame(() => $("#settingsClose").focus({ preventScroll: true }));
       } else dlg.showModal();
     };
     $("#settingsBtn").addEventListener("click", openSettings);
     $("#currentCupBtn").addEventListener("click", openCupPickerDialog);
-    $("#settingsClose").addEventListener("click", () => {
-      if (settingsViewOpen) {
-        settingsViewOpen = false;
+    $("#settingsClose").addEventListener("click", () => dlg.close());
+    // Samma städning oavsett om dialogen stängs med X, Escape, klick på
+    // desktop-bakgrunden eller close() från annan navigation. Det hindrar
+    // settingsViewOpen från att bli kvar och rita tillbaka en "låst" vy.
+    dlg.addEventListener("close", () => {
+      const wasEmbedded = settingsViewOpen;
+      settingsViewOpen = false;
+      if (wasEmbedded) {
         moreMenuOpen = false;
         currentMenuOpen = true;
         render();
-      } else dlg.close();
+      }
+      const target = settingsReturnFocus;
+      settingsReturnFocus = null;
+      if (target && target.isConnected) {
+        requestAnimationFrame(() => target.focus({ preventScroll: true }));
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !settingsViewOpen) return;
+      event.preventDefault();
+      dlg.close();
     });
     $("#settingsRefreshBtn").addEventListener("click", () => $("#refreshBtn").click());
-
-    // Cup-sökfältet filtrerar korten via renderCups() — som bara byter ut
-    // #cupRow/#sportToggle, inte fältet självt, så fokus stannar kvar.
-    // Att tappa fokus efter varje tecken är den vanligaste buggen i den
-    // här sortens fält i den här kodbasen.
-    const cupSearchInput = $("#cupSearch");
-    if (cupSearchInput) {
-      cupSearchInput.addEventListener("input", () => {
-        cupSearchAllSports = true;
-        renderCups();
-      });
-    }
-    const cupSearchClear = $("#cupSearchClear");
-    if (cupSearchClear && cupSearchInput) {
-      cupSearchClear.addEventListener("click", () => {
-        cupSearchInput.value = "";
-        cupSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
-        cupSearchInput.focus();
-      });
-    }
 
     placeFooterLinks();
 
@@ -12317,23 +12379,6 @@ window.HB = window.HB || {};
       });
     }
     dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-  }
-
-  function renderCustomCupList() {
-    const box = $("#customCupList");
-    const list = HB.customCups();
-    box.replaceChildren(...list.map((c) =>
-      h("div", { class: "custom-cup" },
-        h("span", null, c.name + " (" + c.host + ")"),
-        h("button", {
-          class: "btn small", type: "button",
-          onclick: () => {
-            localStorage.setItem("hb:customCups",
-              JSON.stringify(HB.customCups().filter((x) => x.id !== c.id)));
-            if (state.cupId === c.id) state.cupId = HB.CUPS[0].id;
-            renderCustomCupList(); renderCups();
-          },
-        }, "Ta bort"))));
   }
 
   // --- uppstart ------------------------------------------------------------------
@@ -12450,12 +12495,12 @@ window.HB = window.HB || {};
         if (b.dataset.view === "tabeller" && state.view !== "tabeller") {
           state.tableGroupKey = "all";
         }
+        desktopMenuOpen = b.dataset.view === "stats" ? "stats" : "current";
         state.view = b.dataset.view; saveUi(); render();
       }));
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
-    const headerShareBtn = $("#headerShareBtn");
-    if (headerShareBtn) headerShareBtn.addEventListener("click", openHeaderExportDialog);
-    setupAddCup();
+    $("#headerExportBtn").addEventListener("click", openHeaderExportDialog);
+    $("#headerAboutBtn").addEventListener("click", () => HB.openWelcome());
     setupSettings();
     setupBracketPan();
     setupFilterStripScrollMemory();
@@ -12509,12 +12554,23 @@ window.HB = window.HB || {};
     // syncUrl:s pushState skrev). Nollställ URL-fälten först så inget gammalt
     // filter hänger kvar, och byt cup med cache-nollställning om cupen ändrats.
     window.addEventListener("popstate", () => {
+      // Tillfälliga paneler får aldrig överleva en historiknavigering. De
+      // använder samma underliggande URL som sidan, så Bakåt kan samtidigt
+      // återställa föregående vy/filter utan att lämna en grå hinna ovanpå.
+      const openSheet = document.querySelector("dialog.prototype-sheet[open]");
+      if (openSheet) openSheet.close();
+      if (settingsViewOpen) {
+        settingsViewOpen = false;
+        moreMenuOpen = false;
+        currentMenuOpen = true;
+      }
       const pp = new URLSearchParams(location.search);
       const urlCup = pp.get("cup");
       const cupChange = urlCup && urlCup !== state.cupId && HB.allCups().some((c) => c.id === urlCup);
       applyingPopstate = true;
       resetUrlState();
       if (cupChange) {
+        cupGeneration++;
         state.cupId = urlCup;
         state.tables = {}; state.playoffs = {}; state.groupTables = {}; dialogTableCache = {};
         state.matches = []; state.loadedAt = 0; heroIndex = 0; stashedFilter = null;
@@ -12547,15 +12603,19 @@ window.HB = window.HB || {};
       if (state.view === "stats") render();
     }).catch(() => { state.archiveIndex = {}; renderTabs(); });
 
-    // Auto-uppdatera var tredje minut — men bara cuper som faktiskt pågår.
-    const isLiveCup = () => refreshTtl(state.matches) <= 180000;
+    // Kontrollera det lilla versionsindexet efter vytypens TTL. Pågående
+    // cuper kontrolleras var tionde minut; framtida/halvpublicerade scheman
+    // efter 30 minuter. Storfilen hämtas bara när indexets ts har ändrats.
+    const autoRefreshDue = () => {
+      const ttl = refreshTtl(state.matches);
+      if (!Number.isFinite(ttl) || !state.loadedAt) return false;
+      return Date.now() - state.loadedAt > ttl;
+    };
     setInterval(() => {
-      if (document.visibilityState === "visible" && isLiveCup() &&
-          Date.now() - state.loadedAt > 170000) loadCup(true);
-    }, 180000);
+      if (document.visibilityState === "visible" && autoRefreshDue()) loadCup();
+    }, 60000);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && isLiveCup() &&
-          Date.now() - state.loadedAt > 300000) loadCup(true);
+      if (document.visibilityState === "visible" && autoRefreshDue()) loadCup();
     });
     // Nedräkningen i heron tickar utan full omrendering — för det kort
     // (heroIndex) som just nu visas i karusellen, inte alltid det första.
