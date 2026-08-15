@@ -10,8 +10,9 @@
   --paper: #f5f7fa;
   --card: #ffffff;
   --line: #dfe5ec;
-  --menu-surface: #ffffff;
-  --menu-line: #cbd5e1;
+  --menu-surface: #e6edf6;
+  --menu-line: #aebdce;
+  --menu-shadow: 0 4px 14px rgba(22, 40, 63, 0.14);
   --live: #d22f27;
   --won: #2f9e44;
   --purple: #8854d0;
@@ -52,8 +53,9 @@
     --paper: #0f1723;
     --card: #16202e;
     --line: #26313f;
-    --menu-surface: #202d3f;
-    --menu-line: #405269;
+    --menu-surface: #1d2d42;
+    --menu-line: #50657e;
+    --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.38);
     --live: #ff746c;
     --shadow: none;
     --purple: #b98cf2;
@@ -71,8 +73,9 @@
   --paper: #0f1723;
   --card: #16202e;
   --line: #26313f;
-  --menu-surface: #202d3f;
-  --menu-line: #405269;
+  --menu-surface: #1d2d42;
+  --menu-line: #50657e;
+  --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.38);
   --live: #ff746c;
   --shadow: none;
   --purple: #b98cf2;
@@ -87,8 +90,9 @@
   --paper: #f5f7fa;
   --card: #ffffff;
   --line: #dfe5ec;
-  --menu-surface: #ffffff;
-  --menu-line: #cbd5e1;
+  --menu-surface: #e6edf6;
+  --menu-line: #aebdce;
+  --menu-shadow: 0 4px 14px rgba(22, 40, 63, 0.14);
   --live: #d22f27;
   --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
   --purple: #8854d0;
@@ -236,8 +240,8 @@ header.top {
 }
 
 .header-club img {
-  width: 17px;
-  height: 17px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   flex: 0 0 auto;
 }
@@ -358,10 +362,31 @@ header.top {
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 14px;
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 14px;
+}
+
+/* Desktopmenyn är en egen, fullbredds yta trots att innehållet följer
+   sidans breddtak. Den tydligare tonen + nederkant gör hierarkin läsbar
+   mot själva sidan i både ljust och mörkt tema. */
+@media (min-width: 701px) {
+  .subbar::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: var(--menu-surface);
+    border-bottom: 1px solid var(--menu-line);
+    box-shadow: var(--menu-shadow);
+  }
 }
 
 #desktopMainNav {
@@ -427,6 +452,33 @@ header.top {
   border-top: 1px solid var(--line);
   scrollbar-width: thin;
 }
+
+#desktopFilterHost {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  min-width: 0;
+}
+body.desktop-filter-open #desktopFilterHost { border-top: 1px solid var(--menu-line); }
+#desktopFilterHost #toolbar {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 7px 0 8px;
+}
+
+/* Klass-/lagvalet får dela desktop-rad med vyerna: där finns sidbredden,
+   och en avdelare visar att Alla/F2013/... avgränsar den aktiva vyn. */
+.desktop-selection-group {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: 4px;
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+}
+.desktop-selection-group .table-group-tab { min-height: 38px; padding: 7px 10px; }
 .desktop-subtab {
   position: relative;
   flex: 0 0 auto;
@@ -563,6 +615,41 @@ header.top {
   flex: 0 1 auto;
   max-height: calc(82dvh - 62px);
 }
+
+/* På dator är cupval och export kontextmenyer till knapparna i sidhuvudet,
+   inte bottenark. Exakt position sätts från knappens bounding box i app.js;
+   CSS sköter storlek, kompakt rubrik och egen intern scroll vid behov. */
+@media (min-width: 701px) {
+  .prototype-sheet.prototype-sheet-popover {
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    width: min(460px, calc(100vw - 24px));
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    transform: none;
+    border-radius: 14px;
+    box-shadow: 0 14px 38px rgba(10, 18, 30, 0.34);
+  }
+  .prototype-sheet-popover[data-sheet-key="export"] {
+    width: min(390px, calc(100vw - 24px));
+  }
+  .prototype-sheet-popover .prototype-sheet-head {
+    min-height: 48px;
+    padding: 12px 46px 10px 14px;
+  }
+  .prototype-sheet-popover .prototype-sheet-grip { display: none; }
+  .prototype-sheet-popover .prototype-sheet-head h2 { font-size: 17px; }
+  .prototype-sheet-popover .prototype-sheet-body {
+    flex: 0 1 auto;
+    max-height: none;
+    padding: 12px 14px 16px;
+  }
+  .prototype-sheet-popover .dialog-x { top: 5px; }
+  .prototype-sheet-backdrop-popover { background: transparent; }
+}
 .global-search-input { width: 100%; font-size: 16px; }
 .header-export-panel { position: static !important; display: grid; width: 100% !important; box-shadow: none !important; }
 
@@ -675,6 +762,41 @@ header.top {
   display: grid;
   gap: 8px;
   margin-top: 8px;
+}
+
+@media (min-width: 701px) {
+  /* Huvudmenyns Filter-knapp öppnar redan själva panelen. I kompaktläget
+     behöver panelen därför bara visa de två vanligaste lägesvalen och en
+     enda väg vidare till de avancerade kontrollerna. */
+  .desktop-toolbar-compact {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .desktop-toolbar-compact > .toolbar-summary { order: 2; }
+  .desktop-toolbar-compact > .toolbar-body { display: contents; margin: 0; }
+  .desktop-toolbar-compact .filter-primary-row { order: 1; }
+  .desktop-toolbar-compact .filter-primary-row .filter-group { display: none; }
+  .desktop-toolbar-compact .filter-primary-row .row-sep { display: none; }
+  .desktop-toolbar-compact .tools-row { display: none; }
+  .desktop-toolbar-compact .toolbar-summary-label {
+    background: transparent;
+    border-style: dashed;
+    color: var(--ink-soft);
+  }
+  .toolbar-collapse.desktop-toolbar-compact[open] .toolbar-summary-label::after { transform: none; }
+  .desktop-advanced-open > .toolbar-summary { order: 0; }
+  .desktop-toolbar-flat .toolbar-body { margin-top: 0; }
+  .desktop-toolbar-flat .filter-primary-row { gap: 8px; }
+  .desktop-toolbar-flat .filter-primary-row .search-wrap {
+    flex: 0 1 205px;
+    min-width: 165px;
+  }
+  .desktop-toolbar-flat .filter-primary-row > .select {
+    flex: 0 1 190px;
+    min-width: 145px;
+  }
 }
 
 .row {
@@ -1355,6 +1477,50 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .slot-matches { display: grid; gap: 6px; }
+
+.untimed-panel {
+  margin: 10px 0 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.untimed-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 14px;
+  list-style: none;
+  color: var(--ink);
+  cursor: pointer;
+  user-select: none;
+}
+
+.untimed-summary::-webkit-details-marker { display: none; }
+.untimed-summary::marker { content: ""; }
+.untimed-summary-title {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.untimed-summary-count { color: var(--ink-soft); font-size: 12px; }
+.untimed-summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid var(--ink-soft);
+  border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg);
+  transition: transform 0.16s ease;
+}
+.untimed-panel[open] .untimed-summary::after { transform: rotate(225deg); }
+.untimed-panel[open] .untimed-summary { border-bottom: 1px solid var(--line); }
+.untimed-panel-body { padding: 10px; }
 
 .match {
   background: var(--card);
@@ -3483,6 +3649,33 @@ dialog.history-dialog {
   text-align: center;
 }
 
+.welcome-sport-filter {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: -14px auto 18px;
+}
+
+.welcome-sport-chip {
+  border: 1px solid var(--welcome-border);
+  border-radius: 999px;
+  padding: 6px 11px;
+  background: var(--welcome-card-bg);
+  color: var(--ink-soft);
+  font: 600 12px/1.2 "Barlow", system-ui, sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+.welcome-sport-chip:hover,
+.welcome-sport-chip:focus-visible { color: var(--ink); }
+.welcome-sport-chip.on {
+  color: #16283f;
+  background: var(--yellow);
+  border-color: color-mix(in srgb, var(--yellow) 70%, var(--welcome-border));
+}
+
 .welcome-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
@@ -3614,6 +3807,7 @@ dialog.history-dialog {
   .brand { gap: 8px; }
   .header-identity { width: max-content; max-width: calc(100vw - 20px); gap: 8px; }
   .app-wordmark-mark { width: 29px; height: 29px; }
+  .header-club img { width: 29px; height: 29px; }
   .header-context { flex: 0 1 auto; padding-left: 8px; }
   .header-club { max-width: 37vw; }
   .current-cup-label { max-width: 37vw; }
@@ -3975,6 +4169,8 @@ dialog.history-dialog {
     inset: 0;
     background: rgba(10, 18, 30, 0.45);
     z-index: 79; /* strax under picker-arket, se z-index-kommentaren ovan */
+    touch-action: none;
+    overscroll-behavior: contain;
   }
 }
 
@@ -3991,6 +4187,13 @@ dialog.history-dialog {
    ark, vilket ger tillbaka ~300 px åt innehållet. Över 700 px är allt
    oförändrat: bottenraden är hidden och toppen ser ut som förut. */
 @media (max-width: 700px) {
+  #desktopFilterHost { display: none; }
+
+  body.picker-open,
+  html.picker-open {
+    overflow: hidden;
+  }
+
   /* --vv-offset kompenserar för att position:fixed utgår från LAYOUT-
      viewporten medan mobilwebbläsarnas krympande/flytande adressfält ändrar
      den VISUELLA. I Firefox blev raden hängande en bit ovanför skärmkanten
@@ -4040,12 +4243,63 @@ dialog.history-dialog {
   }
   .prototype-sheet-fullscreen .prototype-sheet-grip { display: none; }
 
+  #mobileMenuHost {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    display: grid;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 72;
+    background: var(--menu-surface);
+    border-bottom: 1px solid var(--menu-line);
+    box-shadow: var(--menu-shadow);
+  }
+
+  #bottomBar,
+  #currentViewBar,
+  #currentSelectionBar,
+  #moreMenuBar {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #mobileMenuHost #bottomBar,
+  #mobileMenuHost #currentViewBar,
+  #mobileMenuHost #currentSelectionBar,
+  #mobileMenuHost #moreMenuBar {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: auto !important;
+    margin: 0;
+  }
+
+  #mobileMenuHost #bottomBar {
+    border-top: 0;
+    border-bottom: 1px solid var(--menu-line);
+    padding-bottom: 0;
+    box-shadow: none;
+  }
+
+  #mobileMenuHost #currentViewBar,
+  #mobileMenuHost #currentSelectionBar,
+  #mobileMenuHost #moreMenuBar {
+    border-top: 1px solid var(--menu-line);
+    box-shadow: none;
+  }
+
   #bottomBar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: var(--vv-offset, 0px);
-    z-index: 70;
     display: flex;
     /* Scrollar i sidled när flikarna inte får plats — med kugghjulet är de
        sju stycken, och en smal telefon (320 px) ryms inte. På 390 px fyller
@@ -4171,11 +4425,6 @@ dialog.history-dialog {
 
   #currentViewBar:not([hidden]),
   #moreMenuBar:not([hidden]) {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
-    z-index: 69;
     display: flex;
     gap: 4px;
     padding: 6px 10px;
@@ -4195,11 +4444,6 @@ dialog.history-dialog {
   /* Tredje nivån under Aktuellt: aktiv klass/lag i Tabeller. Ligger ovanför
      Aktuellt-raden och använder samma höjd/textsystem som övriga nivåer. */
   #currentSelectionBar:not([hidden]) {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--bottombar-h, 56px) + var(--mobile-submenu-h, 53px) + var(--vv-offset, 0px));
-    z-index: 68;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -4320,18 +4564,26 @@ dialog.history-dialog {
      verktygsraden (filters-expanded nedan). */
   body.filters-open #toolbar {
     display: block;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px)); /* mätt i renderBottomBar, inkl. safe-area */
+    position: sticky !important;
+    top: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    inset: auto !important;
     z-index: 65;
-    margin: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: var(--container-max);
     /* Ingen egen fyllning: brickorna bär sin padding själva, precis som
        bottenradens flikar, så de två raderna blir exakt lika höga. */
     padding: 6px 10px;
     background: var(--menu-surface);
     border-top: 1px solid var(--menu-line);
     box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+    overflow-y: hidden;
+    max-height: var(--mobile-submenu-h, 53px);
+    will-change: max-height, box-shadow;
+    transition: max-height 0.2s ease, padding 0.2s ease, border-radius 0.2s ease, box-shadow 0.2s ease;
   }
   /* I remsläget visas BARA ikonerna. Resten av verktygsraden finns kvar i
      DOM:et (renderToolbar är orörd) men göms tills man trycker Mer. */
@@ -4536,18 +4788,19 @@ dialog.history-dialog {
 
 /* --- bottenradens följdändringar --------------------------------------- */
 @media (max-width: 700px) {
-  /* Stats-underflikarna (Trend/Vinnare/Kalender/…) som egen rad ovanför
-     bottenraden i stället för överst i innehållet. aria-label avgränsar
-     till just Stats-raden — samma klass används av Historik-bläddrarens
-     egna flikar, som ska ligga kvar i innehållet där de hör hemma.
-     Horisontellt scrollbar: åtta flikar på 390 px blir 48 px styck och
-     oläsbara om man pressar in dem. */
+  /* Stats-underflikarna (Trend/Vinnare/Kalender/…) som egen rad under
+     huvudmenyn när mobilmenyn ligger i övre delen av skärmen. aria-label
+     avgränsar till just Stats-raden — samma klass används av Historik-
+     bläddrarens egna flikar, som ska ligga kvar i innehållet där de hör
+     hemma. Horisontellt scrollbar: åtta flikar på 390 px blir 48 px styck
+     och oläsbara om man pressar in dem. */
   #content .history-tabs[aria-label="Stats"] {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
-    z-index: 69;
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    width: 100%;
     margin: 0;
     padding: 6px 10px;
     background: var(--menu-surface);
@@ -4576,7 +4829,8 @@ dialog.history-dialog {
   }
   body.stats-tabs-collapsed #content .history-tabs[aria-label="Stats"] { display: none; }
 
-  /* (Stats-radens höjd ingår numera i --bottomstack-h, se syncBottomStack.) */
+  /* Stats-raden är statisk i topplägeslayouten; den räknas inte in i
+     --bottomstack-h längre, utan i normalt innehållsflöde. */
 
   /* Sidfotens länkar bor i inställningarna här (placeFooterLinks); kvar
      blir bara datakällstexten, som inte behöver ta plats på en telefon. */
@@ -4762,7 +5016,7 @@ dialog.history-dialog {
      tar bort details/body/row-omslagen; den inre raden har overflow:visible
      och kan därför aldrig konkurrera om själva scrollgesten. */
   body.filters-open:not(.filters-expanded) #toolbar {
-    display: flex;
+    display: block;
     align-items: center;
     gap: 4px;
     overflow-x: auto;

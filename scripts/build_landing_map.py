@@ -180,6 +180,8 @@ def build_cup_points(cup_id, teams, idx, centroids):
         if club:
             info = idx.directory[club]
             tier0.append([round(info["lat"], 3), round(info["lng"], 3), 0])
+            if info.get("country"):
+                countries.add(info["country"])
         elif code and (code in COUNTRY_BBOX or code in centroids):
             countries.add(code)
             p = point_for_country(seed, code, centroids)
@@ -225,6 +227,7 @@ def main():
 
     out = {}
     all_countries = set()
+    countries_by_sport = {}
     skipped = []
     for c in cups:
         cup_id = c["id"]
@@ -239,15 +242,22 @@ def main():
             skipped.append(cup_id)
             continue
         all_countries |= countries
+        sport = c.get("sport") or "handboll"
+        countries_by_sport.setdefault(sport, set()).update(countries)
         out[cup_id] = {
-            "name": c["name"], "count": len(teams), "countries": len(countries),
+            "name": c["name"], "sport": sport,
+            "count": len(teams), "countries": len(countries),
             "points": cap_points(points), "_src": "lag",
         }
 
     out_path = ROOT / "data" / "landing-map.json"
-    slim = {k: {"name": v["name"], "count": v["count"], "countries": v["countries"], "points": v["points"]}
+    slim = {k: {"name": v["name"], "sport": v["sport"], "count": v["count"],
+                "countries": v["countries"], "points": v["points"]}
             for k, v in out.items()}
-    slim["_meta"] = {"totalCountries": len(all_countries)}
+    slim["_meta"] = {
+        "totalCountries": len(all_countries),
+        "countriesBySport": {sport: len(countries) for sport, countries in countries_by_sport.items()},
+    }
     old = None
     if out_path.exists():
         try:

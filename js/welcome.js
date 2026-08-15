@@ -15,6 +15,13 @@ window.HB = window.HB || {};
 
 (function () {
   const SEEN_KEY = "hb:welcomeSeen";
+  const SPORT_OPTIONS = [
+    ["all", "Alla"],
+    ["handboll", "Handboll"],
+    ["fotboll", "Fotboll"],
+    ["innebandy", "Innebandy"],
+    ["basket", "Basket"],
+  ];
 
   function h(tag, attrs, ...children) {
     const el = document.createElement(tag);
@@ -68,8 +75,8 @@ window.HB = window.HB || {};
     return value === "light" ? "☀" : value === "dark" ? "🌙" : "🌓";
   }
 
-  // Räknar fram siffrorna att visa direkt ur det arkivindex/den
-  // klubbkatalog som redan hämtas vid varje sidladdning (state i app.js
+  // Räknar fram siffrorna att visa direkt ur arkivindexet och cuplistan
+  // som redan hämtas vid varje sidladdning (state i app.js
   // är inte åtkomlig härifrån — hämtar en egen, redan HTTP-cachad kopia)
   // i stället för att hårdkoda tal som skulle bli inaktuella så fort
   // fler cuper/år arkiveras.
@@ -78,19 +85,19 @@ window.HB = window.HB || {};
   // just nu rullande cupens EGNA siffror i stället för de globala
   // totalerna (se startMapAnimation/onCupChange).
   async function computeStats() {
-    const [idxRes, dirRes, cupsRes] = await Promise.allSettled([
+    const [idxRes, cupsRes] = await Promise.allSettled([
       fetch("data/archive/index.json").then((r) => (r.ok ? r.json() : {})),
-      fetch("data/club-directory.json").then((r) => (r.ok ? r.json() : {})),
       fetch("data/cups.json").then((r) => (r.ok ? r.json() : { cups: [] })),
     ]);
     const idx = idxRes.status === "fulfilled" ? idxRes.value : {};
-    const dir = dirRes.status === "fulfilled" ? dirRes.value : {};
-    const placeByCup = {};
+    const cupInfo = {};
     if (cupsRes.status === "fulfilled") {
-      for (const c of cupsRes.value.cups || []) placeByCup[c.id] = c.place;
+      for (const c of cupsRes.value.cups || []) {
+        cupInfo[c.id] = { place: c.place, sport: c.sport || "handboll" };
+      }
     }
-    let cups = 0, teams = 0, matches = 0;
-    const years = new Set();
+    const freshTotals = () => ({ cups: 0, teams: 0, matches: 0, editions: 0, years: new Set() });
+    const totals = { all: freshTotals() };
     const perCup = {};
     for (const [cupId, entry] of Object.entries(idx)) {
       // finished>0 (inte bara matches>0) — en upplaga vars matcher är
@@ -100,30 +107,44 @@ window.HB = window.HB || {};
       // matcher (e.finished, inte e.matches som även inkluderar kommande).
       const editions = (entry.editions || []).filter((e) => e.finished > 0);
       if (!editions.length) continue;
-      cups++;
+      const sport = (cupInfo[cupId] && cupInfo[cupId].sport) || "handboll";
+      if (!totals[sport]) totals[sport] = freshTotals();
       let cupMatches = 0;
       const cupYears = [];
       for (const e of editions) {
-        teams += e.teams || 0;
-        matches += e.finished || 0;
         cupMatches += e.finished || 0;
         cupYears.push(e.edition);
-        years.add(e.edition);
+        for (const bucket of [totals.all, totals[sport]]) {
+          bucket.teams += e.teams || 0;
+          bucket.matches += e.finished || 0;
+          bucket.editions++;
+          bucket.years.add(e.edition);
+        }
       }
+      totals.all.cups++;
+      totals[sport].cups++;
       cupYears.sort();
       perCup[cupId] = {
         matches: cupMatches,
         editions: editions.length,
         sinceYear: cupYears[0],
-        place: placeByCup[cupId] || null,
+        place: (cupInfo[cupId] && cupInfo[cupId].place) || null,
+        sport,
       };
     }
-    const sortedYears = [...years].sort();
+    const finalize = (bucket) => {
+      const sortedYears = [...bucket.years].sort();
+      return {
+        cups: bucket.cups,
+        teams: bucket.teams,
+        matches: bucket.matches,
+        editions: bucket.editions,
+        sinceYear: sortedYears[0] || null,
+        totalYears: sortedYears.length,
+      };
+    };
     return {
-      cups, teams, matches,
-      clubs: Object.keys(dir).length,
-      sinceYear: sortedYears[0] || null,
-      totalYears: sortedYears.length,
+      totals: Object.fromEntries(Object.entries(totals).map(([sport, bucket]) => [sport, finalize(bucket)])),
       perCup,
     };
   }
@@ -970,7 +991,10 @@ window.HB = window.HB || {};
       tuneCleanup = () => obs.disconnect();
     }
 
+    let stopped = false;
     return () => {
+      if (stopped) return;
+      stopped = true;
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
       themeObs.disconnect();
@@ -1069,13 +1093,24 @@ window.HB = window.HB || {};
     const statsHost = h("div", { class: "welcome-stats" }, statRefs.map((r) => r.el));
 
     let statsData = null;
+    let landingData = null;
+    let activeSport = "all";
     let totalCountries = 0; // ur landing-map.json:s _meta, se fetch-anropet nedan
-    function setOverallStats(s) {
+    function activeTotals() {
+      if (!statsData) return null;
+      return statsData.totals[activeSport] || statsData.totals.all;
+    }
+    function setOverallStats() {
+      const s = activeTotals();
+      if (!s) return;
+      liveCupEl.textContent = activeSport === "all"
+        ? "Alla sporter"
+        : SPORT_OPTIONS.find(([id]) => id === activeSport)[1];
       const vals = [
         [fmtNum(s.cups), s.cups === 1 ? "cup" : "cuper"],
         [fmtNum(s.teams) + "+", "lag genom åren"],
         [fmtNum(s.matches) + "+", "matcher"],
-        [fmtNum(s.clubs), "klubbar"],
+        [fmtNum(s.editions), "upplagor"],
         ["sedan " + (s.sinceYear || "–"), "historik"],
       ];
       // Inget "small"-tal här — det globala baslägets kort ÄR redan
@@ -1087,8 +1122,8 @@ window.HB = window.HB || {};
     function setCupStats(cup, cupId) {
       liveCupEl.textContent = "Visar just nu: " + cup.name;
       const pc = statsData && statsData.perCup[cupId];
-      if (!pc) { if (statsData) setOverallStats(statsData); return; } // saknar arkivdata för just den cupen — visa totalerna i stället
-      const s = statsData;
+      if (!pc) { if (statsData) setOverallStats(); return; } // saknar arkivdata för just den cupen — visa totalerna i stället
+      const s = activeTotals();
       // "år arkiverade" och "sedan X" var tidigare två separata kort —
       // slagna ihop till ett (stort tal = antal år, undertext = sedan-år)
       // för att göra plats åt LÄNDER-kortet nedan.
@@ -1103,6 +1138,22 @@ window.HB = window.HB || {};
         statRefs[i].strong.textContent = v; statRefs[i].span.textContent = l; statRefs[i].small.textContent = sm;
       });
     }
+
+    const sportFilter = h("div", { class: "welcome-sport-filter", role: "group", "aria-label": "Filtrera sport" });
+    function paintSportFilter() {
+      sportFilter.replaceChildren(...SPORT_OPTIONS.map(([id, label]) => h("button", {
+        class: "welcome-sport-chip" + (id === activeSport ? " on" : ""),
+        type: "button", "aria-pressed": String(id === activeSport),
+        onclick: () => {
+          if (id === activeSport) return;
+          activeSport = id;
+          paintSportFilter();
+          setOverallStats();
+          restartMapAnimation();
+        },
+      }, label)));
+    }
+    paintSportFilter();
 
     const overlay = h("div", { class: "welcome-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Välkommen" },
       mapEl,
@@ -1120,8 +1171,8 @@ window.HB = window.HB || {};
           h("h1", { class: "welcome-title" }, "Cupschema"),
           liveCupEl,
           h("p", { class: "welcome-lead" },
-            "Live-schema, resultat och ställning för handbollscuper — och över tio " +
-            "års historik att gräva i när matchen är slut."),
+            "Live-schema, resultat, tabeller och historik för cuper i flera sporter."),
+          sportFilter,
           statsHost,
           h("div", { class: "welcome-features" },
             feature("📅", "Live, dag för dag",
@@ -1146,19 +1197,49 @@ window.HB = window.HB || {};
     document.addEventListener("keydown", onKeydown);
     document.addEventListener("click", onOutsideClick);
 
+    let mapRestartSequence = 0;
+    async function restartMapAnimation() {
+      if (!landingData || !overlay.isConnected) return;
+      const sequence = ++mapRestartSequence;
+      const previous = stopAnimationPromise;
+      stopAnimationPromise = null;
+      if (previous) {
+        try { const stop = await previous; if (stop) stop(); } catch {}
+      }
+      if (sequence !== mapRestartSequence || !overlay.isConnected) return;
+      mapEl.replaceChildren();
+      nameEl.replaceChildren();
+      cupDropup.replaceChildren();
+      cupDropup.setAttribute("hidden", "");
+      cupPickerBtn.setAttribute("aria-expanded", "false");
+      animState.paused = false;
+      animState.pauseAfterArrival = false;
+      playPauseBtn.textContent = "⏸";
+      const filtered = { _meta: landingData._meta || {} };
+      for (const [id, entry] of Object.entries(landingData)) {
+        if (id.startsWith("_")) continue;
+        if (activeSport === "all" || entry.sport === activeSport) filtered[id] = entry;
+      }
+      const meta = landingData._meta || {};
+      totalCountries = activeSport === "all"
+        ? (meta.totalCountries || 0)
+        : ((meta.countriesBySport || {})[activeSport] || 0);
+      stopAnimationPromise = startMapAnimation(
+        mapEl, dotCanvas, nameEl, filtered, animState, setCupStats,
+        cupPickerBtn, cupDropup, playPauseBtn);
+    }
+
     fetch("data/landing-map.json")
       .then((r) => (r.ok ? r.json() : {}))
       .then((cupsData) => {
-        totalCountries = (cupsData && cupsData._meta && cupsData._meta.totalCountries) || 0;
-        stopAnimationPromise = startMapAnimation(
-          mapEl, dotCanvas, nameEl, cupsData || {}, animState, setCupStats,
-          cupPickerBtn, cupDropup, playPauseBtn);
+        landingData = cupsData || {};
+        restartMapAnimation();
       })
       .catch(() => {});
 
     computeStats().then((s) => {
       statsData = s;
-      setOverallStats(s);
+      setOverallStats();
     }).catch(() => {});
   }
 

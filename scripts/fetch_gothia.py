@@ -38,6 +38,8 @@ GRAPHQL_URL = "https://results.cupmanager.net/rest/tournamentapp_graphql"
 # resultatsida (results.<cup>.com) — GraphQL-anropets "cup"-variabel.
 TOURNAMENTS = [
     (1078445, "2026", "partille-2026.json", "partille"),
+    (661795, "2026", "gothiacup-2026.json", "gothiacup"),
+    (503243, "2026", "gothiainnebandy-2026.json", "gothiainnebandy"),
 ]
 
 CUP_QUERY = """

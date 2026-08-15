@@ -290,6 +290,30 @@ window.HB = window.HB || {};
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
   }
 
+  // Lokalt klubbmärkesbibliotek, byggt av scripts/collect_club_logos.mjs.
+  // Nycklarna använder samma normalisering som lag-/favoritmatchningen.
+  // Biblioteket hämtas en gång och den genererade initialbadgen ligger kvar
+  // som omedelbar och säker fallback när ett märke saknas.
+  let clubLogoLibrary = {};
+
+  function localClubLogo(name) {
+    const entry = clubLogoLibrary[slugifySv(name)];
+    return entry && entry.file ? entry.file : null;
+  }
+
+  async function loadClubLogoLibrary() {
+    try {
+      const response = await fetch("data/club-logos.json", {
+        headers: { accept: "application/json" },
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      clubLogoLibrary = data && data.logos && typeof data.logos === "object"
+        ? data.logos : {};
+      updateClubLogo();
+    } catch { /* initialbadgen är en fullgod offline-fallback */ }
+  }
+
   // Har besökaren FAKTISKT valt klubb? state.favoriteClub är alltid ifylld
   // (default HB.CLUB.name), så den kan inte användas som signal. En annan
   // förenings märke i headern gör att cuparrangörer och andra klubbar inte
@@ -318,7 +342,8 @@ window.HB = window.HB || {};
   function updateClubLogo() {
     const name = (state.favoriteClub || HB.CLUB.name).trim();
     const isDefaultClub = name.toLowerCase() === HB.CLUB.name.toLowerCase();
-    const src = isDefaultClub ? HB.CLUB.logo : clubBadgeDataUri(name);
+    const localLogo = localClubLogo(name);
+    const src = localLogo || (isDefaultClub ? HB.CLUB.logo : clubBadgeDataUri(name));
     const img = $("#clubLogo");
     const sub = $("#clubName");
     const favicon = $("#faviconLink");
@@ -329,7 +354,9 @@ window.HB = window.HB || {};
     if (img) { img.hidden = false; img.src = src; img.alt = isDefaultClub ? "" : name; }
     if (favicon) {
       favicon.href = hasChosenClub ? src : APP_FAVICON;
-      favicon.type = hasChosenClub ? "image/svg+xml" : "image/png";
+      favicon.type = hasChosenClub && (/\.svg(?:$|\?)/i.test(src) ||
+        src.startsWith("data:image/svg+xml"))
+        ? "image/svg+xml" : "image/png";
     }
   }
 
@@ -451,7 +478,7 @@ window.HB = window.HB || {};
     sort: "tid",             // tid | klass | plan
     timeOrder: "asc",        // asc (äldst→nyast) | desc (nyast/kommande överst)
     matchFilter: "all",      // all | upcoming | played
-    toolbarOpen: true,       // filter-/sorteringsmenyn expanderad? (session, sparas ej)
+    toolbarOpen: false,      // avancerade filter expanderade? (session, sparas ej)
     heroMinimized: false,    // nästa match-karusellen minimerad? (session, sparas ej)
     bracketZoom: 1,          // zoomnivå för slutspelsträdet (session, sparas ej)
     playoffDivTab: {},       // catId -> vald slutspelsdivision (A-/B-/C-Slutspel) när en klass har flera (session, sparas ej)
@@ -722,6 +749,10 @@ window.HB = window.HB || {};
 
   function cup() {
     return HB.allCups().find((c) => c.id === state.cupId) || HB.allCups()[0];
+  }
+
+  function scoreUnit(sport) {
+    return (sport || cup().sport) === "basket" ? "poäng" : "mål";
   }
 
   function uiKey() { return "hb:ui:" + state.cupId; }
@@ -1235,6 +1266,9 @@ window.HB = window.HB || {};
 
   function loadWeather() {
     const c = cup();
+    // Basket, innebandy och andra uttryckligt inomhusmarkerade cuper ska
+    // inte visa utomhusväder som om det gällde inne i hallen.
+    if (c.indoor) return;
     HB.weather.fetchForecast(c).then(() => {
       if (state.cupId === c.id) renderContent();
     });
@@ -1318,7 +1352,15 @@ window.HB = window.HB || {};
     state.error = null;
     render();
     try {
-      const previousDataTs = HB.api.localDataTs[c.id] || 0;
+      // En tom lokal cache får inte kortsluta själva snapshothämtningen.
+      // Det kan hända när snapshotfilen har fyllts på efter att ett tomt
+      // resultat redan sparats med samma versionsstämpel. I det läget vet
+      // versionsindexet bara att körningen är densamma, inte att den lokala
+      // nyttolasten är komplett. Skicka därför ingen känd version förrän vi
+      // faktiskt har minst en match att återanvända.
+      const previousDataTs = state.matches.length
+        ? (HB.api.localDataTs[c.id] || 0)
+        : 0;
       const snapshot = await HB.api.fetchSharedSnapshot(c, previousDataTs);
       if (!isCurrentCupLoad(c, cupGen, loadGen)) return;
       if (snapshot.unchanged) {
@@ -1389,6 +1431,7 @@ window.HB = window.HB || {};
     heroIndex = 0;
     stashedFilter = null;
     autoScrolledToNow = false;
+    untimedPanelOpen = true;
     hasSyncedFreshData = false;
     // Sökrutan hör till den cup man stod i — en ny cup ska mötas av sitt
     // eget favoriturval, inte av föregående cups halvskrivna sökning.
@@ -2025,6 +2068,7 @@ window.HB = window.HB || {};
       selectionBar.replaceChildren(); selectionBar.hidden = true;
       if (wasVisible) requestAnimationFrame(syncBottomStack);
     }
+    $("#desktopSubNav .desktop-selection-group")?.remove();
     // Städa en eventuell övergiven kartinstans så fort vi INTE ska rita
     // Karta just nu — se destroyMapIfLeavingKarta()s kommentar för varför
     // (misstänkt Chrome-specifik scrollåsning på HELT andra flikar).
@@ -2088,7 +2132,13 @@ window.HB = window.HB || {};
     else renderTables(main);
   }
 
-  const SPORT_LABELS = { handboll: "Handboll", fotboll: "Fotboll" };
+  const SPORT_LABELS = {
+    handboll: "Handboll",
+    fotboll: "Fotboll",
+    innebandy: "Innebandy",
+    basket: "Basket",
+    volleyboll: "Volleyboll",
+  };
 
   // Vilken sport cupväljaren i inställningar just nu VISAR — skilt från
   // innevarande cups egen sport (state.cupId/cup().sport), så man kan bläddra
@@ -2165,7 +2215,7 @@ window.HB = window.HB || {};
   }
 
   function openCupPickerDialog() {
-    const shell = prototypeDialog("Välj cup", "cup");
+    const shell = prototypeDialog("Välj cup", "cup", $("#currentCupBtn"));
     if (!shell) return;
     const { dlg, body } = shell;
     cupSwitcherSport = null;
@@ -2342,7 +2392,6 @@ window.HB = window.HB || {};
     main.replaceChildren(
       primary("filter", "Filter", "filter", () => {
         desktopFilterExpanded = !desktopFilterExpanded;
-        if (desktopFilterExpanded) state.toolbarOpen = true;
         saveUi(); render();
       }),
       primary("current", "Aktuellt", "current", () => {
@@ -2593,7 +2642,8 @@ window.HB = window.HB || {};
       // Samma brytpunkt används av Tillbaka till toppen-knappen nedan.
       if (delta > 0 && y >= bottomNavCollapseY()) setBottomNavCollapsed(true);
     }, { passive: true });
-    window.matchMedia("(max-width: 700px)").addEventListener("change", (event) => {
+    window.matchMedia(SHEET_QUERY).addEventListener("change", (event) => {
+      enforceMobileMenuHost();
       if (!event.matches) {
         setBottomNavCollapsed(false);
         // Inställningssidan är ett mobilläge. Vid byte till desktop återgår
@@ -2608,6 +2658,10 @@ window.HB = window.HB || {};
       downwardTravel = 0;
       requestAnimationFrame(renderBottomBar);
     });
+
+    const refreshLayout = () => enforceMobileMenuHost();
+    window.addEventListener("resize", refreshLayout, { passive: true });
+    window.addEventListener("orientationchange", refreshLayout, { passive: true });
   }
 
   // Emoji har olika inbyggd storlek och baslinje mellan iOS/Android, vilket
@@ -2655,6 +2709,7 @@ window.HB = window.HB || {};
     // fram raden trots attributet, vilket gjorde den synlig men fortsatt
     // dold för hjälpmedel. Desktop har sin fulla toppnavigation.
     const mobile = sheetMode();
+    enforceMobileMenuHost();
     renderDesktopNav();
     bar.hidden = !mobile;
     if (!mobile) {
@@ -2677,7 +2732,7 @@ window.HB = window.HB || {};
       type: "button",
       ...(pageActive ? { "aria-current": "page" } : {}),
       "aria-expanded": String(menuActive),
-      "aria-controls": icon === "filter" ? "toolbar" :
+      "aria-controls": icon === "filter" || icon === "filter-open" ? "toolbar" :
         icon === "current" ? "currentViewBar" :
         icon === "stats" ? "content" : "moreMenuBar",
       onclick,
@@ -2685,9 +2740,12 @@ window.HB = window.HB || {};
     h("span", { class: "bottom-tab-label" }, label));
     const inCurrentView = CURRENT_VIEWS.includes(state.view);
     const filterOpen = document.body.classList.contains("filters-open");
+    const filtersExpanded = document.body.classList.contains("filters-expanded");
     // Sidläge och öppen meny är två olika saker: en tillfällig filter-/mer-
     // panel ska inte släcka markeringen för innehållet bakom den.
-    const filterButton = mainItem("Filter", "filter",
+    const filterButton = mainItem(
+      "Filter",
+      filtersExpanded ? "filter-open" : "filter",
       false, filterOpen, () => {
         const leavingSettings = settingsViewOpen;
         settingsViewOpen = false;
@@ -2695,13 +2753,21 @@ window.HB = window.HB || {};
         currentMenuOpen = false; statsMenuOpen = false; moreMenuOpen = false;
         if (state.view === "stats") { state.view = lastCurrentView; saveUi(); render(); }
         else if (leavingSettings) render();
-        toggleFilterSheet();
+        if (filterOpen) {
+          if (filtersExpanded) {
+            toggleFiltersExpanded(false);
+          } else {
+            toggleFilterSheet(false);
+          }
+        } else {
+          toggleFilterSheet();
+        }
       }, "bottom-filter");
     if (activeFilterCount()) filterButton.append(
       h("span", { class: "bottom-filter-badge" }, String(activeFilterCount())));
     bar.replaceChildren(
       filterButton,
-      mainItem("Aktuellt", "current", inCurrentView, currentMenuOpen, () => {
+      mainItem("Aktuellt", "current", inCurrentView, inCurrentView && currentMenuOpen, () => {
         const leavingSettings = settingsViewOpen;
         settingsViewOpen = false;
         closeSubmenuOverlays(); toggleFilterSheet(false);
@@ -2710,7 +2776,7 @@ window.HB = window.HB || {};
         else if (inCurrentView) { currentMenuOpen = !currentMenuOpen; renderBottomBar(); }
         else { currentMenuOpen = true; state.view = lastCurrentView; saveUi(); render(); }
       }),
-      mainItem("Statistik", "stats", state.view === "stats", statsMenuOpen, () => {
+      mainItem("Statistik", "stats", state.view === "stats", state.view === "stats" && statsMenuOpen, () => {
         const leavingSettings = settingsViewOpen;
         settingsViewOpen = false;
         closeSubmenuOverlays(); toggleFilterSheet(false);
@@ -2844,22 +2910,24 @@ window.HB = window.HB || {};
     return measured || ((($("#bottomBar") || {}).offsetHeight) || 56);
   }
 
-  function prototypeDialog(title, sheetKey) {
+  function prototypeDialog(title, sheetKey, anchorElement = null) {
     const existing = document.querySelector("dialog.prototype-sheet[open]");
     if (existing && existing.dataset.sheetKey === sheetKey) {
       existing.close();
       return null;
     }
     closePrototypeDialogs();
-    // Export hör till Mer-menyn och ska upplevas som en menyanknuten panel,
-    // inte som en modal som tar över appen. Behåll den osynliga klickytan så
-    // ett tryck på sidan kan stänga panelen, men tona inte ned hela sidan.
+    // På dator hör cupval och export direkt till varsin knapp i sidhuvudet.
+    // Visa därför samma innehåll som ett förankrat popover där. Mobilen
+    // behåller sina rymligare ark eftersom knapparna då ligger i menyraderna.
+    const anchoredDesktop = !sheetMode() && anchorElement instanceof HTMLElement &&
+      anchorElement.getClientRects().length > 0;
     const backdrop = h("div", {
       class: "prototype-sheet-backdrop" +
-        (sheetKey === "export" ? " prototype-sheet-backdrop-menu" : ""),
+        (sheetKey === "export" || anchoredDesktop ? " prototype-sheet-backdrop-menu" : "") +
+        (anchoredDesktop ? " prototype-sheet-backdrop-popover" : ""),
     });
-    const fullScreenOnMobile = sheetKey === "export" &&
-      window.matchMedia("(max-width: 700px)").matches;
+    const fullScreenOnMobile = sheetKey === "export" && sheetMode();
     const body = h("div", { class: "prototype-sheet-body" });
     const grip = h("button", { class: "prototype-sheet-grip", type: "button",
       "aria-label": "Dra för att ändra panelens höjd",
@@ -2868,7 +2936,8 @@ window.HB = window.HB || {};
     const returnFocus = document.activeElement instanceof HTMLElement
       ? document.activeElement : null;
     const dlg = h("dialog", {
-      class: "prototype-sheet" + (fullScreenOnMobile ? " prototype-sheet-fullscreen" : ""),
+      class: "prototype-sheet" + (fullScreenOnMobile ? " prototype-sheet-fullscreen" : "") +
+        (anchoredDesktop ? " prototype-sheet-popover" : ""),
       "data-sheet-key": sheetKey,
       "aria-labelledby": titleId,
       tabindex: "-1",
@@ -2878,8 +2947,11 @@ window.HB = window.HB || {};
         h("h2", { id: titleId }, title),
         h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng",
           onclick: () => dlg.close() }, "×")), body);
+    let cleanupPopover = () => {};
     backdrop.addEventListener("click", () => dlg.close());
     dlg.addEventListener("close", () => {
+      cleanupPopover();
+      if (anchoredDesktop) anchorElement.setAttribute("aria-expanded", "false");
       backdrop.remove(); dlg.remove();
       requestAnimationFrame(() => {
         renderBottomBar();
@@ -2894,7 +2966,7 @@ window.HB = window.HB || {};
       event.preventDefault();
       dlg.close();
     });
-    if (!fullScreenOnMobile) grip.addEventListener("pointerdown", (e) => {
+    if (!fullScreenOnMobile && !anchoredDesktop) grip.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       grip.setPointerCapture(e.pointerId);
       const startY = e.clientY;
@@ -2922,12 +2994,65 @@ window.HB = window.HB || {};
     });
     document.body.append(backdrop, dlg);
     dlg.show();
+    if (anchoredDesktop) {
+      anchorElement.setAttribute("aria-expanded", "true");
+      const gap = 8;
+      const edge = 12;
+      let positionRaf = 0;
+      const positionPopover = () => {
+        positionRaf = 0;
+        if (!dlg.open || !anchorElement.isConnected) return;
+        const anchorRect = anchorElement.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // Mät först med hela skärmhöjden tillgänglig. Välj därefter sidan
+        // med mest plats och låt bara innehållet scrolla om det verkligen
+        // inte ryms vare sig över eller under knappen.
+        dlg.style.maxHeight = Math.max(180, viewportHeight - edge * 2) + "px";
+        let dialogRect = dlg.getBoundingClientRect();
+        const below = Math.max(0, viewportHeight - edge - anchorRect.bottom - gap);
+        const above = Math.max(0, anchorRect.top - gap - edge);
+        const placeAbove = below < Math.min(dialogRect.height, 260) && above > below;
+        const availableHeight = Math.max(180, placeAbove ? above : below);
+        dlg.style.maxHeight = availableHeight + "px";
+        dialogRect = dlg.getBoundingClientRect();
+
+        const maxLeft = Math.max(edge, viewportWidth - edge - dialogRect.width);
+        const left = Math.max(edge, Math.min(anchorRect.right - dialogRect.width, maxLeft));
+        const top = placeAbove
+          ? Math.max(edge, anchorRect.top - gap - dialogRect.height)
+          : Math.min(viewportHeight - edge - dialogRect.height, anchorRect.bottom + gap);
+        dlg.style.left = Math.round(left) + "px";
+        dlg.style.top = Math.round(Math.max(edge, top)) + "px";
+      };
+      const schedulePosition = () => {
+        if (!positionRaf) positionRaf = requestAnimationFrame(positionPopover);
+      };
+      const resizeObserver = typeof ResizeObserver === "function"
+        ? new ResizeObserver(schedulePosition) : null;
+      resizeObserver?.observe(dlg);
+      resizeObserver?.observe(anchorElement);
+      window.addEventListener("resize", schedulePosition);
+      window.addEventListener("scroll", schedulePosition, true);
+      window.visualViewport?.addEventListener("resize", schedulePosition);
+      window.visualViewport?.addEventListener("scroll", schedulePosition);
+      cleanupPopover = () => {
+        if (positionRaf) cancelAnimationFrame(positionRaf);
+        resizeObserver?.disconnect();
+        window.removeEventListener("resize", schedulePosition);
+        window.removeEventListener("scroll", schedulePosition, true);
+        window.visualViewport?.removeEventListener("resize", schedulePosition);
+        window.visualViewport?.removeEventListener("scroll", schedulePosition);
+      };
+      schedulePosition();
+    }
     requestAnimationFrame(() => {
       if (!dlg.contains(document.activeElement)) dlg.focus({ preventScroll: true });
     });
     try {
       const saved = +localStorage.getItem("hb:menuSheetHeight:" + sheetKey);
-      if (!fullScreenOnMobile && saved >= 0.25 && saved <= 1) {
+      if (!fullScreenOnMobile && !anchoredDesktop && saved >= 0.25 && saved <= 1) {
         const viewportH = (window.visualViewport && window.visualViewport.height) || innerHeight;
         const bottomH = prototypeBottomStackHeight();
         dlg.style.height = Math.round((viewportH - bottomH - 12) * saved) + "px";
@@ -2942,20 +3067,80 @@ window.HB = window.HB || {};
   // lägger sig OVANFÖR i stället för att täcka raderna man just navigerade
   // med. Mäts i stället för att räknas ut — remsans höjd beror på hur många
   // brickor som ryms och på safe-area.
-  function syncBottomStack() {
+  let bottomStackRaf = null;
+
+  function setBottomStackHeight(nextHeight) {
+    const root = document.documentElement;
+    const target = Math.max(0, Math.round(nextHeight));
+    const current = parseFloat(root.style.getPropertyValue("--bottomstack-h")) || parseFloat(
+      getComputedStyle(root).getPropertyValue("--bottomstack-h")) || 56;
+    if (current === target || !sheetMode()) {
+      root.style.setProperty("--bottomstack-h", target + "px");
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      root.style.setProperty("--bottomstack-h", target + "px");
+      return;
+    }
+    if (bottomStackRaf) cancelAnimationFrame(bottomStackRaf);
+    const from = current;
+    const to = target;
+    const start = performance.now();
+    const duration = 190;
+    const easeOut = (x) => 1 - (1 - x) * (1 - x);
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const v = Math.round(from + (to - from) * easeOut(t));
+      root.style.setProperty("--bottomstack-h", v + "px");
+      if (t < 1) bottomStackRaf = requestAnimationFrame(tick);
+      else bottomStackRaf = null;
+    };
+    bottomStackRaf = requestAnimationFrame(tick);
+  }
+
+  function cssLengthToPx(value) {
+    const normalized = String(value).trim().toLowerCase();
+    if (!normalized || normalized === "none" || normalized === "auto") return NaN;
+    const n = parseFloat(normalized);
+    if (!Number.isFinite(n)) return NaN;
+    if (normalized.endsWith("vh")) return (window.innerHeight * n) / 100;
+    if (normalized.endsWith("dvh")) return (window.innerHeight * n) / 100;
+    if (normalized.endsWith("px")) return n;
+    return n;
+  }
+
+  function syncBottomStack({ animate = false } = {}) {
+    if (!animate && bottomStackRaf) {
+      cancelAnimationFrame(bottomStackRaf);
+      bottomStackRaf = null;
+    }
     const bar = $("#bottomBar");
-    let h = bar ? bar.getBoundingClientRect().height : 0;
+    let h = 0;
+    if (bar) {
+      const barStyle = getComputedStyle(bar);
+      if (barStyle.position === "fixed" && barStyle.bottom !== "auto") {
+        h = bar.getBoundingClientRect().height;
+      }
+    }
+    const toolbar = $("#toolbar");
+    if (toolbar && getComputedStyle(toolbar).position === "fixed") {
+      let toolbarHeight = toolbar.getBoundingClientRect().height;
+      const maxHeight = cssLengthToPx(getComputedStyle(toolbar).maxHeight);
+      if (Number.isFinite(maxHeight)) toolbarHeight = Math.min(toolbar.scrollHeight, maxHeight);
+      h += toolbarHeight;
+    }
     // Allt annat som ligger FAST i botten just nu: filterremsan när den är
     // uppfälld, och Stats-underflikarna på den fliken. Mäts i stället för
     // att räknas ut — höjderna beror på antal brickor, teckenstorlek och
     // safe-area, och en gissad siffra gömmer slutet på matchlistan.
-    for (const sel of ["#toolbar", "#currentViewBar", "#currentSelectionBar", "#moreMenuBar", '#content .history-tabs[aria-label="Stats"]']) {
+    for (const sel of ["#currentViewBar", "#currentSelectionBar", "#moreMenuBar", '#content .history-tabs[aria-label="Stats"]']) {
       const el = document.querySelector(sel);
       if (el && getComputedStyle(el).position === "fixed") {
         h += el.getBoundingClientRect().height;
       }
     }
-    document.documentElement.style.setProperty("--bottomstack-h", Math.round(h) + "px");
+    if (animate) setBottomStackHeight(h);
+    else document.documentElement.style.setProperty("--bottomstack-h", Math.round(h) + "px");
   }
 
   // Sidfotens länkar (Om appen / Hjälp / Lägg till cup / Admin) hör hemma i
@@ -2971,7 +3156,7 @@ window.HB = window.HB || {};
     const footer = document.querySelector("body > footer");
     const linkSlot = $("#settingsLinks");
     if (!footer || !linkSlot) return;
-    const host = window.matchMedia("(max-width: 700px)").matches ? linkSlot : footer;
+    const host = sheetMode() ? linkSlot : footer;
     // Textraden om datakällan hör till sidfoten och följer inte med.
     for (const el of [...footer.children, ...linkSlot.children]) {
       if (el.tagName === "SPAN") continue;
@@ -3093,8 +3278,17 @@ window.HB = window.HB || {};
     document.body.classList.toggle("filters-open", open);
     if (!open) document.body.classList.remove("filters-expanded");
     syncFilterBackdrop();
+    const toolbar = $("#toolbar");
+    if (toolbar && sheetMode()) {
+      toolbar.style.position = "sticky";
+      toolbar.style.top = "0px";
+      toolbar.style.left = "auto";
+      toolbar.style.right = "auto";
+      toolbar.style.bottom = "auto";
+      toolbar.style.inset = "auto";
+    }
     // Efter en bildruta: remsan måste hinna få sin layout innan den mäts.
-    requestAnimationFrame(syncBottomStack);
+    requestAnimationFrame(() => syncBottomStack({ animate: true }));
     // Verktygsradens egen ihopfällning är meningslös inne i arket — arket ÄR
     // den öppna/stängda växlingen. Tvinga upp den så man inte behöver två
     // klick för att komma åt filtren.
@@ -3102,8 +3296,37 @@ window.HB = window.HB || {};
       state.toolbarOpen = true;
       const dd = document.querySelector(".toolbar-collapse");
       if (dd) dd.open = true;
+      if (sheetMode()) window.requestAnimationFrame(() => {
+        const bar = $("#toolbar");
+        if (bar) bar.scrollIntoView({ block: "start", inline: "nearest", behavior: "auto" });
+      });
     }
     renderBottomBar();
+  }
+
+  function setFiltersExpanded(open) {
+    if (!sheetMode() || !document.body.classList.contains("filters-open")) return;
+    open = !!open;
+    const expanded = document.body.classList.contains("filters-expanded");
+    if (expanded === open) return;
+    document.body.classList.toggle("filters-expanded", open);
+    syncFilterBackdrop();
+    requestAnimationFrame(() => {
+      syncBottomStack({ animate: true });
+      renderBottomBar();
+    });
+  }
+
+  function toggleFiltersExpanded(force) {
+    const open = document.body.classList.contains("filters-open");
+    const want = force === undefined ? !document.body.classList.contains("filters-expanded") : !!force;
+    if (!sheetMode()) return;
+    if (!open) {
+      toggleFilterSheet(true);
+      requestAnimationFrame(() => setFiltersExpanded(want));
+      return;
+    }
+    setFiltersExpanded(want);
   }
 
 
@@ -3181,6 +3404,66 @@ window.HB = window.HB || {};
 
   function sheetMode() {
     return window.matchMedia(SHEET_QUERY).matches;
+  }
+
+  // För att undvika att gamla CSS-regler låser menyn i botten efter en
+  // driftsättning, och för att kunna byta mellan mobile/desktop snabbt vid
+  // orienteringsändring, styr vi själv de fyra mobilraderna här och ser till
+  // att de faktiskt ligger i #mobileMenuHost.
+  function enforceMobileMenuHost() {
+    const host = document.querySelector("#mobileMenuHost");
+    const desktopFilterHost = document.querySelector("#desktopFilterHost");
+    const toolbar = document.querySelector("#toolbar");
+    const mobile = sheetMode();
+    const ids = ["bottomBar", "currentViewBar", "currentSelectionBar", "moreMenuBar"];
+    const fixed = [
+      { prop: "position", value: "static", important: true },
+      { prop: "left", value: "auto", important: true },
+      { prop: "right", value: "auto", important: true },
+      { prop: "top", value: "auto", important: true },
+      { prop: "bottom", value: "auto", important: true },
+      { prop: "transform", value: "none", important: true },
+      { prop: "z-index", value: "auto", important: true },
+      { prop: "inset", value: "auto", important: true },
+      { prop: "width", value: "100%", important: false },
+    ];
+    for (const id of ids) {
+      const el = document.querySelector("#" + id);
+      if (!el) continue;
+      if (mobile && host && el.parentElement !== host) host.append(el);
+      for (const { prop, value, important } of fixed) {
+        if (mobile) {
+          if (prop === "width") {
+            el.style.setProperty(prop, value);
+          } else {
+            el.style.setProperty(prop, value, important ? "important" : undefined);
+          }
+        } else {
+          el.style.removeProperty(prop);
+        }
+      }
+      el.style.margin = mobile ? "0" : "";
+    }
+    if (mobile && host) {
+      host.style.setProperty("position", "sticky", "important");
+      host.style.setProperty("top", "0px", "important");
+      host.style.setProperty("z-index", "72", "important");
+      host.style.setProperty("background", "var(--menu-surface)", "important");
+    } else if (host) {
+      host.style.removeProperty("position");
+      host.style.removeProperty("top");
+      host.style.removeProperty("z-index");
+      host.style.removeProperty("background");
+    }
+    // Samma filterkontroller är mobilens remsa men datorns tredje
+    // menynivå. Flytta noden (inte en kopia) så lyssnare, öppna väljare och
+    // tillgänglighetskopplingar alltid är gemensamma i de två layouterna.
+    if (toolbar) {
+      if (mobile && host && host.nextElementSibling !== toolbar) host.after(toolbar);
+      else if (!mobile && desktopFilterHost && toolbar.parentElement !== desktopFilterHost) {
+        desktopFilterHost.append(toolbar);
+      }
+    }
   }
 
   function savedSheetHeight() {
@@ -3807,11 +4090,24 @@ window.HB = window.HB || {};
     // permanent ta plats högst upp i schemat. state.toolbarOpen styr
     // öppet/stängt över omritningar (annars skulle varje filterbyte,
     // som anropar render(), öppna den igen).
-    const dd = h("details", {
-      class: "toolbar-collapse",
-      ...(state.toolbarOpen ? { open: "" } : {}),
+    const desktopToolbar = !sheetMode();
+    // Desktopfiltret är nu en enda, direkt redigerbar rad. Ett gammalt
+    // sparat låsläge får inte fortsätta gömma väljare när själva låsknappen
+    // inte längre visas.
+    if (desktopToolbar && state.filterLocked) {
+      state.filterLocked = false;
+      state.viewCats = new Set();
+      state.viewTeams = new Set();
+      saveUi();
+    }
+    const dd = h(desktopToolbar ? "div" : "details", {
+      class: "toolbar-collapse" +
+        (desktopToolbar ? " desktop-toolbar desktop-toolbar-flat" : ""),
+      ...(!desktopToolbar && state.toolbarOpen ? { open: "" } : {}),
     });
-    dd.addEventListener("toggle", () => { state.toolbarOpen = dd.open; });
+    if (!desktopToolbar) {
+      dd.addEventListener("toggle", () => { state.toolbarOpen = dd.open; });
+    }
     const bodyEl = h("div", { class: "toolbar-body" });
     // lockSlot sitter INUTI <summary>, bredvid etikett-pillen, och hålls
     // vid liv separat (se längre ner) — så att låsknappen/den låsta klass-
@@ -3822,11 +4118,27 @@ window.HB = window.HB || {};
     // att bubbla upp (stopPropagation) så det inte råkar trigga <summary>s
     // inbyggda öppna/stäng-toggle.
     const lockSlot = h("span", { style: "display:contents", onclick: (e) => e.stopPropagation() });
-    dd.append(
-      h("summary", { class: "toolbar-summary" },
-        h("span", { class: "toolbar-summary-label" }, "Filter och sortering"),
-        lockSlot),
-      bodyEl);
+    // Matchstatus är synlig även i kompaktläget och ska därför inte räknas
+    // som ett dolt, avancerat filter i etiketten "Fler filter (n)".
+    const advancedCount = activeFilterCount() - (state.matchFilter !== "all" ? 1 : 0);
+    const toolbarSummary = h("summary", {
+        class: "toolbar-summary",
+        onclick: desktopToolbar ? (event) => {
+          event.preventDefault();
+          state.toolbarOpen = !state.toolbarOpen;
+          renderToolbar();
+        } : null,
+      },
+        h("span", { class: "toolbar-summary-label" }, desktopToolbar
+          ? (state.toolbarOpen ? "Färre filter" :
+              "Fler filter" + (advancedCount ? " (" + advancedCount + ")" : ""))
+          : "Filter och sortering"),
+        lockSlot);
+    // Mobilarket behöver en rubrik/dragbar expanderingsnivå. På dator är
+    // alla kontroller synliga direkt och varken Fler/Färre eller Lås ska
+    // uppta en egen rad.
+    if (desktopToolbar) dd.append(bodyEl);
+    else dd.append(toolbarSummary, bodyEl);
     bar.append(dd);
     const body = bodyEl;
 
@@ -3939,7 +4251,7 @@ window.HB = window.HB || {};
         { id: "klass", label: "Sortera: klass" },
         { id: "plan", label: "Sortera: plan" },
         { id: "resultat", label: "Sortera: resultat" },
-        { id: "mal", label: "Sortera: mål" },
+        { id: "mal", label: "Sortera: " + scoreUnit() },
       ], (value) => {
         state.sort = value; state.schemaOlderRevealCount = 0; saveUi(); render();
       }) : null,
@@ -4046,6 +4358,13 @@ window.HB = window.HB || {};
     const onCatChange = () => { renderContent(); refreshLockSlot(); refreshTeamRow(); };
     const onTeamOrDayChange = () => { renderContent(); refreshLockSlot(); };
     refreshLockSlot();
+    const isFiltersExpanded = document.body.classList.contains("filters-expanded");
+    const expandFilterTile = h("button", {
+      class: "filter-more-tile filter-expand-tile", type: "button",
+      ...(sheetMode() ? {} : { hidden: "" }),
+      title: isFiltersExpanded ? "Visa mindre filterfält" : "Visa hela filterfältet",
+      onclick: () => toggleFiltersExpanded(!isFiltersExpanded),
+    }, isFiltersExpanded ? "Mindre" : "Mer");
 
     if (days.length > 1 || catEntries.length > 1) {
       const row = h("div", { class: "row filter-primary-row" }, scopeSeg);
@@ -4090,8 +4409,8 @@ window.HB = window.HB || {};
         }, "Rensa");
         row.append(h("div", { class: "filter-group" },
           buildFilterCupTile(), buildFilterScopeTile(), ...urval, teamSlot,
-          ...mobileViewTiles, rensaTile));
-      } else row.append(h("div", { class: "filter-group" }, buildFilterCupTile()));
+          ...mobileViewTiles, rensaTile, expandFilterTile));
+      } else row.append(h("div", { class: "filter-group" }, buildFilterCupTile(), expandFilterTile));
       row.append(h("span", { class: "row-sep" }), statusSeg);
       body.append(row);
     } else {
@@ -4102,7 +4421,8 @@ window.HB = window.HB || {};
           buildFilterScopeTile(),
           (!isLocked && archiveYears.length) ? buildYearPicker(archiveYears, cup().edition) : null,
           isLocked ? null : teamSlot,
-          ...mobileViewTiles),
+          ...mobileViewTiles,
+          expandFilterTile),
         h("span", { class: "row-sep" }), statusSeg));
     }
 
@@ -4132,7 +4452,7 @@ window.HB = window.HB || {};
         renderContent();
       },
     });
-    body.append(h("div", { class: "row tools-row" },
+    const toolsRow = h("div", { class: "row tools-row" },
       withClearButton(searchInput),
       h("datalist", { id: "search-suggestions" },
         suggestions.map((s) => h("option", { value: s }))),
@@ -4152,7 +4472,7 @@ window.HB = window.HB || {};
         onchange: (e) => { state.sort = e.target.value; saveUi(); render(); },
       },
         [["tid", "Sortera: tid"], ["klass", "Sortera: klass"], ["plan", "Sortera: plan"],
-         ["resultat", "Sortera: resultat"], ["mal", "Sortera: mål"]]
+         ["resultat", "Sortera: resultat"], ["mal", "Sortera: " + scoreUnit()]]
           .map(([v, l]) => h("option",
             { value: v, ...(state.sort === v ? { selected: "" } : {}) }, l))) : null,
       // Bara meningsfull för tidssortering — klass/plan/resultat-grupperingen
@@ -4170,8 +4490,21 @@ window.HB = window.HB || {};
           saveUi(); render();
         },
       }, state.timeOrder === "desc" ? "↓ Nyast överst" : "↑ Äldst överst") : null,
-      state.view !== "stats" ? buildExportPicker() : null,
-    ));
+      state.view !== "stats" ? buildExportPicker() : null);
+    body.append(toolsRow);
+    if (desktopToolbar) {
+      // Export finns redan i sidhuvudet. Flytta resterande verktyg till
+      // huvudraden så sök, plan och sortering delar rad med övriga filter.
+      toolsRow.querySelector(".export-dd")?.remove();
+      const primaryRow = body.querySelector(".filter-primary-row");
+      if (primaryRow) {
+        const toolChildren = [...toolsRow.children];
+        if (toolChildren.length) primaryRow.append(
+          h("span", { class: "row-sep desktop-tools-sep", "aria-hidden": "true" }),
+          ...toolChildren);
+        toolsRow.remove();
+      }
+    }
     flattenMobileFilterBar(bar);
     restoreFilterStripScroll();
   }
@@ -4200,7 +4533,7 @@ window.HB = window.HB || {};
   }
 
   function openHeaderExportDialog() {
-    const shell = prototypeDialog("Dela eller exportera", "export");
+    const shell = prototypeDialog("Dela eller exportera", "export", $("#headerExportBtn"));
     if (!shell) return;
     const { dlg, body } = shell;
     const item = (label, onClick) => h("button", {
@@ -4695,6 +5028,12 @@ window.HB = window.HB || {};
   // varje gång man t.ex. swipear i nästa match-karusellen, söker, eller
   // byter filter). Nollställs i switchCup().
   let autoScrolledToNow = false;
+
+  // Otidsatta matcher kan vara många i en halvpublicerad cup och ska kunna
+  // vikas undan utan att läget tappas när väder/filter ritar om schemat.
+  // Sessionstillstånd: en ny sidladdning börjar alltid öppet så matcher
+  // aldrig döljs oväntat för en ny besökare.
+  let untimedPanelOpen = true;
 
   // Auto-rotationens timer måste rensas vid VARJE renderHero()-anrop
   // (inte bara när karusellen försvinner) — annars pekar en gammal
@@ -5297,8 +5636,8 @@ window.HB = window.HB || {};
 
   // Räknar fram gruppställning (S/V/O/F/mål/poäng) från matchresultat för
   // EN division — cupens egen slutgiltiga tabell arkiveras inte (bara
-  // matcherna), så det här är en lokal, förenklad rekonstruktion (2 poäng
-  // vinst/1 oavgjort, standard i svensk ungdomshandboll) — kan skilja sig
+  // matcherna), så det här är en lokal, förenklad rekonstruktion med
+  // sportens normala poängmodell — kan skilja sig
   // från originalets exakta regler vid t.ex. inbördes möte-särskiljning.
   // Delad av historicalGroupTables (Historik-modalen) och ensureTable()
   // (huvudappens Tabeller-flik, för divisioner som hör till ett extra
@@ -5324,9 +5663,11 @@ window.HB = window.HB || {};
       else if (m.res.winner === "away") { away.won++; home.lost++; }
       else { home.tied++; away.tied++; }
     }
-    const winPoints = (cup() && cup().sport === "fotboll") ? 3 : 2;
+    const sport = (cup() && cup().sport) || "handboll";
+    const winPoints = (sport === "fotboll" || sport === "innebandy") ? 3 : 2;
+    const lossPoints = sport === "basket" ? 1 : 0;
     const rows = [...teams.values()].map((t) => ({
-      ...t, points: t.won * winPoints + t.tied,
+      ...t, points: t.won * winPoints + t.tied + t.lost * lossPoints,
     }));
     rows.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf ||
       a.name.localeCompare(b.name, "sv"));
@@ -7840,12 +8181,13 @@ window.HB = window.HB || {};
         return;
       }
       body.replaceChildren(...summaries.map((s, i) => {
+        const selectedCup = HB.allCups().find((c) => c.id === selCup);
         const children = [
           h("summary", null,
             h("span", { class: "history-year-label" }, s.edition),
             h("span", { class: "history-year-stats" },
               s.played + " sp · " + s.won + "V " + s.tied + "O " + s.lost +
-              "F · mål " + s.gf + "–" + s.ga)),
+              "F · " + scoreUnit(selectedCup && selectedCup.sport) + " " + s.gf + "–" + s.ga)),
           h("div", { class: "arena-quick-list" }, s.rows.map(archiveMatchRow)),
         ];
         // Slutspelsträd/tabeller kräver ALLA lag i klassen, inte bara den
@@ -8100,7 +8442,7 @@ window.HB = window.HB || {};
     const sc = scoreText(m.res);
     const live = isLive(m);
     // Väder bara meningsfullt för matcher som inte redan är spelade.
-    const weather = hasScheduledStart(m) && (!m.res || !m.res.fin)
+    const weather = !cup().indoor && hasScheduledStart(m) && (!m.res || !m.res.fin)
       ? HB.weather.at(HB.weather.cached(cup()), m.start) : null;
     const teamEl = (side, other) => {
       const color = teamColor(side.name);
@@ -8216,6 +8558,22 @@ window.HB = window.HB || {};
     const wrap = h("div", { class: "timeline" });
     for (const g of timeGroups(list, multiDay)) {
       const timed = hasScheduledStart(g.start);
+      if (!timed) {
+        const panel = h("details", {
+          class: "untimed-panel",
+          ...(untimedPanelOpen ? { open: "" } : {}),
+        },
+        h("summary", { class: "untimed-summary" },
+          h("span", { class: "untimed-summary-title" }, "Tid ej satt"),
+          h("span", { class: "untimed-summary-count" },
+            g.items.length + " " + (g.items.length === 1 ? "match" : "matcher"))),
+        h("div", { class: "untimed-panel-body" },
+          h("div", { class: "slot-matches" }, g.items.map(matchCard))));
+        panel.addEventListener("toggle", () => { untimedPanelOpen = panel.open; });
+        wrap.append(panel);
+        prevGroupStart = null;
+        continue;
+      }
       const gDay = dayKey(g.start);
       if (timed && multiDay && gDay !== lastDay) {
         lastDay = gDay;
@@ -8595,6 +8953,24 @@ window.HB = window.HB || {};
     requestAnimationFrame(syncBottomStack);
   }
 
+  // Samma tredje navigationsnivå i båda layouterna. På mobil får den även
+  // plats med sorteringskontrollerna; på dator ligger klass-/lagvalen som
+  // en egen rad direkt under Schema/Tabeller/Slutspel/Bana.
+  function renderSelectionBar(buttons, kind) {
+    if (sheetMode()) {
+      renderMobileSelectionBar(buttons, kind);
+      return;
+    }
+    const subNav = $("#desktopSubNav");
+    if (!subNav) return;
+    subNav.querySelector(".desktop-selection-group")?.remove();
+    if (!buttons.length) return;
+    subNav.append(h("span", {
+      class: "desktop-selection-group", role: "tablist",
+      "aria-label": "Visa alla eller ett valt lag eller en vald klass",
+    }, ...buttons));
+  }
+
   function applySchemaSelection(main, matches) {
     const choices = [];
     for (const id of state.cats) {
@@ -8624,7 +9000,7 @@ window.HB = window.HB || {};
     // Visa därför tredje nivån först när det faktiskt finns något att växla.
     if (choices.length < 2) {
       state.schemaSelectionKey = "all";
-      renderMobileSelectionBar([], "schema");
+      renderSelectionBar([], "schema");
       return matches;
     }
     if (!choices.some((choice) => choice.key === state.schemaSelectionKey)) {
@@ -8641,13 +9017,7 @@ window.HB = window.HB || {};
         saveUi(); renderContent();
       },
     }, choice.label));
-    if (sheetMode()) {
-      renderMobileSelectionBar(buttons(), "schema");
-    } else {
-      main.append(h("div", { class: "table-group-tabs-wrap" },
-        h("div", { class: "table-group-tabs", role: "tablist",
-          "aria-label": "Vald klass eller valt lag" }, ...buttons())));
-    }
+    renderSelectionBar(buttons(), "schema");
     if (state.schemaSelectionKey === "all") return matches;
     const active = choices.find((choice) => choice.key === state.schemaSelectionKey);
     return active ? matches.filter(active.matches) : matches;
@@ -8705,12 +9075,13 @@ window.HB = window.HB || {};
         isFavoriteTeam(m.home.name, m.catName) ||
         isFavoriteTeam(m.away.name, m.catName);
       const favoriteMatches = cupMatches.filter(isFavoriteMatch);
-      // Klubbgrenen gäller bara den som FAKTISKT valt klubb (samma flagga
-      // som headerns klubbmärke, se hasChosenClub). state.favoriteClub är
-      // annars förifylld med sajtens egen klubb, och då hade varje ny
-      // besökare fått Alingsås HK:s matcher serverade — med en neutral
-      // header ovanför — i stället för frågan om vilket lag hen följer.
-      const clubMatches = favoriteMatches.length || !hasChosenClub
+      // Samma klubbkälla måste styra både hero-karusellen och schemalistan.
+      // Tidigare krävde listan dessutom en localStorage-flagga
+      // (hasChosenClub), medan karusellen nöjde sig med klubbnamnet i
+      // headern. I en ny webbläsare kunde karusellen därför visa fem
+      // Alingsås-matcher samtidigt som listan frågade "Vad vill du följa?".
+      // Har headerns klubb matcher i cupen är det det urvalet som gäller.
+      const clubMatches = favoriteMatches.length
         ? [] : cupMatches.filter(isClubMatch);
       // Dag och matchstatus räcker avsiktligt inte för att öppna schemat på
       // egen hand (se hasFilterSelection), men om användaren redan valt dem
@@ -8732,7 +9103,7 @@ window.HB = window.HB || {};
         // laddar om eller byter cup. Etiketten sätts bara när det FINNS ett
         // favoriturval att gå tillbaka till.
         if (favoriteMatches.length) automaticLabel = "back:dina lag";
-        else if (hasChosenClub && cupMatches.some(isClubMatch)) automaticLabel = "back:din klubb";
+        else if (cupMatches.some(isClubMatch)) automaticLabel = "back:din klubb";
       } else if (favoriteMatches.length) {
         automaticMatches = visibleCupMatches.filter(isFavoriteMatch);
         automaticLabel = "Visar dina lag";
@@ -8740,6 +9111,21 @@ window.HB = window.HB || {};
         automaticMatches = visibleCupMatches.filter(isClubMatch);
         automaticLabel = "Visar din klubb";
       } else {
+        // Klubben ÄR vald, men förekommer inte i den publicerade delen av
+        // cupen. Den generiska startfrågan ensam såg då ut som om länken
+        // hade tappat klubbvalet, trots att både URL och header var rätt.
+        // Förklara skillnaden och låt sökrutan finnas kvar för den som vill
+        // följa ett annat lag i just den här cupen.
+        if (cupMatches.length) {
+          main.append(h("div", { class: "banner banner-info" },
+            h("p", null,
+              h("strong", null, state.favoriteClub + " är vald. "),
+              "Klubben finns ännu inte bland de lag som " + cup().name +
+                " har publicerat matcher för."),
+            h("p", null,
+              "Klubbvalet ligger kvar. Om fler lag publiceras visas " +
+                state.favoriteClub + " automatiskt här.")));
+        }
         renderSchemaStartSearch(main);
         return;
       }
@@ -10729,13 +11115,7 @@ window.HB = window.HB || {};
           renderContent();
         },
       }, g.heading));
-    if (sheetMode()) {
-      renderMobileSelectionBar(tableTabButtons(), "tabeller");
-    } else if (tableGroups.length > 1) {
-        main.append(h("div", { class: "table-group-tabs-wrap" },
-          h("div", { class: "table-group-tabs", role: "tablist", "aria-label": "Valda grupper" },
-            ...tableTabButtons())));
-    }
+    if (tableGroups.length > 1) renderSelectionBar(tableTabButtons(), "tabeller");
 
     const visibleGroups = activeGroupKey === "all"
       ? tableGroups : tableGroups.filter((group) => group.key === activeGroupKey);
@@ -10912,8 +11292,9 @@ window.HB = window.HB || {};
   }
 
   // Konservativ möjlighet att nå en viss tabellplats. Varje återstående
-  // match kan ge 0–2 poäng. En kandidat tas bara bort när dess maximala
-  // poäng inte längre räcker förbi de lag som garanterat ligger före, eller
+  // match kan ge högst två eller tre poäng beroende på sport. En kandidat
+  // tas bara bort när dess maximala poäng inte längre räcker förbi de lag
+  // som garanterat ligger före, eller
   // när för många lag garanterat hamnar bakom för att den ska kunna landa
   // just på den efterfrågade platsen. Vid överlappande poängintervall hålls
   // båda kvar: framtida inbördes möten/målskillnad går inte att gissa ärligt.
@@ -10923,10 +11304,12 @@ window.HB = window.HB || {};
     if (!rows.length || rank < 1 || rank > rows.length) return [];
     if (isGroupComplete(rows)) return rows[rank - 1] ? [rows[rank - 1]] : [];
     const gamesPerTeam = rows.length - 1;
+    const sport = (cup() && cup().sport) || "handboll";
+    const maxPointsPerGame = (sport === "fotboll" || sport === "innebandy") ? 3 : 2;
     const ranges = rows.map((row) => ({
       row,
       min: row.points,
-      max: row.points + Math.max(0, gamesPerTeam - row.played) * 2,
+      max: row.points + Math.max(0, gamesPerTeam - row.played) * maxPointsPerGame,
     }));
     return ranges.filter((candidate) => {
       const others = ranges.filter((entry) => entry !== candidate);
@@ -11214,7 +11597,8 @@ window.HB = window.HB || {};
         h("span", { class: "cat" }, candidates.length + " möjliga lag"),
         h("span", null, "Kandidater till slutspelsplatsen")),
       h("p", { class: "muted" },
-        "Poäng och målskillnad kommer från lagens respektive grupper. Klicka på en rubrik för att sortera."),
+        "Poäng och " + (cup().sport === "basket" ? "poängskillnad" : "målskillnad") +
+        " kommer från lagens respektive grupper. Klicka på en rubrik för att sortera."),
       tableHost);
     document.body.append(dlg);
     showMatchDialog(dlg);
@@ -11775,18 +12159,7 @@ window.HB = window.HB || {};
       title: catLabel(c), "aria-label": catLabel(c),
       onclick: () => { state.playoffCatTab = c.catId; renderContent(); },
     }, catTabLabel(c))) : [];
-    if (sheetMode()) renderMobileSelectionBar(playoffCatButtons(), "slutspel");
-    if (cats.length > 1) {
-      if (!sheetMode()) {
-        main.append(h("div", { class: "row" },
-          h("select", {
-            class: "select", "aria-label": "Välj klass",
-            onchange: (e) => { state.playoffCatTab = +e.target.value; renderContent(); },
-          }, cats.map((c) => h("option", {
-            value: String(c.catId), ...(c.catId === selCat.catId ? { selected: "" } : {}),
-          }, catTabLabel(c))))));
-      }
-    }
+    if (cats.length > 1) renderSelectionBar(playoffCatButtons(), "slutspel");
     let any = false, anyLoading = false;
     const pendingConnectors = []; // {el, div} — träden vars kopplingslinjer ska ritas efter insättning
     const c = selCat;
@@ -12329,7 +12702,7 @@ window.HB = window.HB || {};
       // En modal <dialog> hamnar i webbläsarens topplager och täcker därför
       // alltid den fasta bottenmenyn, oavsett z-index. På mobil visas
       // inställningar som en helskärmsvy under navigationslagret.
-      if (window.matchMedia("(max-width: 700px)").matches) {
+      if (sheetMode()) {
         settingsViewOpen = true;
         // Inställningar är en undersida till Mer. Behåll därför Mer-raden
         // synlig och markera Inställningar där, i stället för att släcka
@@ -12460,10 +12833,15 @@ window.HB = window.HB || {};
   }
 
   async function init() {
+    loadClubLogoLibrary();
     // PWA: relativ sökväg (inte "/sw.js") så det funkar under en undermapp,
     // t.ex. GitHub Pages-projektsidor (callesjoberg.github.io/hboll/).
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js").catch(() => {});
+      try {
+        navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
+      } catch {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      }
     }
 
     // Scrolla-till-toppen tänds samtidigt som bottenmenyn krymper, efter
@@ -12571,6 +12949,7 @@ window.HB = window.HB || {};
     });
     setupPickerSheets();
     setupViewportOffset();
+    enforceMobileMenuHost();
     loadUi();
     updateClubLogo();
     if (hasUrlFilters) {
@@ -12604,7 +12983,7 @@ window.HB = window.HB || {};
         state.cupId = urlCup;
         state.tables = {}; state.playoffs = {}; state.groupTables = {}; dialogTableCache = {};
         state.matches = []; state.loadedAt = 0; heroIndex = 0; stashedFilter = null;
-        autoScrolledToNow = false; hasSyncedFreshData = false;
+        autoScrolledToNow = false; untimedPanelOpen = true; hasSyncedFreshData = false;
         applyUrlToState(pp);
         queueNamedUrlFilters(pp);
         lastNavSig = navSig();

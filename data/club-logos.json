@@ -1,0 +1,4393 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-08-15T19:59:00.583Z",
+  "source": "Svenska Handbollförbundets publika Profixio-register",
+  "districts": [
+    802,
+    803,
+    804,
+    805,
+    806
+  ],
+  "registeredClubs": 423,
+  "downloaded": 349,
+  "failed": 0,
+  "missingRegistryLogos": [
+    {
+      "name": "Arlanda HK",
+      "profixioId": 26132,
+      "district": 802
+    },
+    {
+      "name": "Assyriska Botkyrka Sportklubb",
+      "profixioId": 33114,
+      "district": 802
+    },
+    {
+      "name": "Bajen IF",
+      "profixioId": 33115,
+      "district": 802
+    },
+    {
+      "name": "Bengtsfors handbollsklubb",
+      "profixioId": 29653,
+      "district": 803
+    },
+    {
+      "name": "Bjärreds HK",
+      "profixioId": 26465,
+      "district": 804
+    },
+    {
+      "name": "BK Heid UF",
+      "profixioId": 26206,
+      "district": 803
+    },
+    {
+      "name": "Bodens HK",
+      "profixioId": 26166,
+      "district": 805
+    },
+    {
+      "name": "Bromölla Allmänna Idrottsklubb",
+      "profixioId": 33116,
+      "district": 804
+    },
+    {
+      "name": "Dalarö SK",
+      "profixioId": 26893,
+      "district": 802
+    },
+    {
+      "name": "Dalhems IF",
+      "profixioId": 26297,
+      "district": 804
+    },
+    {
+      "name": "Edsbro Idrottsförening",
+      "profixioId": 33117,
+      "district": 802
+    },
+    {
+      "name": "Forshaga HK",
+      "profixioId": 26409,
+      "district": 803
+    },
+    {
+      "name": "Föreningen S Handbollfans",
+      "profixioId": 33118,
+      "district": 802
+    },
+    {
+      "name": "Garda Idrottsklubb",
+      "profixioId": 33120,
+      "district": 802
+    },
+    {
+      "name": "Gustavsbergs HF",
+      "profixioId": 26113,
+      "district": 802
+    },
+    {
+      "name": "H 65 Gordies HK",
+      "profixioId": 26125,
+      "district": 804
+    },
+    {
+      "name": "H22 Skellefteå Handbollsklubb",
+      "profixioId": 26295,
+      "district": 805
+    },
+    {
+      "name": "Handbollsklubben Vinslöv",
+      "profixioId": 32408,
+      "district": 804
+    },
+    {
+      "name": "Hanåsa AF",
+      "profixioId": 26243,
+      "district": 804
+    },
+    {
+      "name": "Harrington Team",
+      "profixioId": 33121,
+      "district": 802
+    },
+    {
+      "name": "Hawks Handbollsklubb",
+      "profixioId": 26191,
+      "district": 804
+    },
+    {
+      "name": "HK Extra",
+      "profixioId": 26823,
+      "district": 806
+    },
+    {
+      "name": "HK Gislaved",
+      "profixioId": 26340,
+      "district": 803
+    },
+    {
+      "name": "HK Miffe",
+      "profixioId": 26353,
+      "district": 806
+    },
+    {
+      "name": "HK Rigel",
+      "profixioId": 26293,
+      "district": 803
+    },
+    {
+      "name": "HK Tallen",
+      "profixioId": 26313,
+      "district": 802
+    },
+    {
+      "name": "HK Vaggeryd",
+      "profixioId": 25974,
+      "district": 803
+    },
+    {
+      "name": "Hällbo IF",
+      "profixioId": 28128,
+      "district": 806
+    },
+    {
+      "name": "IFK Strömsund",
+      "profixioId": 26138,
+      "district": 805
+    },
+    {
+      "name": "IFK Söderhamn",
+      "profixioId": 26112,
+      "district": 806
+    },
+    {
+      "name": "Ihsan Kultur och Idrottsförening",
+      "profixioId": 33122,
+      "district": 806
+    },
+    {
+      "name": "IK 011",
+      "profixioId": 33123,
+      "district": 806
+    },
+    {
+      "name": "IK Stubbhagen",
+      "profixioId": 26133,
+      "district": 802
+    },
+    {
+      "name": "IK Tellus",
+      "profixioId": 26083,
+      "district": 802
+    },
+    {
+      "name": "IKPV Ystad Beachhandbollsförening",
+      "profixioId": 33124,
+      "district": 804
+    },
+    {
+      "name": "Kils AIK HF",
+      "profixioId": 26274,
+      "district": 803
+    },
+    {
+      "name": "Korsbacka Handbollsklubb",
+      "profixioId": 26136,
+      "district": 804
+    },
+    {
+      "name": "Kungliga Flottans IF",
+      "profixioId": 26139,
+      "district": 804
+    },
+    {
+      "name": "Levene/Skogslunds IF",
+      "profixioId": 28731,
+      "district": 803
+    },
+    {
+      "name": "Malmö HP",
+      "profixioId": 26298,
+      "district": 804
+    },
+    {
+      "name": "Malungs IF",
+      "profixioId": 26150,
+      "district": 806
+    },
+    {
+      "name": "Motala Handbollsklubb",
+      "profixioId": 33126,
+      "district": 806
+    },
+    {
+      "name": "Nossebro Idrottsförening",
+      "profixioId": 33127,
+      "district": 803
+    },
+    {
+      "name": "Nynäs Stags IF",
+      "profixioId": 30292,
+      "district": 802
+    },
+    {
+      "name": "Onsala HK",
+      "profixioId": 26308,
+      "district": 803
+    },
+    {
+      "name": "Oskarshamns HK",
+      "profixioId": 26189,
+      "district": 804
+    },
+    {
+      "name": "OV Helsingborgs Beach HC",
+      "profixioId": 26451,
+      "district": 804
+    },
+    {
+      "name": "Ovesholms IF",
+      "profixioId": 26159,
+      "district": 804
+    },
+    {
+      "name": "Rydebäcks IF",
+      "profixioId": 26200,
+      "district": 804
+    },
+    {
+      "name": "SK Tirfing",
+      "profixioId": 26358,
+      "district": 806
+    },
+    {
+      "name": "Skarpnäcks HF",
+      "profixioId": 26328,
+      "district": 802
+    },
+    {
+      "name": "Skultuna IS",
+      "profixioId": 29849,
+      "district": 806
+    },
+    {
+      "name": "Spårvägens HF",
+      "profixioId": 26022,
+      "district": 802
+    },
+    {
+      "name": "Stora Mellösa-Åsbyvikens IF",
+      "profixioId": 26357,
+      "district": 806
+    },
+    {
+      "name": "Sundbybergs Idrottsklubb",
+      "profixioId": 33128,
+      "district": 802
+    },
+    {
+      "name": "Svenljunga Handbollklubb",
+      "profixioId": 33129,
+      "district": 803
+    },
+    {
+      "name": "Svärtinge Sportklubb",
+      "profixioId": 33130,
+      "district": 806
+    },
+    {
+      "name": "Södermalms Bollklubb",
+      "profixioId": 33131,
+      "district": 802
+    },
+    {
+      "name": "Södertörns Allmänna Idrottsförening",
+      "profixioId": 33132,
+      "district": 802
+    },
+    {
+      "name": "Sövde Bollklubb",
+      "profixioId": 33133,
+      "district": 804
+    },
+    {
+      "name": "Team Stockholm HS",
+      "profixioId": 26021,
+      "district": 802
+    },
+    {
+      "name": "Torslanda AIK",
+      "profixioId": 26167,
+      "district": 803
+    },
+    {
+      "name": "Umedalens Idrottsförening",
+      "profixioId": 33134,
+      "district": 805
+    },
+    {
+      "name": "Umeå IK Handbollsförening",
+      "profixioId": 33135,
+      "district": 805
+    },
+    {
+      "name": "United Beach Handbollsklubb",
+      "profixioId": 33195,
+      "district": 803
+    },
+    {
+      "name": "Valjeviken Idrottsförening",
+      "profixioId": 33136,
+      "district": 804
+    },
+    {
+      "name": "Vårgårda IK handbollsklubb",
+      "profixioId": 32478,
+      "district": 803
+    },
+    {
+      "name": "VästeråsIrsta Handbollförening Ungdom",
+      "profixioId": 33138,
+      "district": 806
+    },
+    {
+      "name": "WIP Idrottsförening",
+      "profixioId": 33137,
+      "district": 803
+    },
+    {
+      "name": "Åhusbeach Sports Club",
+      "profixioId": 33139,
+      "district": 804
+    },
+    {
+      "name": "Åkers IF",
+      "profixioId": 26333,
+      "district": 806
+    },
+    {
+      "name": "Årjängs handbollsklubb",
+      "profixioId": 30701,
+      "district": 803
+    },
+    {
+      "name": "Älmhult Handbollsklubb",
+      "profixioId": 26453,
+      "district": 804
+    },
+    {
+      "name": "Örsundsbro IF",
+      "profixioId": 29615,
+      "district": 806
+    }
+  ],
+  "unmatchedKnownClubs": [
+    "180s",
+    "Action&Trend",
+    "AFHB",
+    "Ahlafors IF",
+    "Ajax København",
+    "Akilles",
+    "Akka Frakt",
+    "Alfta Handboll",
+    "Alingsås IF",
+    "Allinkrybhim",
+    "Alnö IF",
+    "Alsike IF",
+    "Andra andningen",
+    "Angered SK",
+    "Angereds IS",
+    "Ankarets bänknötare",
+    "Askan",
+    "Askims IK",
+    "Assyriska BK",
+    "Azalea BK",
+    "B-laget",
+    "Backa Sharks",
+    "Backatorp IF",
+    "Badboll",
+    "Bagsværd BK",
+    "Bagsværd Boldklub",
+    "Bakis & Skakis",
+    "BalkanAllStars",
+    "Ballingslöv",
+    "Balltorps FF",
+    "Bana 3",
+    "Bananklubben",
+    "Barkarö SK",
+    "Baron",
+    "Beach Babes HK",
+    "Beat the Crew",
+    "Bergdalens IK",
+    "Bergsjö IF",
+    "Bergslagens stolthet",
+    "Bergum IF",
+    "Bergums IF",
+    "Betsele IF",
+    "BHC Valdemort España",
+    "Bik Sportklubb",
+    "Bjärups elit",
+    "Bjørndal Idrettsforening",
+    "Björndammen BK",
+    "Björndammens BK",
+    "BK Astrio",
+    "BK Häcken",
+    "BK Höllviken",
+    "BK Skottfint",
+    "BK Ydun",
+    "Bk-46",
+    "BK-46",
+    "BK-46 Handboll rf",
+    "Blomma ut",
+    "BlueMeadows",
+    "Bo-Laget",
+    "Bofinkarna",
+    "Bogafjell IL",
+    "Bollebygds AFF",
+    "Bollebygds SK",
+    "Bollnäs GIF FF",
+    "Bolton Wanderers E-Sport",
+    "Bondsjöhöjdens IK",
+    "Boo FF",
+    "Borgå Akilles",
+    "Borås HK84",
+    "Bromölla AIK",
+    "Brunnby FF",
+    "Brønshøj Boldklub",
+    "Buden Boys BK",
+    "Burris BoIS",
+    "BVH",
+    "Bygdens banditer",
+    "Bækkelagets Sportklubb",
+    "Bækkelagets sportsklub",
+    "Bækkelagets Sportsklubb",
+    "Böffes Sr.",
+    "Bøler IF",
+    "Chalmers HK 1",
+    "Chok-Bandits",
+    "Claessons lärjungar",
+    "Cocks",
+    "Croatia BK",
+    "Dalarö SK",
+    "Dalby",
+    "Dalby GIF 3",
+    "Dark Horse",
+    "Dicken (Drumsö Idrottskamrater rf.)",
+    "Dicken rf",
+    "Dicken rf.",
+    "Djurgårdens IF FF",
+    "Drottningarna av Tylösand",
+    "Dunderdrängarna",
+    "Edsviken comeback",
+    "Ekenäs IF",
+    "Ekhagens IF",
+    "En Prilla En Bärs",
+    "Enebakk IF",
+    "Enebybergs IF",
+    "Eriksbergs IF",
+    "Erikslunds KF",
+    "Eskiliterna",
+    "Eskilstuna Guif",
+    "Eskilstuna GUIF",
+    "Eslövs Gubbarna",
+    "Eslövs Handbollsklubb",
+    "Falköpings AIK HK",
+    "Falu BS",
+    "FC Balingsnäs",
+    "FC hängtotte",
+    "Fc Lingon",
+    "FC Rosengård",
+    "Finlandia Pallo AIF",
+    "Fireball",
+    "Flint Tønsberg Håndball AL",
+    "Flurkmarks IK",
+    "Forshaga HK",
+    "Fortuna FF",
+    "Forza Kungsbacka FF",
+    "Forza Limhamn",
+    "Frillesås FF",
+    "Fristadens Hk F09/10",
+    "Fräcka Falkarna 3",
+    "Fränsta IK",
+    "Frösö IF",
+    "Fässbergs IF",
+    "GAIS",
+    "Gamle Fredrikstad Håndballklubb",
+    "Gerdsken BK",
+    "Gerdskens BK",
+    "Gidsel & gänget",
+    "GIF Sundsvall",
+    "GIK Wasaiterna U...",
+    "Gislegrillen",
+    "Gjelleråsen",
+    "Glumslövs FF",
+    "Goa Gubbar",
+    "Goal Diggers",
+    "Goat Fanboys",
+    "Goldcoast FC",
+    "GOODLIFE",
+    "Grankulla IFK",
+    "Grankulla Ifk (GrIfk)",
+    "Gresvik IF",
+    "Greve Håndbold",
+    "GrIFK Handboll",
+    "Guif",
+    "Gulbruna gubbar",
+    "Guldhedens IK",
+    "Gullan",
+    "Gulset Håndball",
+    "Gunnilse IS",
+    "Gustavsbergs HF",
+    "Gårdsten FC",
+    "Götaholm BK",
+    "Götaholms BK",
+    "H-TOWN",
+    "H43 1",
+    "H43 2",
+    "H43 blå",
+    "H43 vit",
+    "Halmstad Handboll",
+    "Halvseriösa HK",
+    "Halvtempo HK",
+    "Hammarby",
+    "Hammarby 1",
+    "Hammarby 2",
+    "Hammarby Handboll",
+    "Hammarby IF FF",
+    "Handbollklubben Varberg",
+    "Handbollsföreningen Karlskrona",
+    "Hareskov IF",
+    "Hasle-Løren",
+    "Hasle-Løren IL",
+    "Haslum Håndball",
+    "Haslum Håndballklubb",
+    "Haslum IL",
+    "Hasses pojkar HK",
+    "HB’s vänner",
+    "HC HIK",
+    "HC Tallinn",
+    "HC Viimsi",
+    "Heffnersklubbans BK",
+    "Hellton / Skåre",
+    "Helsingkrona Nation",
+    "Hemmadomarna",
+    "Herlufsholm GF",
+    "Herrestads AIF",
+    "Hestrafors IF",
+    "HIFK Damhandboll",
+    "HIFK Handboll",
+    "Hisingsbacka FC",
+    "Hisøy håndball j15",
+    "Hittarps IK",
+    "Hjuviks AIK",
+    "Hjärna Hjärta P",
+    "hk bolltapp",
+    "HK Guldkroken",
+    "HK Kville",
+    "HK Ramunder 1",
+    "HK Ramunder 2",
+    "HK Vaggeryd",
+    "HK Vestre Toten",
+    "Holmen IF",
+    "Hovsta IF",
+    "Hovås Billdal",
+    "Hovås Billdal IF",
+    "Hovås- Billdal IF",
+    "Husie IF",
+    "Hyllie IK",
+    "HÅFF",
+    "Håndballklubben Rygge",
+    "Hårlev BK",
+    "Hälsinglands SK",
+    "Hässelby SK",
+    "Hässelby SK FF",
+    "Hönö IS",
+    "HöörStars",
+    "IF Brommapojkarna",
+    "IF Elfsborg",
+    "IF Elfsborg F15",
+    "IF Helsinge Atlas",
+    "If Helsinge Atlas rf",
+    "IF Limhamn Bunkeflo",
+    "IF Mölndal",
+    "IF Mölndal Fotboll",
+    "IF Tyristubben",
+    "IF Vardar Makedonija",
+    "IF Vardar/Makedonija",
+    "IF Väster",
+    "IF Warta",
+    "IFK Fjärås",
+    "IFK Göteborg",
+    "IFK Haninge",
+    "IFK Hindås",
+    "IFK Skövde HK",
+    "IFK Sundsvall",
+    "IFK Timrå",
+    "IFK Tylö",
+    "IFK Uddevalla",
+    "IFK Valla",
+    "IFK Ystad 1",
+    "IFK Ystad 2",
+    "IFK Ystad FK",
+    "IFK Ystad röd",
+    "IFK Ystad svart",
+    "IFK Östersund",
+    "IK Fyris",
+    "IK Gauthiod",
+    "IK Gimletroll",
+    "IK Kongahälla",
+    "IK Kongahälla/Kareby IS",
+    "IK Lågan",
+    "IK Lågan 1",
+    "IK Lågan 2",
+    "IK Oddevold",
+    "IK Rössö",
+    "IK Svane",
+    "IK Sätra",
+    "IK Våg",
+    "IK Zenith",
+    "IL Høvdingen",
+    "IL Skade",
+    "IL Skrim",
+    "In it to win it",
+    "Inget bäst före-datum",
+    "Intrasport/Tārgale",
+    "Itthundra",
+    "Jakobsbergs GOIF",
+    "Jitex BK",
+    "Jogga Mojito",
+    "Jonsereds IF",
+    "Josagrogg",
+    "Joulupukki",
+    "Junior Lions FC",
+    "Jægersborg Boldklub",
+    "Kaffedags",
+    "Kan inte reglerna",
+    "Kareby IS",
+    "Karlbergs BK",
+    "KF Velebit",
+    "KFUM Trollhättan",
+    "Kinna IF",
+    "Klemetsrud IL",
+    "Kode IF",
+    "Kohlswa HK",
+    "Kolbotn Fotball IL",
+    "Konnerud IL",
+    "Korpens FF",
+    "Korslagda",
+    "Korsvoll",
+    "KPK Mella",
+    "Kragerø IF Håndball",
+    "Kriminalvården",
+    "Kristianstadsbladet",
+    "Kroppskultur",
+    "Kråkerøy IL",
+    "Kubikenborgs IF",
+    "Kulltorp Rockets",
+    "Kungarna Av Tylösand",
+    "Kungsbacka IF",
+    "Kungsladugårds BK",
+    "Kungsnäs FC",
+    "Kungälvs FF",
+    "Kusiner & Vitaminer",
+    "Kvik Halden FK",
+    "Kvik Sport",
+    "Kyrkslätt IF",
+    "Kållered SK",
+    "Kåmås senatorer",
+    "Kälvar HK",
+    "Kärra Handbollsförening",
+    "Kärra KIF",
+    "Kärra Klareberg IF",
+    "Köping FF",
+    "Landvetter IF",
+    "Landvetter IF 2003",
+    "Landvetter IS",
+    "Langhus IL",
+    "Lasse Spadez",
+    "LB07",
+    "LEA",
+    "Lekstorps IF",
+    "Lerkils IF",
+    "Lerums IS",
+    "Lervik IF",
+    "Lidingö Sportklubb",
+    "Linderud IL",
+    "Lindeskolans IF",
+    "Lindholmens BK",
+    "Lindome GIF",
+    "Lindö FF",
+    "Lira BK",
+    "Ljunghusen ljusblå",
+    "Ljungsbro HF",
+    "Ljungskile SK",
+    "LKB/Gistrup",
+    "LKB/RGK",
+    "LUGI vinröd",
+    "Luleå FC",
+    "Lundagård",
+    "Lundby IF",
+    "Lunden ÖBK",
+    "Lunden Överås BK",
+    "Lunner Håndballklubb",
+    "LVHK",
+    "LVHK röd",
+    "Lycksele IF",
+    "Lysekils AIK",
+    "Lågedammarnas Atlet och Idrottssällskap",
+    "Läkare utan gränser",
+    "Lørenskog Håndball",
+    "Lørenskog IF",
+    "Madde å männen",
+    "Magnussons BK",
+    "Malmslätts HF",
+    "Mammorna 2.0",
+    "Mange o Co",
+    "Mariehem SK",
+    "Marieholm IK",
+    "Marieholms IK",
+    "Marma IF",
+    "Masthuggets BK",
+    "Matfors IF",
+    "Melhus håndball",
+    "Moderaterna/MUF Skåne",
+    "Mormors pojkar",
+    "Mossens BK",
+    "Mustamäe Käsipalliklubi",
+    "Myssjö-Ovikens IF",
+    "Mårtens pågar",
+    "Mälarhöjdens IK",
+    "Mölndal Fotboll",
+    "Mölndal röd",
+    "Mölndal svart",
+    "Mölndal/Nord",
+    "Mölndal/Nord P05",
+    "Mölnlycke IF",
+    "Mölnlycke IS Ungdom",
+    "NAIS Handbollsfö...",
+    "Nisses isolering",
+    "Nisses Nissar",
+    "Njurunda IK",
+    "NKIK 1",
+    "NKIK 2",
+    "NKIK Handboll Norrköping",
+    "Nordic Athlete SK",
+    "Norrköpings Handbollklubb",
+    "Norrköpings Kvinnliga IK",
+    "Nykøbing IF",
+    "Nynäs Stags Idrottsförening",
+    "Näsets SK",
+    "Nödinge SK",
+    "Nödinge SK Fotboll",
+    "Oldschool",
+    "Onsala BK",
+    "Ope IF",
+    "Pablo's pågar",
+    "Padise Käsipalliklubi",
+    "Pargas IF",
+    "Partille IF",
+    "Pernod Ricard",
+    "Plötsligt i Vinslöv",
+    "Prenad",
+    "PRO Mille",
+    "Proletären FF",
+    "Quicksand",
+    "Qviding",
+    "Qviding FIF",
+    "Raklev G&I",
+    "Ramnes håndball",
+    "Ramunder HK  1",
+    "Ramunder HK  2",
+    "Ramunder HK 1",
+    "Ramunder HK 2",
+    "RCD Espanyol",
+    "Rimbo Beaches",
+    "Rolvsøy IF",
+    "Runar, IL",
+    "Råde IL",
+    "Råå Idrottsförening",
+    "Råå IF",
+    "Rönninge Salem Fotboll",
+    "SAND-WITCHES",
+    "Sandar IL",
+    "Sandarna BK",
+    "Sandboll",
+    "Sandefjord Turn & Idrettsforening",
+    "Sandslott HK",
+    "Sandstorm",
+    "Sandstorm BK",
+    "Sandviks IK",
+    "ScoutAlice HK",
+    "Sektion Grytan",
+    "Selånger SK",
+    "SG Ruddalen",
+    "SG Ruddalen IF",
+    "SHK röd",
+    "Sidsjö-Böle",
+    "Sidsjö-Böle IF",
+    "Sjundeå IF",
+    "Sjömarken/Sandareds IF",
+    "Skandinaviska unionen",
+    "Skene IF",
+    "Skepplanda BTK",
+    "Skiljebo SK",
+    "Skiptvet IL",
+    "Skoftebyns IF",
+    "SKRIVERI",
+    "SKRĪVERI/ANSS",
+    "Skå IK & Bygdegård",
+    "Skå IK o Bygdegård",
+    "Skåne TV",
+    "Skövde United",
+    "Släggan & co",
+    "SMÅ IF",
+    "Snarøya håndball",
+    "Snarøya Sportsklubb",
+    "Snövel beach Academy",
+    "Sollefteå Gif",
+    "Solväders FC",
+    "Solängens BK",
+    "Sparbanken Skåne",
+    "Sportklubben Kvarnberga",
+    "SSK Skjetten Håndball",
+    "Steens",
+    "Stenungsunds IF",
+    "Stolpskotten",
+    "Storhamar håndball",
+    "Storspelarna",
+    "STP Finest",
+    "Sträckta Vader HK",
+    "Sundsvall Handboll 1",
+    "Sundsvall Handboll 2",
+    "Surte IS",
+    "Surte/Ahlafors",
+    "Svampbob Trekant",
+    "Svartviks IF",
+    "Syndikatet (Soon To Be)",
+    "Särö Kullavik IF",
+    "Sävedalens IF",
+    "Södra Sandby IF",
+    "Söråkers FF",
+    "SÖT & SVETTIGA",
+    "TEAM Allerum",
+    "Team Grogg",
+    "Team Ringrostiga",
+    "TeamNextNorway",
+    "Teg Södra Umeå IF",
+    "Teie HK",
+    "Testoo onsdag",
+    "The OGs",
+    "The Ravens",
+    "Tindlund IF",
+    "TMG",
+    "Torns IF",
+    "Torpet HK",
+    "Torslanda blå",
+    "Torslanda IK",
+    "Torslanda röd",
+    "Trosvik IK",
+    "Trygg-Hansa Malmö",
+    "TSV Ellerbek",
+    "Tveter HK",
+    "Tveter Håndballklubb",
+    "Tyresö 1",
+    "Tyresö 2",
+    "Tyresö FF",
+    "Tyresö Röd",
+    "Tyresö Strand FC",
+    "Tyresö Svart",
+    "Täfteå/Ersmark",
+    "Tölö IF",
+    "Töntligan",
+    "Umeå FC",
+    "Union Bærum Kvinner",
+    "United beach handbollsklubb",
+    "Uppsala HK F2010",
+    "Uppsalas Unga",
+    "Utbynäs SK",
+    "Utsiktens BK",
+    "Vaaler/Grue J16",
+    "Vadstena HF 1",
+    "Vadstena HF 2",
+    "VAKANT",
+    "Vaksala SK",
+    "Valle HK",
+    "Vallens IF",
+    "Vallentuna Fotboll",
+    "Veldre Håndball",
+    "Vendelsö IK",
+    "Vestby Håndballklubb",
+    "Vi skyller på ölen",
+    "VI ÄR ÖVERALLT",
+    "Vikersund",
+    "Vikings",
+    "Vålerenga Fotball",
+    "Vålerenga IF",
+    "Våmbs IF",
+    "Värmdö IF",
+    "Värnamo Södra FF",
+    "Västerhaninge IF",
+    "VästeråsIrsta",
+    "VästeråsIrsta HF Ungdom",
+    "Västra Frölunda IF",
+    "VÄXJÖ CREW",
+    "When in Europe, don't miss Skurup",
+    "Wikan Personal",
+    "Youth FC",
+    "Ystad IF 1",
+    "Ystad IF 2",
+    "Ystad IF 3",
+    "Ystad IF blå",
+    "Ystad IF vit",
+    "Ystads Dynamiter",
+    "Ystads IF blå",
+    "Ystads IF Blå",
+    "Ystads IF FF",
+    "Ystads IF vit",
+    "Ystads IF Vit",
+    "Ytterby IS",
+    "ZIGIZAGI HK",
+    "Åbo IFK",
+    "Åboll",
+    "Åhus Handbol...",
+    "Åkermans",
+    "Ålis är pappa (igen)",
+    "Åre SLK",
+    "Årets comeback",
+    "Årsta Handboll",
+    "Årsta revolution",
+    "Älvsborg FF",
+    "Älvsborgs FF",
+    "Älvängens IK",
+    "Ängby IF",
+    "Är Det Så Fel HK",
+    "Öjersjö IF",
+    "Öl&övertramp",
+    "Önnereds IK",
+    "Örby IS",
+    "Örebro SK",
+    "Örebro SK HK",
+    "Örebro SK Ungdom",
+    "Örebro SK Ungdom/Vintrosa IS",
+    "ÖSK Ungdom",
+    "Östergårds HK",
+    "Österslöv IS",
+    "Östersunds FK",
+    "Övrevol Hosle IF",
+    "Øvrevoll Hosle IL",
+    "Øyestad",
+    "Øyestad Håndball G2013",
+    "Øyestad IF",
+    "Øyestad IF håndball",
+    "Øyestad/Hisøy IL"
+  ],
+  "logos": {
+    "ahus-handboll": {
+      "name": "Åhus HB",
+      "file": "assets/club-logos/ahus-hb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26027",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26027_1761325976",
+      "profixioId": 26027,
+      "district": 804,
+      "alias": "Åhus Handboll"
+    },
+    "ahus-hb": {
+      "name": "Åhus HB",
+      "file": "assets/club-logos/ahus-hb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26027",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26027_1761325976",
+      "profixioId": 26027,
+      "district": 804
+    },
+    "ahus-hbk": {
+      "name": "Åhus HB",
+      "file": "assets/club-logos/ahus-hb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26027",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26027_1761325976",
+      "profixioId": 26027,
+      "district": 804,
+      "alias": "Åhus HBK"
+    },
+    "aik": {
+      "name": "AIK",
+      "file": "assets/club-logos/aik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26001",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26001",
+      "profixioId": 26001,
+      "district": 802
+    },
+    "aik-handboll": {
+      "name": "AIK",
+      "file": "assets/club-logos/aik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26001",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26001",
+      "profixioId": 26001,
+      "district": 802,
+      "alias": "AIK Handboll"
+    },
+    "aik-handbollsforening": {
+      "name": "AIK",
+      "file": "assets/club-logos/aik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26001",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26001",
+      "profixioId": 26001,
+      "district": 802,
+      "alias": "AIK Handbollsförening"
+    },
+    "akersberga-hk": {
+      "name": "Åkersberga HK",
+      "file": "assets/club-logos/akersberga-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26060",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26060",
+      "profixioId": 26060,
+      "district": 802
+    },
+    "ala-if": {
+      "name": "Ala IF",
+      "file": "assets/club-logos/ala-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26100",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26100",
+      "profixioId": 26100,
+      "district": 806
+    },
+    "ale-handboll": {
+      "name": "Ale Handbollsförening",
+      "file": "assets/club-logos/ale-handbollsforening.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26306",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26306",
+      "profixioId": 26306,
+      "district": 803,
+      "alias": "Ale Handboll"
+    },
+    "ale-handbollsforening": {
+      "name": "Ale Handbollsförening",
+      "file": "assets/club-logos/ale-handbollsforening.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26306",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26306",
+      "profixioId": 26306,
+      "district": 803
+    },
+    "ale-hf": {
+      "name": "Ale Handbollsförening",
+      "file": "assets/club-logos/ale-handbollsforening.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26306",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26306",
+      "profixioId": 26306,
+      "district": 803,
+      "alias": "Ale HF"
+    },
+    "alfta-gif": {
+      "name": "Alfta GIF",
+      "file": "assets/club-logos/alfta-gif.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26131",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26131",
+      "profixioId": 26131,
+      "district": 806
+    },
+    "alingsas-hk": {
+      "name": "Alingsås HK",
+      "file": "assets/ahk-logo.svg",
+      "source": "https://www.profixio.com/app/lx/clubs/26144",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26144",
+      "profixioId": 26144,
+      "district": 803
+    },
+    "alta-if": {
+      "name": "Älta IF",
+      "file": "assets/club-logos/alta-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26009",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26009",
+      "profixioId": 26009,
+      "district": 802
+    },
+    "amo-hk": {
+      "name": "Amo HK",
+      "file": "assets/club-logos/amo-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26075",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26075",
+      "profixioId": 26075,
+      "district": 804
+    },
+    "anderstorp-sk": {
+      "name": "Anderstorps SK",
+      "file": "assets/club-logos/anderstorps-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26264",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26264_1691667924",
+      "profixioId": 26264,
+      "district": 803,
+      "alias": "Anderstorp SK"
+    },
+    "anderstorps-sk": {
+      "name": "Anderstorps SK",
+      "file": "assets/club-logos/anderstorps-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26264",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26264_1691667924",
+      "profixioId": 26264,
+      "district": 803
+    },
+    "arbra-hk": {
+      "name": "Arbrå HK",
+      "file": "assets/club-logos/arbra-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25943",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25943",
+      "profixioId": 25943,
+      "district": 806
+    },
+    "arsta-aik": {
+      "name": "Årsta AIK HF",
+      "file": "assets/club-logos/arsta-aik-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26076",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26076",
+      "profixioId": 26076,
+      "district": 802,
+      "alias": "Årsta AIK"
+    },
+    "arsta-aik-hf": {
+      "name": "Årsta AIK HF",
+      "file": "assets/club-logos/arsta-aik-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26076",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26076",
+      "profixioId": 26076,
+      "district": 802
+    },
+    "arsta-aik-hk": {
+      "name": "Årsta AIK HF",
+      "file": "assets/club-logos/arsta-aik-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26076",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26076",
+      "profixioId": 26076,
+      "district": 802,
+      "alias": "Årsta AIK HK"
+    },
+    "arstaiternas-hk": {
+      "name": "Årstaiternas HK",
+      "file": "assets/club-logos/arstaiternas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26267",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26267",
+      "profixioId": 26267,
+      "district": 802
+    },
+    "arvika-hk": {
+      "name": "Arvika HK",
+      "file": "assets/club-logos/arvika-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26343",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26343",
+      "profixioId": 26343,
+      "district": 803
+    },
+    "astorp-hf": {
+      "name": "Åstorps HF",
+      "file": "assets/club-logos/astorps-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26322",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26322",
+      "profixioId": 26322,
+      "district": 804,
+      "alias": "Åstorp HF"
+    },
+    "astorps-hf": {
+      "name": "Åstorps HF",
+      "file": "assets/club-logos/astorps-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26322",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26322",
+      "profixioId": 26322,
+      "district": 804
+    },
+    "avesta-brovallen": {
+      "name": "Avesta Brovallen HF",
+      "file": "assets/club-logos/avesta-brovallen-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26354",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26354",
+      "profixioId": 26354,
+      "district": 806,
+      "alias": "Avesta Brovallen"
+    },
+    "avesta-brovallen-hf": {
+      "name": "Avesta Brovallen HF",
+      "file": "assets/club-logos/avesta-brovallen-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26354",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26354",
+      "profixioId": 26354,
+      "district": 806
+    },
+    "backa-hk": {
+      "name": "Backa HK",
+      "file": "assets/club-logos/backa-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26124",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26124_1745933259",
+      "profixioId": 26124,
+      "district": 803
+    },
+    "balsta-if": {
+      "name": "Bålsta IF",
+      "file": "assets/club-logos/balsta-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25986",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25986",
+      "profixioId": 25986,
+      "district": 802
+    },
+    "barkens-hf": {
+      "name": "Barkens HF",
+      "file": "assets/club-logos/barkens-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26196",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26196",
+      "profixioId": 26196,
+      "district": 806
+    },
+    "beach-handball-club-stockholm": {
+      "name": "Beach Handball Club Stockholm",
+      "file": "assets/club-logos/beach-handball-club-stockholm.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26092",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26092_1718030934",
+      "profixioId": 26092,
+      "district": 802
+    },
+    "bjarnums-hk": {
+      "name": "Bjärnums HK",
+      "file": "assets/club-logos/bjarnums-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26442",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26442",
+      "profixioId": 26442,
+      "district": 804
+    },
+    "bjurslatt-if": {
+      "name": "Bjurslätts IF",
+      "file": "assets/club-logos/bjurslatts-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26165",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26165",
+      "profixioId": 26165,
+      "district": 803,
+      "alias": "Bjurslätt IF"
+    },
+    "bjurslatts-if": {
+      "name": "Bjurslätts IF",
+      "file": "assets/club-logos/bjurslatts-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26165",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26165",
+      "profixioId": 26165,
+      "district": 803
+    },
+    "bk-heid": {
+      "name": "BK Heid",
+      "file": "assets/club-logos/bk-heid.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26127",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26127",
+      "profixioId": 26127,
+      "district": 803
+    },
+    "bk-hisingen": {
+      "name": "BK Hisingen",
+      "file": "assets/club-logos/bk-hisingen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/28286",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/28286",
+      "profixioId": 28286,
+      "district": 803
+    },
+    "bk-kungsan": {
+      "name": "BK Kungsan",
+      "file": "assets/club-logos/bk-kungsan.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26424",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26424",
+      "profixioId": 26424,
+      "district": 802
+    },
+    "bk-sol": {
+      "name": "BK Sol",
+      "file": "assets/club-logos/bk-sol.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26259",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26259",
+      "profixioId": 26259,
+      "district": 802
+    },
+    "boden-handboll-if": {
+      "name": "Boden Handboll IF",
+      "file": "assets/club-logos/boden-handboll-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26063",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26063",
+      "profixioId": 26063,
+      "district": 805
+    },
+    "bodens-bk-hf": {
+      "name": "Bodens BK HF",
+      "file": "assets/club-logos/bodens-bk-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25966",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25966",
+      "profixioId": 25966,
+      "district": 805
+    },
+    "bollstanas-sk": {
+      "name": "Bollstanäs SK",
+      "file": "assets/club-logos/bollstanas-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25998",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25998",
+      "profixioId": 25998,
+      "district": 802
+    },
+    "boras-hk-84": {
+      "name": "Borås HK 84",
+      "file": "assets/club-logos/boras-hk-84.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26291",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26291_1744725770",
+      "profixioId": 26291,
+      "district": 803
+    },
+    "borlange-hf": {
+      "name": "Borlänge HF",
+      "file": "assets/club-logos/borlange-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26868",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26868",
+      "profixioId": 26868,
+      "district": 806
+    },
+    "borlange-hk": {
+      "name": "Borlänge HK",
+      "file": "assets/club-logos/borlange-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26099",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26099",
+      "profixioId": 26099,
+      "district": 806
+    },
+    "botulfsplatsens-bk": {
+      "name": "Botulfsplatsens BK",
+      "file": "assets/club-logos/botulfsplatsens-bk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26126",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26126",
+      "profixioId": 26126,
+      "district": 804
+    },
+    "brannans-handbollsforening": {
+      "name": "Brännans Handbollsförening",
+      "file": "assets/club-logos/brannans-handbollsforening.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25968",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25968",
+      "profixioId": 25968,
+      "district": 805
+    },
+    "byttorps-if": {
+      "name": "Byttorps IF",
+      "file": "assets/club-logos/byttorps-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25949",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25949_1694074102",
+      "profixioId": 25949,
+      "district": 803
+    },
+    "cafe-lillan-hf": {
+      "name": "Cafe Lillan HF",
+      "file": "assets/club-logos/cafe-lillan-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26338",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26338",
+      "profixioId": 26338,
+      "district": 803
+    },
+    "chalmers-hk": {
+      "name": "Chalmers HK",
+      "file": "assets/club-logos/chalmers-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25996",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25996",
+      "profixioId": 25996,
+      "district": 803
+    },
+    "dalby-gif": {
+      "name": "Dalby GIF",
+      "file": "assets/club-logos/dalby-gif.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26435",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26435",
+      "profixioId": 26435,
+      "district": 804
+    },
+    "djurgardens-if-hf": {
+      "name": "Djurgårdens IF HF",
+      "file": "assets/club-logos/djurgardens-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25985",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25985",
+      "profixioId": 25985,
+      "district": 802
+    },
+    "djurgardshof-ik": {
+      "name": "Djurgårdshof IK HK",
+      "file": "assets/club-logos/djurgardshof-ik-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26024",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26024_1680804859",
+      "profixioId": 26024,
+      "district": 802,
+      "alias": "Djurgårdshof IK"
+    },
+    "djurgardshof-ik-hk": {
+      "name": "Djurgårdshof IK HK",
+      "file": "assets/club-logos/djurgardshof-ik-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26024",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26024_1680804859",
+      "profixioId": 26024,
+      "district": 802
+    },
+    "edsbyns-if-hf": {
+      "name": "Edsbyns IF HF",
+      "file": "assets/club-logos/edsbyns-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26345",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26345",
+      "profixioId": 26345,
+      "district": 806
+    },
+    "ekero-aik": {
+      "name": "Ekerö AIK",
+      "file": "assets/club-logos/ekero-aik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26135",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26135",
+      "profixioId": 26135,
+      "district": 802
+    },
+    "eksjo-bk": {
+      "name": "Eksjö BK",
+      "file": "assets/club-logos/eksjo-bk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26212",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26212",
+      "profixioId": 26212,
+      "district": 804
+    },
+    "enkoping-hf": {
+      "name": "Enköpings HF",
+      "file": "assets/club-logos/enkopings-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26043",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26043_1753952665",
+      "profixioId": 26043,
+      "district": 806,
+      "alias": "Enköping HF"
+    },
+    "enkopings-hf": {
+      "name": "Enköpings HF",
+      "file": "assets/club-logos/enkopings-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26043",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26043_1753952665",
+      "profixioId": 26043,
+      "district": 806
+    },
+    "enkopings-hs-av-2012": {
+      "name": "Enköpings HS av 2012",
+      "file": "assets/club-logos/enkopings-hs-av-2012.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26134",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26134",
+      "profixioId": 26134,
+      "district": 806
+    },
+    "eskilstuna-guif-if": {
+      "name": "Eskilstuna Guif IF",
+      "file": "assets/club-logos/eskilstuna-guif-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26170",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26170",
+      "profixioId": 26170,
+      "district": 806
+    },
+    "eskilstuna-parasportforening": {
+      "name": "Eskilstuna Parasportförening",
+      "file": "assets/club-logos/eskilstuna-parasportforening.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26122",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26122",
+      "profixioId": 26122,
+      "district": 806
+    },
+    "eslovs-hf": {
+      "name": "Eslövs HF",
+      "file": "assets/club-logos/eslovs-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26168",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26168",
+      "profixioId": 26168,
+      "district": 804
+    },
+    "eslovs-hk": {
+      "name": "Eslövs HK",
+      "file": "assets/club-logos/eslovs-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26003",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26003_1753813291",
+      "profixioId": 26003,
+      "district": 804
+    },
+    "faik-handboll": {
+      "name": "FAIK Handboll",
+      "file": "assets/club-logos/faik-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26326",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26326",
+      "profixioId": 26326,
+      "district": 803
+    },
+    "falu-hk": {
+      "name": "Falu HK",
+      "file": "assets/club-logos/falu-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25983",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25983",
+      "profixioId": 25983,
+      "district": 806
+    },
+    "finspangs-hk": {
+      "name": "Finspångs HK",
+      "file": "assets/club-logos/finspangs-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26160",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26160",
+      "profixioId": 26160,
+      "district": 806
+    },
+    "fjaras-hk": {
+      "name": "Fjärås HK",
+      "file": "assets/club-logos/fjaras-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26201",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26201",
+      "profixioId": 26201,
+      "district": 803
+    },
+    "fjardhundra-sk": {
+      "name": "Fjärdhundra SK",
+      "file": "assets/club-logos/fjardhundra-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26323",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26323",
+      "profixioId": 26323,
+      "district": 806
+    },
+    "forsbacka-ik": {
+      "name": "Forsbacka IK",
+      "file": "assets/club-logos/forsbacka-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25951",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25951",
+      "profixioId": 25951,
+      "district": 806
+    },
+    "frosakull-hk": {
+      "name": "Frösakull HK",
+      "file": "assets/club-logos/frosakull-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/33515",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/33515",
+      "profixioId": 33515,
+      "district": 804
+    },
+    "gavle-hf": {
+      "name": "Gävle HF",
+      "file": "assets/club-logos/gavle-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/30712",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/30712",
+      "profixioId": 30712,
+      "district": 806
+    },
+    "gf-kroppskultur": {
+      "name": "GF Kroppskultur",
+      "file": "assets/club-logos/gf-kroppskultur.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26111",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26111",
+      "profixioId": 26111,
+      "district": 803
+    },
+    "gimonas-umea-if": {
+      "name": "Gimonäs Umeå IF",
+      "file": "assets/club-logos/gimonas-umea-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26057",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26057",
+      "profixioId": 26057,
+      "district": 805
+    },
+    "goinge-hk": {
+      "name": "Göinge HK",
+      "file": "assets/club-logos/goinge-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26798",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26798",
+      "profixioId": 26798,
+      "district": 804
+    },
+    "gokstens-bk": {
+      "name": "Gökstens BK",
+      "file": "assets/club-logos/gokstens-bk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26059",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26059_1697315119",
+      "profixioId": 26059,
+      "district": 806
+    },
+    "goteborg-beach-handball-club": {
+      "name": "Göteborg Beach Handball Club",
+      "file": "assets/club-logos/goteborg-beach-handball-club.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26378",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26378",
+      "profixioId": 26378,
+      "district": 803
+    },
+    "goteborg-finest-ik": {
+      "name": "Göteborg Finest IK",
+      "file": "assets/club-logos/goteborg-finest-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26114",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26114_1696329753",
+      "profixioId": 26114,
+      "district": 803
+    },
+    "gt-soder-handbollsklubb": {
+      "name": "GT Söder HK",
+      "file": "assets/club-logos/gt-soder-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25965",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25965",
+      "profixioId": 25965,
+      "district": 802,
+      "alias": "GT Söder Handbollsklubb"
+    },
+    "gt-soder-hk": {
+      "name": "GT Söder HK",
+      "file": "assets/club-logos/gt-soder-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25965",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25965",
+      "profixioId": 25965,
+      "district": 802
+    },
+    "gustafs-goif": {
+      "name": "Gustafs GoIF",
+      "file": "assets/club-logos/gustafs-goif.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26194",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26194",
+      "profixioId": 26194,
+      "district": 806
+    },
+    "gustavsbergs-if": {
+      "name": "Gustavsbergs IF HK",
+      "file": "assets/club-logos/gustavsbergs-if-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26019",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26019",
+      "profixioId": 26019,
+      "district": 802,
+      "alias": "Gustavsbergs IF"
+    },
+    "gustavsbergs-if-hk": {
+      "name": "Gustavsbergs IF HK",
+      "file": "assets/club-logos/gustavsbergs-if-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26019",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26019",
+      "profixioId": 26019,
+      "district": 802
+    },
+    "gw-landskrona": {
+      "name": "GW Landskrona HK",
+      "file": "assets/club-logos/gw-landskrona-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26130",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26130",
+      "profixioId": 26130,
+      "district": 804,
+      "alias": "GW Landskrona"
+    },
+    "gw-landskrona-hk": {
+      "name": "GW Landskrona HK",
+      "file": "assets/club-logos/gw-landskrona-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26130",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26130",
+      "profixioId": 26130,
+      "district": 804
+    },
+    "h-78-solvesborg": {
+      "name": "H 78 Sölvesborg",
+      "file": "assets/club-logos/h-78-solvesborg.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26053",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26053",
+      "profixioId": 26053,
+      "district": 804
+    },
+    "h43-lund": {
+      "name": "H43 Lund HF",
+      "file": "assets/club-logos/h43-lund-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26088",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26088",
+      "profixioId": 26088,
+      "district": 804,
+      "alias": "H43 Lund"
+    },
+    "h43-lund-hf": {
+      "name": "H43 Lund HF",
+      "file": "assets/club-logos/h43-lund-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26088",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26088",
+      "profixioId": 26088,
+      "district": 804
+    },
+    "h78-solvesborg": {
+      "name": "H 78 Sölvesborg",
+      "file": "assets/club-logos/h-78-solvesborg.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26053",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26053",
+      "profixioId": 26053,
+      "district": 804,
+      "alias": "H78 Sölvesborg"
+    },
+    "habo-handboll": {
+      "name": "Habo HK",
+      "file": "assets/club-logos/habo-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26011",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26011_1777446933",
+      "profixioId": 26011,
+      "district": 803,
+      "alias": "Habo Handboll"
+    },
+    "habo-hk": {
+      "name": "Habo HK",
+      "file": "assets/club-logos/habo-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26011",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26011_1777446933",
+      "profixioId": 26011,
+      "district": 803
+    },
+    "hakefjordens-handbollsklubb": {
+      "name": "Hakefjordens Handbollsklubb",
+      "file": "assets/club-logos/hakefjordens-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26817",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26817",
+      "profixioId": 26817,
+      "district": 803
+    },
+    "hakefjordens-hk": {
+      "name": "Hakefjordens Handbollsklubb",
+      "file": "assets/club-logos/hakefjordens-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26817",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26817",
+      "profixioId": 26817,
+      "district": 803,
+      "alias": "Hakefjordens HK"
+    },
+    "hallbo-if-handboll": {
+      "name": "Hällbo IF Handboll",
+      "file": "assets/club-logos/hallbo-if-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26045",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26045",
+      "profixioId": 26045,
+      "district": 806
+    },
+    "hallsta-hf": {
+      "name": "Hallsta HF",
+      "file": "assets/club-logos/hallsta-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26446",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26446",
+      "profixioId": 26446,
+      "district": 802
+    },
+    "hallstahammar-sk-hk": {
+      "name": "Hallstahammars SK HK",
+      "file": "assets/club-logos/hallstahammars-sk-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25962",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25962",
+      "profixioId": 25962,
+      "district": 806,
+      "alias": "Hallstahammar SK HK"
+    },
+    "hallstahammars-sk-hk": {
+      "name": "Hallstahammars SK HK",
+      "file": "assets/club-logos/hallstahammars-sk-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25962",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25962",
+      "profixioId": 25962,
+      "district": 806
+    },
+    "halmstad-hf": {
+      "name": "Halmstad HF",
+      "file": "assets/club-logos/halmstad-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26171",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26171_1760968018",
+      "profixioId": 26171,
+      "district": 804
+    },
+    "hammarby-if": {
+      "name": "Hammarby IF HF",
+      "file": "assets/club-logos/hammarby-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25963",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25963",
+      "profixioId": 25963,
+      "district": 802,
+      "alias": "Hammarby IF"
+    },
+    "hammarby-if-hf": {
+      "name": "Hammarby IF HF",
+      "file": "assets/club-logos/hammarby-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25963",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25963",
+      "profixioId": 25963,
+      "district": 802
+    },
+    "hammarby-if-hk": {
+      "name": "Hammarby IF HF",
+      "file": "assets/club-logos/hammarby-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25963",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25963",
+      "profixioId": 25963,
+      "district": 802,
+      "alias": "Hammarby IF HK"
+    },
+    "handbollklubben-varberg-09": {
+      "name": "Handbollklubben Varberg 09",
+      "file": "assets/club-logos/handbollklubben-varberg-09.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26185",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26185",
+      "profixioId": 26185,
+      "district": 803
+    },
+    "handbollsforeningen-krokom": {
+      "name": "Handbollsföreningen Krokom",
+      "file": "assets/club-logos/handbollsforeningen-krokom.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29518",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29518",
+      "profixioId": 29518,
+      "district": 805
+    },
+    "handbollsklubben-bollkramarna": {
+      "name": "Handbollsklubben Bollkramarna",
+      "file": "assets/club-logos/handbollsklubben-bollkramarna.png",
+      "source": "https://www.profixio.com/app/lx/clubs/32292",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/32292",
+      "profixioId": 32292,
+      "district": 803
+    },
+    "handens-sk": {
+      "name": "Handens SK",
+      "file": "assets/club-logos/handens-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26178",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26178",
+      "profixioId": 26178,
+      "district": 802
+    },
+    "haninge-handbollsklubb": {
+      "name": "Haninge HK",
+      "file": "assets/club-logos/haninge-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26020",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26020",
+      "profixioId": 26020,
+      "district": 802,
+      "alias": "Haninge Handbollsklubb"
+    },
+    "haninge-hk": {
+      "name": "Haninge HK",
+      "file": "assets/club-logos/haninge-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26020",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26020",
+      "profixioId": 26020,
+      "district": 802
+    },
+    "harnosands-handbollsforening": {
+      "name": "Härnösands HF",
+      "file": "assets/club-logos/harnosands-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26031",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26031_1728418790",
+      "profixioId": 26031,
+      "district": 805,
+      "alias": "Härnösands Handbollsförening"
+    },
+    "harnosands-hf": {
+      "name": "Härnösands HF",
+      "file": "assets/club-logos/harnosands-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26031",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26031_1728418790",
+      "profixioId": 26031,
+      "district": 805
+    },
+    "harnosands-hk": {
+      "name": "Härnösands HF",
+      "file": "assets/club-logos/harnosands-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26031",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26031_1728418790",
+      "profixioId": 26031,
+      "district": 805,
+      "alias": "Härnösands HK"
+    },
+    "harryda-hk": {
+      "name": "Härryda HK",
+      "file": "assets/club-logos/harryda-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26236",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26236",
+      "profixioId": 26236,
+      "district": 803
+    },
+    "hassleholms-hf": {
+      "name": "Hässleholms HF",
+      "file": "assets/club-logos/hassleholms-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26038",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26038_1694465989",
+      "profixioId": 26038,
+      "district": 804
+    },
+    "hb-78-jonkoping": {
+      "name": "HB 78 Jönköping",
+      "file": "assets/club-logos/hb-78-jonkoping.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26303",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26303",
+      "profixioId": 26303,
+      "district": 803
+    },
+    "hellas-hk": {
+      "name": "Hellas HK",
+      "file": "assets/club-logos/hellas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26481",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26481",
+      "profixioId": 26481,
+      "district": 802
+    },
+    "helsingborgs-hk": {
+      "name": "Helsingborgs HK",
+      "file": "assets/club-logos/helsingborgs-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26450",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26450",
+      "profixioId": 26450,
+      "district": 804
+    },
+    "hf-eslovstjejerna": {
+      "name": "HF Eslövstjejerna",
+      "file": "assets/club-logos/hf-eslovstjejerna.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26416",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26416",
+      "profixioId": 26416,
+      "district": 804
+    },
+    "hf-karlskrona": {
+      "name": "HF Karlskrona",
+      "file": "assets/club-logos/hf-karlskrona.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25952",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25952",
+      "profixioId": 25952,
+      "district": 804
+    },
+    "hf-karlskrona-u": {
+      "name": "HF Karlskrona - U",
+      "file": "assets/club-logos/hf-karlskrona-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26363",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26363",
+      "profixioId": 26363,
+      "district": 804
+    },
+    "hf-lidingolaget": {
+      "name": "HF Lidingölaget",
+      "file": "assets/club-logos/hf-lidingolaget.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26105",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26105",
+      "profixioId": 26105,
+      "district": 802
+    },
+    "hf-limhamn": {
+      "name": "HF Limhamn",
+      "file": "assets/club-logos/hf-limhamn.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26115",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26115",
+      "profixioId": 26115,
+      "district": 804
+    },
+    "hf-mitt": {
+      "name": "HF Mitt",
+      "file": "assets/club-logos/hf-mitt.png",
+      "source": "https://www.profixio.com/app/lx/clubs/28142",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/28142_1699643337",
+      "profixioId": 28142,
+      "district": 806
+    },
+    "hf-norr": {
+      "name": "HF Norr",
+      "file": "assets/club-logos/hf-norr.png",
+      "source": "https://www.profixio.com/app/lx/clubs/28140",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/28140",
+      "profixioId": 28140,
+      "district": 805
+    },
+    "hf-orust": {
+      "name": "HF Orust",
+      "file": "assets/club-logos/hf-orust.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26174",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26174",
+      "profixioId": 26174,
+      "district": 803
+    },
+    "hf-ost": {
+      "name": "HF Öst",
+      "file": "assets/club-logos/hf-ost.png",
+      "source": "https://www.profixio.com/app/lx/clubs/28141",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/28141",
+      "profixioId": 28141,
+      "district": 802
+    },
+    "hf-rimbo": {
+      "name": "HF Rimbo",
+      "file": "assets/club-logos/hf-rimbo.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26028",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26028",
+      "profixioId": 26028,
+      "district": 802
+    },
+    "hf-sif": {
+      "name": "HF SIF",
+      "file": "assets/club-logos/hf-sif.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26129",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26129",
+      "profixioId": 26129,
+      "district": 802
+    },
+    "hf-somby": {
+      "name": "HF Somby",
+      "file": "assets/club-logos/hf-somby.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26299",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26299",
+      "profixioId": 26299,
+      "district": 803
+    },
+    "hf-syd": {
+      "name": "HF Syd",
+      "file": "assets/club-logos/hf-syd.png",
+      "source": "https://www.profixio.com/app/lx/clubs/28144",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/28144",
+      "profixioId": 28144,
+      "district": 804
+    },
+    "hf-team-kropps": {
+      "name": "HF Team Kropps",
+      "file": "assets/club-logos/hf-team-kropps.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26386",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26386",
+      "profixioId": 26386,
+      "district": 803
+    },
+    "hf-vast": {
+      "name": "HF Väst",
+      "file": "assets/club-logos/hf-vast.png",
+      "source": "https://www.profixio.com/app/lx/clubs/28143",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/28143_1754908601",
+      "profixioId": 28143,
+      "district": 803
+    },
+    "hk-ankaret": {
+      "name": "HK Ankaret",
+      "file": "assets/club-logos/hk-ankaret.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26464",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26464",
+      "profixioId": 26464,
+      "district": 804
+    },
+    "hk-aranas": {
+      "name": "HK Aranäs",
+      "file": "assets/club-logos/hk-aranas.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26311",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26311_1682023558",
+      "profixioId": 26311,
+      "district": 803
+    },
+    "hk-bjornen": {
+      "name": "HK Björnen",
+      "file": "assets/club-logos/hk-bjornen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26413",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26413",
+      "profixioId": 26413,
+      "district": 804
+    },
+    "hk-bla-85-lund": {
+      "name": "HK Blå 85 Lund",
+      "file": "assets/club-logos/hk-bla-85-lund.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26091",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26091_1759839344",
+      "profixioId": 26091,
+      "district": 804
+    },
+    "hk-bollebygd": {
+      "name": "HK Bollebygd",
+      "file": "assets/club-logos/hk-bollebygd.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25994",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25994_1697606747",
+      "profixioId": 25994,
+      "district": 803
+    },
+    "hk-bratte": {
+      "name": "HK Brätte",
+      "file": "assets/club-logos/hk-bratte.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26012",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26012",
+      "profixioId": 26012,
+      "district": 803
+    },
+    "hk-bruksp-jkera": {
+      "name": "HK Brukspôjkera",
+      "file": "assets/club-logos/hk-bruksp-jkera.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26085",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26085",
+      "profixioId": 26085,
+      "district": 803
+    },
+    "hk-ceres-norrtalje": {
+      "name": "HK Ceres Norrtälje",
+      "file": "assets/club-logos/hk-ceres-norrtalje.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25956",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25956",
+      "profixioId": 25956,
+      "district": 802
+    },
+    "hk-cliff": {
+      "name": "HK Cliff",
+      "file": "assets/club-logos/hk-cliff.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26051",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26051",
+      "profixioId": 26051,
+      "district": 802
+    },
+    "hk-cliff-bla": {
+      "name": "HK Cliff Blå",
+      "file": "assets/club-logos/hk-cliff-bla.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26177",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26177_1680007697",
+      "profixioId": 26177,
+      "district": 802
+    },
+    "hk-country": {
+      "name": "HK Country",
+      "file": "assets/club-logos/hk-country.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26025",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26025",
+      "profixioId": 26025,
+      "district": 803
+    },
+    "hk-drott-halmstad": {
+      "name": "HK Drott Halmstad",
+      "file": "assets/club-logos/hk-drott-halmstad.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25970",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25970_1691053530",
+      "profixioId": 25970,
+      "district": 804
+    },
+    "hk-erping": {
+      "name": "HK Erping",
+      "file": "assets/club-logos/hk-erping.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26141",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26141",
+      "profixioId": 26141,
+      "district": 806
+    },
+    "hk-eskil": {
+      "name": "HK Eskil",
+      "file": "assets/club-logos/hk-eskil.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26222",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26222_1758714357",
+      "profixioId": 26222,
+      "district": 806
+    },
+    "hk-fras": {
+      "name": "HK Fräs",
+      "file": "assets/club-logos/hk-fras.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26355",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26355",
+      "profixioId": 26355,
+      "district": 806
+    },
+    "hk-gp": {
+      "name": "HK GP",
+      "file": "assets/club-logos/hk-gp.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26173",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26173",
+      "profixioId": 26173,
+      "district": 806
+    },
+    "hk-grums": {
+      "name": "HK Grums",
+      "file": "assets/club-logos/hk-grums.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29697",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29697",
+      "profixioId": 29697,
+      "district": 803
+    },
+    "hk-guldkroken-hjo": {
+      "name": "HK Guldkroken Hjo",
+      "file": "assets/club-logos/hk-guldkroken-hjo.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26143",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26143",
+      "profixioId": 26143,
+      "district": 803
+    },
+    "hk-halmstad": {
+      "name": "HK Halmstad",
+      "file": "assets/club-logos/hk-halmstad.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26172",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26172",
+      "profixioId": 26172,
+      "district": 804
+    },
+    "hk-hearts": {
+      "name": "HK Hearts",
+      "file": "assets/club-logos/hk-hearts.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26050",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26050",
+      "profixioId": 26050,
+      "district": 804
+    },
+    "hk-hofers": {
+      "name": "HK Höfers",
+      "file": "assets/club-logos/hk-hofers.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26151",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26151",
+      "profixioId": 26151,
+      "district": 803
+    },
+    "hk-hok": {
+      "name": "HK Hök",
+      "file": "assets/club-logos/hk-hok.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26039",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26039",
+      "profixioId": 26039,
+      "district": 804
+    },
+    "hk-hylte": {
+      "name": "HK Hylte",
+      "file": "assets/club-logos/hk-hylte.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26242",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26242",
+      "profixioId": 26242,
+      "district": 803
+    },
+    "hk-jarnvagen": {
+      "name": "HK Järnvägen",
+      "file": "assets/club-logos/hk-jarnvagen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26013",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26013",
+      "profixioId": 26013,
+      "district": 806
+    },
+    "hk-kelt": {
+      "name": "HK Kelt",
+      "file": "assets/club-logos/hk-kelt.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25954",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25954",
+      "profixioId": 25954,
+      "district": 803
+    },
+    "hk-kristianstad": {
+      "name": "HK Kristianstad",
+      "file": "assets/club-logos/hk-kristianstad.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26223",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26223",
+      "profixioId": 26223,
+      "district": 804
+    },
+    "hk-laponia": {
+      "name": "HK Laponia",
+      "file": "assets/club-logos/hk-laponia.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26082",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26082",
+      "profixioId": 26082,
+      "district": 805
+    },
+    "hk-lejon-linkoping": {
+      "name": "HK Lejon Linköping",
+      "file": "assets/club-logos/hk-lejon-linkoping.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29466",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29466_1716710757",
+      "profixioId": 29466,
+      "district": 806
+    },
+    "hk-lidkoping": {
+      "name": "HK Lidköping",
+      "file": "assets/club-logos/hk-lidkoping.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26062",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26062",
+      "profixioId": 26062,
+      "district": 803
+    },
+    "hk-lif-bla": {
+      "name": "HK Lif Blå",
+      "file": "assets/club-logos/hk-lif-bla.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26101",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26101",
+      "profixioId": 26101,
+      "district": 806
+    },
+    "hk-malmo": {
+      "name": "HK Malmö",
+      "file": "assets/club-logos/hk-malmo.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26032",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26032",
+      "profixioId": 26032,
+      "district": 804
+    },
+    "hk-onnerediterna": {
+      "name": "HK Önnerediterna",
+      "file": "assets/club-logos/hk-onnerediterna.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26228",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26228",
+      "profixioId": 26228,
+      "district": 803
+    },
+    "hk-roslagen": {
+      "name": "HK Roslagen",
+      "file": "assets/club-logos/hk-roslagen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26029",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26029",
+      "profixioId": 26029,
+      "district": 802
+    },
+    "hk-s-hof": {
+      "name": "HK S-hof",
+      "file": "assets/club-logos/hk-s-hof.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26341",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26341",
+      "profixioId": 26341,
+      "district": 803
+    },
+    "hk-silwing-troja": {
+      "name": "HK Silwing-Troja",
+      "file": "assets/club-logos/hk-silwing-troja.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26140",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26140_1715681564",
+      "profixioId": 26140,
+      "district": 802
+    },
+    "hk-skovde": {
+      "name": "HK Skövde",
+      "file": "assets/club-logos/hk-skovde.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26072",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26072",
+      "profixioId": 26072,
+      "district": 803
+    },
+    "hk-svalov": {
+      "name": "HK Svalöv",
+      "file": "assets/club-logos/hk-svalov.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26199",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26199",
+      "profixioId": 26199,
+      "district": 804
+    },
+    "hk-torslanda-elit": {
+      "name": "HK Torslanda Elit",
+      "file": "assets/club-logos/hk-torslanda-elit.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26042",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26042",
+      "profixioId": 26042,
+      "district": 803
+    },
+    "hk-tyreso-strand": {
+      "name": "HK Tyresö Strand",
+      "file": "assets/club-logos/hk-tyreso-strand.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26422",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26422",
+      "profixioId": 26422,
+      "district": 802
+    },
+    "hk-tyrold": {
+      "name": "HK Tyrold",
+      "file": "assets/club-logos/hk-tyrold.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26421",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26421",
+      "profixioId": 26421,
+      "district": 802
+    },
+    "hk-uppsala": {
+      "name": "HK Uppsala",
+      "file": "assets/club-logos/hk-uppsala.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26203",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26203",
+      "profixioId": 26203,
+      "district": 802
+    },
+    "hk-varberg": {
+      "name": "HK Varberg",
+      "file": "assets/club-logos/hk-varberg.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26077",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26077",
+      "profixioId": 26077,
+      "district": 803
+    },
+    "hk-ystadpagarna": {
+      "name": "HK Ystadpågarna",
+      "file": "assets/club-logos/hk-ystadpagarna.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26411",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26411_1742029324",
+      "profixioId": 26411,
+      "district": 804
+    },
+    "hkc78-handbollklubb": {
+      "name": "HKC78 Handbollklubb",
+      "file": "assets/club-logos/hkc78-handbollklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26319",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26319",
+      "profixioId": 26319,
+      "district": 803
+    },
+    "hoors-hk-h-65": {
+      "name": "Höörs HK H 65",
+      "file": "assets/club-logos/hoors-hk-h-65.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26120",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26120",
+      "profixioId": 26120,
+      "district": 804
+    },
+    "hoors-hk-h65": {
+      "name": "Höörs HK H 65",
+      "file": "assets/club-logos/hoors-hk-h-65.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26120",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26120",
+      "profixioId": 26120,
+      "district": 804,
+      "alias": "Höörs HK H65"
+    },
+    "hornskrokens-if": {
+      "name": "Hornskrokens IF",
+      "file": "assets/club-logos/hornskrokens-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26198",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26198",
+      "profixioId": 26198,
+      "district": 805
+    },
+    "hp-alingsas": {
+      "name": "HP Alingsås",
+      "file": "assets/club-logos/hp-alingsas.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26292",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26292",
+      "profixioId": 26292,
+      "district": 803
+    },
+    "hp-kongelf": {
+      "name": "HP Kongelf",
+      "file": "assets/club-logos/hp-kongelf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26325",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26325",
+      "profixioId": 26325,
+      "district": 803
+    },
+    "hp-skovde-90": {
+      "name": "HP Skövde 90",
+      "file": "assets/club-logos/hp-skovde-90.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26026",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26026",
+      "profixioId": 26026,
+      "district": 803
+    },
+    "hp-tibro": {
+      "name": "HP Tibro",
+      "file": "assets/club-logos/hp-tibro.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25958",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25958",
+      "profixioId": 25958,
+      "district": 803
+    },
+    "hp-warta": {
+      "name": "HP Warta",
+      "file": "assets/club-logos/hp-warta.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25944",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25944",
+      "profixioId": 25944,
+      "district": 803
+    },
+    "hs-sierra": {
+      "name": "HS Sierra",
+      "file": "assets/club-logos/hs-sierra.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26320",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26320",
+      "profixioId": 26320,
+      "district": 804
+    },
+    "huddinge-hk": {
+      "name": "Huddinge HK",
+      "file": "assets/club-logos/huddinge-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26104",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26104_1692635342",
+      "profixioId": 26104,
+      "district": 802
+    },
+    "hultic-bk": {
+      "name": "Hultic BK",
+      "file": "assets/club-logos/hultic-bk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26106",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26106_1684739904",
+      "profixioId": 26106,
+      "district": 806
+    },
+    "hultsfreds-hf": {
+      "name": "Hultsfreds HF",
+      "file": "assets/club-logos/hultsfreds-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26006",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26006",
+      "profixioId": 26006,
+      "district": 804
+    },
+    "if-hallby-hk": {
+      "name": "IF Hallby HK",
+      "file": "assets/club-logos/if-hallby-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26244",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26244_1714040017",
+      "profixioId": 26244,
+      "district": 803
+    },
+    "if-hellton": {
+      "name": "IF Hellton",
+      "file": "assets/club-logos/if-hellton.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26265",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26265",
+      "profixioId": 26265,
+      "district": 803
+    },
+    "if-hellton-uk": {
+      "name": "IF Hellton UK",
+      "file": "assets/club-logos/if-hellton-uk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26315",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26315",
+      "profixioId": 26315,
+      "district": 803
+    },
+    "if-hv-tidaholm": {
+      "name": "IF HV Tidaholm",
+      "file": "assets/club-logos/if-hv-tidaholm.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26014",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26014",
+      "profixioId": 26014,
+      "district": 803
+    },
+    "if-kristianstad": {
+      "name": "IF Kristianstad",
+      "file": "assets/club-logos/if-kristianstad.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25971",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25971",
+      "profixioId": 25971,
+      "district": 804
+    },
+    "if-swithiod": {
+      "name": "IF Swithiod",
+      "file": "assets/club-logos/if-swithiod.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26058",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26058",
+      "profixioId": 26058,
+      "district": 802
+    },
+    "ifk-amal": {
+      "name": "IFK Åmål",
+      "file": "assets/club-logos/ifk-amal.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26330",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26330",
+      "profixioId": 26330,
+      "district": 803
+    },
+    "ifk-arboga-handboll": {
+      "name": "IFK Arbogas HK",
+      "file": "assets/club-logos/ifk-arbogas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26231",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26231",
+      "profixioId": 26231,
+      "district": 806,
+      "alias": "IFK Arboga handboll"
+    },
+    "ifk-arboga-hk": {
+      "name": "IFK Arbogas HK",
+      "file": "assets/club-logos/ifk-arbogas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26231",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26231",
+      "profixioId": 26231,
+      "district": 806,
+      "alias": "IFK Arboga Hk"
+    },
+    "ifk-arbogas-hk": {
+      "name": "IFK Arbogas HK",
+      "file": "assets/club-logos/ifk-arbogas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26231",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26231",
+      "profixioId": 26231,
+      "district": 806
+    },
+    "ifk-bankeryd": {
+      "name": "IFK Bankeryd",
+      "file": "assets/club-logos/ifk-bankeryd.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26179",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26179",
+      "profixioId": 26179,
+      "district": 803
+    },
+    "ifk-hammaro": {
+      "name": "IFK Hammarö",
+      "file": "assets/club-logos/ifk-hammaro.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25959",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25959",
+      "profixioId": 25959,
+      "district": 803
+    },
+    "ifk-hammaro-handboll": {
+      "name": "IFK Hammarö",
+      "file": "assets/club-logos/ifk-hammaro.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25959",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25959",
+      "profixioId": 25959,
+      "district": 803,
+      "alias": "IFK Hammarö handboll"
+    },
+    "ifk-hedemora-hk": {
+      "name": "IFK Hedemora HK",
+      "file": "assets/club-logos/ifk-hedemora-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26356",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26356_1774356419",
+      "profixioId": 26356,
+      "district": 806
+    },
+    "ifk-karlsborg": {
+      "name": "IFK Karlsborg",
+      "file": "assets/club-logos/ifk-karlsborg.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26227",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26227",
+      "profixioId": 26227,
+      "district": 803
+    },
+    "ifk-karlskrona": {
+      "name": "IFK Karlskrona",
+      "file": "assets/club-logos/ifk-karlskrona.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26245",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26245",
+      "profixioId": 26245,
+      "district": 804
+    },
+    "ifk-karlskrona-u": {
+      "name": "IFK Karlskrona U",
+      "file": "assets/club-logos/ifk-karlskrona-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26316",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26316_1758615876",
+      "profixioId": 26316,
+      "district": 804
+    },
+    "ifk-kristianstad": {
+      "name": "IFK Kristianstad",
+      "file": "assets/club-logos/ifk-kristianstad.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25964",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25964",
+      "profixioId": 25964,
+      "district": 804
+    },
+    "ifk-kristinehamn": {
+      "name": "IFK Kristinehamn Handboll",
+      "file": "assets/club-logos/ifk-kristinehamn-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29430",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29430",
+      "profixioId": 29430,
+      "district": 803,
+      "alias": "IFK Kristinehamn"
+    },
+    "ifk-kristinehamn-handboll": {
+      "name": "IFK Kristinehamn Handboll",
+      "file": "assets/club-logos/ifk-kristinehamn-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29430",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29430",
+      "profixioId": 29430,
+      "district": 803
+    },
+    "ifk-malmo-handboll": {
+      "name": "IFK Malmö HF",
+      "file": "assets/club-logos/ifk-malmo-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25972",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25972",
+      "profixioId": 25972,
+      "district": 804,
+      "alias": "IFK Malmö Handboll"
+    },
+    "ifk-malmo-hf": {
+      "name": "IFK Malmö HF",
+      "file": "assets/club-logos/ifk-malmo-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25972",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25972",
+      "profixioId": 25972,
+      "district": 804
+    },
+    "ifk-mariefred": {
+      "name": "IFK Mariefred",
+      "file": "assets/club-logos/ifk-mariefred.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26339",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26339",
+      "profixioId": 26339,
+      "district": 806
+    },
+    "ifk-mockfjard": {
+      "name": "IFK Mockfjärd",
+      "file": "assets/club-logos/ifk-mockfjard.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26137",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26137",
+      "profixioId": 26137,
+      "district": 806
+    },
+    "ifk-mullsjo": {
+      "name": "IFK Mullsjö",
+      "file": "assets/club-logos/ifk-mullsjo.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26318",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26318",
+      "profixioId": 26318,
+      "district": 803
+    },
+    "ifk-nora": {
+      "name": "IFK Nora",
+      "file": "assets/club-logos/ifk-nora.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26117",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26117",
+      "profixioId": 26117,
+      "district": 806
+    },
+    "ifk-nora-handboll": {
+      "name": "IFK Nora",
+      "file": "assets/club-logos/ifk-nora.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26117",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26117",
+      "profixioId": 26117,
+      "district": 806,
+      "alias": "IFK Nora Handboll"
+    },
+    "ifk-nykoping": {
+      "name": "IFK Nyköping",
+      "file": "assets/club-logos/ifk-nykoping.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26095",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26095",
+      "profixioId": 26095,
+      "district": 806
+    },
+    "ifk-orebro": {
+      "name": "IFK Örebro",
+      "file": "assets/club-logos/ifk-orebro.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26288",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26288_1782134722",
+      "profixioId": 26288,
+      "district": 806
+    },
+    "ifk-rattvik": {
+      "name": "IFK Rättvik HK",
+      "file": "assets/club-logos/ifk-rattvik-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26239",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26239",
+      "profixioId": 26239,
+      "district": 806,
+      "alias": "IFK Rättvik"
+    },
+    "ifk-rattvik-hk": {
+      "name": "IFK Rättvik HK",
+      "file": "assets/club-logos/ifk-rattvik-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26239",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26239",
+      "profixioId": 26239,
+      "district": 806
+    },
+    "ifk-skovde-hk-av-1991": {
+      "name": "IFK Skövde HK av 1991",
+      "file": "assets/club-logos/ifk-skovde-hk-av-1991.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26036",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26036_1691408189",
+      "profixioId": 26036,
+      "district": 803
+    },
+    "ifk-strangnas": {
+      "name": "IFK Strängnäs",
+      "file": "assets/club-logos/ifk-strangnas.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26204",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26204",
+      "profixioId": 26204,
+      "district": 806
+    },
+    "ifk-tumba-handboll": {
+      "name": "IFK Tumba HK",
+      "file": "assets/club-logos/ifk-tumba-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26074",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26074",
+      "profixioId": 26074,
+      "district": 802,
+      "alias": "IFK Tumba Handboll"
+    },
+    "ifk-tumba-hk": {
+      "name": "IFK Tumba HK",
+      "file": "assets/club-logos/ifk-tumba-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26074",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26074",
+      "profixioId": 26074,
+      "district": 802
+    },
+    "ifk-ystad": {
+      "name": "IFK Ystad HK",
+      "file": "assets/club-logos/ifk-ystad-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26300",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26300",
+      "profixioId": 26300,
+      "district": 804,
+      "alias": "IFK Ystad"
+    },
+    "ifk-ystad-hk": {
+      "name": "IFK Ystad HK",
+      "file": "assets/club-logos/ifk-ystad-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26300",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26300",
+      "profixioId": 26300,
+      "district": 804
+    },
+    "ik-baltic": {
+      "name": "IK Baltic",
+      "file": "assets/club-logos/ik-baltic.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26310",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26310",
+      "profixioId": 26310,
+      "district": 803
+    },
+    "ik-baltichov": {
+      "name": "IK Baltichov",
+      "file": "assets/club-logos/ik-baltichov.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26119",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26119_1692263297",
+      "profixioId": 26119,
+      "district": 803
+    },
+    "ik-bolton": {
+      "name": "IK Bolton",
+      "file": "assets/club-logos/ik-bolton.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26190",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26190",
+      "profixioId": 26190,
+      "district": 802
+    },
+    "ik-celtic": {
+      "name": "IK Celtic",
+      "file": "assets/club-logos/ik-celtic.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25950",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25950",
+      "profixioId": 25950,
+      "district": 803
+    },
+    "ik-cyrus": {
+      "name": "IK Cyrus",
+      "file": "assets/club-logos/ik-cyrus.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26208",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26208",
+      "profixioId": 26208,
+      "district": 803
+    },
+    "ik-lagan-horby": {
+      "name": "IK Lågan Hörby",
+      "file": "assets/club-logos/ik-lagan-horby.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25981",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25981",
+      "profixioId": 25981,
+      "district": 804
+    },
+    "ik-nord": {
+      "name": "IK Nord",
+      "file": "assets/club-logos/ik-nord.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26015",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26015_1779402371",
+      "profixioId": 26015,
+      "district": 803
+    },
+    "ik-savehof": {
+      "name": "IK Sävehof",
+      "file": "assets/club-logos/ik-savehof.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26226",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26226",
+      "profixioId": 26226,
+      "district": 803
+    },
+    "ik-sund": {
+      "name": "IK Sund",
+      "file": "assets/club-logos/ik-sund.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26289",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26289",
+      "profixioId": 26289,
+      "district": 804
+    },
+    "is-orion": {
+      "name": "IS Orion",
+      "file": "assets/club-logos/is-orion.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26156",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26156",
+      "profixioId": 26156,
+      "district": 803
+    },
+    "jarfalla-hk": {
+      "name": "Järfälla HK",
+      "file": "assets/club-logos/jarfalla-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26195",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26195_1781638438",
+      "profixioId": 26195,
+      "district": 802
+    },
+    "kalix-hk": {
+      "name": "Kalix HK",
+      "file": "assets/club-logos/kalix-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26142",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26142_1696618342",
+      "profixioId": 26142,
+      "district": 805
+    },
+    "karlshamns-hf": {
+      "name": "Karlshamns HF",
+      "file": "assets/club-logos/karlshamns-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26153",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26153",
+      "profixioId": 26153,
+      "district": 804
+    },
+    "karlskoga-hk": {
+      "name": "Karlskoga HK",
+      "file": "assets/club-logos/karlskoga-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26359",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26359_1762616716",
+      "profixioId": 26359,
+      "district": 806
+    },
+    "karlskrona-handboll": {
+      "name": "HF Karlskrona",
+      "file": "assets/club-logos/hf-karlskrona.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25952",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25952",
+      "profixioId": 25952,
+      "district": 804,
+      "alias": "Karlskrona Handboll"
+    },
+    "karra-hf": {
+      "name": "Kärra HF",
+      "file": "assets/club-logos/karra-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26337",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26337",
+      "profixioId": 26337,
+      "district": 803
+    },
+    "karra-hk": {
+      "name": "Kärra HK",
+      "file": "assets/club-logos/karra-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26336",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26336",
+      "profixioId": 26336,
+      "district": 803
+    },
+    "katrineholms-aik": {
+      "name": "Katrineholms AIK",
+      "file": "assets/club-logos/katrineholms-aik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26175",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26175",
+      "profixioId": 26175,
+      "district": 806
+    },
+    "kavlinge-hk": {
+      "name": "Kävlinge HK",
+      "file": "assets/club-logos/kavlinge-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25980",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25980",
+      "profixioId": 25980,
+      "district": 804
+    },
+    "kfum-ik-ulricehamn": {
+      "name": "KFUM IK Ulricehamn",
+      "file": "assets/club-logos/kfum-ik-ulricehamn.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26304",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26304",
+      "profixioId": 26304,
+      "district": 803
+    },
+    "kfum-kalmar-hk": {
+      "name": "KFUM Kalmar HK",
+      "file": "assets/club-logos/kfum-kalmar-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26035",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26035",
+      "profixioId": 26035,
+      "district": 804
+    },
+    "kfum-lundagard": {
+      "name": "KFUM Lundagård",
+      "file": "assets/club-logos/kfum-lundagard.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26217",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26217",
+      "profixioId": 26217,
+      "district": 804
+    },
+    "kfum-trollhattans-ia": {
+      "name": "KFUM Trollhättans IA",
+      "file": "assets/club-logos/kfum-trollhattans-ia.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26071",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26071_1682064225",
+      "profixioId": 26071,
+      "district": 803
+    },
+    "king-river-hk": {
+      "name": "King River HK",
+      "file": "assets/club-logos/king-river-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26327",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26327_1729833058",
+      "profixioId": 26327,
+      "district": 803
+    },
+    "kiruna-hk": {
+      "name": "Kiruna HK",
+      "file": "assets/club-logos/kiruna-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26067",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26067",
+      "profixioId": 26067,
+      "district": 805
+    },
+    "kista-sc-kfum": {
+      "name": "Kista SC KFUM",
+      "file": "assets/club-logos/kista-sc-kfum.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26268",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26268_1694709343",
+      "profixioId": 26268,
+      "district": 802
+    },
+    "kopparberg-bk": {
+      "name": "Kopparberg BK",
+      "file": "assets/club-logos/kopparberg-bk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26052",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26052",
+      "profixioId": 26052,
+      "district": 806
+    },
+    "kramfors-alliansen": {
+      "name": "Kramfors-Alliansen",
+      "file": "assets/club-logos/kramfors-alliansen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26495",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26495_1701591173",
+      "profixioId": 26495,
+      "district": 805
+    },
+    "kramfors-alliansen-handboll": {
+      "name": "Kramfors-Alliansen",
+      "file": "assets/club-logos/kramfors-alliansen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26495",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26495_1701591173",
+      "profixioId": 26495,
+      "district": 805,
+      "alias": "Kramfors-alliansen handboll"
+    },
+    "kristianstad-hk": {
+      "name": "Kristianstad HK",
+      "file": "assets/club-logos/kristianstad-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25982",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25982_1691403726",
+      "profixioId": 25982,
+      "district": 804
+    },
+    "krutholmens-hk": {
+      "name": "Krutholmens HK",
+      "file": "assets/club-logos/krutholmens-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25967",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25967_1697740540",
+      "profixioId": 25967,
+      "district": 806
+    },
+    "kumla-hf": {
+      "name": "Kumla HF",
+      "file": "assets/club-logos/kumla-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26064",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26064",
+      "profixioId": 26064,
+      "district": 806
+    },
+    "kungalvs-hk": {
+      "name": "Kungälvs HK",
+      "file": "assets/club-logos/kungalvs-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26186",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26186",
+      "profixioId": 26186,
+      "district": 803
+    },
+    "kungsangens-sk": {
+      "name": "Kungsängens SK",
+      "file": "assets/club-logos/kungsangens-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26211",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26211",
+      "profixioId": 26211,
+      "district": 802
+    },
+    "kvibergs-handbollsklubb": {
+      "name": "Kvibergs Handbollsklubb",
+      "file": "assets/club-logos/kvibergs-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25947",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25947_1697468145",
+      "profixioId": 25947,
+      "district": 803
+    },
+    "kvinnliga-ik-sport": {
+      "name": "Kvinnliga IK Sport",
+      "file": "assets/club-logos/kvinnliga-ik-sport.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26302",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26302",
+      "profixioId": 26302,
+      "district": 803
+    },
+    "lidingo-sk": {
+      "name": "Lidingö SK",
+      "file": "assets/club-logos/lidingo-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25953",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25953",
+      "profixioId": 25953,
+      "district": 802
+    },
+    "lif-lindesberg": {
+      "name": "LIF Lindesberg",
+      "file": "assets/club-logos/lif-lindesberg.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26096",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26096",
+      "profixioId": 26096,
+      "district": 806
+    },
+    "ligu": {
+      "name": "Ligu",
+      "file": "assets/club-logos/ligu.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26103",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26103",
+      "profixioId": 26103,
+      "district": 804
+    },
+    "lillpite-if": {
+      "name": "Lillpite IF",
+      "file": "assets/club-logos/lillpite-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26061",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26061",
+      "profixioId": 26061,
+      "district": 805
+    },
+    "ljunghusen-hk": {
+      "name": "Ljunghusens HK",
+      "file": "assets/club-logos/ljunghusens-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26010",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26010",
+      "profixioId": 26010,
+      "district": 804,
+      "alias": "Ljunghusen HK"
+    },
+    "ljunghusens-hk": {
+      "name": "Ljunghusens HK",
+      "file": "assets/club-logos/ljunghusens-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26010",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26010",
+      "profixioId": 26010,
+      "district": 804
+    },
+    "lodde-vikings-hk": {
+      "name": "Lödde Vikings HK",
+      "file": "assets/club-logos/lodde-vikings-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25939",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25939",
+      "profixioId": 25939,
+      "district": 804
+    },
+    "ludvika-hf": {
+      "name": "Ludvika HF",
+      "file": "assets/club-logos/ludvika-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25995",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25995",
+      "profixioId": 25995,
+      "district": 806
+    },
+    "lugi-hf": {
+      "name": "Lugi HF",
+      "file": "assets/club-logos/lugi-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26110",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26110",
+      "profixioId": 26110,
+      "district": 804
+    },
+    "lugi-hf-u": {
+      "name": "Lugi HF U",
+      "file": "assets/club-logos/lugi-hf-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26102",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26102",
+      "profixioId": 26102,
+      "district": 804
+    },
+    "lunds-beachhandball-club": {
+      "name": "Lunds BeachHandball Club",
+      "file": "assets/club-logos/lunds-beachhandball-club.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26301",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26301",
+      "profixioId": 26301,
+      "district": 804
+    },
+    "lunds-hs-lejon": {
+      "name": "Lunds HS Lejon",
+      "file": "assets/club-logos/lunds-hs-lejon.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26090",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26090",
+      "profixioId": 26090,
+      "district": 804
+    },
+    "lysekils-hk": {
+      "name": "Lysekils HK",
+      "file": "assets/club-logos/lysekils-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25988",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25988",
+      "profixioId": 25988,
+      "district": 803
+    },
+    "m-p": {
+      "name": "M-P",
+      "file": "assets/club-logos/m-p.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26056",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26056",
+      "profixioId": 26056,
+      "district": 802
+    },
+    "malmo-beachhandball-club": {
+      "name": "Malmö Beachhandball Club",
+      "file": "assets/club-logos/malmo-beachhandball-club.png",
+      "source": "https://www.profixio.com/app/lx/clubs/33125",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/33125",
+      "profixioId": 33125,
+      "district": 804
+    },
+    "malmslatt-ljungsbro-hf": {
+      "name": "Malmslätt Ljungsbro HF",
+      "file": "assets/club-logos/malmslatt-ljungsbro-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26081",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26081",
+      "profixioId": 26081,
+      "district": 806
+    },
+    "malmslattljungsbro-hf": {
+      "name": "Malmslätt Ljungsbro HF",
+      "file": "assets/club-logos/malmslatt-ljungsbro-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26081",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26081",
+      "profixioId": 26081,
+      "district": 806,
+      "alias": "MalmslättLjungsbro HF"
+    },
+    "mantorp-if-hf": {
+      "name": "Mantorps IF HF",
+      "file": "assets/club-logos/mantorps-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26080",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26080",
+      "profixioId": 26080,
+      "district": 806,
+      "alias": "Mantorp IF HF"
+    },
+    "mantorps-if-hf": {
+      "name": "Mantorps IF HF",
+      "file": "assets/club-logos/mantorps-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26080",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26080",
+      "profixioId": 26080,
+      "district": 806
+    },
+    "mariestads-aif": {
+      "name": "Mariestads AIF",
+      "file": "assets/club-logos/mariestads-aif.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25969",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25969",
+      "profixioId": 25969,
+      "district": 803
+    },
+    "marks-hk": {
+      "name": "Marks HK",
+      "file": "assets/club-logos/marks-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26097",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26097",
+      "profixioId": 26097,
+      "district": 803
+    },
+    "melleruds-hk": {
+      "name": "Melleruds HK",
+      "file": "assets/club-logos/melleruds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25977",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25977",
+      "profixioId": 25977,
+      "district": 803
+    },
+    "molndal": {
+      "name": "Mölndals HF",
+      "file": "assets/club-logos/molndals-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25973",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25973",
+      "profixioId": 25973,
+      "district": 803,
+      "alias": "Mölndal"
+    },
+    "molndals-handboll": {
+      "name": "Mölndals HF",
+      "file": "assets/club-logos/molndals-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25973",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25973",
+      "profixioId": 25973,
+      "district": 803,
+      "alias": "Mölndals handboll"
+    },
+    "molndals-handbollsforening": {
+      "name": "Mölndals HF",
+      "file": "assets/club-logos/molndals-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25973",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25973",
+      "profixioId": 25973,
+      "district": 803,
+      "alias": "Mölndals Handbollsförening"
+    },
+    "molndals-hf": {
+      "name": "Mölndals HF",
+      "file": "assets/club-logos/molndals-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25973",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25973",
+      "profixioId": 25973,
+      "district": 803
+    },
+    "monsteras-hk": {
+      "name": "Mönsterås HK",
+      "file": "assets/club-logos/monsteras-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26290",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26290",
+      "profixioId": 26290,
+      "district": 804
+    },
+    "morrums-gois-hk": {
+      "name": "Mörrums GOIS HK",
+      "file": "assets/club-logos/morrums-gois-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26148",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26148",
+      "profixioId": 26148,
+      "district": 804
+    },
+    "nacka-hk": {
+      "name": "Nacka HK",
+      "file": "assets/club-logos/nacka-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26046",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26046",
+      "profixioId": 26046,
+      "district": 802
+    },
+    "nais-hf": {
+      "name": "NAIS HF",
+      "file": "assets/club-logos/nais-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26157",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26157",
+      "profixioId": 26157,
+      "district": 806
+    },
+    "nas-if": {
+      "name": "Nås IF",
+      "file": "assets/club-logos/nas-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26176",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26176",
+      "profixioId": 26176,
+      "district": 806
+    },
+    "nasby-handbollsklubb": {
+      "name": "Näsby Handbollsklubb",
+      "file": "assets/club-logos/nasby-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25976",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25976",
+      "profixioId": 25976,
+      "district": 804
+    },
+    "nassjo-hf": {
+      "name": "Nässjö HF",
+      "file": "assets/club-logos/nassjo-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26018",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26018",
+      "profixioId": 26018,
+      "district": 804
+    },
+    "nkik": {
+      "name": "NKIK",
+      "file": "assets/club-logos/nkik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26044",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26044_1689433085",
+      "profixioId": 26044,
+      "district": 806
+    },
+    "nordmalings-hf": {
+      "name": "Nordmalings HF",
+      "file": "assets/club-logos/nordmalings-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26335",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26335",
+      "profixioId": 26335,
+      "district": 805
+    },
+    "norrfjardens-if": {
+      "name": "Norrfjärdens IF",
+      "file": "assets/club-logos/norrfjardens-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26342",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26342",
+      "profixioId": 26342,
+      "district": 805
+    },
+    "norrkopings": {
+      "name": "Norrköpings HK",
+      "file": "assets/club-logos/norrkopings-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26232",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26232",
+      "profixioId": 26232,
+      "district": 806,
+      "alias": "Norrköpings ..."
+    },
+    "norrkopings-hk": {
+      "name": "Norrköpings HK",
+      "file": "assets/club-logos/norrkopings-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26232",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26232",
+      "profixioId": 26232,
+      "district": 806
+    },
+    "norrtulls-sk": {
+      "name": "Norrtulls SK",
+      "file": "assets/club-logos/norrtulls-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25978",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25978_1695983320",
+      "profixioId": 25978,
+      "district": 802
+    },
+    "notlob-ik": {
+      "name": "Notlob IK",
+      "file": "assets/club-logos/notlob-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29481",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29481",
+      "profixioId": 29481,
+      "district": 802
+    },
+    "nybro-hk": {
+      "name": "Nybro HK",
+      "file": "assets/club-logos/nybro-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26329",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26329",
+      "profixioId": 26329,
+      "district": 804
+    },
+    "ojeby-if": {
+      "name": "Öjeby IF",
+      "file": "assets/club-logos/ojeby-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25942",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25942",
+      "profixioId": 25942,
+      "district": 805
+    },
+    "onnered-hk": {
+      "name": "Önnereds HK",
+      "file": "assets/club-logos/onnereds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26047",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26047",
+      "profixioId": 26047,
+      "district": 803,
+      "alias": "Önnered HK"
+    },
+    "onnereds-hk": {
+      "name": "Önnereds HK",
+      "file": "assets/club-logos/onnereds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26047",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26047",
+      "profixioId": 26047,
+      "district": 803
+    },
+    "orebro-sk-handboll-herr": {
+      "name": "Örebro SK HK Herr",
+      "file": "assets/club-logos/orebro-sk-hk-herr.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25975",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25975_1692958974",
+      "profixioId": 25975,
+      "district": 806,
+      "alias": "Örebro SK handboll herr"
+    },
+    "orebro-sk-hk-dam": {
+      "name": "Örebro SK HK Dam",
+      "file": "assets/club-logos/orebro-sk-hk-dam.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26241",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26241",
+      "profixioId": 26241,
+      "district": 806
+    },
+    "orebro-sk-hk-herr": {
+      "name": "Örebro SK HK Herr",
+      "file": "assets/club-logos/orebro-sk-hk-herr.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25975",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25975_1692958974",
+      "profixioId": 25975,
+      "district": 806
+    },
+    "orebro-sk-u": {
+      "name": "Örebro SK U",
+      "file": "assets/club-logos/orebro-sk-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26123",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26123",
+      "profixioId": 26123,
+      "district": 806
+    },
+    "orgryte-is": {
+      "name": "Örgryte IS Handboll",
+      "file": "assets/club-logos/orgryte-is-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26225",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26225",
+      "profixioId": 26225,
+      "district": 803,
+      "alias": "Örgryte IS"
+    },
+    "orgryte-is-handboll": {
+      "name": "Örgryte IS Handboll",
+      "file": "assets/club-logos/orgryte-is-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26225",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26225",
+      "profixioId": 26225,
+      "district": 803
+    },
+    "osmo-gif-handboll": {
+      "name": "Ösmo GIF HK",
+      "file": "assets/club-logos/osmo-gif-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26007",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26007",
+      "profixioId": 26007,
+      "district": 802,
+      "alias": "Ösmo GIF Handboll"
+    },
+    "osmo-gif-hk": {
+      "name": "Ösmo GIF HK",
+      "file": "assets/club-logos/osmo-gif-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26007",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26007",
+      "profixioId": 26007,
+      "district": 802
+    },
+    "osterlens-ik": {
+      "name": "Österlens IK",
+      "file": "assets/club-logos/osterlens-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26312",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26312",
+      "profixioId": 26312,
+      "district": 804
+    },
+    "ostersunds-hk": {
+      "name": "Östersunds HK",
+      "file": "assets/club-logos/ostersunds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26324",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26324",
+      "profixioId": 26324,
+      "district": 805
+    },
+    "ov-helsingborg-hk": {
+      "name": "OV Helsingborg HK",
+      "file": "assets/club-logos/ov-helsingborg-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26230",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26230_1690969120",
+      "profixioId": 26230,
+      "district": 804
+    },
+    "ramunder-hk": {
+      "name": "Ramunder HK",
+      "file": "assets/club-logos/ramunder-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25945",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25945_1696185410",
+      "profixioId": 25945,
+      "district": 806
+    },
+    "ramviks-if": {
+      "name": "Ramviks IF",
+      "file": "assets/club-logos/ramviks-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26210",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26210",
+      "profixioId": 26210,
+      "district": 805
+    },
+    "redbergslids-ik": {
+      "name": "Redbergslids IK",
+      "file": "assets/club-logos/redbergslids-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26263",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26263",
+      "profixioId": 26263,
+      "district": 803
+    },
+    "rimbo-hk-roslagen": {
+      "name": "Rimbo HK Roslagen",
+      "file": "assets/club-logos/rimbo-hk-roslagen.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26796",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26796",
+      "profixioId": 26796,
+      "district": 802
+    },
+    "ronneby-hk": {
+      "name": "Ronneby HK",
+      "file": "assets/club-logos/ronneby-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26810",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26810_1700774554",
+      "profixioId": 26810,
+      "district": 804
+    },
+    "rosendals-ik": {
+      "name": "Rosendals IK",
+      "file": "assets/club-logos/rosendals-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26309",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26309",
+      "profixioId": 26309,
+      "district": 803
+    },
+    "rosersbergs-ik": {
+      "name": "Rosersbergs IK",
+      "file": "assets/club-logos/rosersbergs-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26238",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26238",
+      "profixioId": 26238,
+      "district": 802
+    },
+    "rp-if": {
+      "name": "RP IF HK",
+      "file": "assets/club-logos/rp-if-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26163",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26163",
+      "profixioId": 26163,
+      "district": 806,
+      "alias": "RP IF"
+    },
+    "rp-if-hk": {
+      "name": "RP IF HK",
+      "file": "assets/club-logos/rp-if-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26163",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26163",
+      "profixioId": 26163,
+      "district": 806
+    },
+    "rp-if-linkoping": {
+      "name": "RP IF Linköping",
+      "file": "assets/club-logos/rp-if-linkoping.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26121",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26121",
+      "profixioId": 26121,
+      "district": 806
+    },
+    "rya-hf": {
+      "name": "Rya HF",
+      "file": "assets/club-logos/rya-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26797",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26797_1726648703",
+      "profixioId": 26797,
+      "district": 803
+    },
+    "saffle-handbollsklubb": {
+      "name": "Säffle Handbollsklubb",
+      "file": "assets/club-logos/saffle-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/30069",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/30069",
+      "profixioId": 30069,
+      "district": 803
+    },
+    "sala-hf": {
+      "name": "Sala HF",
+      "file": "assets/club-logos/sala-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26360",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26360_1698082373",
+      "profixioId": 26360,
+      "district": 806
+    },
+    "sannadals-hk": {
+      "name": "Sannadals HK",
+      "file": "assets/club-logos/sannadals-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25993",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25993_1682885429",
+      "profixioId": 25993,
+      "district": 802
+    },
+    "sannadals-sk": {
+      "name": "Sannadals SK",
+      "file": "assets/club-logos/sannadals-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25992",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25992",
+      "profixioId": 25992,
+      "district": 802
+    },
+    "sarokometernas-hk": {
+      "name": "Särökometernas HK",
+      "file": "assets/club-logos/sarokometernas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26261",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26261_1693341534",
+      "profixioId": 26261,
+      "district": 803
+    },
+    "savar-ik": {
+      "name": "Sävar IK",
+      "file": "assets/club-logos/savar-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26084",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26084",
+      "profixioId": 26084,
+      "district": 805
+    },
+    "savedalens-handbollsklubb": {
+      "name": "Sävedalens Handbollsklubb",
+      "file": "assets/club-logos/savedalens-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26443",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26443",
+      "profixioId": 26443,
+      "district": 803
+    },
+    "savsjo-hk": {
+      "name": "Sävsjö HK",
+      "file": "assets/club-logos/savsjo-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25955",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25955",
+      "profixioId": 25955,
+      "district": 804
+    },
+    "sikea-sk": {
+      "name": "Sikeå SK",
+      "file": "assets/club-logos/sikea-sk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26307",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26307",
+      "profixioId": 26307,
+      "district": 805
+    },
+    "sk-kvarnberga": {
+      "name": "SK Kvarnberga",
+      "file": "assets/club-logos/sk-kvarnberga.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26294",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26294",
+      "profixioId": 26294,
+      "district": 802
+    },
+    "ska-ik": {
+      "name": "Skå IK",
+      "file": "assets/club-logos/ska-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25946",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25946",
+      "profixioId": 25946,
+      "district": 802
+    },
+    "skanela-if": {
+      "name": "Skånela IF",
+      "file": "assets/club-logos/skanela-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26128",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26128_1697319845",
+      "profixioId": 26128,
+      "district": 802
+    },
+    "skara-handbollsforening-utveckling": {
+      "name": "Skara Handbollsförening Utveckling",
+      "file": "assets/club-logos/skara-handbollsforening-utveckling.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26321",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26321",
+      "profixioId": 26321,
+      "district": 803
+    },
+    "skara-hf": {
+      "name": "Skara HF",
+      "file": "assets/club-logos/skara-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26000",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26000",
+      "profixioId": 26000,
+      "district": 803
+    },
+    "skara-hk": {
+      "name": "Skara HK",
+      "file": "assets/club-logos/skara-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25997",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25997",
+      "profixioId": 25997,
+      "district": 803
+    },
+    "skare-hk": {
+      "name": "Skåre HK",
+      "file": "assets/club-logos/skare-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26109",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26109",
+      "profixioId": 26109,
+      "district": 803
+    },
+    "skogas-hk": {
+      "name": "Skogås HK",
+      "file": "assets/club-logos/skogas-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26030",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26030",
+      "profixioId": 26030,
+      "district": 802
+    },
+    "skogas-lanna-hk": {
+      "name": "Skogås/Länna HK",
+      "file": "assets/club-logos/skogas-lanna-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26188",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26188",
+      "profixioId": 26188,
+      "district": 802
+    },
+    "skovde-hf": {
+      "name": "Skövde HF",
+      "file": "assets/club-logos/skovde-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26207",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26207",
+      "profixioId": 26207,
+      "district": 803
+    },
+    "skuru-ik": {
+      "name": "Skuru IK",
+      "file": "assets/club-logos/skuru-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26037",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26037_1728486553",
+      "profixioId": 26037,
+      "district": 802
+    },
+    "skuruiterna-hk": {
+      "name": "Skuruiterna HK",
+      "file": "assets/club-logos/skuruiterna-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26049",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26049",
+      "profixioId": 26049,
+      "district": 802
+    },
+    "skurup-handboll": {
+      "name": "Skurups HB",
+      "file": "assets/club-logos/skurups-hb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26361",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26361",
+      "profixioId": 26361,
+      "district": 804,
+      "alias": "Skurup Handboll"
+    },
+    "skurups-handboll": {
+      "name": "Skurups HB",
+      "file": "assets/club-logos/skurups-hb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26361",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26361",
+      "profixioId": 26361,
+      "district": 804,
+      "alias": "Skurups Handboll"
+    },
+    "skurups-hb": {
+      "name": "Skurups HB",
+      "file": "assets/club-logos/skurups-hb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26361",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26361",
+      "profixioId": 26361,
+      "district": 804
+    },
+    "sodertalje-hk": {
+      "name": "Södertälje HK",
+      "file": "assets/club-logos/sodertalje-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26269",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26269",
+      "profixioId": 26269,
+      "district": 802
+    },
+    "solleftea-hk": {
+      "name": "Sollefteå HK",
+      "file": "assets/club-logos/solleftea-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26161",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26161",
+      "profixioId": 26161,
+      "district": 805
+    },
+    "sollentuna-hk": {
+      "name": "Sollentuna HK",
+      "file": "assets/club-logos/sollentuna-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26034",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26034",
+      "profixioId": 26034,
+      "district": 802
+    },
+    "solna-hf": {
+      "name": "Solna HF",
+      "file": "assets/club-logos/solna-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26427",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26427_1680030942",
+      "profixioId": 26427,
+      "district": 802
+    },
+    "sorunda-if": {
+      "name": "Sorunda IF",
+      "file": "assets/club-logos/sorunda-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25987",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25987_1680007716",
+      "profixioId": 25987,
+      "district": 802
+    },
+    "spanga-handbollsklubb": {
+      "name": "Spånga HK",
+      "file": "assets/club-logos/spanga-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26219",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26219",
+      "profixioId": 26219,
+      "district": 802,
+      "alias": "Spånga Handbollsklubb"
+    },
+    "spanga-hk": {
+      "name": "Spånga HK",
+      "file": "assets/club-logos/spanga-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26219",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26219",
+      "profixioId": 26219,
+      "district": 802
+    },
+    "spindelns-bk": {
+      "name": "Spindelns BK",
+      "file": "assets/club-logos/spindelns-bk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26344",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26344",
+      "profixioId": 26344,
+      "district": 803
+    },
+    "sportsgear-dhk": {
+      "name": "Sportsgear DHK",
+      "file": "assets/club-logos/sportsgear-dhk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26002",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26002",
+      "profixioId": 26002,
+      "district": 802
+    },
+    "staffanstorps-hk": {
+      "name": "Staffanstorps HK",
+      "file": "assets/club-logos/staffanstorps-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26152",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26152_1693432408",
+      "profixioId": 26152,
+      "district": 804
+    },
+    "stavsten-hk": {
+      "name": "Stavsten HK",
+      "file": "assets/club-logos/stavsten-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25999",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25999",
+      "profixioId": 25999,
+      "district": 804
+    },
+    "stavsten-hk-u": {
+      "name": "Stavsten HK U",
+      "file": "assets/club-logos/stavsten-hk-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26430",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26430_1692859930",
+      "profixioId": 26430,
+      "district": 804
+    },
+    "stenungsunds-handbollsklubb": {
+      "name": "Stenungsunds HK",
+      "file": "assets/club-logos/stenungsunds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26107",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26107",
+      "profixioId": 26107,
+      "district": 803,
+      "alias": "Stenungsunds handbollsklubb"
+    },
+    "stenungsunds-hk": {
+      "name": "Stenungsunds HK",
+      "file": "assets/club-logos/stenungsunds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26107",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26107",
+      "profixioId": 26107,
+      "district": 803
+    },
+    "stockholm-finest-handbollklubb": {
+      "name": "Stockholm Finest Handbollklubb",
+      "file": "assets/club-logos/stockholm-finest-handbollklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/32972",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/32972",
+      "profixioId": 32972,
+      "district": 802
+    },
+    "stockholmspolisens-if-hf": {
+      "name": "Stockholmspolisens IF HF",
+      "file": "assets/club-logos/stockholmspolisens-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26187",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26187",
+      "profixioId": 26187,
+      "district": 802
+    },
+    "strands-if": {
+      "name": "Strands IF",
+      "file": "assets/club-logos/strands-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26118",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26118",
+      "profixioId": 26118,
+      "district": 806
+    },
+    "stromnas-gif-hk": {
+      "name": "Strömnäs GIF HK",
+      "file": "assets/club-logos/stromnas-gif-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26192",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26192",
+      "profixioId": 26192,
+      "district": 805
+    },
+    "stromstad-hk": {
+      "name": "Strömstad HK",
+      "file": "assets/club-logos/stromstad-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26449",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26449",
+      "profixioId": 26449,
+      "district": 803
+    },
+    "sundsvall-handboll": {
+      "name": "Sundsvall HK",
+      "file": "assets/club-logos/sundsvall-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25960",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25960",
+      "profixioId": 25960,
+      "district": 805,
+      "alias": "Sundsvall Handboll"
+    },
+    "sundsvall-hk": {
+      "name": "Sundsvall HK",
+      "file": "assets/club-logos/sundsvall-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25960",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25960",
+      "profixioId": 25960,
+      "district": 805
+    },
+    "sundsvalls-hk": {
+      "name": "Sundsvall HK",
+      "file": "assets/club-logos/sundsvall-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25960",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25960",
+      "profixioId": 25960,
+      "district": 805,
+      "alias": "Sundsvalls HK"
+    },
+    "svedala-hk": {
+      "name": "Svedala HK",
+      "file": "assets/club-logos/svedala-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26004",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26004",
+      "profixioId": 26004,
+      "district": 804
+    },
+    "taby-centrum-hk": {
+      "name": "Täby Centrum HK",
+      "file": "assets/club-logos/taby-centrum-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25990",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25990",
+      "profixioId": 25990,
+      "district": 802
+    },
+    "taby-handbollsklubb": {
+      "name": "Täby HBK",
+      "file": "assets/club-logos/taby-hbk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25989",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25989",
+      "profixioId": 25989,
+      "district": 802,
+      "alias": "Täby Handbollsklubb"
+    },
+    "taby-hbk": {
+      "name": "Täby HBK",
+      "file": "assets/club-logos/taby-hbk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25989",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25989",
+      "profixioId": 25989,
+      "district": 802
+    },
+    "team-rimbo-hf": {
+      "name": "Team Rimbo HF",
+      "file": "assets/club-logos/team-rimbo-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/29541",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/29541",
+      "profixioId": 29541,
+      "district": 802
+    },
+    "tibro-hk": {
+      "name": "Tibro HK",
+      "file": "assets/club-logos/tibro-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26040",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26040",
+      "profixioId": 26040,
+      "district": 803
+    },
+    "tillberga-ik": {
+      "name": "Tillberga IK",
+      "file": "assets/club-logos/tillberga-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26023",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26023",
+      "profixioId": 26023,
+      "district": 806
+    },
+    "tingsryds-hk": {
+      "name": "Tingsryds HK",
+      "file": "assets/club-logos/tingsryds-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25961",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25961",
+      "profixioId": 25961,
+      "district": 804
+    },
+    "tjorns-handbollsklubb": {
+      "name": "Tjörns Handbollsklubb",
+      "file": "assets/club-logos/tjorns-handbollsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26169",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26169",
+      "profixioId": 26169,
+      "district": 803
+    },
+    "tollarps-if": {
+      "name": "Tollarps IF",
+      "file": "assets/club-logos/tollarps-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26414",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26414",
+      "profixioId": 26414,
+      "district": 804
+    },
+    "tomelilla-if": {
+      "name": "Tomelilla IF",
+      "file": "assets/club-logos/tomelilla-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25941",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25941_1698341865",
+      "profixioId": 25941,
+      "district": 804
+    },
+    "torsby-idrottsklubb": {
+      "name": "Torsby Idrottsklubb",
+      "file": "assets/club-logos/torsby-idrottsklubb.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26149",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26149",
+      "profixioId": 26149,
+      "district": 803
+    },
+    "torslanda-hk": {
+      "name": "Torslanda HK",
+      "file": "assets/club-logos/torslanda-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26041",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26041",
+      "profixioId": 26041,
+      "district": 803
+    },
+    "tumba-hbk": {
+      "name": "Tumba HBK",
+      "file": "assets/club-logos/tumba-hbk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26145",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26145",
+      "profixioId": 26145,
+      "district": 802
+    },
+    "tumba-hk": {
+      "name": "Tumba HK",
+      "file": "assets/club-logos/tumba-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26146",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26146",
+      "profixioId": 26146,
+      "district": 802
+    },
+    "tungelsta-if": {
+      "name": "Tungelsta IF",
+      "file": "assets/club-logos/tungelsta-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26147",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26147",
+      "profixioId": 26147,
+      "district": 802
+    },
+    "tyreso-handboll": {
+      "name": "Tyresö Handboll",
+      "file": "assets/club-logos/tyreso-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26331",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26331",
+      "profixioId": 26331,
+      "district": 802
+    },
+    "tyreso-hk": {
+      "name": "Tyresö Handboll",
+      "file": "assets/club-logos/tyreso-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26331",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26331",
+      "profixioId": 26331,
+      "district": 802,
+      "alias": "Tyresö HK"
+    },
+    "tyrold": {
+      "name": "HK Tyrold",
+      "file": "assets/club-logos/hk-tyrold.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26421",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26421",
+      "profixioId": 26421,
+      "district": 802,
+      "alias": "Tyrold"
+    },
+    "uddevalla-hk": {
+      "name": "Uddevalla HK",
+      "file": "assets/club-logos/uddevalla-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26205",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26205_1763648969",
+      "profixioId": 26205,
+      "district": 803
+    },
+    "uppsala-hk": {
+      "name": "Uppsala HK",
+      "file": "assets/club-logos/uppsala-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25984",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25984",
+      "profixioId": 25984,
+      "district": 802
+    },
+    "upsala-if-handboll": {
+      "name": "Upsala IF Handboll",
+      "file": "assets/club-logos/upsala-if-handboll.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26033",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26033",
+      "profixioId": 26033,
+      "district": 802
+    },
+    "vadstena-hf": {
+      "name": "Vadstena HF",
+      "file": "assets/club-logos/vadstena-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26277",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26277",
+      "profixioId": 26277,
+      "district": 806
+    },
+    "vallentuna-hk": {
+      "name": "Vallentuna HK",
+      "file": "assets/club-logos/vallentuna-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26005",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26005_1694966633",
+      "profixioId": 26005,
+      "district": 802
+    },
+    "vargarda-ik": {
+      "name": "Vårgårda IK",
+      "file": "assets/club-logos/vargarda-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26098",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26098_1756995506",
+      "profixioId": 26098,
+      "district": 803
+    },
+    "vargarda-ik-hk": {
+      "name": "Vårgårda IK",
+      "file": "assets/club-logos/vargarda-ik.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26098",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26098_1756995506",
+      "profixioId": 26098,
+      "district": 803,
+      "alias": "Vårgårda IK HK"
+    },
+    "varnamo-hk": {
+      "name": "Värnamo HK",
+      "file": "assets/club-logos/varnamo-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26218",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26218",
+      "profixioId": 26218,
+      "district": 803
+    },
+    "vassunda-if": {
+      "name": "Vassunda IF",
+      "file": "assets/club-logos/vassunda-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26233",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26233_1680007737",
+      "profixioId": 26233,
+      "district": 802
+    },
+    "vassunda-if-handboll": {
+      "name": "Vassunda IF",
+      "file": "assets/club-logos/vassunda-if.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26233",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26233_1680007737",
+      "profixioId": 26233,
+      "district": 802,
+      "alias": "Vassunda IF Handboll"
+    },
+    "vasterasirsta-hf": {
+      "name": "VästeråsIrsta HF",
+      "file": "assets/club-logos/vasterasirsta-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25957",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25957",
+      "profixioId": 25957,
+      "district": 806
+    },
+    "vasterasirsta-hk": {
+      "name": "VästeråsIrsta HK",
+      "file": "assets/club-logos/vasterasirsta-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26317",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26317",
+      "profixioId": 26317,
+      "district": 806
+    },
+    "vasterviks-hf": {
+      "name": "Västerviks HF",
+      "file": "assets/club-logos/vasterviks-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26162",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26162",
+      "profixioId": 26162,
+      "district": 806
+    },
+    "vaxjo-hf": {
+      "name": "Växjö HF",
+      "file": "assets/club-logos/vaxjo-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26065",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26065",
+      "profixioId": 26065,
+      "district": 804
+    },
+    "veberods-hk": {
+      "name": "Veberöds HK",
+      "file": "assets/club-logos/veberods-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26008",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26008",
+      "profixioId": 26008,
+      "district": 804
+    },
+    "vetlanda-hf": {
+      "name": "Vetlanda HF",
+      "file": "assets/club-logos/vetlanda-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26069",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26069",
+      "profixioId": 26069,
+      "district": 804
+    },
+    "vinslovs-hk": {
+      "name": "Vinslövs HK",
+      "file": "assets/club-logos/vinslovs-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26017",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26017",
+      "profixioId": 26017,
+      "district": 804
+    },
+    "vintrosa-is": {
+      "name": "Vintrosa IS",
+      "file": "assets/club-logos/vintrosa-is.png",
+      "source": "https://www.profixio.com/app/lx/clubs/25979",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/25979",
+      "profixioId": 25979,
+      "district": 806
+    },
+    "visby-if-gute-hk": {
+      "name": "Visby IF Gute HK",
+      "file": "assets/club-logos/visby-if-gute-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26183",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26183",
+      "profixioId": 26183,
+      "district": 802
+    },
+    "westermalm-if-hk": {
+      "name": "Westermalms IF HK",
+      "file": "assets/club-logos/westermalms-if-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26425",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26425",
+      "profixioId": 26425,
+      "district": 802,
+      "alias": "Westermalm IF HK"
+    },
+    "westermalms-if-hk": {
+      "name": "Westermalms IF HK",
+      "file": "assets/club-logos/westermalms-if-hk.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26425",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26425",
+      "profixioId": 26425,
+      "district": 802
+    },
+    "ystad-if": {
+      "name": "Ystads IF HF",
+      "file": "assets/club-logos/ystads-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26048",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26048",
+      "profixioId": 26048,
+      "district": 804,
+      "alias": "Ystad IF"
+    },
+    "ystads-if": {
+      "name": "Ystads IF HF",
+      "file": "assets/club-logos/ystads-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26048",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26048",
+      "profixioId": 26048,
+      "district": 804,
+      "alias": "Ystads IF"
+    },
+    "ystads-if-1": {
+      "name": "Ystads IF HF U",
+      "file": "assets/club-logos/ystads-if-hf-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26429",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26429",
+      "profixioId": 26429,
+      "district": 804,
+      "alias": "Ystads IF 1"
+    },
+    "ystads-if-2": {
+      "name": "Ystads IF HF U",
+      "file": "assets/club-logos/ystads-if-hf-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26429",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26429",
+      "profixioId": 26429,
+      "district": 804,
+      "alias": "Ystads IF 2"
+    },
+    "ystads-if-3": {
+      "name": "Ystads IF HF U",
+      "file": "assets/club-logos/ystads-if-hf-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26429",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26429",
+      "profixioId": 26429,
+      "district": 804,
+      "alias": "Ystads IF 3"
+    },
+    "ystads-if-hf": {
+      "name": "Ystads IF HF",
+      "file": "assets/club-logos/ystads-if-hf.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26048",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26048",
+      "profixioId": 26048,
+      "district": 804
+    },
+    "ystads-if-hf-u": {
+      "name": "Ystads IF HF U",
+      "file": "assets/club-logos/ystads-if-hf-u.png",
+      "source": "https://www.profixio.com/app/lx/clubs/26429",
+      "sourceImage": "https://res.cloudinary.com/profixio/image/upload/c_pad,f_png,h_192,q_auto,w_192/v1/logos/gklubb/26429",
+      "profixioId": 26429,
+      "district": 804
+    }
+  }
+}
