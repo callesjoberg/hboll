@@ -13,6 +13,10 @@
   --menu-surface: #e6edf6;
   --menu-line: #aebdce;
   --menu-shadow: 0 4px 14px rgba(22, 40, 63, 0.14);
+  /* Kanttoningen som visar att en menyrad går att scrolla i sidled (se
+     "sidscroll-hint" längst ned) — måste synas mot --menu-surface i BÅDA
+     temana, därför en egen variabel och inte en fast rgba. */
+  --menu-fade: rgba(22, 40, 63, 0.34);
   --live: #d22f27;
   --won: #2f9e44;
   --purple: #8854d0;
@@ -56,6 +60,7 @@
     --menu-surface: #1d2d42;
     --menu-line: #50657e;
     --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.38);
+    --menu-fade: rgba(0, 0, 0, 0.62);
     --live: #ff746c;
     --shadow: none;
     --purple: #b98cf2;
@@ -76,6 +81,7 @@
   --menu-surface: #1d2d42;
   --menu-line: #50657e;
   --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.38);
+  --menu-fade: rgba(0, 0, 0, 0.62);
   --live: #ff746c;
   --shadow: none;
   --purple: #b98cf2;
@@ -93,6 +99,7 @@
   --menu-surface: #e6edf6;
   --menu-line: #aebdce;
   --menu-shadow: 0 4px 14px rgba(22, 40, 63, 0.14);
+  --menu-fade: rgba(22, 40, 63, 0.34);
   --live: #d22f27;
   --shadow: 0 1px 3px rgba(22, 40, 63, 0.08);
   --purple: #8854d0;
@@ -106,14 +113,21 @@
    hela sidan sidledes skrollbar (kändes som att "hela vyn glider iväg
    utanför mobilen" — samma klass av bugg som redan hittades och fixades
    för #viewTabs, se dess kommentar). Ofarlig på alla enheter, gäller
-   BARA vågrät overflow. */
+   BARA vågrät overflow.
+
+   BARA på html, aldrig på body: rotelementets overflow ärvs upp till
+   viewporten och html beter sig sedan som "visible", medan samma regel på
+   body gör BODY till en egen scrollbox. Då mäter position:sticky sin
+   klistring mot body — som aldrig scrollar, viewporten gör det — och varje
+   sticky element på sidan slutar klistra helt: mobilmenyn i toppen,
+   orienteringsraden, tabellernas gruppflikar och tidslinjens rubrikrad
+   rullade alla iväg. Det vågräta skyddet är oförändrat. */
 html {
   overflow-x: hidden;
 }
 
 body {
   margin: 0;
-  overflow-x: hidden;
   background: var(--paper);
   color: var(--ink);
   font-family: "Barlow", system-ui, -apple-system, sans-serif;
@@ -523,7 +537,7 @@ body.desktop-filter-open #desktopFilterHost { border-top: 1px solid var(--menu-l
 }
 #viewTabs::-webkit-scrollbar { height: 6px; }
 
-#currentViewBar, #currentSelectionBar, #moreMenuBar, #bottomNavIsland { display: none; }
+#currentViewBar, #currentSelectionBar, #moreMenuBar { display: none; }
 
 .tab {
   background: none;
@@ -2171,7 +2185,7 @@ dialog#settingsDialog { max-width: 380px; }
     border: 0;
     border-radius: 0;
     padding: max(18px, env(safe-area-inset-top)) 18px
-             calc(var(--bottomstack-h, 56px) + 18px) 18px;
+             calc(var(--bottomstack-h, 0px) + 18px) 18px;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -2188,10 +2202,10 @@ dialog#settingsDialog { max-width: 380px; }
     display: block;
     width: 100%;
     height: auto;
-    min-height: calc(100dvh - var(--bottomstack-h, 56px));
+    min-height: calc(100dvh - var(--bottomstack-h, 0px));
     max-height: none;
     margin: 0;
-    padding: 18px 18px calc(var(--bottomstack-h, 56px) + 24px);
+    padding: 18px 18px calc(var(--bottomstack-h, 0px) + 24px);
     overflow: visible;
     overscroll-behavior: auto;
     background: var(--paper);
@@ -2442,7 +2456,7 @@ dialog.match-dialog {
   dialog.match-dialog {
     position: fixed;
     margin: 0;
-    inset: 0 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
+    inset: 0 0 calc(var(--bottomstack-h, 0px) + var(--vv-offset, 0px)) 0;
     z-index: 60;
     max-width: 100%;
     width: 100%;
@@ -4058,14 +4072,15 @@ dialog.history-dialog {
   .team-picker-dd[open] > .team-picker-panel,
   .team-picker-panel.picker-panel-portaled {
     position: fixed;
-    top: auto;
     left: 0;
     right: 0;
-    /* Ovanför bottenraden och filterremsan (syncBottomStack i app.js) i
-       stället för dikt mot skärmkanten — annars täcker panelen just de
-       rader man navigerade med, och man ser inte vilken väljare som är
-       öppen. */
-    bottom: calc(var(--bottomstack-h, 0px) + var(--vv-offset, 0px));
+    /* HÄNGER FRÅN MENYN, inte från skärmens botten. Panelen är svaret på en
+       bricka i filterremsan — låg den kvar som bottenark hamnade den i
+       motsatt ände av skärmen mot knappen man just tryckte på, med hela
+       matchlistan emellan. --topstack-h är menyraderna plus remsan
+       (syncTopStack i app.js), alltså exakt underkanten på det man tryckte. */
+    top: var(--topstack-bottom, 0px);
+    bottom: auto;
     width: auto;
     max-width: none;
     /* Panelen växer efter innehållet. När listan blir längre än den synliga
@@ -4076,16 +4091,16 @@ dialog.history-dialog {
     /* Taket mäts mot den SYNLIGA ytan (--vv-height, se syncViewportOffset),
        inte layoutens: med tangentbordet uppe eller ett utfällt adressfält är
        92vh långt mer än vad som faktiskt syns, och panelen växte då ut under
-       skärmkanten med sina översta knappar utom räckhåll. Utan API:t (äldre
-       webbläsare) faller den tillbaka på vh som förut. Minus bottenstacken,
-       som panelen ändå ligger ovanför. */
-    max-height: min(92dvh, calc(var(--vv-height, 100vh) - var(--bottombar-h, 56px) - 12px));
+       skärmkanten med sina understa knappar utom räckhåll. Utan API:t (äldre
+       webbläsare) faller den tillbaka på vh som förut. Minus stackens
+       underkant, som arket hänger från. */
+    max-height: min(92dvh, calc(var(--vv-height, 100vh) - var(--topstack-bottom, 0px) - 12px));
     overflow-y: auto;
     overscroll-behavior: contain;
-    border-radius: 18px 18px 0 0;
-    border-bottom: none;
+    border-radius: 0 0 18px 18px;
+    border-top: none;
     padding: 0 14px max(16px, env(safe-area-inset-bottom)) 14px;
-    box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
+    box-shadow: 0 10px 30px rgba(10, 18, 30, 0.35);
     /* Innehållet ska växa nedåt från rubriken, inte spridas ut över hela
        arkets höjd som grid-standarden gör när arket är högre än innehållet. */
     align-content: start;
@@ -4095,24 +4110,17 @@ dialog.history-dialog {
     z-index: 80;
   }
 
-  /* Med filterarket UTFÄLLT ("Mer") är --bottomstack-h hela arkets höjd —
-     425 px av en 844 px skärm. En panel staplad ovanpå det hamnade då
-     153 px OVANFÖR skärmkanten, med sina översta knappar (bl.a. hela
-     kalenderexporten) utom räckhåll. Pickern ligger ändå ÖVER arket tack
-     vare z-index, så i det läget ska den bara lyftas över bottenraden. */
-  body.filters-expanded .team-picker-dd[open] > .team-picker-panel,
-  body.filters-expanded .team-picker-panel.picker-panel-portaled {
-    bottom: calc(var(--bottombar-h, 56px) + var(--vv-offset, 0px));
-    max-height: min(92dvh, calc(var(--vv-height, 100vh) - var(--bottombar-h, 56px) - 12px));
-  }
+  /* (Undantaget för utfällt filterark behövs inte längre: arket fälls ut
+     nedåt från menyn i toppen och ingår inte i bottenstacken, så väljaren
+     ligger redan dikt an mot skärmens underkant.) */
 
   .team-picker-dd[open] > .team-picker-panel > .team-picker-list,
   .team-picker-panel.picker-panel-portaled > .team-picker-list {
     max-height: none; /* arket sköter scrollen, inte listan */
   }
 
-  /* Rubrikraden: klistrad högst upp så handtaget och stängkrysset finns
-     kvar när man scrollat ner i en lång lagliste. */
+  /* Rubrikraden: klistrad högst upp så stängkrysset finns kvar när man
+     scrollat ner i en lång lagliste. */
   .picker-sheet-head {
     position: sticky;
     top: 0;
@@ -4122,13 +4130,18 @@ dialog.history-dialog {
     align-items: center;
     gap: 8px;
     margin: 0 -14px 4px;
-    padding: 6px 14px 8px;
+    padding: 10px 14px 8px;
     background: var(--card);
     border-bottom: 1px solid var(--line);
   }
 
+  /* Handtaget vid arkets UNDERKANT — den kant som rör sig när man drar (se
+     ensureSheetHead i app.js). Klistrat så det är kvar även mitt i en lång
+     lista, med samma kortfärg bakom sig som rubrikraden. */
   .picker-sheet-grip {
-    grid-column: 1 / -1;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
     justify-self: center;
     width: 44px;
     height: 5px;
@@ -4137,7 +4150,7 @@ dialog.history-dialog {
        ett handtag som går att se utan att ta över rubrikraden. */
     background: var(--ink-soft);
     opacity: .5;
-    margin-bottom: 6px;
+    margin-top: 6px;
     cursor: grab;
     /* Utan detta tolkar webbläsaren dragningen som sidscroll och
        pointermove-händelserna uteblir helt. */
@@ -4177,7 +4190,7 @@ dialog.history-dialog {
 /* Rubrikraden hör bara till arket — på större skärmar är panelen en vanlig
    dropdown under sin knapp, där den bara vore i vägen. */
 @media (min-width: 701px) {
-  .picker-sheet-head, .picker-sheet-backdrop { display: none; }
+  .picker-sheet-head, .picker-sheet-grip, .picker-sheet-backdrop { display: none; }
 }
 
 /* --- mobilens bottenrad ---------------------------------------------------
@@ -4189,10 +4202,17 @@ dialog.history-dialog {
 @media (max-width: 700px) {
   #desktopFilterHost { display: none; }
 
-  body.picker-open,
-  html.picker-open {
-    overflow: hidden;
-  }
+  /* Här låg tidigare "body.picker-open, html.picker-open { overflow: hidden }"
+     som scrollås bakom en öppen väljare. Den gjorde två fel samtidigt:
+     klassen sätts bara på <body> (aldrig på <html>), och body-varianten
+     låser ingenting — html äger viewportens scroll, body blir bara en egen
+     scrollbox. Det ENDA den gjorde var att bryta position:sticky på hela
+     sidan, precis som overflow-x på body gjorde (se kommentaren högst upp):
+     menyn i toppen rullade iväg så fort en väljare öppnades.
+
+     Låset ligger nu i syncPageScrollLock (app.js) och blockerar själva
+     gesten i stället för att röra overflow — layouten lämnas orörd, sticky
+     fortsätter fungera, och arket kan hänga kvar under menyn. */
 
   /* --vv-offset kompenserar för att position:fixed utgår från LAYOUT-
      viewporten medan mobilwebbläsarnas krympande/flytande adressfält ändrar
@@ -4200,36 +4220,51 @@ dialog.history-dialog {
      med sidinnehåll synligt under — som en banner mitt i sidan. Sätts av
      syncViewportOffset() i app.js via Visual Viewport-API:t; 0 när API:t
      saknas eller de två viewporterna sammanfaller. */
+  /* Hänger från menyn, precis som väljarpanelerna: arket är svaret på en
+     knapp i Mer-raden i toppen. --topstack-bottom är stackens faktiska
+     underkant i viewporten (syncTopStack i app.js) — inte dess höjd, för
+     överst på sidan ligger menyn nedanför sidhuvudet. */
   .prototype-sheet {
-    inset: auto 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
-    top: auto;
-    bottom: calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px));
+    inset: var(--topstack-bottom, 0px) 0 auto 0;
+    bottom: auto;
     width: 100vw;
     max-width: none;
     height: min(62dvh, 600px);
-    max-height: calc(100dvh - var(--bottomstack-h, 56px) - 12px);
+    max-height: calc(100dvh - var(--topstack-bottom, 0px) - 12px);
     margin: 0;
     transform: none;
     border-left: 0;
     border-right: 0;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 35px rgba(10, 18, 30, 0.35);
     /* Menyraderna ska alltid gå att använda för att växla bort från arket,
        även om sparad arkhöjd eller mobilens visual viewport mäts om. */
     z-index: 67;
   }
   .prototype-sheet[data-sheet-key="cup"] {
     height: auto;
-    max-height: calc(100dvh - var(--bottomstack-h, 56px) - 12px);
+    max-height: calc(100dvh - var(--topstack-bottom, 0px) - 12px);
   }
   .prototype-sheet[data-sheet-key="cup"] .prototype-sheet-body {
-    max-height: calc(100dvh - var(--bottomstack-h, 56px) - 74px);
+    max-height: calc(100dvh - var(--topstack-bottom, 0px) - 74px);
   }
-  .prototype-sheet-backdrop {
-    bottom: calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px));
+  /* Draghandtaget sitter vid arkets UNDERKANT — den kant som rör sig när man
+     drar (se prototypeDialog i app.js). Rubrikraden behåller sin plats
+     överst med titel och stängkryss. */
+  .prototype-sheet-grip {
+    position: static;
+    align-self: center;
+    top: auto;
+    transform: none;
+    padding: 0;
   }
   /* Export är en egen Mer-vy på mobil, precis som Inställningar: den fyller
-     hela ytan ovanför navigeringen och kan inte dras till en mellanhöjd. */
+     hela ytan UNDER navigeringen och kan inte dras till en mellanhöjd.
+     Menyn ska synas kvar med Export markerat i Mer-raden — som helskärm mot
+     inset:0 hamnade den i stället bakom menyraderna (z-index 67 mot 72),
+     med sidans egen meny mitt i arket. */
   .prototype-sheet.prototype-sheet-fullscreen {
-    inset: 0 0 calc(var(--bottomstack-h, 56px) + var(--vv-offset, 0px)) 0;
+    inset: var(--topstack-bottom, 0px) 0 0 0;
     width: 100vw;
     height: auto !important;
     max-height: none;
@@ -4238,8 +4273,7 @@ dialog.history-dialog {
     box-shadow: none;
   }
   .prototype-sheet-fullscreen .prototype-sheet-head {
-    min-height: calc(54px + env(safe-area-inset-top));
-    padding-top: max(12px, env(safe-area-inset-top));
+    min-height: 54px;
   }
   .prototype-sheet-fullscreen .prototype-sheet-grip { display: none; }
 
@@ -4309,25 +4343,11 @@ dialog.history-dialog {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     background: var(--menu-surface);
-    border-top: 1px solid var(--menu-line);
-    padding-bottom: env(safe-area-inset-bottom);
-    /* Andra skuggan är ingen skugga: en solid, oskarp yta 260 px NEDANFÖR
-       raden i samma färg som den själv. Firefox på iOS krymper inte layout-
-       viewporten när dess bottenplacerade adressfält fälls ihop till en ö,
-       så bottom:0 hamnar en bit ovanför skärmkanten och sidan syntes rulla
-       förbi i springan under. Ytan täcker den utan att flytta något — och
-       är helt osynlig i Safari/Chrome, där den hamnar utanför skärmen.
-       box-shadow (inte ::after) eftersom radens egen overflow-x:auto skulle
-       klippa ett pseudoelement, men aldrig en skugga.
-
-       Förskjutning OCH spridning, inte bara förskjutning: en skugga flyttas
-       som en hel rektangel, den töjs inte. "0 260px 0 0" la alltså hela
-       ytan 260 px ned — utanför skärmen, där den inte täckte något.
-       130+130 ger i stället en yta som börjar vid radens överkant och
-       slutar 260 px under dess underkant. Spridningen växer även i sidled,
-       vilket är ofarligt: den hamnar utanför skärmens kanter. */
-    box-shadow: 0 -2px 12px rgba(10, 18, 30, 0.22),
-                0 130px 0 130px var(--menu-surface);
+    /* Raden ligger i toppen (#mobileMenuHost) — safe-area-fyllningen och den
+       260 px höga täckytan under raden hörde till bottenplaceringen och
+       gjorde ingen nytta här; #mobileMenuHost bär skuggan för hela stacken.
+       Om safe-area i toppen behövs hör den hemma på hela stacken, inte på
+       en enskild rad. */
   }
   #bottomBar::-webkit-scrollbar { display: none; }
 
@@ -4564,22 +4584,26 @@ dialog.history-dialog {
      verktygsraden (filters-expanded nedan). */
   body.filters-open #toolbar {
     display: block;
-    position: sticky !important;
-    top: 0 !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
+    /* inset FÖRST: den är en genväg som nollställer top/right/bottom/left,
+       och låg tidigare EFTER top — med samma !important vann den, så
+       remsan fick top:auto och klistrade sig aldrig trots position:sticky.
+       Den rullade i stället upp bakom menyn vid minsta scroll. */
     inset: auto !important;
+    position: sticky !important;
+    /* Under menyraderna, inte under skärmens överkant: höjden på
+       #mobileMenuHost mäts i syncTopStack (app.js) eftersom den beror på
+       hur många undernivåer som är öppna just nu. */
+    top: var(--menuhost-h, 0px) !important;
     z-index: 65;
     margin: 0 auto;
     width: 100%;
     max-width: var(--container-max);
     /* Ingen egen fyllning: brickorna bär sin padding själva, precis som
-       bottenradens flikar, så de två raderna blir exakt lika höga. */
+       huvudradens flikar, så de två raderna blir exakt lika höga. */
     padding: 6px 10px;
     background: var(--menu-surface);
-    border-top: 1px solid var(--menu-line);
-    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+    border-bottom: 1px solid var(--menu-line);
+    box-shadow: 0 6px 18px rgba(10, 18, 30, 0.28);
     overflow-y: hidden;
     max-height: var(--mobile-submenu-h, 53px);
     will-change: max-height, box-shadow;
@@ -4628,18 +4652,43 @@ dialog.history-dialog {
   /* Se picker-open i app.js: utan detta hamnar hela verktygsraden — och
      därmed den öppna väljarpanelen — under väljarens eget bakgrundstäcke. */
   body.picker-open #toolbar { z-index: 85; }
-  /* Bottenraden med: båda ska förbli synliga OCH klickbara medan en väljare
-     är öppen, så man kan hoppa direkt mellan brickor eller byta vy. */
-  body.picker-open #bottomBar { z-index: 85; }
-  body.picker-open #currentViewBar { z-index: 85; }
+  /* Menyraderna ska förbli synliga OCH klickbara medan en väljare är öppen,
+     så man kan hoppa direkt mellan brickor eller byta vy. Lyftet måste ske
+     på #mobileMenuHost och inte på raderna: sedan de flyttade in i hosten
+     ligger de i DESS staplingskontext, och ett z-index på en rad når aldrig
+     utanför den. Resultatet blev att filterremsan (syskon till hosten, egen
+     regel ovan) lyste klart medan huvudmenyn precis ovanför låg kvar under
+     täcket och såg nedsläckt ut. Värdet sätts inline av syncMenuHostLayer i
+     app.js — hostens z-index skrivs med !important där och kan därför inte
+     bytas härifrån. */
 
+  /* Utfällt ("Mer") ska faktiskt visa MER: brickraden radbryts i stället för
+     att scrolla i sidled, så hela urvalet syns på en gång i stället för att
+     upprepa den kompakta remsan. Under den ligger resten av verktygsraden
+     (fritextsök, lås, visningsval) — se flattenMobileFilterBar i app.js. */
+  body.filters-expanded #toolbar .filter-group {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    height: auto;
+  }
+
+  /* Remsans egna kompaktbrickor för matchstatus, hall/plan och sortering är
+     samma val som de fullstora kontrollerna längre ned i arket (samma
+     resonemang som .filter-scope-tile nedan). Visa dem en gång, inte två. */
+  body.filters-expanded #toolbar .filter-choice-dd,
+  body.filters-expanded #toolbar .filter-order-tile {
+    display: none;
+  }
+
+  /* Arket fälls ut NEDÅT från menyn — samma ark som förut, bara vänt:
+     rundade hörn och skugga i den riktning det faktiskt växer. */
   body.filters-open.filters-expanded #toolbar {
     max-height: 72vh;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 12px 14px 16px;
-    border-radius: 18px 18px 0 0;
-    box-shadow: 0 -10px 30px rgba(10, 18, 30, 0.35);
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 10px 30px rgba(10, 18, 30, 0.35);
   }
 
   /* Vanliga textflikar i filterraden. Egen klass eftersom Cup/Rensa och de
@@ -4698,11 +4747,24 @@ dialog.history-dialog {
     background: rgba(10, 18, 30, 0.45);
   }
 
-  /* Plats åt ALLT som ligger fast i botten — bottenraden, filterremsan när
-     den är uppfälld och Stats-underflikarna. Utgick tidigare bara från
-     bottenraden, så slutet på en lång matchlista hamnade bakom de andra
-     raderna och gick inte att scrolla fram. */
-  #content, body > footer { padding-bottom: calc(var(--bottomstack-h, 56px) + 16px); }
+  /* Plats åt det som fortfarande ligger fast i botten (väljarpaneler m.m.).
+     Menyraderna ligger sedan flytten i toppen och räknas inte längre in —
+     --bottomstack-h är då 0 och bara luften nedanför sista kortet blir kvar. */
+  #content, body > footer { padding-bottom: calc(var(--bottomstack-h, 0px) + 16px); }
+
+  /* ALLT som klistrar sig inne i innehållet måste sluta vid menyns underkant
+     i stället för vid skärmens. Med menyn i botten låg de här raderna fritt
+     mot top:0; nu skulle de hamna BAKOM menyn (z-index 72 mot 4-5) och bli
+     helt osynliga så fort man scrollat förbi dem. --topstack-h mäts i
+     syncTopStack (app.js) och är menyraderna plus filterremsan. */
+  .mobile-context,
+  .gantt-headrow {
+    top: var(--topstack-h, 0px);
+  }
+
+  /* Samma sak för scrollIntoView och ankarlänkar: utan detta landar det man
+     hoppar till exakt under menyn. */
+  html { scroll-padding-top: var(--topstack-h, 0px); }
 
   /* Orienteringsraden (renderMobileContextBar): klistrad högst upp i
      innehållet så den syns även när man scrollat ner i en lång träfflista —
@@ -4711,7 +4773,6 @@ dialog.history-dialog {
   .mobile-context {
     display: flex;
     position: sticky;
-    top: 0;
     z-index: 5;
     align-items: center;
     gap: 8px;
@@ -4741,25 +4802,12 @@ dialog.history-dialog {
     color: var(--blue);
     cursor: pointer;
   }
-  .mobile-context-clear {
-    flex: 0 0 auto;
-    background: none;
-    border: none;
-    padding: 2px 6px;
-    font: inherit;
-    font-size: 15px;
-    color: var(--ink-soft);
-    cursor: pointer;
-  }
-
-  /* "Upp till toppen" låg på bottom:16px med z-index 30 — alltså bakom både
-     bottenraden (70) och filterremsan (65), och geometriskt under dem.
-     Placeras nu ovanför hela den fasta stapeln (--bottomstack-h, samma mått
-     som väljarpanelerna utgår från). z-index under panelerna med flit: när
-     en väljare är öppen SKA knappen hamna bakom den, den är inte
-     meningsfull då. */
+  /* Ovanför det som ligger fast i botten (--bottomstack-h, samma mått som
+     väljarpanelerna utgår från) — med menyn i toppen är det normalt bara
+     skärmkanten. z-index under panelerna med flit: när en väljare är öppen
+     SKA knappen hamna bakom den, den är inte meningsfull då. */
   #scrollTopBtn {
-    bottom: calc(var(--bottomstack-h, 56px) + 12px + var(--vv-offset, 0px));
+    bottom: calc(var(--bottomstack-h, 0px) + 12px + var(--vv-offset, 0px));
     z-index: 68;
   }
 }
@@ -4768,7 +4816,6 @@ dialog.history-dialog {
   .dialog-x,
   .picker-sheet-close,
   .mobile-context-back,
-  .mobile-context-clear,
   .current-cup-btn,
   .header-action-btn,
   #settingsBtn,
@@ -4783,7 +4830,6 @@ dialog.history-dialog {
   *, *::before, *::after {
     scroll-behavior: auto !important;
   }
-  #bottomNavIsland:not([hidden]) { animation: none; }
 }
 
 /* --- bottenradens följdändringar --------------------------------------- */
@@ -4795,17 +4841,30 @@ dialog.history-dialog {
      hemma. Horisontellt scrollbar: åtta flikar på 390 px blir 48 px styck
      och oläsbara om man pressar in dem. */
   #content .history-tabs[aria-label="Stats"] {
-    position: static;
+    /* Stats underflikar ÄR en menynivå, precis som Aktuellts Schema/Tabeller
+       — men de renderas inne i #content och ärvde därför dess fyllning: 14 px
+       indrag i sidled och 10 px luft upp till menyn, vilket fick raden att se
+       ut som en lös bricka som svävade under menyn. Negativ marginal drar ut
+       den till skärmkanterna och upp mot menyns underkant.
+       #content är full skärmbredd på mobil (--container-max är bredare än
+       telefonen), så -14 px landar exakt på kanten. */
+    position: sticky;
+    top: var(--topstack-h, 0px);
+    /* Under menyn (72) men över innehållet: raden ska glida in UNDER menyn
+       när man scrollar, inte lägga sig ovanpå den. */
+    z-index: 60;
     left: auto;
     right: auto;
     bottom: auto;
-    z-index: auto;
-    width: 100%;
-    margin: 0;
+    width: auto;
+    margin: -10px -14px 10px;
     padding: 6px 10px;
     background: var(--menu-surface);
-    border-top: 1px solid var(--menu-line);
-    box-shadow: 0 -6px 18px rgba(10, 18, 30, 0.28);
+    /* Kant och skugga NEDÅT: raden ligger under menyn, överst i innehållet.
+       Uppåtriktade hörde till bottenplaceringen och lyste som en skarv mitt
+       emot menyns egen skugga. */
+    border-bottom: 1px solid var(--menu-line);
+    box-shadow: 0 6px 18px rgba(10, 18, 30, 0.28);
     overflow-x: auto;
     flex-wrap: nowrap;
     scrollbar-width: none;
@@ -4828,9 +4887,6 @@ dialog.history-dialog {
     transform: translateX(-50%);
   }
   body.stats-tabs-collapsed #content .history-tabs[aria-label="Stats"] { display: none; }
-
-  /* Stats-raden är statisk i topplägeslayouten; den räknas inte in i
-     --bottomstack-h längre, utan i normalt innehållsflöde. */
 
   /* Sidfotens länkar bor i inställningarna här (placeFooterLinks); kvar
      blir bara datakällstexten, som inte behöver ta plats på en telefon. */
@@ -5035,54 +5091,120 @@ dialog.history-dialog {
     min-height: 40px;
     overflow: visible;
   }
-  /* Vid tydlig nedåtrullning krymper hela bottenstacken till en liten
-     "dynamic island". display:none gör att syncBottomStack mäter noll för
-     de undanlagda raderna; island-knappen ligger separat ovanpå innehållet. */
-  body.bottom-nav-collapsed #bottomBar,
-  body.bottom-nav-collapsed #currentViewBar,
-  body.bottom-nav-collapsed #currentSelectionBar,
-  body.bottom-nav-collapsed #moreMenuBar,
-  body.bottom-nav-collapsed #toolbar,
-  body.bottom-nav-collapsed #content .history-tabs[aria-label="Stats"] {
+
+  /* --- hopfälld meny ------------------------------------------------------
+     Efter ungefär en skärmhöjds läsning ersätts hela menystacken av EN rad
+     (setupMenuAutoCollapse i app.js). Raden ligger kvar i #mobileMenuHost, så
+     stacken bara blir lägre — allt som hänger under menyn (väljarark,
+     klistrade rader i innehållet) följer med utan en rad extra kod. */
+  body.menu-collapsed #bottomBar,
+  body.menu-collapsed #currentViewBar,
+  body.menu-collapsed #currentSelectionBar,
+  body.menu-collapsed #moreMenuBar,
+  body.menu-collapsed #toolbar,
+  body.menu-collapsed #content .history-tabs[aria-label="Stats"] {
     display: none !important;
   }
 
-  #bottomNavIsland:not([hidden]) {
-    position: fixed;
-    left: 50%;
-    bottom: calc(6px + env(safe-area-inset-bottom) + var(--vv-offset, 0px));
-    z-index: 72;
-    display: grid;
-    place-content: center;
-    gap: 3px;
-    width: 58px;
-    height: 38px;
-    padding: 0;
-    border: 1px solid color-mix(in srgb, #fff 18%, transparent);
-    border-radius: 999px;
-    background: #16283f;
-    color: #fff;
-    box-shadow: none;
-    transform: translateX(-50%);
-    animation: bottom-island-in .16s ease-out;
+  /* Minimera-knappen: fast smal bredd och ingen etikett. De fyra flikarna
+     delar på resten av raden med flex: 1 1 25% — en femte etikett hade
+     tryckt ihop dem till oläsbarhet på en smal telefon. Kantlinjen skiljer
+     den från flikarna: den byter inte vy, den gömmer menyn. */
+  .bottom-minimize {
+    flex: 0 0 auto;
+    width: 46px;
+    min-width: 46px;
+    justify-content: center;
+    gap: 0;
+    padding: 7px 0 6px;
+    border-left: 1px solid var(--menu-line);
+    color: var(--ink-soft);
   }
-  #bottomNavIsland span {
-    display: block;
-    width: 19px;
-    height: 2px;
-    border-radius: 999px;
-    background: currentColor;
+  .bottom-minimize .bottom-tab-icon-svg { width: 18px; height: 18px; }
+
+  #menuCollapsedBar:not([hidden]) { display: block; }
+
+  .collapsed-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
   }
-  body.bottom-nav-collapsed #content { padding-bottom: 72px; }
-  /* 44px-knappen centreras mot den 38px höga menyön: 3px lägre nederkant
-     ger exakt samma lodräta mittpunkt, med samma safe-area/viewport-offset. */
-  body.bottom-nav-collapsed #scrollTopBtn {
-    bottom: calc(3px + env(safe-area-inset-bottom) + var(--vv-offset, 0px));
+  .collapsed-menu-icon {
+    flex: 0 0 auto;
+    display: flex;
+    color: var(--blue);
+  }
+  .collapsed-menu-icon .bottom-tab-icon-svg { width: 18px; height: 18px; }
+  /* Texten är det som varierar — allt annat i raden har fast bredd, så den
+     får krympa och kapas med ellips i stället för att knuffa ut chevronen. */
+  .collapsed-menu-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .collapsed-menu-chevron {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    margin: -4px 3px 0 0;
+    border-right: 2px solid var(--ink-soft);
+    border-bottom: 2px solid var(--ink-soft);
+    transform: rotate(45deg);
   }
 
-  @keyframes bottom-island-in {
-    from { opacity: 0; transform: translate(-50%, 8px) scale(.88); }
-    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  /* --- sidscroll-hint -----------------------------------------------------
+     En menyrad med fler val än vad som får plats såg ut att sluta vid
+     skärmkanten — inget sa att det fanns mer att hämta åt höger. Den klassiska
+     "scrolling shadows"-tekniken löser det HELT i CSS, utan mätning och utan
+     en enda lyssnare:
+
+     Fyra bakgrundslager. Två TÄCKANDE i radens egen färg (background-
+     attachment: local) som ligger vid innehållets början och slut och följer
+     med när man scrollar. Två SKUGGOR (attachment: scroll) som sitter fast vid
+     radens kanter. Vid vänsterläget parkerar täcket exakt ovanpå
+     vänsterskuggan och döljer den; scrollar man iväg glider täcket undan och
+     skuggan syns. Resultatet uppdaterar sig själv, i båda riktningarna, för
+     varje rad oavsett hur många brickor den råkar innehålla.
+
+     Bakgrundslager (inte ett pseudoelement) eftersom raden är sin egen
+     scrollcontainer: ett ::after hade scrollat med innehållet och klippts vid
+     kanten. Skuggan hamnar därmed BAKOM brickorna, vilket är precis rätt —
+     den ska antyda djup i mellanrummen, inte lägga en slöja över texten. */
+  #bottomBar,
+  #currentViewBar:not([hidden]),
+  #moreMenuBar:not([hidden]),
+  #currentSelectionBar .selection-tabs-scroll,
+  #content .history-tabs[aria-label="Stats"],
+  body.filters-open:not(.filters-expanded) #toolbar {
+    background-color: var(--menu-surface);
+    background-image:
+      linear-gradient(to right, var(--menu-surface) 60%, rgba(0, 0, 0, 0)),
+      linear-gradient(to left, var(--menu-surface) 60%, rgba(0, 0, 0, 0)),
+      radial-gradient(farthest-side at 0 50%, var(--menu-fade), rgba(0, 0, 0, 0)),
+      radial-gradient(farthest-side at 100% 50%, var(--menu-fade), rgba(0, 0, 0, 0));
+    background-position: 0 0, 100% 0, 0 0, 100% 0;
+    /* Täcket är HELT ogenomskinligt över hela skuggans bredd (60 % av 30 px
+       = 18 px) och tonar först därefter ut. Med ett jämnt tonande täcke lös
+       en bit av skuggan igenom även i ändläget, som en permanent smutsfläck
+       vid kanten. */
+    background-size: 30px 100%, 30px 100%, 18px 100%, 18px 100%;
+    background-repeat: no-repeat;
+    background-attachment: local, local, scroll, scroll;
   }
 }
 

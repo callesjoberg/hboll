@@ -2014,36 +2014,30 @@ window.HB = window.HB || {};
     return bits.join(" · ");
   }
 
-  // Orienteringsrad överst i innehållet, BARA på mobil. Klick på hall, lag
-  // eller grupp i ett matchkort byter tyst ut hela filtret (gotoTeamMatches
-  // m.fl.) — på dator ser man det direkt i verktygsraden, som dessutom har
-  // en "Tillbaka till din vy"-chip. På mobil ligger den raden gömd bakom
-  // Filter-knappen, så man landade i en avsmalnad vy utan att se varför
-  // eller hur man tog sig ur den.
+  // Vägen tillbaka, BARA på mobil. Klick på hall, lag eller grupp i ett
+  // matchkort byter tyst ut hela filtret (gotoTeamMatches m.fl.) — på dator
+  // ser man det direkt i verktygsraden, som dessutom har en "Tillbaka till
+  // din vy"-chip. På mobil ligger den raden gömd bakom Filter-knappen, så
+  // man landade i en avsmalnad vy utan att se hur man tog sig ur den.
+  //
+  // Raden visas numera BARA när det finns ett undanstoppat filter att gå
+  // tillbaka till. Att den också sammanfattade helt vanlig filtrering hörde
+  // till tiden då menyn låg i botten: hade man scrollat ned syntes inget av
+  // filtret. Nu står Filter-knappen kvar i toppen med sin siffra hela tiden,
+  // och en extra ruta som upprepade den åt bara läsyta.
   function renderMobileContextBar() {
     const main = $("#content");
     const gammal = main.querySelector(":scope > .mobile-context");
     if (gammal) gammal.remove();
     if (!sheetMode() || state.view === "stats" || settingsViewOpen) return;
-    const text = filterSummaryText();
-    if (!stashedFilter && !text) return;
+    if (!stashedFilter) return;
     main.prepend(h("div", { class: "mobile-context" },
-      stashedFilter ? h("button", {
+      h("button", {
         class: "mobile-context-back", type: "button",
         onclick: () => restoreStashedFilter(),
-      }, "\u2190 Tillbaka") : null,
-      h("span", { class: "mobile-context-text" }, text || "Filtrerad vy"),
-      text ? h("button", {
-        class: "mobile-context-clear", type: "button", "aria-label": "Rensa filtret",
-        onclick: () => {
-          state.days.clear(); state.cats.clear(); state.teams.clear(); state.years.clear();
-          state.includeCurrentYear = true;
-          state.viewCats = new Set(); state.viewTeams = new Set();
-          state.arena = ""; state.q = ""; state.matchFilter = "all";
-          state.schemaOlderRevealCount = 0;
-          saveUi(); render();
-        },
-      }, "\u2715") : null));
+      }, "\u2190 Tillbaka"),
+      h("span", { class: "mobile-context-text" },
+        filterSummaryText() || "Filtrerad vy")));
   }
 
   function renderContentBody() {
@@ -2327,9 +2321,6 @@ window.HB = window.HB || {};
   let currentMenuOpen = true;
   let statsMenuOpen = true;
   let moreMenuOpen = false;
-  // Programmatisk bottenkompensation när den krympta menyn öppnas ska inte
-  // omedelbart tolkas som en ny nedåtscroll och krympa menyn igen.
-  let bottomNavRevealScrollUntil = 0;
   // Mobilens Inställningar är en vanlig helbredds-innehållsvy, inte ett
   // dialoglager. Den är avsiktligt tillfällig: underliggande Aktuellt-vy
   // och dess delningsbara URL lämnas orörda och krysset går tillbaka dit.
@@ -2449,45 +2440,20 @@ window.HB = window.HB || {};
     }
   }
 
-  function setBottomNavCollapsed(collapsed) {
-    const mobile = sheetMode();
-    collapsed = !!collapsed && mobile;
-    const wasCollapsed = document.body.classList.contains("bottom-nav-collapsed");
-    const root = document.documentElement;
-    const viewportH = root.clientHeight || window.innerHeight;
-    const distanceToBottom = root.scrollHeight - (window.scrollY + viewportH);
-    // När ön öppnas längst ner ökar sidans bottenpadding med de fasta
-    // menyraderna. Behåll användaren vid den NYA sidbotten så de sista
-    // korten flyttas upp ovanför menyn i stället för att täckas av den.
-    const keepBottomVisible = wasCollapsed && !collapsed && distanceToBottom < 48;
-    document.body.classList.toggle("bottom-nav-collapsed", collapsed);
-    const island = $("#bottomNavIsland");
-    if (island) island.hidden = !collapsed;
-    // Renderingar som sker medan stacken är dold mäter #bottomBar till 0.
-    // Vid återöppning måste huvudraden därför mätas om innan undernivåerna
-    // positioneras; annars hamnar alla tre rader på varandra längst ned.
-    requestAnimationFrame(() => {
-      (collapsed || !mobile ? syncBottomStack : renderBottomBar)();
-      if (keepBottomVisible) requestAnimationFrame(() => {
-        bottomNavRevealScrollUntil = Date.now() + 600;
-        const freshRoot = document.documentElement;
-        const freshViewportH = freshRoot.clientHeight || window.innerHeight;
-        window.scrollTo({
-          top: Math.max(0, freshRoot.scrollHeight - freshViewportH),
-          behavior: "auto",
-        });
-      });
-    });
-  }
-
-  // Gemensam brytpunkt för dynamic island och Tillbaka till toppen. Med
-  // visualViewport följer den den faktiskt synliga mobilytan även när
-  // webbläsarens adressfält ändrar höjd.
-  function bottomNavCollapseY() {
+  // Brytpunkt för "Tillbaka till toppen": knappen dyker upp när ungefär en
+  // halv synlig skärmbild har passerats. Med visualViewport följer den den
+  // faktiskt synliga mobilytan även när webbläsarens adressfält ändrar höjd.
+  function scrollTopRevealY() {
     const height = window.visualViewport && window.visualViewport.height
       ? window.visualViewport.height : window.innerHeight;
     return height * 0.5;
   }
+
+  // Alla menyrader som kan scrolla i sidled när valen inte får plats.
+  const MENU_SCROLLERS = [
+    "#bottomBar", "#currentViewBar", "#currentSelectionBar .selection-tabs-scroll",
+    "#moreMenuBar", "#toolbar", '#content .history-tabs[aria-label="Stats"]',
+  ];
 
   function revealSelectedSubmenuItem() {
     requestAnimationFrame(() => {
@@ -2508,154 +2474,56 @@ window.HB = window.HB || {};
           menu.scrollLeft += activeRect.right - (menuRect.right - margin);
         }
       }
+      for (const selector of MENU_SCROLLERS) hintMenuScroll(document.querySelector(selector));
     });
   }
 
-  function setupBottomNavAutoCollapse() {
-    const island = $("#bottomNavIsland");
-    if (!island) return;
-    let lastY = window.scrollY;
-    let downwardTravel = 0;
-    let gesturePointer = null;
-    let menuPointerId = null;
-    let ignorePageScrollUntil = 0;
-    const blocked = () => document.body.classList.contains("picker-open") ||
-      !!document.querySelector("dialog[open]:not(.settings-view)");
-    const canCollapse = () => sheetMode() && window.scrollY >= bottomNavCollapseY() &&
-      !document.body.classList.contains("bottom-nav-collapsed") && !blocked();
-    const menuTarget = (target) => target instanceof Element && !!target.closest([
-      "#bottomBar", "#currentViewBar", "#currentSelectionBar", "#moreMenuBar",
-      "#toolbar", '#content .history-tabs[aria-label="Stats"]', ".picker-sheet",
-      "nav[role=tablist]",
-    ].join(", "));
-    const contentTarget = (target) => target instanceof Element && !!target.closest("#content") &&
-      !menuTarget(target) &&
-      !target.closest("input, textarea, select, [contenteditable=true], .maplibregl-ctrl");
-    island.addEventListener("click", () => {
-      setBottomNavCollapsed(false);
-      lastY = window.scrollY;
-      downwardTravel = 0;
-    });
-
-    // En draggest i innehållet betyder att användaren lämnat navigeringen
-    // och arbetar med vyn. Det täcker sidscroll, Kalenderns tvådimensionella
-    // matris, kartpanorering och slutspelsträd utan koppling till respektive
-    // komponent. Capture behövs eftersom MapLibre stoppar vissa events.
-    document.addEventListener("pointerdown", (event) => {
-      if (menuTarget(event.target)) {
-        menuPointerId = event.pointerId;
-        ignorePageScrollUntil = Date.now() + 800;
-        gesturePointer = null;
-        return;
-      }
-      menuPointerId = null;
-      gesturePointer = contentTarget(event.target)
-        ? { id: event.pointerId, x: event.clientX, y: event.clientY } : null;
-    }, { capture: true, passive: true });
-    document.addEventListener("pointermove", (event) => {
-      if (event.pointerId === menuPointerId) {
-        ignorePageScrollUntil = Date.now() + 800;
-        return;
-      }
-      if (!gesturePointer || event.pointerId !== gesturePointer.id) return;
-      const dx = event.clientX - gesturePointer.x;
-      const dy = event.clientY - gesturePointer.y;
-      if (Math.hypot(dx, dy) < 14) return;
-      if (document.body.classList.contains("bottom-nav-collapsed") &&
-          window.scrollY <= 2 && dy > 0 && Math.abs(dy) >= Math.abs(dx)) {
-        gesturePointer = null;
-        setBottomNavCollapsed(false);
-        return;
-      }
-      if (!canCollapse()) return;
-      gesturePointer = null;
-      downwardTravel = 0;
-      setBottomNavCollapsed(true);
-    }, { capture: true, passive: true });
-    const endGesture = (event) => {
-      if (event && event.pointerId === menuPointerId) {
-        ignorePageScrollUntil = Date.now() + 800;
-        menuPointerId = null;
-      }
-      if (!event || !gesturePointer || event.pointerId === gesturePointer.id) gesturePointer = null;
+  // Kanttoningen (se "sidscroll-hint" i style.css) visar att raden fortsätter,
+  // men bara för den som tittar åt rätt håll. Första gången en rad faktiskt
+  // har dolda val puttas den därför en liten bit åt höger och tillbaka —
+  // rörelsen fångar ögat och visar samtidigt VAD som ligger utanför kanten.
+  //
+  // Villkoren håller den diskret: bara när något är dolt, bara om raden står
+  // orörd i sitt vänsterläge (har man redan scrollat, eller har
+  // revealSelectedSubmenuItem flyttat den till en aktiv flik, vet man
+  // redan), och bara en gång per uppsättning val — måtten fungerar som
+  // signatur, så en ombyggd men likadan rad puttas inte om. Aldrig med
+  // "minska rörelse" påslaget.
+  function hintMenuScroll(el) {
+    if (!el || !sheetMode() || el.hidden) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const hidden = el.scrollWidth - el.clientWidth;
+    if (!el.clientWidth || hidden < 12 || el.scrollLeft > 2) return;
+    const signature = el.scrollWidth + "/" + el.clientWidth;
+    if (el.dataset.scrollHint === signature) return;
+    el.dataset.scrollHint = signature;
+    const distance = Math.min(30, hidden);
+    const duration = 520;
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      // sin(t·π) går 0 -> 1 -> 0: ut och tillbaka i en enda mjuk rörelse.
+      el.scrollLeft = distance * Math.sin(t * Math.PI);
+      if (t < 1) requestAnimationFrame(step);
+      else el.scrollLeft = 0;
     };
-    document.addEventListener("pointerup", endGesture, { capture: true, passive: true });
-    document.addEventListener("pointercancel", endGesture, { capture: true, passive: true });
+    requestAnimationFrame(step);
+  }
 
-    // Hjul/trackpad ger ingen användbar pointermove. En faktisk scrollgest
-    // över innehållet krymper därför också stacken, oavsett om den rör en
-    // intern yta vågrätt/lodrätt eller hela dokumentet.
-    document.addEventListener("wheel", (event) => {
-      if (menuTarget(event.target)) {
-        ignorePageScrollUntil = Date.now() + 500;
-        return;
-      }
-      if (!contentTarget(event.target)) return;
-      if (Math.abs(event.deltaX) + Math.abs(event.deltaY) < 8) return;
-      if (document.body.classList.contains("bottom-nav-collapsed") &&
-          window.scrollY <= 2 && event.deltaY < 0 &&
-          Math.abs(event.deltaY) >= Math.abs(event.deltaX)) {
-        setBottomNavCollapsed(false);
-        return;
-      }
-      if (!canCollapse()) return;
-      downwardTravel = 0;
-      setBottomNavCollapsed(true);
-    }, { capture: true, passive: true });
-
-    // Fortsatt momentumscroll i en undermeny kan leva längre än pekgesten.
-    // Scroll-event fångas på själva menyraden och håller spärren aktiv utan
-    // att hindra den horisontella scrollningen.
-    document.addEventListener("scroll", (event) => {
-      if (menuTarget(event.target)) ignorePageScrollUntil = Date.now() + 500;
-    }, { capture: true, passive: true });
-
-    window.addEventListener("scroll", () => {
-      const y = Math.max(0, window.scrollY);
-      const delta = y - lastY;
-      lastY = y;
-      if (!sheetMode()) return;
-      if (Date.now() < bottomNavRevealScrollUntil) {
-        downwardTravel = 0; return;
-      }
-      if (Date.now() < ignorePageScrollUntil) {
-        downwardTravel = 0; return;
-      }
-      if (blocked()) { downwardTravel = 0; return; }
-
-      // En krympt meny öppnas bara med menyön eller när sidan faktiskt når
-      // toppen. Uppåthastighet/-sträcka mitt på sidan ska aldrig påverka
-      // menyn; det gjorde navigeringen ryckig vid vanlig läsning.
-      if (document.body.classList.contains("bottom-nav-collapsed")) {
-        downwardTravel = 0;
-        if (y <= 2) {
-          gesturePointer = null;
-          setBottomNavCollapsed(false);
-        }
-        return;
-      }
-
-      if (y < 56) { downwardTravel = 0; return; }
-      if (delta > 0) downwardTravel += delta;
-      else if (delta < -4) downwardTravel = 0;
-      // Krymp först när ungefär en halv synlig skärmbild har passerats.
-      // Samma brytpunkt används av Tillbaka till toppen-knappen nedan.
-      if (delta > 0 && y >= bottomNavCollapseY()) setBottomNavCollapsed(true);
-    }, { passive: true });
+  // Menyn ligger fast i toppen och krymper inte längre ihop vid scroll (den
+  // hopfällbara "dynamic island" hörde till bottenplaceringen, där raden åt
+  // läsyta i varje läge). Kvar behövs bara det som håller layouten i synk
+  // när skärmen byter storlek eller korsar mobil/dator-brytpunkten.
+  function setupResponsiveMenuLayout() {
     window.matchMedia(SHEET_QUERY).addEventListener("change", (event) => {
       enforceMobileMenuHost();
-      if (!event.matches) {
-        setBottomNavCollapsed(false);
-        // Inställningssidan är ett mobilläge. Vid byte till desktop återgår
-        // innehållet till föregående vy; nästa öppning använder modal dialog.
-        if (settingsViewOpen) {
-          settingsViewOpen = false;
-          currentMenuOpen = true;
-          render();
-        }
+      // Inställningssidan är ett mobilläge. Vid byte till desktop återgår
+      // innehållet till föregående vy; nästa öppning använder modal dialog.
+      if (!event.matches && settingsViewOpen) {
+        settingsViewOpen = false;
+        currentMenuOpen = true;
+        render();
       }
-      lastY = window.scrollY;
-      downwardTravel = 0;
       requestAnimationFrame(renderBottomBar);
     });
 
@@ -2692,6 +2560,8 @@ window.HB = window.HB || {};
     } else if (name === "filter-closed" || name === "filter-open") {
       add("path", { d: "M4 4h16M7 10h10M10 16h4" });
       add("path", { d: name === "filter-open" ? "m8 22 4-4 4 4" : "m8 19 4 4 4-4" });
+    } else if (name === "collapse") {
+      add("path", { d: "m6 14 6-6 6 6" });
     } else if (name === "stats") {
       add("path", { d: "M4 20V10M10 20V4M16 20v-7M22 20H2" });
     } else {
@@ -2709,6 +2579,11 @@ window.HB = window.HB || {};
     // fram raden trots attributet, vilket gjorde den synlig men fortsatt
     // dold för hjälpmedel. Desktop har sin fulla toppnavigation.
     const mobile = sheetMode();
+    // Ett sparat "håll menyn minimerad" ska gälla direkt vid sidladdning, inte
+    // först när något råkar anropa setMenuCollapsed. Idempotent, så det är
+    // ofarligt att den här raden körs vid varje omritning.
+    if (mobile && menuMinimized) document.body.classList.add("menu-collapsed");
+    else if (!mobile) document.body.classList.remove("menu-collapsed");
     enforceMobileMenuHost();
     renderDesktopNav();
     bar.hidden = !mobile;
@@ -2719,10 +2594,8 @@ window.HB = window.HB || {};
       return;
     }
     // Stats har ingen verktygsrad (se renderToolbar) — då ska filterknappen
-    // inte heller finnas, annars öppnar den ett tomt ark.
-    // Stats har en EXTRA fast rad (underflikarna, se style.css) — innehållet
-    // måste lämna plats för båda, annars göms sista raden bakom dem.
-    document.body.classList.toggle("stats-tabs-fixed", state.view === "stats" && statsMenuOpen);
+    // inte heller finnas, annars öppnar den ett tomt ark. Stats egna
+    // underflikar ligger i innehållet och göms när menyn är hopfälld.
     document.body.classList.toggle("stats-tabs-collapsed", state.view === "stats" && !statsMenuOpen);
     placeFooterLinks();
     if (CURRENT_VIEWS.includes(state.view)) lastCurrentView = state.view;
@@ -2802,7 +2675,19 @@ window.HB = window.HB || {};
         // rendering. Därefter visas Mer-raden ovanpå den vanliga sidan.
         if (leavingSettings) render();
         else renderBottomBar();
-      }));
+      }),
+      // Minimera: håller menyn hopfälld tills man själv fäller ut den igen,
+      // också mellan besök. Ikonknapp utan etikett och med fast bredd — de
+      // fyra flikarna delar på resten av raden, och en femte etikett hade
+      // tryckt ihop dem till oläsbarhet på en smal telefon.
+      h("button", {
+        class: "bottom-tab bottom-minimize", type: "button",
+        title: "Minimera menyn — ligger kvar tills du fäller ut den igen",
+        "aria-label": "Minimera menyn",
+        onclick: () => setMenuMinimized(true),
+      }, h("span", { class: "bottom-tab-icon", "aria-hidden": "true" },
+        bottomMenuIcon("collapse"))));
+    renderCollapsedMenuBar();
     renderCurrentViewBar();
     renderMoreMenuBar();
     const selectionBar = $("#currentSelectionBar");
@@ -2811,13 +2696,121 @@ window.HB = window.HB || {};
         state.view === "tabeller" || state.view === "slutspel";
       selectionBar.hidden = !(currentMenuOpen && supportsSelectionBar && selectionBar.childElementCount);
     }
-    // Arkets underkant ska ligga dikt an mot raden. Höjden mäts i stället
-    // för att hårdkodas — den varierar med teckenstorlek och safe-area, och
-    // en gissad siffra gav ett synligt glapp mellan rad och ark.
-    document.documentElement.style.setProperty(
-      "--bottombar-h", Math.round(bar.getBoundingClientRect().height) + "px");
+    // (--bottombar-h behövdes när väljararken skulle sluta precis ovanför
+    // bottenraden. Raden ligger i toppen nu och arken går ända ner till
+    // skärmkanten; höjden på menyn publiceras i stället som --menuhost-h,
+    // se syncTopStack.)
     syncBottomStack();
     revealSelectedSubmenuItem();
+  }
+
+  // Hopfälld meny: en enda rad i stället för två till fyra. Menyn tar annars
+  // upp till en fjärdedel av en telefonskärm i varje läge, också när man bara
+  // läser sig neråt i en lång matchlista. Raden svarar på "var är jag och vad
+  // ser jag" — vy plus aktuell filtrering — och fäller ut hela menyn igen vid
+  // tryck.
+  function collapsedMenuLabel() {
+    const labels = {
+      schema: "Schema", tabeller: "Tabeller", slutspel: "Slutspel",
+      bana: "Bana", stats: "Statistik",
+    };
+    const filter = filterSummaryText();
+    return [
+      labels[state.view] || cup().name,
+      filter || (state.scope === "club" ? state.favoriteClub : "Hela cupen"),
+    ].join(" · ");
+  }
+
+  function renderCollapsedMenuBar() {
+    const bar = $("#menuCollapsedBar");
+    if (!bar) return;
+    const visible = sheetMode() && document.body.classList.contains("menu-collapsed");
+    bar.hidden = !visible;
+    if (!visible) { bar.replaceChildren(); return; }
+    bar.replaceChildren(h("button", {
+      class: "collapsed-menu-btn", type: "button",
+      "aria-expanded": "false", "aria-controls": "bottomBar",
+      title: "Visa menyn",
+      onclick: () => setMenuMinimized(false),
+    },
+      h("span", { class: "collapsed-menu-icon", "aria-hidden": "true" },
+        bottomMenuIcon("filter")),
+      h("span", { class: "collapsed-menu-text" }, collapsedMenuLabel()),
+      h("span", { class: "collapsed-menu-chevron", "aria-hidden": "true" })));
+  }
+
+  function setMenuCollapsed(collapsed) {
+    collapsed = !!collapsed && sheetMode();
+    if (collapsed === document.body.classList.contains("menu-collapsed")) return;
+    // Menyn ligger ovanför innehållet i flödet, så att fälla in eller ut den
+    // flyttar allt nedanför. Mät hur mycket innehållet FAKTISKT rörde sig och
+    // flytta scrollpositionen lika mycket — då ligger raden man läste kvar på
+    // samma plats på skärmen. Att mäta i stället för att räkna på menyns höjd
+    // gör det självkorrigerande mot webbläsarens egen scroll-ankring.
+    const content = $("#content");
+    const startY = window.scrollY;
+    const beforeTop = content ? content.getBoundingClientRect().top : 0;
+    document.body.classList.toggle("menu-collapsed", collapsed);
+    renderBottomBar();
+    // Överst på sidan finns inget att kompensera: där SKA menyn bara växa
+    // nedåt från sidhuvudet.
+    if (!content || startY <= 2) return;
+    const shift = Math.round(content.getBoundingClientRect().top - beforeTop);
+    if (shift) window.scrollTo({ top: Math.max(0, window.scrollY + shift), behavior: "auto" });
+  }
+
+  // Har man själv tryckt upp menyn ska den inte smälla igen vid nästa lilla
+  // skrollning — då krävs en halv skärm till av nedåtläsning först.
+  let autoCollapseFloorY = 0;
+
+  // Fast minimerad meny. Samma tanke som filterlåset: har man ställt in sitt
+  // urval en gång vill man kunna titta in nu, om en timme och i morgon och
+  // bara se schemat. Sparas GLOBALT och inte per cup — det är ett sätt att
+  // använda appen på, inte en egenskap hos en viss cup.
+  const MENU_MINIMIZED_KEY = "hb:menuMinimized";
+  let menuMinimized = storageGet(MENU_MINIMIZED_KEY) === "1";
+
+  // Två lägen, inget dolt tredje: menyn syns = inte minimerad. Minimera-
+  // knappen fäller ihop och håller kvar, ett tryck på den hopfällda raden
+  // fäller ut och släpper. Att i stället låta raden öppna menyn "tillfälligt"
+  // hade gett ett läge man inte kan se på skärmen vilket det är.
+  function setMenuMinimized(on) {
+    menuMinimized = !!on;
+    persist(MENU_MINIMIZED_KEY, menuMinimized ? "1" : "0");
+    if (menuMinimized) setMenuCollapsed(true);
+    else expandMenuFromTap();
+  }
+
+  // Fäll in efter ungefär en skärmhöjds nedåtläsning, fäll ut igen när man är
+  // tillbaka i toppen. Bara nedåtrörelse fäller in: att också reagera på
+  // uppåtrörelse mitt på sidan gjorde navigeringen ryckig under vanlig
+  // läsning (samma erfarenhet som den gamla bottenmenyn).
+  function setupMenuAutoCollapse() {
+    let lastY = window.scrollY;
+    window.addEventListener("scroll", () => {
+      const y = Math.max(0, window.scrollY);
+      const delta = y - lastY;
+      lastY = y;
+      if (!sheetMode() || settingsViewOpen) return;
+      // Med ett ark eller en väljare öppen hänger den från menyn — då får
+      // stacken inte byta höjd under fötterna på den.
+      if (document.body.classList.contains("picker-open")) return;
+      if (document.querySelector("dialog[open]:not(.settings-view)")) return;
+      const viewport = (window.visualViewport && window.visualViewport.height) ||
+        window.innerHeight;
+      if (document.body.classList.contains("menu-collapsed")) {
+        if (y <= 2 && !menuMinimized) { autoCollapseFloorY = 0; setMenuCollapsed(false); }
+        return;
+      }
+      if (delta > 0 && y >= Math.max(viewport, autoCollapseFloorY)) setMenuCollapsed(true);
+    }, { passive: true });
+  }
+
+  function expandMenuFromTap() {
+    const viewport = (window.visualViewport && window.visualViewport.height) ||
+      window.innerHeight;
+    autoCollapseFloorY = window.scrollY + viewport / 2;
+    setMenuCollapsed(false);
   }
 
   function renderCurrentViewBar() {
@@ -2904,10 +2897,13 @@ window.HB = window.HB || {};
     return open ? open.dataset.sheetKey || "" : "";
   }
 
-  function prototypeBottomStackHeight() {
+  // Hur långt ned menyn i toppen slutar — arket hänger därifrån och kan som
+  // mest bli så högt som resten av skärmen. Hette tidigare
+  // prototypeBottomStackHeight och mätte bottenradens höjd.
+  function prototypeMenuStackBottom() {
     const measured = parseFloat(getComputedStyle(document.documentElement)
-      .getPropertyValue("--bottomstack-h"));
-    return measured || ((($("#bottomBar") || {}).offsetHeight) || 56);
+      .getPropertyValue("--topstack-bottom"));
+    return Number.isFinite(measured) ? measured : 0;
   }
 
   function prototypeDialog(title, sheetKey, anchorElement = null) {
@@ -2943,16 +2939,20 @@ window.HB = window.HB || {};
       tabindex: "-1",
     },
       h("div", { class: "prototype-sheet-head" },
-        grip,
         h("h2", { id: titleId }, title),
         h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng",
-          onclick: () => dlg.close() }, "×")), body);
+          onclick: () => dlg.close() }, "×")), body,
+      // Handtaget SIST: arket hänger från menyn i toppen och växer nedåt, så
+      // det är underkanten som rör sig när man drar. Låg det kvar i
+      // rubrikraden drog man i den ena änden och såg den andra flytta sig.
+      grip);
     let cleanupPopover = () => {};
     backdrop.addEventListener("click", () => dlg.close());
     dlg.addEventListener("close", () => {
       cleanupPopover();
       if (anchoredDesktop) anchorElement.setAttribute("aria-expanded", "false");
       backdrop.remove(); dlg.remove();
+      syncPageScrollLock();
       requestAnimationFrame(() => {
         renderBottomBar();
         const target = returnFocus && returnFocus.isConnected
@@ -2973,15 +2973,15 @@ window.HB = window.HB || {};
       const startHeight = dlg.getBoundingClientRect().height;
       const move = (ev) => {
         const viewportH = (window.visualViewport && window.visualViewport.height) || innerHeight;
-        const bottomH = prototypeBottomStackHeight();
-        const maxHeight = Math.max(260, viewportH - bottomH - 12);
-        const next = Math.max(220, Math.min(maxHeight, startHeight + startY - ev.clientY));
+        const topH = prototypeMenuStackBottom();
+        const maxHeight = Math.max(260, viewportH - topH - 12);
+        const next = Math.max(220, Math.min(maxHeight, startHeight + ev.clientY - startY));
         dlg.style.height = Math.round(next) + "px";
       };
       const stop = () => {
         const viewportH = (window.visualViewport && window.visualViewport.height) || innerHeight;
-        const bottomH = prototypeBottomStackHeight();
-        const available = Math.max(260, viewportH - bottomH - 12);
+        const topH = prototypeMenuStackBottom();
+        const available = Math.max(260, viewportH - topH - 12);
         const ratio = Math.max(0.25, Math.min(1, dlg.getBoundingClientRect().height / available));
         persist("hb:menuSheetHeight:" + sheetKey, String(ratio));
         grip.removeEventListener("pointermove", move);
@@ -2992,8 +2992,13 @@ window.HB = window.HB || {};
       grip.addEventListener("pointerup", stop);
       grip.addEventListener("pointercancel", stop);
     });
+    // Arket hänger från menyn: mät var den ligger PRECIS nu (överst på sidan
+    // sitter den under sidhuvudet, nedscrollad mot skärmkanten) innan arket
+    // positioneras mot --topstack-bottom.
+    syncTopStack();
     document.body.append(backdrop, dlg);
     dlg.show();
+    syncPageScrollLock();
     if (anchoredDesktop) {
       anchorElement.setAttribute("aria-expanded", "true");
       const gap = 8;
@@ -3054,8 +3059,8 @@ window.HB = window.HB || {};
       const saved = +localStorage.getItem("hb:menuSheetHeight:" + sheetKey);
       if (!fullScreenOnMobile && !anchoredDesktop && saved >= 0.25 && saved <= 1) {
         const viewportH = (window.visualViewport && window.visualViewport.height) || innerHeight;
-        const bottomH = prototypeBottomStackHeight();
-        dlg.style.height = Math.round((viewportH - bottomH - 12) * saved) + "px";
+        const topH = prototypeMenuStackBottom();
+        dlg.style.height = Math.round((viewportH - topH - 12) * saved) + "px";
       }
     } catch { /* privat läge/full lagring: använd CSS-höjden */ }
     requestAnimationFrame(renderBottomBar);
@@ -3141,6 +3146,57 @@ window.HB = window.HB || {};
     }
     if (animate) setBottomStackHeight(h);
     else document.documentElement.style.setProperty("--bottomstack-h", Math.round(h) + "px");
+    syncTopStack();
+  }
+
+  // Motsvarigheten till --bottomstack-h för menyn, nu när den ligger i
+  // toppen. Två mått eftersom två olika saker behöver dem:
+  //   --menuhost-h  bara menyraderna (#mobileMenuHost). Filterremsan
+  //                 klistrar sig direkt under dem (style.css).
+  //   --topstack-h  menyraderna PLUS filterremsan — allt som ligger fast
+  //                 överst. Innehållets EGNA klistrade rader
+  //                 (orienteringsraden, tabellernas gruppflikar, tidslinjens
+  //                 rubrikrad) stannar mot det måttet i stället för mot
+  //                 skärmkanten, där de hamnade bakom menyn och blev
+  //                 osynliga så fort man scrollat förbi dem.
+  // Mäts i stället för att räknas ut: höjden beror på hur många undernivåer
+  // som är öppna just nu, på teckenstorlek och på hur många brickor som ryms.
+  function syncTopStack() {
+    const root = document.documentElement;
+    if (!sheetMode()) {
+      root.style.setProperty("--menuhost-h", "0px");
+      root.style.setProperty("--topstack-h", "0px");
+      root.style.setProperty("--topstack-bottom", "0px");
+      return;
+    }
+    // Rektangeln för ett element som räknas till stacken, annars null.
+    // Höjdkravet är inte en detalj: #toolbar behåller sin inline-satta
+    // position:sticky även när den är DOLD (toggleFilterSheet sätter den en
+    // gång och tar aldrig bort den), och en dold rad mäter noll — utan
+    // kontrollen blev stackens underkant 0 och arken la sig över menyn.
+    // Det UTFÄLLDA filterarket ("Mer") räknas inte heller in: det är ett
+    // tillfälligt ark med eget bakgrundstäcke och ska inte trycka ner
+    // innehållets klistrade rader med 72 vh.
+    const stackRect = (el) => {
+      if (!el || getComputedStyle(el).position !== "sticky") return null;
+      const rect = el.getBoundingClientRect();
+      return rect.height > 0 ? rect : null;
+    };
+    const hostRect = stackRect($("#mobileMenuHost"));
+    const stripRect = document.body.classList.contains("filters-expanded")
+      ? null : stackRect($("#toolbar"));
+    const hostH = hostRect ? hostRect.height : 0;
+    root.style.setProperty("--menuhost-h", Math.round(hostH) + "px");
+    root.style.setProperty("--topstack-h",
+      Math.round(hostH + (stripRect ? stripRect.height : 0)) + "px");
+    // --topstack-h är en HÖJD och duger för sticky (den säger var raden ska
+    // fastna). Ett position:fixed-ark behöver i stället stackens faktiska
+    // UNDERKANT i viewporten, och de två är olika saker: överst på sidan
+    // ligger menyn nedanför sidhuvudet, inte mot skärmkanten. Med höjden som
+    // toppvärde la sig arket rakt över filterremsan.
+    const bottoms = [hostRect, stripRect].filter(Boolean).map((r) => r.bottom);
+    root.style.setProperty("--topstack-bottom",
+      Math.round(bottoms.length ? Math.max(0, ...bottoms) : 0) + "px");
   }
 
   // Sidfotens länkar (Om appen / Hjälp / Lägg till cup / Admin) hör hemma i
@@ -3227,8 +3283,17 @@ window.HB = window.HB || {};
 
   let filterStripScrollLeft = 0;
 
+  // Den kompakta remsan är BARA brickraden: omslagen (details/toolbar-body/
+  // row) bidrog med marginaler och gjorde raden 73 px mot menyradens 49.
+  //
+  // Men bara i kompakt läge. Tidigare plattades raden till oavsett läge,
+  // och då fanns det ingenting kvar för "Mer" att fälla ut — knappen bytte
+  // bara padding och rundade hörn på exakt samma rad. Det som föll bort var
+  // fritextsöket (som saknar egen väg in på mobil), filterlåset och
+  // visningsvalen för en låst vy.
   function flattenMobileFilterBar(bar) {
     if (!sheetMode()) return;
+    if (document.body.classList.contains("filters-expanded")) return;
     const group = bar.querySelector(".filter-primary-row .filter-group");
     if (group && group.parentElement !== bar) bar.replaceChildren(group);
   }
@@ -3281,11 +3346,10 @@ window.HB = window.HB || {};
     const toolbar = $("#toolbar");
     if (toolbar && sheetMode()) {
       toolbar.style.position = "sticky";
-      toolbar.style.top = "0px";
-      toolbar.style.left = "auto";
-      toolbar.style.right = "auto";
-      toolbar.style.bottom = "auto";
+      // inset FÖRST — den nollställer top/right/bottom/left och skrev
+      // tidigare över top:0 på raden efter, så remsan aldrig klistrade sig.
       toolbar.style.inset = "auto";
+      toolbar.style.top = "var(--menuhost-h, 0px)";
     }
     // Efter en bildruta: remsan måste hinna få sin layout innan den mäts.
     requestAnimationFrame(() => syncBottomStack({ animate: true }));
@@ -3296,10 +3360,10 @@ window.HB = window.HB || {};
       state.toolbarOpen = true;
       const dd = document.querySelector(".toolbar-collapse");
       if (dd) dd.open = true;
-      if (sheetMode()) window.requestAnimationFrame(() => {
-        const bar = $("#toolbar");
-        if (bar) bar.scrollIntoView({ block: "start", inline: "nearest", behavior: "auto" });
-      });
+      // Ingen scrollIntoView längre: remsan låg förut fast i botten, där en
+      // scroll till den var harmlös. Nu ligger den klistrad högst upp i
+      // dokumentet — samma anrop kastade i stället tillbaka läsaren till
+      // sidans början varje gång Filter öppnades. Den är ändå alltid synlig.
     }
     renderBottomBar();
   }
@@ -3311,6 +3375,11 @@ window.HB = window.HB || {};
     if (expanded === open) return;
     document.body.classList.toggle("filters-expanded", open);
     syncFilterBackdrop();
+    // Verktygsraden måste byggas OM, inte bara stylas om: flattenMobileFilter-
+    // Bar kastar bort allt utom brickraden i kompakt läge, så resten (sök,
+    // lås, visningsval) finns inte kvar i DOM:et att fälla ut.
+    renderToolbar();
+    reconcilePickerChrome();
     requestAnimationFrame(() => {
       syncBottomStack({ animate: true });
       renderBottomBar();
@@ -3447,8 +3516,8 @@ window.HB = window.HB || {};
     if (mobile && host) {
       host.style.setProperty("position", "sticky", "important");
       host.style.setProperty("top", "0px", "important");
-      host.style.setProperty("z-index", "72", "important");
       host.style.setProperty("background", "var(--menu-surface)", "important");
+      syncMenuHostLayer();
     } else if (host) {
       host.style.removeProperty("position");
       host.style.removeProperty("top");
@@ -3471,23 +3540,33 @@ window.HB = window.HB || {};
     return v >= SHEET_MIN_VH && v <= SHEET_MAX_VH ? v : 0;
   }
 
-  // Rubrikrad med draghandtag, titel och stängkryss. Byggs en gång per
-  // panel och återanvänds; titeln uppdateras vid varje öppning eftersom
-  // knappens text ändras med urvalet ("Alla lag" -> "Lag (3)").
+  // Rubrikrad med titel och stängkryss, plus ett draghandtag längst NED i
+  // panelen. Byggs en gång per panel och återanvänds; titeln uppdateras vid
+  // varje öppning eftersom knappens text ändras med urvalet ("Alla lag" ->
+  // "Lag (3)").
+  //
+  // Handtaget satt tidigare i rubrikraden, för ett ark som växte uppåt från
+  // skärmens botten. Nu hänger arket från menyn och växer NEDÅT — då hör
+  // handtaget hemma vid den kant som faktiskt rör sig, annars drar man i
+  // ena änden och ser den andra röra sig. Head och handtag säkras var för
+  // sig så en ombyggd panel aldrig blir av med bara det ena.
   function ensureSheetHead(dd) {
     const panel = dd.querySelector(".team-picker-panel");
     if (!panel) return null;
     const summary = dd.querySelector("summary");
     let head = panel.querySelector(".picker-sheet-head");
     if (!head) {
-      const grip = h("span", { class: "picker-sheet-grip", "aria-hidden": "true" });
       const title = h("span", { class: "picker-sheet-title" });
       const close = h("button", {
         class: "picker-sheet-close", type: "button", "aria-label": "Stäng",
         onclick: () => { dd.open = false; },
       }, "×");
-      head = h("div", { class: "picker-sheet-head" }, grip, title, close);
+      head = h("div", { class: "picker-sheet-head" }, title, close);
       panel.prepend(head);
+    }
+    if (!panel.querySelector(":scope > .picker-sheet-grip")) {
+      const grip = h("span", { class: "picker-sheet-grip", "aria-hidden": "true" });
+      panel.append(grip);
       attachSheetDrag(grip, panel);
     }
     head.querySelector(".picker-sheet-title").textContent =
@@ -3495,9 +3574,9 @@ window.HB = window.HB || {};
     return head;
   }
 
-  // Dra handtaget för att välja höjd. Uppåt = högre ark, så höjden räknas
-  // från startpunkten MINUS aktuell y. Höjden sparas så nästa öppning
-  // (och nästa besök) behåller den man valt.
+  // Dra handtaget för att välja höjd. Arket hänger från menyn, så NEDÅT =
+  // högre ark: höjden räknas från startpunkten PLUS aktuell y. Höjden sparas
+  // så nästa öppning (och nästa besök) behåller den man valt.
   function attachSheetDrag(grip, panel) {
     let startY = 0, startH = 0, dragging = false;
     grip.addEventListener("pointerdown", (e) => {
@@ -3511,7 +3590,7 @@ window.HB = window.HB || {};
     grip.addEventListener("pointermove", (e) => {
       if (!dragging) return;
       const vh = window.innerHeight / 100;
-      const raw = (startH + (startY - e.clientY)) / vh;
+      const raw = (startH + (e.clientY - startY)) / vh;
       const clamped = Math.min(SHEET_MAX_VH, Math.max(SHEET_MIN_VH, raw));
       // Standardläget är auto-höjd (panelen följer innehållet). Ett manuellt
       // drag får däremot vara ett uttryckligt önskemål och låser höjden tills
@@ -3526,6 +3605,86 @@ window.HB = window.HB || {};
     };
     grip.addEventListener("pointerup", end);
     grip.addEventListener("pointercancel", end);
+  }
+
+  // Bakgrunden ska stå stilla medan ett ark eller en väljarpanel är öppen.
+  // INTE med overflow: hidden — den gör html/body till en egen scrollbox och
+  // slår ut position:sticky på HELA sidan, så menyn i toppen rullar iväg och
+  // arket som hänger från den lämnas med ett växande glapp (se den utförliga
+  // kommentaren vid picker-open i style.css). Här blockeras i stället själva
+  // gesten. Layouten rörs inte alls, och sticky fortsätter fungera.
+  let pageScrollLocked = false;
+
+  // Menyn ska ligga ÖVER väljarens bakgrundstäcke: en öppen panel ska inte
+  // släcka ner raden man just tryckte i, och man ska kunna byta flik eller
+  // öppna en annan bricka direkt utan att först stänga panelen.
+  //
+  // Lyftet måste ske på HOSTEN. Raderna ligger inuti dess staplingskontext
+  // sedan menyn flyttade upp, så deras egna z-index når aldrig utanför —
+  // filterremsan (syskon till hosten) lyste klart medan huvudmenyn precis
+  // ovanför låg kvar under täcket. Inline eftersom hostens z-index skrivs
+  // med !important i enforceMobileMenuHost och inte kan bytas från CSS.
+  function syncMenuHostLayer() {
+    const host = $("#mobileMenuHost");
+    if (!host) return;
+    if (!sheetMode()) { host.style.removeProperty("z-index"); return; }
+    const överTäcket = document.body.classList.contains("picker-open");
+    host.style.setProperty("z-index", överTäcket ? "85" : "72", "important");
+  }
+
+  function syncPageScrollLock() {
+    const open = sheetMode() && (!!document.querySelector(".team-picker-dd[open]") ||
+      !!document.querySelector("dialog.prototype-sheet[open]"));
+    if (open === pageScrollLocked) return;
+    pageScrollLocked = open;
+    const method = open ? "addEventListener" : "removeEventListener";
+    document[method]("wheel", blockBackgroundScroll, { passive: false, capture: true });
+    document[method]("touchmove", blockBackgroundScroll, { passive: false, capture: true });
+    // Skyddsnät: skulle sidan ändå röra sig (tangentbord, kvardröjande
+    // momentum, programmatisk scroll) följer arket med menyn i stället för
+    // att bli hängande på sin gamla plats.
+    window[method]("scroll", syncTopStack, { passive: true });
+  }
+
+  function blockBackgroundScroll(event) {
+    if (event.type === "touchmove"
+      ? hasScrollableAncestor(event.target)
+      : canScrollHere(event.target, event.deltaX, event.deltaY)) return;
+    if (event.cancelable) event.preventDefault();
+  }
+
+  // Släpp igenom gesten bara när den sker i något som FAKTISKT kan rulla åt
+  // det håll den drar — annars kedjas den vidare till sidan bakom. Vid
+  // pekgester är riktningen okänd när touchmove börjar, så där räcker det
+  // att ytan går att scrolla i någon riktning; kanterna sköts av
+  // overscroll-behavior: contain på panelerna och menyraderna.
+  function scrollableAxis(el, horizontal) {
+    const overflow = getComputedStyle(el)[horizontal ? "overflowX" : "overflowY"];
+    if (!/(auto|scroll)/.test(overflow)) return 0;
+    const room = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+    return room >= 2 ? room : 0;
+  }
+
+  function hasScrollableAncestor(target) {
+    for (let el = target instanceof Element ? target : null;
+      el && el !== document.body; el = el.parentElement) {
+      if (scrollableAxis(el, false) || scrollableAxis(el, true)) return true;
+    }
+    return false;
+  }
+
+  function canScrollHere(target, dx, dy) {
+    const horizontal = Math.abs(dx) > Math.abs(dy);
+    const delta = horizontal ? dx : dy;
+    for (let el = target instanceof Element ? target : null;
+      el && el !== document.body; el = el.parentElement) {
+      const room = scrollableAxis(el, horizontal);
+      if (!room) continue;
+      if (!delta) return true;
+      const pos = horizontal ? el.scrollLeft : el.scrollTop;
+      return delta < 0 ? pos > 0 : pos < room - 1;
+    }
+    return false;
   }
 
   function syncSheetBackdrop(open) {
@@ -3572,6 +3731,8 @@ window.HB = window.HB || {};
     const nagonOppen = !!document.querySelector(".team-picker-dd[open]");
     syncSheetBackdrop(nagonOppen && sheetMode());
     document.body.classList.toggle("picker-open", nagonOppen);
+    syncMenuHostLayer();
+    syncPageScrollLock();
   }
 
   // position:fixed utgår från LAYOUT-viewporten. Mobilwebbläsare ändrar
@@ -3642,6 +3803,10 @@ window.HB = window.HB || {};
         if (head && saved) {
           dd.querySelector(".team-picker-panel").style.height = saved + "vh";
         }
+        // Arket hänger från menyn och måste veta var den ligger PRECIS nu:
+        // överst på sidan sitter den under sidhuvudet, nedscrollad mot
+        // skärmkanten. Sidan låses ändå så fort panelen är öppen.
+        syncTopStack();
         portalPickerPanel(dd);
       } else restorePickerPanel(dd);
       const nagonOppen = !!document.querySelector(".team-picker-dd[open]");
@@ -3653,6 +3818,8 @@ window.HB = window.HB || {};
       // medan en väljare är öppen. Att jämföra z-index-SIFFROR räcker inte
       // mellan olika staplingskontexter.
       document.body.classList.toggle("picker-open", nagonOppen);
+      syncMenuHostLayer();
+      syncPageScrollLock();
     }, true);
 
     // Roterar man till liggande (eller öppnar på en bred skärm) ska ett
@@ -12700,7 +12867,7 @@ window.HB = window.HB || {};
       settingsReturnFocus = document.activeElement instanceof HTMLElement
         ? document.activeElement : null;
       // En modal <dialog> hamnar i webbläsarens topplager och täcker därför
-      // alltid den fasta bottenmenyn, oavsett z-index. På mobil visas
+      // alltid den fasta menyn, oavsett z-index. På mobil visas
       // inställningar som en helskärmsvy under navigationslagret.
       if (sheetMode()) {
         settingsViewOpen = true;
@@ -12711,7 +12878,6 @@ window.HB = window.HB || {};
         currentMenuOpen = false;
         statsMenuOpen = false;
         closeSubmenuOverlays();
-        setBottomNavCollapsed(false);
         render();
         window.scrollTo({ top: 0, behavior: "auto" });
         requestAnimationFrame(() => $("#settingsClose").focus({ preventScroll: true }));
@@ -12844,16 +13010,12 @@ window.HB = window.HB || {};
       }
     }
 
-    // Scrolla-till-toppen tänds samtidigt som bottenmenyn krymper, efter
-    // ungefär en halv synlig skärmhöjd.
+    // Scrolla-till-toppen tänds efter ungefär en halv synlig skärmhöjd.
     const scrollTopBtn = $("#scrollTopBtn");
     document.addEventListener("scroll", () => {
-      scrollTopBtn.classList.toggle("visible", window.scrollY >= bottomNavCollapseY());
+      scrollTopBtn.classList.toggle("visible", window.scrollY >= scrollTopRevealY());
     }, { passive: true });
     scrollTopBtn.addEventListener("click", () => {
-      // Tillbaka till toppen betyder normalt att användaren vill orientera
-      // sig eller byta vy/filter — visa därför hela navigeringen direkt.
-      setBottomNavCollapsed(false);
       window.scrollTo({
         top: 0,
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -12912,7 +13074,8 @@ window.HB = window.HB || {};
     setupSettings();
     setupBracketPan();
     setupFilterStripScrollMemory();
-    setupBottomNavAutoCollapse();
+    setupResponsiveMenuLayout();
+    setupMenuAutoCollapse();
     // Välkomstöverlägget (js/welcome.js) visar sig självt en gång för nya
     // besökare — den här knappen (sidfoten) låter vem som helst öppna det
     // igen när de vill. Null-koll (till skillnad från övriga $(...)-anrop

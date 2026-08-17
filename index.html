@@ -146,7 +146,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260816a">
+  <link rel="stylesheet" href="css/style.css?v=20260817n">
 </head>
 <body>
 
@@ -214,6 +214,12 @@
        istället för botten, men återanvänder exakt samma renderingslogik
        i js/app.js. -->
   <div id="mobileMenuHost" aria-label="Mobilnavigering">
+    <!-- Hopfälld meny: EN rad som visar var man är och vad som är filtrerat,
+         och som fäller ut hela menyn igen vid tryck (renderCollapsedMenuBar i
+         js/app.js). Ligger inuti hosten, inte som ett eget flytande lager —
+         då räknas den in i menystackens höjd av sig själv, och allt som hänger
+         under menyn (ark, klistrade rader) följer med utan extra logik. -->
+    <nav id="menuCollapsedBar" aria-label="Meny" hidden></nav>
     <nav id="bottomBar" aria-label="Vy och filter" hidden></nav>
     <nav id="currentViewBar" aria-label="Aktuellt" hidden></nav>
     <nav id="currentSelectionBar" aria-label="Vald klass eller lag" hidden></nav>
@@ -223,12 +229,6 @@
   <section id="toolbar" aria-label="Filter"></section>
 
   <main id="content"></main>
-
-  <!-- Mobilens bottenrad (renderBottomBar i js/app.js) har flyttats upp i
-     #mobileMenuHost ovanför innehållet för att ligga i skärmens ovankant. -->
-  <button id="bottomNavIsland" type="button" aria-label="Visa navigeringen" hidden>
-    <span></span><span></span><span></span>
-  </button>
 
   <button id="scrollTopBtn" type="button" title="Scrolla till toppen" aria-label="Scrolla till toppen">↑</button>
 
@@ -422,6 +422,6 @@
   <script src="js/weather.js"></script>
   <script src="js/qr.js"></script>
   <script src="js/welcome.js"></script>
-  <script src="js/app.js?v=20260816a"></script>
+  <script src="js/app.js?v=20260817n"></script>
 </body>
 </html>
