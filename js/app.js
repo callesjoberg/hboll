@@ -1995,16 +1995,52 @@ window.HB = window.HB || {};
   // Vad vyn är avsmalnad till, i ord. Sammanfattar samma sak som
   // activeFilterCount räknar, men läsbart — "Alingsås HK Blå · P13" i
   // stället för en siffra.
+  // Klasser och lag som EN uppräkning, med laget under sin klass:
+  // "P13 (AHK 1, AHK 2)". Var för sig ("AHK 1, AHK 2 · P13, F13") gick det
+  // inte att se vilket lag som låg i vilken klass — och just den kopplingen
+  // är hela poängen med att visa urvalet i en enda rad.
+  function filterSelectionText() {
+    if (!state.teams.size && !state.cats.size) return "";
+    const grupper = new Map();
+    const grupp = (id, namn) => {
+      if (!grupper.has(id)) grupper.set(id, { namn, lag: [] });
+      const g = grupper.get(id);
+      // Klassnamnet kan komma från antingen hållet: valda klasser slås upp
+      // direkt, lagens klass följer med laguppslaget.
+      if (!g.namn && namn) g.namn = namn;
+      return g;
+    };
+    // Valda klasser först, så ordningen följer menyn och inte lagens.
+    for (const id of state.cats) grupp(id, catNameById(id));
+    let okändaLag = 0;
+    for (const id of state.teams) {
+      const info = teamInfoById(id);
+      if (info) grupp(info.catId, info.catName).lag.push(info.name);
+      else okändaLag++;
+    }
+    const delar = [...grupper.values()].filter((g) => g.namn || g.lag.length);
+    // Kort urval skrivs ut, långt räknas. Fyra namn är ungefär vad som ryms
+    // på en rad innan den kapas med ellips ändå; ett lag som inte gick att
+    // slå upp (t.ex. ett annat år som inte hämtats) gör uppräkningen
+    // missvisande och faller därför också tillbaka på siffror.
+    const antalNamn = delar.reduce((n, g) => n + (g.namn ? 1 : 0) + g.lag.length, 0);
+    if (!okändaLag && antalNamn && antalNamn <= 4) {
+      return delar.map((g) => {
+        if (!g.lag.length) return g.namn;
+        const lag = g.lag.join(", ");
+        return g.namn ? g.namn + " (" + lag + ")" : lag;
+      }).join(" · ");
+    }
+    const summa = [];
+    if (grupper.size) summa.push(grupper.size + (grupper.size === 1 ? " klass" : " klasser"));
+    if (state.teams.size) summa.push(state.teams.size + " lag");
+    return summa.join(" · ");
+  }
+
   function filterSummaryText() {
     const bits = [];
-    if (state.teams.size) {
-      const namn = [...state.teams].map(teamNameById).filter(Boolean);
-      bits.push(namn.length && namn.length <= 2 ? namn.join(", ") : state.teams.size + " lag");
-    }
-    if (state.cats.size) {
-      const namn = [...state.cats].map(catNameById).filter(Boolean);
-      bits.push(namn.length && namn.length <= 2 ? namn.join(", ") : state.cats.size + " klasser");
-    }
+    const urval = filterSelectionText();
+    if (urval) bits.push(urval);
     if (state.arena) bits.push(state.arena);
     if (state.days.size) bits.push(state.days.size + (state.days.size === 1 ? " dag" : " dagar"));
     if (state.q) bits.push("\u201d" + state.q + "\u201d");
@@ -5436,10 +5472,21 @@ window.HB = window.HB || {};
     render();
   }
 
-  function teamNameById(id) {
-    const m = state.matches.find((mm) => mm.home.id === id || mm.away.id === id);
+  // Ett lag hör alltid till en klass, och matchen bär båda — samma uppslag
+  // ger därför namnet och klassen på en gång (se filterSelectionText).
+  function teamInfoById(id) {
+    const m = allActiveMatches().find((mm) => mm.home.id === id || mm.away.id === id);
     if (!m) return null;
-    return m.home.id === id ? m.home.name : m.away.name;
+    return {
+      name: m.home.id === id ? m.home.name : m.away.name,
+      catId: m.catId,
+      catName: m.catName ? HB.shortCat(m.catName) : null,
+    };
+  }
+
+  function teamNameById(id) {
+    const info = teamInfoById(id);
+    return info ? info.name : null;
   }
 
   function closeMatchDialog() {
