@@ -161,6 +161,24 @@ button { font: inherit; color: inherit; cursor: pointer; }
   outline-offset: 2px;
 }
 
+.skip-link {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 100000;
+  padding: 8px 14px;
+  background: var(--yellow);
+  color: #16283f;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: none;
+}
+
 /* --- header ------------------------------------------------------------- */
 
 header.top {
@@ -235,7 +253,6 @@ header.top {
   gap: 8px;
 }
 
-.current-cup-label,
 .header-club-name {
   min-width: 0;
   overflow: hidden;
@@ -261,11 +278,40 @@ header.top {
 }
 
 .current-cup-label {
-  display: block;
-  padding-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: min(32vw, 280px);
+  padding: 0 0 0 8px;
+  border: none;
   border-left: 1px solid rgba(255, 255, 255, 0.22);
+  background: none;
   color: #b9c6d8;
+  font: inherit;
   font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+.current-cup-label::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-top: -2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+.current-cup-label:hover,
+.current-cup-label:focus-visible {
+  color: #eef2f8;
+}
+@media (min-width: 701px) {
+  /* På dator finns den utskrivna "Byt cup"-knappen — chevronen på
+     namnet blir då en extra pryl. Namnet är ändå klickbart. */
+  .current-cup-label::after { display: none; }
 }
 
 .header-club-name {
@@ -1112,8 +1158,8 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .show-all-played { display: block; margin: 12px auto 0; }
 
-/* schemats "visa N tidigare"-knapp + en separat "visa alla" bredvid —
-   se loadMorePlayedButtons() i js/app.js. */
+/* schemats "visa N tidigare/kommande"-knapp + en separat "visa alla" bredvid —
+   se loadMorePlayedButtons()/loadMoreUpcomingButtons() i js/ui/reveal.js. */
 .load-more-row {
   display: flex;
   justify-content: center;
@@ -2243,6 +2289,7 @@ dialog#settingsDialog { max-width: 380px; }
   dialog#settingsDialog > h2 { grid-column: 1 / -1; }
   dialog#settingsDialog .settings-group { margin: 0; }
   dialog#settingsDialog .settings-group.full { grid-column: 1 / -1; }
+  dialog#settingsDialog .settings-advanced { grid-column: 1 / -1; }
 }
 
 .settings-group {
@@ -2273,6 +2320,30 @@ dialog#settingsDialog { max-width: 380px; }
   align-items: center;
   gap: 8px;
   font-size: 13px;
+}
+
+.settings-advanced {
+  margin: 8px 0 4px;
+  padding: 8px 12px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+.settings-advanced-summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 6px 0;
+  list-style-position: outside;
+}
+.settings-advanced-summary:hover,
+.settings-advanced-summary:focus-visible {
+  color: var(--blue);
+}
+.settings-advanced[open] .settings-advanced-summary {
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .settings-inline input {
@@ -3795,6 +3866,15 @@ dialog.history-dialog {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+button.welcome-cta-secondary {
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0;
+}
 
 .welcome-cta-secondary:hover { opacity: 1; }
 
@@ -4826,6 +4906,7 @@ dialog.history-dialog {
   .picker-sheet-close,
   .mobile-context-back,
   .current-cup-btn,
+  .current-cup-label,
   .header-action-btn,
   #settingsBtn,
   #refreshBtn,
@@ -4833,6 +4914,7 @@ dialog.history-dialog {
     min-width: 44px;
     min-height: 44px;
   }
+  .chip { min-height: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5174,6 +5256,19 @@ dialog.history-dialog {
     border-right: 2px solid var(--ink-soft);
     border-bottom: 2px solid var(--ink-soft);
     transform: rotate(45deg);
+  }
+  .collapsed-menu-badge {
+    flex: 0 0 auto;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
   }
 
   /* --- sidscroll-hint -----------------------------------------------------

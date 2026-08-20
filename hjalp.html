@@ -314,9 +314,9 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <h2><span class="num">03</span> Snabbstart</h2>
       <p class="lead">Tre snabba steg och appen är inställd på dig.</p>
       <ol>
-        <li><strong>Välj cup.</strong> Klicka på cup-knappen uppe till höger (t.ex. <em>Åhus Beach</em>) och välj den cup du är på. Byt när som helst.</li>
-        <li><strong>Sätt din favoritklubb.</strong> Öppna <strong>⚙ Inställningar</strong> och skriv in din klubb (t.ex. <em>Alingsås HK</em>). Nu markeras dina lag, du får en egen flik med klubbnamnet och ett <em>Nästa match</em>-kort.</li>
-        <li><strong>Filtrera fram dina matcher.</strong> I <strong>Filter och sortering</strong> väljer du en klass, ett lag eller en plan — så visas schemat. Vill du bara se ditt lag? Välj det under <em>Alla lag</em>.</li>
+        <li><strong>Välj cup.</strong> På datorn: <em>Byt cup</em> uppe till höger. På telefonen: tryck på cupnamnet i rubriken, eller öppna <strong>Filter</strong> och tryck på cup-brickan.</li>
+        <li><strong>Sätt din favoritklubb.</strong> Öppna <strong>Inställningar</strong> (kugghjulet på datorn, <strong>Mer</strong> på telefonen) och skriv in din klubb. Nu markeras dina lag och du får ett <em>Nästa match</em>-kort. Stjärnmärk gärna just ditt barns lag så karusellen inte blandar in andra lag i klubben.</li>
+        <li><strong>Filtrera fram dina matcher.</strong> Under <strong>Filter</strong> väljer du en klass, ett lag eller en plan. Vill du bara se ditt lag? Välj det under <em>Lag</em>.</li>
       </ol>
       <div class="note good" data-label="Klart">
         <p>Appen kommer ihåg dina val till nästa gång — och adressfältet uppdateras så att du kan spara eller dela exakt den vyn.</p>
@@ -335,7 +335,7 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <ul>
         <li><strong>Cup-knappen</strong> (klubbnamn/cupnamn) — öppnar cup-väljaren.</li>
         <li><strong>⚙ Inställningar</strong> — favoritklubb, tema, färger, matchlängd med mera.</li>
-        <li><strong>↻ Uppdatera</strong> — hämtar färskaste schemat direkt (visar <em>Uppdaterar …</em> under tiden).</li>
+        <li><strong>↻ Kontrollera senaste</strong> — hämtar den senast publicerade gemensamma snapshotten (visar <em>Kontrollerar …</em> under tiden).</li>
       </ul>
       <h3>Flikarna</h3>
       <ul>
@@ -343,17 +343,17 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
         <li><strong>Tabeller</strong> — gruppställningar.</li>
         <li><strong>Slutspel</strong> — slutspelsträd (A/B/C).</li>
         <li><strong>Bana</strong> — allt som spelas på en vald plan.</li>
-        <li><strong>Stats</strong> — historik och statistik (dyker upp när cupen har historik att visa).</li>
+        <li><strong>Statistik</strong> — historik och statistik (dyker upp när cupen har historik att visa).</li>
       </ul>
       <p class="muted">Flikar som inte är relevanta för en viss cup döljs automatiskt — en ProCup-cup utan slutspelsdata visar t.ex. ingen Slutspel-flik.</p>
 
-      <h3>På mobilen ser det annorlunda ut</h3>
-      <p>På en telefon flyttar allt det här ner till en <strong>bottenrad</strong> som alltid ligger kvar, inom räckhåll för tummen. Skärmytan går till matcherna i stället för till knappar.</p>
+      <h3>På mobilen ligger menyn under rubriken</h3>
+      <p>På en telefon sitter navigeringen <strong>direkt under rubriken</strong>, inte längst ned. Den första raden är <strong>Filter · Aktuellt · Statistik · Mer</strong>. Scrollar du nedåt fälls den ihop till en rad som visar var du är och vad som är filtrerat — tryck på den för att fälla ut menyn igen, eller på <em>Minimera</em> för att hålla den hopfälld.</p>
       <ul>
-        <li><strong>Flikarna</strong> (Schema, Tabeller, Slutspel, Bana, Stats) ligger som ikoner längst ned. Raden går att dra i sidled — <strong>⚙ Inställningar</strong> sitter längst ut efter Stats.</li>
-        <li><strong>Filter</strong> öppnar en rad med ikoner ovanför bottenraden: år, dagar, klasser, lag, plan. En liten <strong>siffra på filterknappen</strong> säger hur många filter som är aktiva.</li>
-        <li><strong>✕</strong> längst ut i filterremsan rensar allt du filtrerat på, i ett svep.</li>
-        <li>Väljarna öppnas som <strong>ark underifrån</strong> i stället för små rutor. Dra i handtaget upptill för att göra arket högre eller lägre.</li>
+        <li><strong>Aktuellt</strong> öppnar Schema, Tabeller, Slutspel och Bana.</li>
+        <li><strong>Filter</strong> öppnar en rad med cup, klubb/hela cupen, år, dagar, klasser och lag. En liten <strong>siffra på filterknappen</strong> säger hur många filter som är aktiva. <strong>Fler val</strong> fäller ut extra filter; <strong>Rensa</strong> tar bort dem.</li>
+        <li><strong>Mer</strong> rymmer Dela, Inställningar, Hjälp och Om.</li>
+        <li>Väljarna öppnas som <strong>ark under menyn</strong>. Dra i handtaget i nederkanten för att göra arket högre eller lägre.</li>
       </ul>
       <div class="note good" data-label="Hittar tillbaka">
         <p>Klickar du dig vidare från ett matchkort — på en hall, ett lag eller en grupp — lägger sig en rad överst som säger <strong>vad du tittar på</strong> och tar dig tillbaka med ett tryck.</p>
@@ -549,14 +549,14 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
     </section>
 
     <!-- 13 -->
-    <section class="doc" id="stats" data-title="Stats &amp; historik" data-group="Vyer">
-      <h2><span class="num">13</span> Stats &amp; historik</h2>
+    <section class="doc" id="stats" data-title="Statistik &amp; historik" data-group="Vyer">
+      <h2><span class="num">13</span> Statistik &amp; historik</h2>
       <p class="lead">Hela cuphistoriken på ett ställe — hur cupen vuxit, var lagen kommer ifrån, och hur din klubb gått genom åren.</p>
       <figure class="shot">
         <img src="assets/help/stats.png" alt="Stats-fliken med en tillväxtkurva över matcher, lag, klasser och speldagar från 2015 till 2026">
         <figcaption><b>Trend.</b> Så har cupen växt över åren. Under-flikarna byter mellan olika vinklar på historiken.</figcaption>
       </figure>
-      <p>Stats-fliken har flera under-vyer (dyker upp när det finns data att visa):</p>
+      <p>Statistik har flera undervyer (dyker upp när det finns data att visa):</p>
       <ul>
         <li><strong>Trend</strong> — hur en cup vuxit över åren.</li>
         <li><strong>🏆 Vinnare</strong> — mästarna genom åren: din klubbs <em>troféskåp</em>, <em>årets mästare</em> (guld/silver/brons per klass för en vald cup och år) och <em>vinnartoppen</em> (evig topplista över flest A-slutspelsguld). Din egen klubb markeras alltid, och du kan klicka ett trofékort för att öppna just det slutspelsträdet.</li>
@@ -595,7 +595,7 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
         <li><strong>Pågående cup:</strong> uppdateras tyst ungefär var tredje minut medan fliken är öppen.</li>
         <li><strong>Framtida cup:</strong> hämtas om då och då tills den drar igång.</li>
         <li><strong>Avslutad cup:</strong> hämtas inte om i onödan — resultaten står ju fast.</li>
-        <li><strong>↻ Uppdatera</strong> tvingar alltid fram en färsk hämtning (kan ta 20–30 s för en riktigt stor cup).</li>
+        <li><strong>↻ Kontrollera senaste</strong> hämtar den senast publicerade gemensamma snapshotten.</li>
       </ul>
       <p class="muted">Texten <em>”Uppdaterad 12:10 · 441 matcher”</em> uppe till höger visar när datan senast hämtades. Klicka på den för att se exakt vilka matcher som räknas.</p>
       <div class="note good" data-label="Snabbt även första gången">
@@ -691,16 +691,16 @@ kbd{font-family:ui-monospace,monospace;background:var(--code-bg);border:1px soli
       <h2><span class="num">19</span> Vanliga frågor</h2>
       <details class="faq"><summary>Varför ser jag inget schema?</summary><div class="body"><p>Schemat visas först när du valt något att titta på. Öppna <strong>Filter och sortering</strong> och välj en <strong>klass</strong>, ett <strong>lag</strong> eller en <strong>plan</strong> — vilket som räcker. Har din klubb inga matcher i cupen erbjuds knappen <em>Visa hela cupen</em>.</p><p class="muted">Dagar räknas inte på egen hand: en enda speldag kan vara hela cupen, och då hade du fått flera hundra matcher i klump.</p></div></details>
       <details class="faq"><summary>Jag är hallansvarig — kan jag få bara min hall?</summary><div class="body"><p>Ja. Välj cup, sedan <strong>dag</strong> och <strong>hall</strong> under <em>Alla planer</em>. Ingen klass eller lag behövs. Därifrån når du alla exporter, inklusive <strong>🎧 Till ProCue DJ</strong> — se <a href="#export">Exportera</a>.</p></div></details>
-      <details class="faq"><summary>Vart tog knapparna vägen på mobilen?</summary><div class="body"><p>De ligger i <strong>bottenraden</strong>. Flikarna som ikoner längst ned (dra i sidled — ⚙ Inställningar sitter längst ut), och all filtrering under <strong>Filter</strong>. Siffran på filterknappen säger hur många filter som är aktiva, och <strong>✕</strong> rensar dem.</p></div></details>
+      <details class="faq"><summary>Vart tog knapparna vägen på mobilen?</summary><div class="body"><p>De ligger i <strong>menyn under rubriken</strong>: Filter, Aktuellt, Statistik och Mer. Inställningar, Dela, Hjälp och Om sitter under <strong>Mer</strong>. All filtrering ligger under <strong>Filter</strong> — siffran på knappen säger hur många filter som är aktiva, och <strong>Rensa</strong> tar bort dem. Scrollar du nedåt fälls menyn ihop till en rad; tryck på den för att fälla ut den igen.</p></div></details>
       <details class="faq"><summary>Mitt lag heter olika i olika cuper — spelar det roll?</summary><div class="body"><p>Nej. Sätt din <strong>favoritklubb</strong> så känner appen igen stavningsvarianter (AHK, Alingsås HK …). Förslagen i Inställningar är hämtade från den cup som är öppen.</p></div></details>
-      <details class="faq"><summary>Stämmer tiderna?</summary><div class="body"><p>Tiderna kommer direkt från arrangören och kan ändras med kort varsel. Appen visar alltid det senast hämtade — tryck <strong>↻ Uppdatera</strong> om du vill vara helt säker.</p></div></details>
+      <details class="faq"><summary>Stämmer tiderna?</summary><div class="body"><p>Tiderna kommer direkt från arrangören och kan ändras med kort varsel. Appen visar alltid det senast hämtade — tryck <strong>↻ Kontrollera senaste</strong> (på telefonen: <strong>Mer</strong> → Inställningar) om du vill vara helt säker.</p></div></details>
       <details class="faq"><summary>Kan jag följa flera lag samtidigt?</summary><div class="body"><p>Ja — välj flera lag i <em>Alla lag</em>-listan, eller håll dig i klubbläge så ser du alla dina lag. Ett enskilt <strong>favoritlag</strong> får dessutom en ⭐.</p></div></details>
       <details class="faq"><summary>Är slutspelsprognosen ”riktig”?</summary><div class="body"><p>Nej, det är en kvalificerad gissning utifrån tabelläget för platser som ännu inte är avgjorda. Den är tydligt märkt som prognos och blandas aldrig ihop med spelade resultat.</p></div></details>
       <details class="faq"><summary>Kostar det något / behöver jag logga in?</summary><div class="body"><p>Nej och nej. Cupschema är gratis och kräver ingen inloggning.</p></div></details>
     </section>
 
     <footer class="pagefoot">
-      <p>Cupschema · Alingsås HK — data hämtas live från cupmanager.net.</p>
+      <p>Cupschema · Alingsås HK — data uppdateras centralt från respektive cups system.</p>
       <p><a href="index.html">Öppna appen</a> · <a href="#intro">Till toppen</a></p>
     </footer>
 

@@ -1008,7 +1008,7 @@ window.HB = window.HB || {};
 
   let stopAnimationPromise = null;
 
-  function closeWelcome(overlay) {
+  function closeWelcome(overlay, next) {
     localStorage.setItem(SEEN_KEY, "1");
     if (stopAnimationPromise) {
       stopAnimationPromise.then((stop) => stop && stop()).catch(() => {});
@@ -1017,6 +1017,11 @@ window.HB = window.HB || {};
     overlay.remove();
     document.removeEventListener("keydown", onKeydown);
     document.removeEventListener("click", onOutsideClick);
+    if (next === "club") {
+      requestAnimationFrame(() => {
+        if (typeof HB.openSettings === "function") HB.openSettings();
+      });
+    }
   }
 
   function onKeydown(e) {
@@ -1177,7 +1182,7 @@ window.HB = window.HB || {};
           h("div", { class: "welcome-features" },
             feature("📅", "Live, dag för dag",
               "Schema, tabeller, slutspel och en banöversikt för cupen som pågår just nu — filtrera på din klubb eller hela cupen."),
-            feature("📊", "Stats — hela historiken på en gång",
+            feature("📊", "Statistik — hela historiken på en gång",
               "Trend visar hur en cup växt över åren, Karta var klubbarna kommer ifrån, " +
               "Klubb/Lag söker en klubbs hela resa över ALLA cuper, Klubbjämförelse ställer " +
               "flera klubbar sida vid sida, Cuper jämför alla cuper i en tabell, och Historik " +
@@ -1185,11 +1190,15 @@ window.HB = window.HB || {};
             feature("⭐", "Din klubb i fokus",
               "Favoritmarkera din klubb, exportera schemat till din egen kalender, och välj mörkt eller ljust tema.")),
           h("div", { class: "welcome-cta-row" },
-            h("button", { class: "welcome-cta", type: "button", onclick: () => closeWelcome(overlay) },
-              "Utforska →"),
-            // Andrahandsvalet: den som inte vet vad appen är för något ska
-            // kunna läsa vidare i stället för att bara mötas av en cup den
-            // inte valt. Går till hjälpsidans "Varför cupschema?".
+            // Förstabesöket ska samla identitet, inte bara visa produkten.
+            // Inställningarna öppnas efter stängning så favoritklubben är
+            // första grejen man gör — heron och klubbmarkeringen beror på den.
+            h("button", { class: "welcome-cta", type: "button",
+              onclick: () => closeWelcome(overlay, "club") },
+              "Välj min klubb"),
+            h("button", { class: "welcome-cta-secondary", type: "button",
+              onclick: () => closeWelcome(overlay) },
+              "Utforska"),
             h("a", { class: "welcome-cta-secondary", href: "hjalp.html#varfor" },
               "Läs mer")))));
 

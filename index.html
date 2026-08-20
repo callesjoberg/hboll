@@ -146,10 +146,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260817p">
+  <link rel="stylesheet" href="css/style.css?v=20260820a">
 </head>
 <body>
 
+  <a class="skip-link" href="#content">Hoppa till schemat</a>
   <h1 class="visually-hidden">Cupschema – spelschema, tabeller och slutspel</h1>
 
   <header class="top">
@@ -169,14 +170,15 @@
               <img src="assets/ahk-logo.svg" alt="" width="32" height="32" id="clubLogo">
               <span id="clubName" class="header-club-name"></span>
             </span>
-            <span id="currentCupLabel" class="current-cup-label"></span>
+            <button type="button" id="currentCupLabel" class="current-cup-label"
+                    title="Byt cup" aria-haspopup="dialog"></button>
           </div>
         </div>
         <span class="spacer"></span>
         <button id="currentCupBtn" type="button" class="current-cup-btn"
                 title="Byt cup" aria-haspopup="dialog">Byt cup</button>
         <button id="headerExportBtn" class="header-action-btn" type="button"
-                title="Dela eller exportera">Export</button>
+                title="Dela eller exportera">Dela</button>
         <button id="headerAboutBtn" class="header-action-btn" type="button"
                 title="Om Cupschema">Om</button>
         <button id="settingsBtn" type="button" title="Inställningar" aria-label="Inställningar">⚙</button>
@@ -288,6 +290,11 @@
       </div>
     </div>
 
+    <details class="settings-advanced">
+      <summary class="settings-advanced-summary">Schema och slutspel</summary>
+      <p class="muted">Färger, matchlängd och hur schemat och slutspelet ritas.
+         De flesta behöver inte ändra något här.</p>
+
     <div class="settings-group full">
       <label class="settings-check">
         <input type="checkbox" id="teamColorsToggle">
@@ -377,11 +384,14 @@
       <div class="settings-inline">
         <input type="number" id="recentMatchCountInput" min="1" step="1" style="width:70px">
         <span>matcherna (räknat i antal, inte tid — funkar lika bra oavsett
-          hur långa matcherna är i just den här cupen). En cup vars sista
-          match spelades för mer än en vecka sedan visar i stället 20 åt
-          gången: då bläddrar man historik, inte följer en pågående cup.</span>
+          hur långa matcherna är i just den här cupen). Kommande matcher
+          visas 20 åt gången, med “visa fler” under listan — en Åhus-dag
+          är annars 600+ kort. En cup vars sista match spelades för mer
+          än en vecka sedan visar i stället 20 spelade åt gången: då
+          bläddrar man historik, inte följer en pågående cup.</span>
       </div>
     </div>
+    </details>
 
     <!-- Sidfotens länkar flyttas hit på mobil (se placeFooterLinks i
          js/app.js) — tomt och osynligt på större skärmar, där de ligger
@@ -421,7 +431,7 @@
   <script src="js/export.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/qr.js"></script>
-  <script src="js/welcome.js"></script>
-  <script src="js/app.js?v=20260817p"></script>
+  <script src="js/welcome.js?v=20260820i"></script>
+  <script type="module" src="js/app.js?v=20260820i"></script>
 </body>
 </html>
