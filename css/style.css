@@ -377,7 +377,16 @@ header.top {
   margin: 0 auto;
   padding: 0 14px;
   position: relative;
+  /* isolation: isolate håller väljarpanelernas z-index INNE i subbaren, så
+     de aldrig kan lägga sig över dialoger och ark. Men isoleringen gör
+     samtidigt subbaren till en egen staplingskontext, och utan ett eget
+     z-index rankade hela subbaren som "auto": nästa match-karusellen ligger
+     senare i dokumentet, också auto, och målades därför ovanpå en öppen
+     panel — som dessutom förlorade klicken till karusellen.
+     Över innehållets egna klistrade rader (4-5), under dialoger, ark och
+     bakgrundstäcken (60+) och under mobilmenyn (72). */
   isolation: isolate;
+  z-index: 40;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
