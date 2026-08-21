@@ -11,7 +11,7 @@ window.HB = window.HB || {};
 // en cachad service worker kan annars servera gammal kod hur länge som
 // helst utan att vare sig användaren eller utvecklaren märker det.
 // Bumpa tillsammans med CACHE_NAME i sw.js.
-HB.VERSION = "2026-08-21a";
+HB.VERSION = "2026-08-21b";
 
 HB.CLUB = {
   name: "Alingsås HK",

@@ -487,14 +487,15 @@ export function matchCard(m) {
       m.roundName && m.roundName !== m.divName ? h("span", { class: "div" }, m.roundName) : null,
       outcomeLetter(m) ? h("span", { class: "outcome-badge outcome-" + outcomeLetter(m).toLowerCase() }, outcomeLetter(m)) : null,
       h("span", { class: "match-head-right" },
-        weather ? h("span", { class: "weather", title: weather.temp + "°C" }, weather.icon, weather.temp + "°") : null,
         m.arena ? h("span", { class: "arena arena-link", role: "button", tabindex: "0",
           title: "Visa alla matcher på " + m.arena,
           onclick: (e) => { e.stopPropagation(); openArenaQuickView(m.arena); },
           onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") {
             e.preventDefault(); e.stopPropagation(); openArenaQuickView(m.arena);
           } },
-        }, m.arena) : h("span", { class: "arena" }, m.arena))),
+        }, m.arena) : h("span", { class: "arena" }, m.arena)),
+      weather ? h("span", { class: "weather", title: weather.temp + "°C" },
+        weather.icon, weather.temp + "°") : null),
     h("div", { class: "match-body" }, h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
       h("div", { class: "score" + (live ? " live" : "") + (sc === "spelad" ? " played" : "") +
         (!sc && !live ? " pending" : "") },
