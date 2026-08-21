@@ -462,7 +462,17 @@ export function initNav(deps) {
 
   // Har man själv tryckt upp menyn ska den inte smälla igen vid nästa lilla
   // skrollning — då krävs en halv skärm till av nedåtläsning först.
-  let autoCollapseFloorY = 0;
+  // Hur långt man ska ha rullat NEDÅT I STRÄCK innan menyn fälls in.
+  // Måttet är sträcka, inte position på sidan: förut krävdes en hel
+  // skärmhöjd räknat från toppen, så menyn låg kvar och åt läsyta långt
+  // efter att man tydligt börjat läsa neråt. Sträcka gör att den viker undan
+  // så snart avsikten är klar, medan ett ryck eller en studs inte räcker.
+  const MENU_COLLAPSE_TRAVEL = 64;
+  // Har man SJÄLV fällt ut menyn krävs betydligt mer, annars smäller den
+  // igen direkt efter att man bett om den.
+  const MENU_COLLAPSE_TRAVEL_AFTER_TAP = 240;
+  let downwardTravel = 0;
+  let travelNeeded = MENU_COLLAPSE_TRAVEL;
 
   // Fast minimerad meny. Samma tanke som filterlåset: har man ställt in sitt
   // urval en gång vill man kunna titta in nu, om en timme och i morgon och
@@ -480,10 +490,12 @@ export function initNav(deps) {
     else expandMenuFromTap();
   }
 
-  // Fäll in efter ungefär en skärmhöjds nedåtläsning, fäll ut igen när man är
-  // tillbaka i toppen. Bara nedåtrörelse fäller in: att också reagera på
-  // uppåtrörelse mitt på sidan gjorde navigeringen ryckig under vanlig
-  // läsning (samma erfarenhet som den gamla bottenmenyn).
+  // Fäll in efter en kort nedåtrullning, fäll ut igen när man är tillbaka i
+  // toppen. Bara nedåtrörelse fäller in: att också reagera på uppåtrörelse
+  // mitt på sidan gjorde navigeringen ryckig under vanlig läsning (samma
+  // erfarenhet som den gamla bottenmenyn). En vändning uppåt nollställer
+  // däremot sträckan, så att läsa fram och tillbaka i en lista inte råkar
+  // summera ihop till en infällning.
   function setupMenuAutoCollapse() {
     let lastY = window.scrollY;
     window.addEventListener("scroll", () => {
@@ -495,20 +507,31 @@ export function initNav(deps) {
       // stacken inte byta höjd under fötterna på den.
       if (document.body.classList.contains("picker-open")) return;
       if (document.querySelector("dialog[open]:not(.settings-view)")) return;
-      const viewport = (window.visualViewport && window.visualViewport.height) ||
-        window.innerHeight;
       if (document.body.classList.contains("menu-collapsed")) {
-        if (y <= 2 && !chrome.menuMinimized) { autoCollapseFloorY = 0; setMenuCollapsed(false); }
+        downwardTravel = 0;
+        if (y <= 2 && !chrome.menuMinimized) {
+          travelNeeded = MENU_COLLAPSE_TRAVEL;
+          setMenuCollapsed(false);
+        }
         return;
       }
-      if (delta > 0 && y >= Math.max(viewport, autoCollapseFloorY)) setMenuCollapsed(true);
+      if (delta < 0) downwardTravel = 0;
+      else downwardTravel += delta;
+      // Inte medan menyn ändå håller på att rulla bort av sig själv: så länge
+      // den inte ens hunnit fastna i toppen finns ingen läsyta att vinna.
+      const host = document.querySelector("#mobileMenuHost");
+      const menuH = host ? host.getBoundingClientRect().height : 0;
+      if (downwardTravel >= travelNeeded && y >= menuH) {
+        downwardTravel = 0;
+        travelNeeded = MENU_COLLAPSE_TRAVEL;
+        setMenuCollapsed(true);
+      }
     }, { passive: true });
   }
 
   function expandMenuFromTap() {
-    const viewport = (window.visualViewport && window.visualViewport.height) ||
-      window.innerHeight;
-    autoCollapseFloorY = window.scrollY + viewport / 2;
+    downwardTravel = 0;
+    travelNeeded = MENU_COLLAPSE_TRAVEL_AFTER_TAP;
     setMenuCollapsed(false);
   }
 
