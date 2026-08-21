@@ -3,9 +3,9 @@
 import { h, $, $$ } from "../dom.js";
 import { chrome, CURRENT_VIEWS } from "./chrome.js";
 import {
-  sheetMode, enforceMobileMenuHost, toggleFilterSheet, toggleFiltersExpanded,
-  closePrototypeDialogs, openPrototypeSheetKey, syncBottomStack,
-  syncSheetBackdrop, closeFilterBackdrop,
+  SHEET_QUERY, sheetMode, enforceMobileMenuHost, toggleFilterSheet,
+  toggleFiltersExpanded, closePrototypeDialogs, openPrototypeSheetKey,
+  syncBottomStack, syncSheetBackdrop, closeFilterBackdrop,
 } from "./sheets.js";
 
 const MENU_MINIMIZED_KEY = "hb:menuMinimized";
