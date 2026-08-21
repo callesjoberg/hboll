@@ -121,15 +121,19 @@ def cap_points(points):
 
 
 def load_country_centroids():
-    # Samma tabell som COUNTRY_CENTROIDS i js/app.js (Kartan-fliken) —
+    # Samma tabell som COUNTRY_CENTROIDS i js/domain/countries.js —
     # parsas ur källan i stället för att dubbelhållas, så de två aldrig
     # kan glida isär.
-    src = (ROOT / "js" / "app.js").read_text(encoding="utf-8")
+    src = (ROOT / "js" / "domain" / "countries.js").read_text(encoding="utf-8")
     m = re.search(r"COUNTRY_CENTROIDS\s*=\s*\{(.*?)\};", src, re.S)
+    if not m:
+        raise RuntimeError("Hittade inte COUNTRY_CENTROIDS i js/domain/countries.js")
     body = m.group(1)
     out = {}
     for code, lng, lat in re.findall(r"([A-Z]{2}):\s*\[\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\]", body):
         out[code] = (float(lat), float(lng))
+    if not out:
+        raise RuntimeError("COUNTRY_CENTROIDS parsades tom")
     return out
 
 
