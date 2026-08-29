@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-4002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T092000
+DTEND;TZID=Europe/Stockholm:20260912T095000
+SUMMARY:KFUM Lundagård – H43 Lund 3 (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T104000
+DTEND;TZID=Europe/Stockholm:20260912T111000
+SUMMARY:H43 Lund 3 – Lödde Viking... (F11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T122000
+DTEND;TZID=Europe/Stockholm:20260912T125000
+SUMMARY:H43 Lund 3 – LUGI HF 2 (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T134000
+DTEND;TZID=Europe/Stockholm:20260912T141000
+SUMMARY:H43 Lund 3 – HK Halmstad ... (F11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-11005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T094000
+DTEND;TZID=Europe/Stockholm:20260913T101000
+SUMMARY:Kävlinge HK ... – OV Helsingborg A (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T112000
+DTEND;TZID=Europe/Stockholm:20260913T115000
+SUMMARY:OV Helsingborg A – Lödde Viking... (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T130000
+DTEND;TZID=Europe/Stockholm:20260913T133000
+SUMMARY:OV Helsingborg A – IFK Malmö gul (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11037@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T150000
+DTEND;TZID=Europe/Stockholm:20260913T153000
+SUMMARY:Halmstad Han... – OV Helsingborg A (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+END:VCALENDAR

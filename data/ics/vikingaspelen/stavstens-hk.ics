@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-4005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T094000
+DTEND;TZID=Europe/Stockholm:20260912T101000
+SUMMARY:Stavstens HK – HK Halmstad ... (F11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T112000
+DTEND;TZID=Europe/Stockholm:20260912T115000
+SUMMARY:Stavstens HK – H43 Lund 2 (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T124000
+DTEND;TZID=Europe/Stockholm:20260912T131000
+SUMMARY:Lödde Viking... – Stavstens HK (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4030@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T140000
+DTEND;TZID=Europe/Stockholm:20260912T143000
+SUMMARY:HK Aranäs vit – Stavstens HK (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+END:VCALENDAR

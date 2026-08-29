@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-12004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T094000
+DTEND;TZID=Europe/Stockholm:20260912T101000
+SUMMARY:Ljunghusen HK 1 – KFUM Lundagå... (P10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T110000
+DTEND;TZID=Europe/Stockholm:20260912T113000
+SUMMARY:Ljunghusen HK 1 – HK Ankaret svart (P10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T120000
+DTEND;TZID=Europe/Stockholm:20260912T123000
+SUMMARY:Ystads IF vit – Ljunghusen HK 1 (P10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T130000
+DTEND;TZID=Europe/Stockholm:20260912T133000
+SUMMARY:KFUM Lundagå... – Ljunghusen HK 1 (P10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+END:VCALENDAR

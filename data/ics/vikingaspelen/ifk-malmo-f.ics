@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-7002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T092000
+DTEND;TZID=Europe/Stockholm:20260913T095000
+SUMMARY:Veberöds HK 1 – IFK Malmö F ... (F8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7008@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T104000
+DTEND;TZID=Europe/Stockholm:20260913T111000
+SUMMARY:IFK Malmö F ... – Lödde Viking... (F8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T120000
+DTEND;TZID=Europe/Stockholm:20260913T123000
+SUMMARY:HK Ankaret Röd – IFK Malmö F ... (F8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T130000
+DTEND;TZID=Europe/Stockholm:20260913T133000
+SUMMARY:IFK Malmö F ... – Kävlinge HK ... (F8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+END:VCALENDAR

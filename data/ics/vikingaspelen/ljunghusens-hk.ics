@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-14007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T092000
+DTEND;TZID=Europe/Stockholm:20260912T095000
+SUMMARY:LUGI HF 3 – Ljunghusens HK (P8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T104000
+DTEND;TZID=Europe/Stockholm:20260912T111000
+SUMMARY:Ljunghusens HK – Veberöds HK 2 (P8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14026@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T120000
+DTEND;TZID=Europe/Stockholm:20260912T123000
+SUMMARY:Ljunghusens HK – IFK Malmö blå (P8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T132000
+DTEND;TZID=Europe/Stockholm:20260912T135000
+SUMMARY:HK Björnen – Ljunghusens HK (P8 (2018) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+END:VCALENDAR

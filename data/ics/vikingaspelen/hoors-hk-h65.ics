@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-5006@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T100000
+DTEND;TZID=Europe/Stockholm:20260913T103000
+SUMMARY:Höörs HK H65 – Staffanstorp... (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T110000
+DTEND;TZID=Europe/Stockholm:20260913T113000
+SUMMARY:LUGI HF 2 – Höörs HK H65 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T124000
+DTEND;TZID=Europe/Stockholm:20260913T131000
+SUMMARY:IFK Malmö blå – Höörs HK H65 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5030@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T140000
+DTEND;TZID=Europe/Stockholm:20260913T143000
+SUMMARY:Höörs HK H65 – LUGI HF 1 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+END:VCALENDAR

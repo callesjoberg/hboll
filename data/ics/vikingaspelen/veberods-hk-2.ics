@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-14008@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T094000
+DTEND;TZID=Europe/Stockholm:20260912T101000
+SUMMARY:Staffanstorp... – Veberöds HK 2 (P8 (2018) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T104000
+DTEND;TZID=Europe/Stockholm:20260912T111000
+SUMMARY:Ljunghusens HK – Veberöds HK 2 (P8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T120000
+DTEND;TZID=Europe/Stockholm:20260912T123000
+SUMMARY:Veberöds HK 2 – HK Björnen (P8 (2018) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14035@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T132000
+DTEND;TZID=Europe/Stockholm:20260912T135000
+SUMMARY:Veberöds HK 2 – IFK Malmö blå (P8 (2018) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T094000
+DTEND;TZID=Europe/Stockholm:20260913T101000
+SUMMARY:Kävlinge HK ... – Veberöds HK 2 (F8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T110000
+DTEND;TZID=Europe/Stockholm:20260913T113000
+SUMMARY:Veberöds HK 2 – HK Björnen (F8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T122000
+DTEND;TZID=Europe/Stockholm:20260913T125000
+SUMMARY:Veberöds HK 2 – IFK Malmö F Gul (F8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T132000
+DTEND;TZID=Europe/Stockholm:20260913T135000
+SUMMARY:Lödde Viking... – Veberöds HK 2 (F8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
+END:VEVENT
+END:VCALENDAR

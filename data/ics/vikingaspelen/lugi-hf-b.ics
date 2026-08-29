@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-12003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T092000
+DTEND;TZID=Europe/Stockholm:20260912T095000
+SUMMARY:Ljunghusen HK 2 – LUGI HF B (P10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T102000
+DTEND;TZID=Europe/Stockholm:20260912T105000
+SUMMARY:LUGI HF B – Lödde Viking... (P10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12019@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T120000
+DTEND;TZID=Europe/Stockholm:20260912T123000
+SUMMARY:LUGI HF B – IFK Malmö HF 2 (P10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T134000
+DTEND;TZID=Europe/Stockholm:20260912T141000
+SUMMARY:LUGI HF B – Ljunghusen HK 3 (P10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
+END:VEVENT
+END:VCALENDAR

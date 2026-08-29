@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-14005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T092000
+DTEND;TZID=Europe/Stockholm:20260912T095000
+SUMMARY:Staffanstorp... – IFK Malmö gul (P8 (2018) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T102000
+DTEND;TZID=Europe/Stockholm:20260912T105000
+SUMMARY:IFK Malmö gul – Kävlinge HK ... (P8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T114000
+DTEND;TZID=Europe/Stockholm:20260912T121000
+SUMMARY:Veberöds HK 1 – IFK Malmö gul (P8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T124000
+DTEND;TZID=Europe/Stockholm:20260912T131000
+SUMMARY:IFK Malmö gul – Kävlinge HK ... (P8 (2018) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T092000
+DTEND;TZID=Europe/Stockholm:20260913T095000
+SUMMARY:IFK Malmö gul – Staffanstorp... (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T094000
+DTEND;TZID=Europe/Stockholm:20260913T101000
+SUMMARY:IFK Malmö gul – Lödde Viking... (P11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T104000
+DTEND;TZID=Europe/Stockholm:20260913T111000
+SUMMARY:IFK Malmö gul – LUGI HF 1 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T112000
+DTEND;TZID=Europe/Stockholm:20260913T115000
+SUMMARY:IFK Malmö gul – Kävlinge HK ... (P11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5016@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T114000
+DTEND;TZID=Europe/Stockholm:20260913T121000
+SUMMARY:Kävlinge HK – IFK Malmö gul (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T130000
+DTEND;TZID=Europe/Stockholm:20260913T133000
+SUMMARY:OV Helsingborg A – IFK Malmö gul (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5026@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T132000
+DTEND;TZID=Europe/Stockholm:20260913T135000
+SUMMARY:IFK Malmö gul – Staffanstorp... (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11036@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T150000
+DTEND;TZID=Europe/Stockholm:20260913T153000
+SUMMARY:HK Björnen – IFK Malmö gul (P11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+END:VCALENDAR

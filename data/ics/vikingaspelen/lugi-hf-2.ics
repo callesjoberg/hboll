@@ -1,0 +1,135 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-14002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T090000
+DTEND;TZID=Europe/Stockholm:20260912T093000
+SUMMARY:H43 Lund – LUGI HF 2 (P8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T092000
+DTEND;TZID=Europe/Stockholm:20260912T095000
+SUMMARY:Lödde Viking... – LUGI HF 2 (F11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T102000
+DTEND;TZID=Europe/Stockholm:20260912T105000
+SUMMARY:LUGI HF 2 – Lödde Viking... (P8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T110000
+DTEND;TZID=Europe/Stockholm:20260912T113000
+SUMMARY:HK Aranäs vit – LUGI HF 2 (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T114000
+DTEND;TZID=Europe/Stockholm:20260912T121000
+SUMMARY:LUGI HF 2 – IFK Malmö vit (P8 (2018) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T122000
+DTEND;TZID=Europe/Stockholm:20260912T125000
+SUMMARY:H43 Lund 3 – LUGI HF 2 (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14032@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T130000
+DTEND;TZID=Europe/Stockholm:20260912T133000
+SUMMARY:Staffanstorp... – LUGI HF 2 (P8 (2018) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-4028@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T134000
+DTEND;TZID=Europe/Stockholm:20260912T141000
+SUMMARY:LUGI HF 2 – KFUM Lundagård (F11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-29@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T092000
+DTEND;TZID=Europe/Stockholm:20260913T095000
+SUMMARY:LUGI HF 2 – Ljunghusen blå (P9 (2017) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T094000
+DTEND;TZID=Europe/Stockholm:20260913T101000
+SUMMARY:LUGI HF 2 – IFK Malmö blå (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-34@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T104000
+DTEND;TZID=Europe/Stockholm:20260913T111000
+SUMMARY:Staffanstorp... – LUGI HF 2 (P9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T110000
+DTEND;TZID=Europe/Stockholm:20260913T113000
+SUMMARY:LUGI HF 2 – Höörs HK H65 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-40@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T120000
+DTEND;TZID=Europe/Stockholm:20260913T123000
+SUMMARY:LUGI HF 2 – Lödde Viking... (P9 (2017) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T120000
+DTEND;TZID=Europe/Stockholm:20260913T123000
+SUMMARY:Staffanstorp... – LUGI HF 2 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T130000
+DTEND;TZID=Europe/Stockholm:20260913T133000
+SUMMARY:Kävlinge HK – LUGI HF 2 (F10 (2016) Matcher)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-44@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T134000
+DTEND;TZID=Europe/Stockholm:20260913T141000
+SUMMARY:LUGI HF 2 – Ystads IF blå (P9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+END:VCALENDAR

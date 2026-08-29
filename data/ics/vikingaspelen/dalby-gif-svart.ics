@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-2@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T090000
+DTEND;TZID=Europe/Stockholm:20260913T093000
+SUMMARY:H43 Lund 1 – Dalby GIF svart (P9 (2017) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T102000
+DTEND;TZID=Europe/Stockholm:20260913T105000
+SUMMARY:Dalby GIF svart – Staffanstorp... (P9 (2017) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-12@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T114000
+DTEND;TZID=Europe/Stockholm:20260913T121000
+SUMMARY:Kävlinge HK ... – Dalby GIF svart (P9 (2017) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-14@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T132000
+DTEND;TZID=Europe/Stockholm:20260913T135000
+SUMMARY:Veberöds HK – Dalby GIF svart (P9 (2017) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+END:VCALENDAR

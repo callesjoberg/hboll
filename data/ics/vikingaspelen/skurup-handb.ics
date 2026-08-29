@@ -1,0 +1,135 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-6002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T094000
+DTEND;TZID=Europe/Stockholm:20260912T101000
+SUMMARY:Kävlinge HK – Skurup Handb... (F9 (2017) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T100000
+DTEND;TZID=Europe/Stockholm:20260912T103000
+SUMMARY:Ystad IF 3 – Skurup Handb... (F9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T110000
+DTEND;TZID=Europe/Stockholm:20260912T113000
+SUMMARY:Skurup Handb... – Ystad IF 1 (F9 (2017) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T112000
+DTEND;TZID=Europe/Stockholm:20260912T115000
+SUMMARY:Skurup Handb... – Lödde Viking... (F9 (2017) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T122000
+DTEND;TZID=Europe/Stockholm:20260912T125000
+SUMMARY:HF Limhamn – Skurup Handb... (F9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6016@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T122000
+DTEND;TZID=Europe/Stockholm:20260912T125000
+SUMMARY:Skurup Handb... – Ljunghusen HK (F9 (2017) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T134000
+DTEND;TZID=Europe/Stockholm:20260912T141000
+SUMMARY:Skurup Handb... – Kävlinge HK (F9 (2017) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-6022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260912T134000
+DTEND;TZID=Europe/Stockholm:20260912T141000
+SUMMARY:Skurup Handb... – Ystad IF 2 (F9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-31@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T092000
+DTEND;TZID=Europe/Stockholm:20260913T095000
+SUMMARY:Kävlinge HK ... – Skurup Handb... (P9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-57@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T094000
+DTEND;TZID=Europe/Stockholm:20260913T101000
+SUMMARY:LUGI HF 1 – Skurup Handb... (P9 (2017) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-36@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T110000
+DTEND;TZID=Europe/Stockholm:20260913T113000
+SUMMARY:Skurup Handb... – Dalby GIF blå (P9 (2017) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-62@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T110000
+DTEND;TZID=Europe/Stockholm:20260913T113000
+SUMMARY:Skurup Handb... – H43 Lund 2 (P9 (2017) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-63@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T122000
+DTEND;TZID=Europe/Stockholm:20260913T125000
+SUMMARY:Staffanstorp... – Skurup Handb... (P9 (2017) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-39@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T122000
+DTEND;TZID=Europe/Stockholm:20260913T125000
+SUMMARY:Ystads IF blå – Skurup Handb... (P9 (2017) Matcher)
+LOCATION:Korsbacka E1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-43@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T134000
+DTEND;TZID=Europe/Stockholm:20260913T141000
+SUMMARY:Skurup Handb... – Staffanstorp... (P9 (2017) Matcher)
+LOCATION:Korsbacka A2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-68@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T134000
+DTEND;TZID=Europe/Stockholm:20260913T141000
+SUMMARY:Skurup Handb... – Ystads IF vit (P9 (2017) Matcher)
+LOCATION:Korsbacka E2\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-5007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T100000
+DTEND;TZID=Europe/Stockholm:20260913T103000
+SUMMARY:GW Landskrona HK – Eslövs HK 2 (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T110000
+DTEND;TZID=Europe/Stockholm:20260913T113000
+SUMMARY:Lödde Viking... – GW Landskrona HK (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T124000
+DTEND;TZID=Europe/Stockholm:20260913T131000
+SUMMARY:HK Ankaret 2 – GW Landskrona HK (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5031@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T140000
+DTEND;TZID=Europe/Stockholm:20260913T143000
+SUMMARY:GW Landskrona HK – Lödde Viking... (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+END:VCALENDAR

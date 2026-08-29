@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-11001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T090000
+DTEND;TZID=Europe/Stockholm:20260913T093000
+SUMMARY:Lödde Viking... – Eslövs HK 2 (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T100000
+DTEND;TZID=Europe/Stockholm:20260913T103000
+SUMMARY:GW Landskrona HK – Eslövs HK 2 (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T104000
+DTEND;TZID=Europe/Stockholm:20260913T111000
+SUMMARY:Eslövs HK 2 – Dalby GIF (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T112000
+DTEND;TZID=Europe/Stockholm:20260913T115000
+SUMMARY:Eslövs HK 2 – HK Ankaret 2 (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T122000
+DTEND;TZID=Europe/Stockholm:20260913T125000
+SUMMARY:Lödde Viking... – Eslövs HK 2 (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T122000
+DTEND;TZID=Europe/Stockholm:20260913T125000
+SUMMARY:OV Helsingborg B – Eslövs HK 2 (P11 (2015) Matcher)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-5027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T132000
+DTEND;TZID=Europe/Stockholm:20260913T135000
+SUMMARY:HK Ankaret 1 – Eslövs HK 2 (F10 (2016) Matcher)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-11032@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T142000
+DTEND;TZID=Europe/Stockholm:20260913T145000
+SUMMARY:Eslövs HK 2 – IFK Malmö vit (P11 (2015) Matcher)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+END:VCALENDAR
