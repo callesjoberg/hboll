@@ -36,4 +36,28 @@ SUMMARY:Ljunghusen HK – IFK Malmö (F9 (2017) Matcher)
 LOCATION:Korsbacka E2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-2005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:IFK Malmö – LUGI HF C (F13 (2013) Grupp 3)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:IFK Malmö – OV Helsingborg 3 (F13 (2013) Grupp 3)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:Höörs HK H 65 – IFK Malmö (F13 (2013) Grupp 3)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
+END:VEVENT
 END:VCALENDAR

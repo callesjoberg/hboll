@@ -36,4 +36,28 @@ SUMMARY:Lödde Viking... – Hässleholms HF (P11 (2015) Matcher)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-8004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:Hässleholms HF – IFK Malmö Vit (P14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:HK Ankaret svart – Hässleholms HF (P14 (2012) Grupp 3)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:Dalby GIF svart – Hässleholms HF (P14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
+END:VEVENT
 END:VCALENDAR

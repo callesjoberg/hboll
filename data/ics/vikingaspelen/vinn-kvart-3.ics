@@ -1,0 +1,87 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-3042@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T171500
+DTEND;TZID=Europe/Stockholm:20260919T174500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F12 (2014) A-semifinal:02)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1033@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T171500
+DTEND;TZID=Europe/Stockholm:20260919T174500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F14 (2012) B-semifinal:02)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1035@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T175000
+DTEND;TZID=Europe/Stockholm:20260919T182000
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F14 (2012) A-semifinal:02)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3046@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T180500
+DTEND;TZID=Europe/Stockholm:20260919T183500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F12 (2014) B-semifinal:02)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10032@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T171500
+DTEND;TZID=Europe/Stockholm:20260920T174500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (P12 (2014) B-semifinal:02)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8032@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T171500
+DTEND;TZID=Europe/Stockholm:20260920T174500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (P14 (2012) B-semifinal:02)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T174500
+DTEND;TZID=Europe/Stockholm:20260920T181500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F13 (2013) A-semifinal:02)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2035@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T174500
+DTEND;TZID=Europe/Stockholm:20260920T181500
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F13 (2013) B-semifinal:02)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T175000
+DTEND;TZID=Europe/Stockholm:20260920T182000
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (P12 (2014) A-semifinal:02)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8035@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T175000
+DTEND;TZID=Europe/Stockholm:20260920T182000
+SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (P14 (2012) A-semifinal:02)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · A-semifinal:02
+END:VEVENT
+END:VCALENDAR

@@ -36,4 +36,28 @@ SUMMARY:LUGI HF A – IFK Malmö HF 1 (P10 (2016) Matcher)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-2001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T090000
+DTEND;TZID=Europe/Stockholm:20260920T093000
+SUMMARY:LUGI HF A – Lödde Viking... (F13 (2013) Grupp 1)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T110000
+DTEND;TZID=Europe/Stockholm:20260920T113000
+SUMMARY:LUGI HF A – HF Limhamn (F13 (2013) Grupp 1)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T130000
+DTEND;TZID=Europe/Stockholm:20260920T133000
+SUMMARY:HK Svalöv – LUGI HF A (F13 (2013) Grupp 1)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
+END:VEVENT
 END:VCALENDAR

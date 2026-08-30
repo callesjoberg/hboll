@@ -100,4 +100,52 @@ SUMMARY:KFUM Lundagård – Lödde Viking... (F10 (2016) Matcher)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3008@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T103000
+DTEND;TZID=Europe/Stockholm:20260919T110000
+SUMMARY:KFUM Lundagård – Växjö HF 1 (F12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T123000
+DTEND;TZID=Europe/Stockholm:20260919T130000
+SUMMARY:H43 Lund 1 – KFUM Lundagård (F12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T143000
+DTEND;TZID=Europe/Stockholm:20260919T150000
+SUMMARY:Kävlinge HK ... – KFUM Lundagård (F12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T090000
+DTEND;TZID=Europe/Stockholm:20260920T093000
+SUMMARY:KFUM Lundagård – HF Limhamn (P12 (2014) Grupp 1)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10008@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T110000
+DTEND;TZID=Europe/Stockholm:20260920T113000
+SUMMARY:LUGI HF 2 – KFUM Lundagård (P12 (2014) Grupp 1)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T130000
+DTEND;TZID=Europe/Stockholm:20260920T133000
+SUMMARY:Lödde Viking... – KFUM Lundagård (P12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
+END:VEVENT
 END:VCALENDAR

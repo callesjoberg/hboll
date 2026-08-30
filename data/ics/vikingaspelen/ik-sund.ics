@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-3001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:IFK Malmö 2 – IK Sund (F12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T110000
+DTEND;TZID=Europe/Stockholm:20260919T113000
+SUMMARY:IK Sund – LUGI HF 1 (F12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:IK Sund – Kävlinge HK ... (F12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-10004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:H43 Lund 2 – Växjö HF (P12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2006@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T103000
+DTEND;TZID=Europe/Stockholm:20260920T110000
+SUMMARY:Skurups Handboll – Växjö HF (F13 (2013) Grupp 4)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:LUGI HF 1 – Växjö HF (P12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:Växjö HF – HK Malmö 2 (F13 (2013) Grupp 4)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:Växjö HF – Lödde Viking... (P12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:Växjö HF – OV Helsingborg 1 (F13 (2013) Grupp 4)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 4
+END:VEVENT
+END:VCALENDAR

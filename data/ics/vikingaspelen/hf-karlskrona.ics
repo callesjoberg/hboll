@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-8006@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T103000
+DTEND;TZID=Europe/Stockholm:20260920T110000
+SUMMARY:Åhus Handboll – HF Karlskrona (P14 (2012) Grupp 4)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:HF Karlskrona – LUGI HF 13 (P14 (2012) Grupp 4)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T143000
+DTEND;TZID=Europe/Stockholm:20260920T150000
+SUMMARY:HF Karlskrona – IFK Kristian... (P14 (2012) Grupp 4)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 4
+END:VEVENT
+END:VCALENDAR

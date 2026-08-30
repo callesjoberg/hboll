@@ -1,0 +1,183 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-3031@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T150000
+DTEND;TZID=Europe/Stockholm:20260919T153000
+SUMMARY:4 an från Gr... – 4 an från Gr... (F12 (2014) B-8-dels:08)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T150500
+DTEND;TZID=Europe/Stockholm:20260919T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (F14 (2012) B-kvartsfinal:01)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T150500
+DTEND;TZID=Europe/Stockholm:20260919T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (F14 (2012) B-kvartsfinal:03)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9019@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T151500
+DTEND;TZID=Europe/Stockholm:20260919T154500
+SUMMARY:4 an från Gr... – 4 an från Gr... (P13 (2013) B-kvartsfinal:01)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3033@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:3 an från Gr... – 4 an från Gr... (F12 (2014) B-8-dels:03)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:3 an från Gr... – 4 an från Gr... (F12 (2014) B-kvartsfinal:01)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T154500
+DTEND;TZID=Europe/Stockholm:20260919T161500
+SUMMARY:3 an från Gr... – 4 an från Gr... (P13 (2013) B-kvartsfinal:04)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1028@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T161000
+DTEND;TZID=Europe/Stockholm:20260919T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (F14 (2012) B-kvartsfinal:02)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T161000
+DTEND;TZID=Europe/Stockholm:20260919T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (F14 (2012) B-kvartsfinal:04)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3041@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T170000
+DTEND;TZID=Europe/Stockholm:20260919T173000
+SUMMARY:Vinn.1/8   3 – 4 an från Gr... (F12 (2014) B-kvartsfinal:02)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T150500
+DTEND;TZID=Europe/Stockholm:20260920T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (P12 (2014) B-kvartsfinal:01)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T150500
+DTEND;TZID=Europe/Stockholm:20260920T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (P12 (2014) B-kvartsfinal:03)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T150500
+DTEND;TZID=Europe/Stockholm:20260920T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:02)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T150500
+DTEND;TZID=Europe/Stockholm:20260920T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (P14 (2012) B-kvartsfinal:01)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T150500
+DTEND;TZID=Europe/Stockholm:20260920T153500
+SUMMARY:3 an från Gr... – 4 an från Gr... (P14 (2012) B-kvartsfinal:03)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T153500
+DTEND;TZID=Europe/Stockholm:20260920T160500
+SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:01)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10028@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (P12 (2014) B-kvartsfinal:02)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (P12 (2014) B-kvartsfinal:04)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:03)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8028@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (P14 (2012) B-kvartsfinal:02)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – 4 an från Gr... (P14 (2012) B-kvartsfinal:04)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2031@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T164000
+DTEND;TZID=Europe/Stockholm:20260920T171000
+SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:04)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:04
+END:VEVENT
+END:VCALENDAR

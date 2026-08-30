@@ -36,4 +36,28 @@ SUMMARY:Veberöds HK – Dalby GIF svart (P9 (2017) Matcher)
 LOCATION:Korsbacka A1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-8005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:HK Ankaret svart – Dalby GIF svart (P14 (2012) Grupp 3)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:IFK Malmö Vit – Dalby GIF svart (P14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:Dalby GIF svart – Hässleholms HF (P14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
+END:VEVENT
 END:VCALENDAR

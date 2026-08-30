@@ -100,4 +100,28 @@ SUMMARY:HK Björnen – IFK Malmö gul (P11 (2015) Matcher)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-9002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T093000
+DTEND;TZID=Europe/Stockholm:20260919T100000
+SUMMARY:HK Björnen – Vinslövs HK (P13 (2013) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T113000
+DTEND;TZID=Europe/Stockholm:20260919T120000
+SUMMARY:Kävlinge HK – HK Björnen (P13 (2013) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T133000
+DTEND;TZID=Europe/Stockholm:20260919T140000
+SUMMARY:Ljunghusens HK – HK Björnen (P13 (2013) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 3
+END:VEVENT
 END:VCALENDAR

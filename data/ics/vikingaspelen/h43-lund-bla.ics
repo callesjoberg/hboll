@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-1000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:H43 Lund Blå – Lödde Viking... (F14 (2012) Grupp 1)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1008@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T110000
+DTEND;TZID=Europe/Stockholm:20260919T113000
+SUMMARY:H43 Lund Blå – Dalby GIF (F14 (2012) Grupp 1)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1016@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:Eslövs HK – H43 Lund Blå (F14 (2012) Grupp 1)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 1
+END:VEVENT
+END:VCALENDAR

@@ -132,4 +132,76 @@ SUMMARY:Höörs HK H65 – LUGI HF 1 (F10 (2016) Matcher)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:LUGI HF 1 – Kävlinge HK ... (F12 (2014) Grupp 1)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T100000
+DTEND;TZID=Europe/Stockholm:20260919T103000
+SUMMARY:LUGI HF 1 – IFK Kristianstad (F14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T110000
+DTEND;TZID=Europe/Stockholm:20260919T113000
+SUMMARY:IK Sund – LUGI HF 1 (F12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T120000
+DTEND;TZID=Europe/Stockholm:20260919T123000
+SUMMARY:LUGI HF 1 – HF Karlskron... (F14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:LUGI HF 1 – IFK Malmö 2 (F12 (2014) Grupp 1)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T140000
+DTEND;TZID=Europe/Stockholm:20260919T143000
+SUMMARY:H43 Lund vit – LUGI HF 1 (F14 (2012) Grupp 3)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:Lödde Viking... – LUGI HF 1 (P12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:LUGI HF 1 – Växjö HF (P12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:LUGI HF 1 – H43 Lund 2 (P12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
 END:VCALENDAR

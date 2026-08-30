@@ -516,4 +516,220 @@ SUMMARY:Lödde Viking... – Hässleholms HF (P11 (2015) Matcher)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-9000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:Staffanstorps HK – Lödde Viking... (P13 (2013) Grupp 1)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:Lödde Viking... – HK Ankaret röd (F12 (2014) Grupp 4)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:H43 Lund Blå – Lödde Viking... (F14 (2012) Grupp 1)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3006@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T100000
+DTEND;TZID=Europe/Stockholm:20260919T103000
+SUMMARY:Lödde Viking... – HK Ankaret svart (F12 (2014) Grupp 5)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T103000
+DTEND;TZID=Europe/Stockholm:20260919T110000
+SUMMARY:Lödde Viking... – HF Karlskron... (F14 (2012) Grupp 4)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T110000
+DTEND;TZID=Europe/Stockholm:20260919T113000
+SUMMARY:Lödde Viking... – LUGI HF 2 (F12 (2014) Grupp 4)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T110000
+DTEND;TZID=Europe/Stockholm:20260919T113000
+SUMMARY:Eslövs HK – Lödde Viking... (F14 (2012) Grupp 1)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T113000
+DTEND;TZID=Europe/Stockholm:20260919T120000
+SUMMARY:HK Ankaret 2 – Lödde Viking... (P13 (2013) Grupp 1)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3016@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T120000
+DTEND;TZID=Europe/Stockholm:20260919T123000
+SUMMARY:Lödde Viking... – Stavsten HK (F12 (2014) Grupp 5)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T123000
+DTEND;TZID=Europe/Stockholm:20260919T130000
+SUMMARY:Hässleholms ... – Lödde Viking... (F14 (2012) Grupp 4)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:Lödde Viking... – IK Sund blå (P13 (2013) Grupp 1)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:OV Helsingbo... – Lödde Viking... (F12 (2014) Grupp 4)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:Lödde Viking... – Dalby GIF (F14 (2012) Grupp 1)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3026@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T140000
+DTEND;TZID=Europe/Stockholm:20260919T143000
+SUMMARY:OV Helsingbo... – Lödde Viking... (F12 (2014) Grupp 5)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 5
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T143000
+DTEND;TZID=Europe/Stockholm:20260919T150000
+SUMMARY:LUGI HF 2 – Lödde Viking... (F14 (2012) Grupp 4)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T090000
+DTEND;TZID=Europe/Stockholm:20260920T093000
+SUMMARY:LUGI HF 2 – Lödde Viking... (P12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T090000
+DTEND;TZID=Europe/Stockholm:20260920T093000
+SUMMARY:LUGI HF A – Lödde Viking... (F13 (2013) Grupp 1)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:Lödde Viking... – IFK Kristian... (P14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:Lödde Viking... – LUGI HF 1 (P12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T110000
+DTEND;TZID=Europe/Stockholm:20260920T113000
+SUMMARY:Lödde Viking... – HF Limhamn (P12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:HK Svalöv – Lödde Viking... (F13 (2013) Grupp 1)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:Staffanstorps HK – Lödde Viking... (P14 (2012) Grupp 2)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:Lödde Viking... – H43 Lund 2 (P12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T130000
+DTEND;TZID=Europe/Stockholm:20260920T133000
+SUMMARY:Lödde Viking... – KFUM Lundagård (P12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2019@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Lödde Viking... – HF Limhamn (F13 (2013) Grupp 1)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Dalby GIF blå – Lödde Viking... (P14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:Växjö HF – Lödde Viking... (P12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
 END:VCALENDAR

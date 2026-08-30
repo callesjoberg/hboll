@@ -1,0 +1,55 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-8002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:Lödde Viking... – IFK Kristian... (P14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T103000
+DTEND;TZID=Europe/Stockholm:20260920T110000
+SUMMARY:IFK Kristian... – LUGI HF 13 (P14 (2012) Grupp 4)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:IFK Kristian... – Dalby GIF blå (P14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:IFK Kristian... – Åhus Handboll (P14 (2012) Grupp 4)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8019@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:IFK Kristian... – Staffanstorps HK (P14 (2012) Grupp 2)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T143000
+DTEND;TZID=Europe/Stockholm:20260920T150000
+SUMMARY:HF Karlskrona – IFK Kristian... (P14 (2012) Grupp 4)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 4
+END:VEVENT
+END:VCALENDAR

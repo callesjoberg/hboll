@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-2002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:HK Malmö 1 – OV Helsingborg 2 (F13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:OV Helsingborg 2 – Kävlinge HK (F13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2016@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T130000
+DTEND;TZID=Europe/Stockholm:20260920T133000
+SUMMARY:OV Helsingborg 2 – LUGI HF B (F13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 2
+END:VEVENT
+END:VCALENDAR

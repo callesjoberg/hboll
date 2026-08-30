@@ -36,4 +36,28 @@ SUMMARY:Dalby GIF blå – Lödde Viking... (P9 (2017) Matcher)
 LOCATION:Korsbacka A1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-8003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:Staffanstorps HK – Dalby GIF blå (P14 (2012) Grupp 2)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:IFK Kristian... – Dalby GIF blå (P14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Dalby GIF blå – Lödde Viking... (P14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
+END:VEVENT
 END:VCALENDAR

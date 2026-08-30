@@ -36,4 +36,52 @@ SUMMARY:Eslövs HK 1 – HK Ankaret 2 (F10 (2016) Matcher)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-9003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T093000
+DTEND;TZID=Europe/Stockholm:20260919T100000
+SUMMARY:IK Sund blå – HK Ankaret 2 (P13 (2013) Grupp 1)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T113000
+DTEND;TZID=Europe/Stockholm:20260919T120000
+SUMMARY:HK Ankaret 2 – Lödde Viking... (P13 (2013) Grupp 1)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T133000
+DTEND;TZID=Europe/Stockholm:20260919T140000
+SUMMARY:HK Ankaret 2 – Staffanstorps HK (P13 (2013) Grupp 1)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:HK Ankaret 2 – Kävlinge HK (P12 (2014) Grupp 2)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:HK Ankaret 2 – H43 Lund 1 (P12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Staffanstorp... – HK Ankaret 2 (P12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
 END:VCALENDAR

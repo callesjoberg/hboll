@@ -36,4 +36,28 @@ SUMMARY:HK Ankaret svart – LUGI HF C (P10 (2016) Matcher)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-2005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:IFK Malmö – LUGI HF C (F13 (2013) Grupp 3)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:Höörs HK H 65 – LUGI HF C (F13 (2013) Grupp 3)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T143000
+DTEND;TZID=Europe/Stockholm:20260920T150000
+SUMMARY:LUGI HF C – OV Helsingborg 3 (F13 (2013) Grupp 3)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
+END:VEVENT
 END:VCALENDAR

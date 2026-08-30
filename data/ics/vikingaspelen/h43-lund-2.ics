@@ -68,4 +68,52 @@ SUMMARY:H43 Lund 2 – Ljunghusen svart (P9 (2017) Matcher)
 LOCATION:Korsbacka A2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T100000
+DTEND;TZID=Europe/Stockholm:20260919T103000
+SUMMARY:H43 Lund 2 – LUGI HF 3 (F12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T120000
+DTEND;TZID=Europe/Stockholm:20260919T123000
+SUMMARY:H43 Lund 2 – Växjö HF 2 (F12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T140000
+DTEND;TZID=Europe/Stockholm:20260919T143000
+SUMMARY:IFK Malmö 1 – H43 Lund 2 (F12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T100000
+DTEND;TZID=Europe/Stockholm:20260920T103000
+SUMMARY:H43 Lund 2 – Växjö HF (P12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10012@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T120000
+DTEND;TZID=Europe/Stockholm:20260920T123000
+SUMMARY:Lödde Viking... – H43 Lund 2 (P12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T140000
+DTEND;TZID=Europe/Stockholm:20260920T143000
+SUMMARY:LUGI HF 1 – H43 Lund 2 (P12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+END:VEVENT
 END:VCALENDAR

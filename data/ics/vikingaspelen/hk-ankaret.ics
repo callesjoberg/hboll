@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-1003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T093000
+DTEND;TZID=Europe/Stockholm:20260919T100000
+SUMMARY:Hässleholms ... – HK Ankaret (F14 (2012) Grupp 2)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T113000
+DTEND;TZID=Europe/Stockholm:20260919T120000
+SUMMARY:HK Ankaret – LUGI HF 3 (F14 (2012) Grupp 2)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T133000
+DTEND;TZID=Europe/Stockholm:20260919T140000
+SUMMARY:HK Ankaret – Kävlinge HK (F14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
+END:VEVENT
+END:VCALENDAR

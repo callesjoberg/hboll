@@ -36,4 +36,52 @@ SUMMARY:HK Ankaret 1 – Eslövs HK 2 (F10 (2016) Matcher)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F10 (2016) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-9005@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T103000
+DTEND;TZID=Europe/Stockholm:20260919T110000
+SUMMARY:HK Ankaret 1 – Åhus Handboll (P13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T120000
+DTEND;TZID=Europe/Stockholm:20260919T123000
+SUMMARY:IK Sund vit – HK Ankaret 1 (P13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9016@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T140000
+DTEND;TZID=Europe/Stockholm:20260919T143000
+SUMMARY:Skurup Handboll – HK Ankaret 1 (P13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10006@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T103000
+DTEND;TZID=Europe/Stockholm:20260920T110000
+SUMMARY:Staffanstorp... – HK Ankaret 1 (P12 (2014) Grupp 4)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:Skurup Handboll – HK Ankaret 1 (P12 (2014) Grupp 4)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T143000
+DTEND;TZID=Europe/Stockholm:20260920T150000
+SUMMARY:HK Ankaret 1 – Anderstorp SK (P12 (2014) Grupp 4)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
+END:VEVENT
 END:VCALENDAR

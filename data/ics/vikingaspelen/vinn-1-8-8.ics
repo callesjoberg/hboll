@@ -1,0 +1,23 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-3036@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T160500
+DTEND;TZID=Europe/Stockholm:20260919T163500
+SUMMARY:1 an från Gr... – Vinn.1/8   8 (F12 (2014) A-kvartsfinal:04)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3038@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T163000
+DTEND;TZID=Europe/Stockholm:20260919T170000
+SUMMARY:3 an från Gr... – Vinn.1/8   8 (F12 (2014) B-kvartsfinal:04)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:04
+END:VEVENT
+END:VCALENDAR

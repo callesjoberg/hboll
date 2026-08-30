@@ -228,4 +228,52 @@ SUMMARY:LUGI HF 1 – Staffanstorp... (P9 (2017) Matcher)
 LOCATION:Korsbacka A1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:H43 Lund 1 – Staffanstorp... (P12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10006@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T103000
+DTEND;TZID=Europe/Stockholm:20260920T110000
+SUMMARY:Staffanstorp... – HK Ankaret 1 (P12 (2014) Grupp 4)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:Kävlinge HK – Staffanstorp... (P12 (2014) Grupp 2)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10014@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:Anderstorp SK – Staffanstorp... (P12 (2014) Grupp 4)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Staffanstorp... – HK Ankaret 2 (P12 (2014) Grupp 2)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T143000
+DTEND;TZID=Europe/Stockholm:20260920T150000
+SUMMARY:Skurup Handboll – Staffanstorp... (P12 (2014) Grupp 4)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
+END:VEVENT
 END:VCALENDAR

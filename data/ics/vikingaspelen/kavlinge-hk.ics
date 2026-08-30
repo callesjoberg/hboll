@@ -356,4 +356,172 @@ SUMMARY:Växjö HF 1 – Kävlinge HK ... (P11 (2015) Matcher)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T090000
+DTEND;TZID=Europe/Stockholm:20260919T093000
+SUMMARY:LUGI HF 1 – Kävlinge HK ... (F12 (2014) Grupp 1)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T093000
+DTEND;TZID=Europe/Stockholm:20260919T100000
+SUMMARY:Kävlinge HK – Ljunghusens HK (P13 (2013) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1002@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T093000
+DTEND;TZID=Europe/Stockholm:20260919T100000
+SUMMARY:Kävlinge HK – LUGI HF 3 (F14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T103000
+DTEND;TZID=Europe/Stockholm:20260919T110000
+SUMMARY:H43 Lund 1 – Kävlinge HK ... (F12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T110000
+DTEND;TZID=Europe/Stockholm:20260919T113000
+SUMMARY:Kävlinge HK ... – IFK Malmö 2 (F12 (2014) Grupp 1)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T113000
+DTEND;TZID=Europe/Stockholm:20260919T120000
+SUMMARY:Kävlinge HK – HK Björnen (P13 (2013) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T113000
+DTEND;TZID=Europe/Stockholm:20260919T120000
+SUMMARY:Kävlinge HK – Hässleholms ... (F14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T123000
+DTEND;TZID=Europe/Stockholm:20260919T130000
+SUMMARY:Växjö HF 1 – Kävlinge HK ... (F12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3021@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T130000
+DTEND;TZID=Europe/Stockholm:20260919T133000
+SUMMARY:IK Sund – Kävlinge HK ... (F12 (2014) Grupp 1)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9013@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T133000
+DTEND;TZID=Europe/Stockholm:20260919T140000
+SUMMARY:Vinslövs HK – Kävlinge HK (P13 (2013) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-1018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T133000
+DTEND;TZID=Europe/Stockholm:20260919T140000
+SUMMARY:HK Ankaret – Kävlinge HK (F14 (2012) Grupp 2)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T143000
+DTEND;TZID=Europe/Stockholm:20260919T150000
+SUMMARY:Kävlinge HK ... – KFUM Lundagård (F12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2000@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T090000
+DTEND;TZID=Europe/Stockholm:20260920T093000
+SUMMARY:LUGI HF B – Kävlinge HK (F13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8001@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T090000
+DTEND;TZID=Europe/Stockholm:20260920T093000
+SUMMARY:Kävlinge HK – HK Ankaret röd (P14 (2012) Grupp 1)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10003@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T093000
+DTEND;TZID=Europe/Stockholm:20260920T100000
+SUMMARY:HK Ankaret 2 – Kävlinge HK (P12 (2014) Grupp 2)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8009@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T110000
+DTEND;TZID=Europe/Stockholm:20260920T113000
+SUMMARY:Kävlinge HK – IFK Malmö Svart (P14 (2012) Grupp 1)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10011@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:Kävlinge HK – Staffanstorp... (P12 (2014) Grupp 2)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T113000
+DTEND;TZID=Europe/Stockholm:20260920T120000
+SUMMARY:OV Helsingborg 2 – Kävlinge HK (F13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-8017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T130000
+DTEND;TZID=Europe/Stockholm:20260920T133000
+SUMMARY:LUGI HF 12 – Kävlinge HK (P14 (2012) Grupp 1)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 1
+END:VEVENT
+BEGIN:VEVENT
+UID:match-10019@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Kävlinge HK – H43 Lund 1 (P12 (2014) Grupp 2)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-2018@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T133000
+DTEND;TZID=Europe/Stockholm:20260920T140000
+SUMMARY:Kävlinge HK – HK Malmö 1 (F13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 2
+END:VEVENT
 END:VCALENDAR

@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hboll//cupschema//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Vikingaspelen
+BEGIN:VEVENT
+UID:match-9004@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T100000
+DTEND;TZID=Europe/Stockholm:20260919T103000
+SUMMARY:IK Sund vit – Skurup Handboll (P13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9010@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T120000
+DTEND;TZID=Europe/Stockholm:20260919T123000
+SUMMARY:IK Sund vit – HK Ankaret 1 (P13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
+END:VEVENT
+BEGIN:VEVENT
+UID:match-9017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T143000
+DTEND;TZID=Europe/Stockholm:20260919T150000
+SUMMARY:Åhus Handboll – IK Sund vit (P13 (2013) Grupp 2)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
+END:VEVENT
+END:VCALENDAR
