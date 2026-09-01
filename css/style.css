@@ -2538,10 +2538,21 @@ dialog.match-dialog {
 /* Fullskärm på mobil — mer plats för lagstatistik/inbördes möten, och
    enklare att träffa "Stäng" med tummen än en liten centrerad kortmodal. */
 @media (max-width: 700px) {
+  /* Helskärm, och den TÄCKER menyn. Dialogen öppnas modalt (showMatchDialog
+     i js/ui/match-ui.js) och hamnar därmed i webbläsarens topplager, där
+     inget z-index på sidan når den.
+
+     Icke-modalt låg den kvar i det vanliga z-index-spelet på 60 medan menyn
+     står på 72, och menyraderna målades då MITT I dialogen: rubriken överst,
+     sedan hela menyn, sedan resten av innehållet. Att i stället hänga
+     dialogen under menyn löste det bara så länge sidan stod still — menyn är
+     klistrad, så scrollade bakgrunden gled dess underkant och menyn åt sig in
+     över dialogens överkant igen. Topplagret gör hela frågan omöjlig att
+     ställa. */
   dialog.match-dialog {
     position: fixed;
     margin: 0;
-    inset: 0 0 calc(var(--bottomstack-h, 0px) + var(--vv-offset, 0px)) 0;
+    inset: 0;
     z-index: 60;
     max-width: 100%;
     width: 100%;

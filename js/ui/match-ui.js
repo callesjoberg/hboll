@@ -6,7 +6,6 @@ import {
   hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock,
 } from "../time.js";
 import { cohortKey, cohortLabel, shortCat } from "../domain/category.js";
-import { sheetMode } from "./sheets.js";
 
 let state, cup, render, renderContent, saveSettings, markClubChosen;
 let renderFavoriteTeamList, isClubName, isClubMatch, isFavoriteTeam;
@@ -201,9 +200,13 @@ export function closeMatchDialog() {
   if (dlg) dlg.close();
 }
 
+// Modalt i BÅDA lägena. På mobil öppnades dialogen tidigare icke-modalt, för
+// att den fasta bottenmenyn skulle synas ovanför den. Sedan menyn flyttade
+// till toppen betyder samma sak att menyn lägger sig mitt i dialogen — och
+// topplagret som showModal ger löser dessutom scroll bakom, fokusfälla och
+// Escape utan en rad egen kod.
 function showMatchDialog(dlg) {
-  if (sheetMode()) dlg.show();
-  else dlg.showModal();
+  dlg.showModal();
 }
 
 function rosterBlock(team, edition) {
