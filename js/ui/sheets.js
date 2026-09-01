@@ -297,40 +297,34 @@ export function closeFilterBackdrop() {
   // som är öppna just nu, på teckenstorlek och på hur många brickor som ryms.
   function syncTopStack() {
     const root = document.documentElement;
+    const set = (namn, v) => root.style.setProperty(namn, Math.round(Math.max(0, v)) + "px");
     if (!sheetMode()) {
-      root.style.setProperty("--menuhost-h", "0px");
-      root.style.setProperty("--topstack-h", "0px");
-      root.style.setProperty("--topstack-bottom", "0px");
+      set("--menuhost-h", 0); set("--topstack-h", 0); set("--topstack-bottom", 0);
       return;
     }
-    // Rektangeln för ett element som räknas till stacken, annars null.
-    // Höjdkravet är inte en detalj: #toolbar behåller sin inline-satta
-    // position:sticky även när den är DOLD (toggleFilterSheet sätter den en
-    // gång och tar aldrig bort den), och en dold rad mäter noll — utan
-    // kontrollen blev stackens underkant 0 och arken la sig över menyn.
-    // Det UTFÄLLDA filterarket ("Mer") räknas inte heller in: det är ett
-    // tillfälligt ark med eget bakgrundstäcke och ska inte trycka ner
-    // innehållets klistrade rader med 72 vh.
-    const stackRect = (el) => {
-      if (!el || getComputedStyle(el).position !== "sticky") return null;
-      const rect = el.getBoundingClientRect();
-      return rect.height > 0 ? rect : null;
+    // Det ENDA som ligger kvar när sidan rullar är den tunna raden — menyn
+    // och filterremsan följer med innehållet bort. --topstack-h är därför
+    // radens höjd (där innehållets egna klistrade rader ska fastna), och
+    // noll när den inte syns.
+    const bar = $("#menuCollapsedBar");
+    const barH = bar && !bar.hidden ? bar.getBoundingClientRect().height : 0;
+    set("--topstack-h", barH);
+
+    // Ark och väljarpaneler hänger i stället från det man tryckte på, och det
+    // rör sig med sidan. Ta underkanten på det lägsta menylager som just nu
+    // faktiskt syns: remsan om den är öppen, annars menyraderna, annars den
+    // tunna raden. Mäts när arket öppnas, och sidan låses så länge det är
+    // uppe — värdet hinner inte bli gammalt.
+    const synligBotten = (el) => {
+      if (!el || el.hidden) return 0;
+      const r = el.getBoundingClientRect();
+      return r.height > 0 ? r.bottom : 0;
     };
-    const hostRect = stackRect($("#mobileMenuHost"));
-    const stripRect = document.body.classList.contains("filters-expanded")
-      ? null : stackRect($("#toolbar"));
-    const hostH = hostRect ? hostRect.height : 0;
-    root.style.setProperty("--menuhost-h", Math.round(hostH) + "px");
-    root.style.setProperty("--topstack-h",
-      Math.round(hostH + (stripRect ? stripRect.height : 0)) + "px");
-    // --topstack-h är en HÖJD och duger för sticky (den säger var raden ska
-    // fastna). Ett position:fixed-ark behöver i stället stackens faktiska
-    // UNDERKANT i viewporten, och de två är olika saker: överst på sidan
-    // ligger menyn nedanför sidhuvudet, inte mot skärmkanten. Med höjden som
-    // toppvärde la sig arket rakt över filterremsan.
-    const bottoms = [hostRect, stripRect].filter(Boolean).map((r) => r.bottom);
-    root.style.setProperty("--topstack-bottom",
-      Math.round(bottoms.length ? Math.max(0, ...bottoms) : 0) + "px");
+    const host = $("#mobileMenuHost");
+    set("--menuhost-h", host ? host.getBoundingClientRect().height : 0);
+    const remsa = document.body.classList.contains("filters-expanded")
+      ? 0 : synligBotten($("#toolbar"));
+    set("--topstack-bottom", Math.max(barH, synligBotten(host), remsa));
   }
 
   let filterBackdrop = null;
@@ -399,11 +393,11 @@ export function closeFilterBackdrop() {
     syncFilterBackdrop();
     const toolbar = $("#toolbar");
     if (toolbar && sheetMode()) {
-      toolbar.style.position = "sticky";
-      // inset FÖRST — den nollställer top/right/bottom/left och skrev
-      // tidigare över top:0 på raden efter, så remsan aldrig klistrade sig.
+      // Remsan hör till menyn och rullar undan med den. Gamla inline-värden
+      // från tidigare versioner städas bort så de inte klistrar den igen.
+      toolbar.style.position = "static";
       toolbar.style.inset = "auto";
-      toolbar.style.top = "var(--menuhost-h, 0px)";
+      toolbar.style.removeProperty("top");
     }
     // Efter en bildruta: remsan måste hinna få sin layout innan den mäts.
     requestAnimationFrame(() => syncBottomStack({ animate: true }));
@@ -508,8 +502,10 @@ export function closeFilterBackdrop() {
       el.style.margin = mobile ? "0" : "";
     }
     if (mobile && host) {
-      host.style.setProperty("position", "sticky", "important");
-      host.style.setProperty("top", "0px", "important");
+      // Ingen klistring längre — menyn rullar undan med innehållet (se
+      // #mobileMenuHost i style.css). Bakgrunden sätts ändå inline som skydd
+      // mot en gammal, cachad CSS efter en driftsättning.
+      host.style.removeProperty("top");
       host.style.setProperty("background", "var(--menu-surface)", "important");
       syncMenuHostLayer();
     } else if (host) {
@@ -618,12 +614,22 @@ export function closeFilterBackdrop() {
   // filterremsan (syskon till hosten) lyste klart medan huvudmenyn precis
   // ovanför låg kvar under täcket. Inline eftersom hostens z-index skrivs
   // med !important i enforceMobileMenuHost och inte kan bytas från CSS.
+  // Menyn ska ligga ÖVER väljarens bakgrundstäcke: en öppen panel ska inte
+  // släcka ner raden man just tryckte i. z-index biter bara på en
+  // positionerad låda, och menyn är statisk numera — därför relative, som
+  // inte flyttar elementet en pixel. Utanför väljarläget lämnas båda orörda
+  // så menyn deltar i den vanliga målningsordningen.
   function syncMenuHostLayer() {
     const host = $("#mobileMenuHost");
     if (!host) return;
-    if (!sheetMode()) { host.style.removeProperty("z-index"); return; }
-    const överTäcket = document.body.classList.contains("picker-open");
-    host.style.setProperty("z-index", överTäcket ? "85" : "72", "important");
+    const överTäcket = sheetMode() && document.body.classList.contains("picker-open");
+    if (överTäcket) {
+      host.style.setProperty("position", "relative", "important");
+      host.style.setProperty("z-index", "85", "important");
+    } else {
+      host.style.removeProperty("position");
+      host.style.removeProperty("z-index");
+    }
   }
 
   function syncPageScrollLock() {

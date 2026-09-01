@@ -5,7 +5,7 @@ import { chrome, CURRENT_VIEWS } from "./chrome.js";
 import {
   SHEET_QUERY, sheetMode, enforceMobileMenuHost, toggleFilterSheet,
   toggleFiltersExpanded, closePrototypeDialogs, openPrototypeSheetKey,
-  syncBottomStack, syncSheetBackdrop, closeFilterBackdrop,
+  syncBottomStack, syncTopStack, syncSheetBackdrop, closeFilterBackdrop,
 } from "./sheets.js";
 
 const MENU_MINIMIZED_KEY = "hb:menuMinimized";
@@ -278,10 +278,10 @@ export function initNav(deps) {
     // dold för hjälpmedel. Desktop har sin fulla toppnavigation.
     const mobile = sheetMode();
     // Ett sparat "håll menyn minimerad" ska gälla direkt vid sidladdning, inte
-    // först när något råkar anropa setMenuCollapsed. Idempotent, så det är
+    // först när något råkar rita om. Idempotent, så det är
     // ofarligt att den här raden körs vid varje omritning.
-    if (mobile && chrome.menuMinimized) document.body.classList.add("menu-collapsed");
-    else if (!mobile) document.body.classList.remove("menu-collapsed");
+    if (mobile && chrome.menuMinimized) document.body.classList.add("menu-minimized");
+    else if (!mobile) document.body.classList.remove("menu-minimized");
     enforceMobileMenuHost();
     renderDesktopNav();
     bar.hidden = !mobile;
@@ -422,15 +422,13 @@ export function initNav(deps) {
   function renderCollapsedMenuBar() {
     const bar = $("#menuCollapsedBar");
     if (!bar) return;
-    const visible = sheetMode() && document.body.classList.contains("menu-collapsed");
-    bar.hidden = !visible;
-    if (!visible) { bar.replaceChildren(); return; }
+    if (bar.hidden) { bar.replaceChildren(); return; }
     const filterCount = activeFilterCount();
     bar.replaceChildren(h("button", {
       class: "collapsed-menu-btn", type: "button",
       "aria-expanded": "false", "aria-controls": "bottomBar",
       title: "Visa menyn",
-      onclick: () => setMenuMinimized(false),
+      onclick: goToMenu,
     },
       h("span", { class: "collapsed-menu-icon", "aria-hidden": "true" },
         bottomMenuIcon("filter")),
@@ -440,99 +438,63 @@ export function initNav(deps) {
       h("span", { class: "collapsed-menu-chevron", "aria-hidden": "true" })));
   }
 
-  function setMenuCollapsed(collapsed) {
-    collapsed = !!collapsed && sheetMode();
-    if (collapsed === document.body.classList.contains("menu-collapsed")) return;
-    // Menyn ligger ovanför innehållet i flödet, så att fälla in eller ut den
-    // flyttar allt nedanför. Mät hur mycket innehållet FAKTISKT rörde sig och
-    // flytta scrollpositionen lika mycket — då ligger raden man läste kvar på
-    // samma plats på skärmen. Att mäta i stället för att räkna på menyns höjd
-    // gör det självkorrigerande mot webbläsarens egen scroll-ankring.
-    const content = $("#content");
-    const startY = window.scrollY;
-    const beforeTop = content ? content.getBoundingClientRect().top : 0;
-    document.body.classList.toggle("menu-collapsed", collapsed);
-    renderBottomBar();
-    // Överst på sidan finns inget att kompensera: där SKA menyn bara växa
-    // nedåt från sidhuvudet.
-    if (!content || startY <= 2) return;
-    const shift = Math.round(content.getBoundingClientRect().top - beforeTop);
-    if (shift) window.scrollTo({ top: Math.max(0, window.scrollY + shift), behavior: "auto" });
+  // Menyn är INTE klistrad. Den ligger överst i flödet och rullar undan som
+  // vilket innehåll som helst — klibbigheten var det som gjorde rullningen
+  // ryckig: menyn bytte höjd (162 -> 45 px) mitt i en rörelse, och
+  // scrollpositionen fick kompenseras för att innehållet skulle stå still.
+  // Två samtidiga hopp, hur exakt uträkningen än blev.
+  //
+  // Kvar blir den tunna raden, som ligger som ett FAST lager ovanpå sidan i
+  // stället för i flödet. Den kan därför tändas och släckas hur som helst
+  // utan att en enda pixel flyttar sig.
+  // Samma regel i båda lägena: raden syns när menyn rullat ur bild. Är menyn
+  // fast minimerad har raderna ingen höjd, och då är det sidhuvudets
+  // underkant som avgör — överst på sidan ser man alltså klubb och cup, inte
+  // en rad ovanpå dem.
+  function menuScrolledAway() {
+    const host = $("#mobileMenuHost");
+    if (!host) return false;
+    return host.getBoundingClientRect().bottom <= 4;
   }
 
-  // Har man själv tryckt upp menyn ska den inte smälla igen vid nästa lilla
-  // skrollning — då krävs en halv skärm till av nedåtläsning först.
-  // Hur långt man ska ha rullat NEDÅT I STRÄCK innan menyn fälls in.
-  // Måttet är sträcka, inte position på sidan: förut krävdes en hel
-  // skärmhöjd räknat från toppen, så menyn låg kvar och åt läsyta långt
-  // efter att man tydligt börjat läsa neråt. Sträcka gör att den viker undan
-  // så snart avsikten är klar, medan ett ryck eller en studs inte räcker.
-  const MENU_COLLAPSE_TRAVEL = 64;
-  // Har man SJÄLV fällt ut menyn krävs betydligt mer, annars smäller den
-  // igen direkt efter att man bett om den.
-  const MENU_COLLAPSE_TRAVEL_AFTER_TAP = 240;
-  let downwardTravel = 0;
-  let travelNeeded = MENU_COLLAPSE_TRAVEL;
+  function syncCollapsedBar() {
+    const bar = $("#menuCollapsedBar");
+    if (!bar) return;
+    const visible = sheetMode() && menuScrolledAway();
+    if (bar.hidden === !visible) return;   // oförändrat: rör inte DOM:en
+    bar.hidden = !visible;
+    renderCollapsedMenuBar();
+    syncTopStack();
+  }
 
-  // Fast minimerad meny. Samma tanke som filterlåset: har man ställt in sitt
-  // urval en gång vill man kunna titta in nu, om en timme och i morgon och
-  // bara se schemat. Sparas GLOBALT och inte per cup — det är ett sätt att
-  // använda appen på, inte en egenskap hos en viss cup.
+  function setupMenuAutoCollapse() {
+    window.addEventListener("scroll", syncCollapsedBar, { passive: true });
+    window.addEventListener("resize", syncCollapsedBar, { passive: true });
+  }
 
-  // Två lägen, inget dolt tredje: menyn syns = inte minimerad. Minimera-
-  // knappen fäller ihop och håller kvar, ett tryck på den hopfällda raden
-  // fäller ut och släpper. Att i stället låta raden öppna menyn "tillfälligt"
-  // hade gett ett läge man inte kan se på skärmen vilket det är.
+  // Ett tryck på raden tar dig TILL menyn i stället för att fälla ut en kopia
+  // där du står: menyn bor i toppen, och att rulla dit är både ärligt och det
+  // enda som inte flyttar något under fingret. Är menyn fast minimerad
+  // släpps det låset först.
+  function goToMenu() {
+    if (chrome.menuMinimized) setMenuMinimized(false);
+    window.scrollTo({
+      top: 0,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto" : "smooth",
+    });
+  }
+
+  // Fast minimerad meny: raderna tas HELT ur flödet, så de tar ingen plats
+  // ens överst på sidan. Två lägen, inget dolt tredje — menyn syns = inte
+  // minimerad. Knappen fäller ihop och håller kvar, ett tryck på raden
+  // släpper och tar dig upp till menyn igen.
   function setMenuMinimized(on) {
     chrome.menuMinimized = !!on;
     persist(MENU_MINIMIZED_KEY, chrome.menuMinimized ? "1" : "0");
-    if (chrome.menuMinimized) setMenuCollapsed(true);
-    else expandMenuFromTap();
-  }
-
-  // Fäll in efter en kort nedåtrullning, fäll ut igen när man är tillbaka i
-  // toppen. Bara nedåtrörelse fäller in: att också reagera på uppåtrörelse
-  // mitt på sidan gjorde navigeringen ryckig under vanlig läsning (samma
-  // erfarenhet som den gamla bottenmenyn). En vändning uppåt nollställer
-  // däremot sträckan, så att läsa fram och tillbaka i en lista inte råkar
-  // summera ihop till en infällning.
-  function setupMenuAutoCollapse() {
-    let lastY = window.scrollY;
-    window.addEventListener("scroll", () => {
-      const y = Math.max(0, window.scrollY);
-      const delta = y - lastY;
-      lastY = y;
-      if (!sheetMode() || chrome.settingsViewOpen) return;
-      // Med ett ark eller en väljare öppen hänger den från menyn — då får
-      // stacken inte byta höjd under fötterna på den.
-      if (document.body.classList.contains("picker-open")) return;
-      if (document.querySelector("dialog[open]:not(.settings-view)")) return;
-      if (document.body.classList.contains("menu-collapsed")) {
-        downwardTravel = 0;
-        if (y <= 2 && !chrome.menuMinimized) {
-          travelNeeded = MENU_COLLAPSE_TRAVEL;
-          setMenuCollapsed(false);
-        }
-        return;
-      }
-      if (delta < 0) downwardTravel = 0;
-      else downwardTravel += delta;
-      // Inte medan menyn ändå håller på att rulla bort av sig själv: så länge
-      // den inte ens hunnit fastna i toppen finns ingen läsyta att vinna.
-      const host = document.querySelector("#mobileMenuHost");
-      const menuH = host ? host.getBoundingClientRect().height : 0;
-      if (downwardTravel >= travelNeeded && y >= menuH) {
-        downwardTravel = 0;
-        travelNeeded = MENU_COLLAPSE_TRAVEL;
-        setMenuCollapsed(true);
-      }
-    }, { passive: true });
-  }
-
-  function expandMenuFromTap() {
-    downwardTravel = 0;
-    travelNeeded = MENU_COLLAPSE_TRAVEL_AFTER_TAP;
-    setMenuCollapsed(false);
+    document.body.classList.toggle("menu-minimized", chrome.menuMinimized);
+    renderBottomBar();
+    syncCollapsedBar();
   }
 
   function renderCurrentViewBar() {
@@ -632,10 +594,9 @@ export {
   renderBottomBar,
   collapsedMenuLabel,
   renderCollapsedMenuBar,
-  setMenuCollapsed,
   setMenuMinimized,
   setupMenuAutoCollapse,
-  expandMenuFromTap,
+  syncCollapsedBar,
   renderCurrentViewBar,
   renderMoreMenuBar,
   placeFooterLinks,

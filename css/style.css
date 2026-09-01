@@ -4382,14 +4382,18 @@ button.welcome-cta-secondary {
   }
   .prototype-sheet-fullscreen .prototype-sheet-grip { display: none; }
 
+  /* Menyn ligger överst i flödet och RULLAR UNDAN som vanligt innehåll.
+     Klistrad bytte den höjd mitt i en rullning när den fälldes ihop, och
+     scrollpositionen fick kompenseras för att innehållet skulle stå still —
+     två samtidiga hopp, och det var det som kändes ryckigt. Klistringen var
+     dessutom källan till nästan allt annat vi fått laga: ark som måste hänga
+     från en kant som rör sig, matchdialogen med menyn mitt i sig, och alla
+     mätningar av var stacken råkar sluta just nu. */
   #mobileMenuHost {
     max-width: var(--container-max);
     margin: 0 auto;
     display: grid;
     gap: 0;
-    position: sticky;
-    top: 0;
-    z-index: 72;
     background: var(--menu-surface);
     border-bottom: 1px solid var(--menu-line);
     box-shadow: var(--menu-shadow);
@@ -4689,16 +4693,11 @@ button.welcome-cta-secondary {
      verktygsraden (filters-expanded nedan). */
   body.filters-open #toolbar {
     display: block;
-    /* inset FÖRST: den är en genväg som nollställer top/right/bottom/left,
-       och låg tidigare EFTER top — med samma !important vann den, så
-       remsan fick top:auto och klistrade sig aldrig trots position:sticky.
-       Den rullade i stället upp bakom menyn vid minsta scroll. */
+    /* Remsan hör till menyn och rullar undan med den. inset FÖRST: den är en
+       genväg som nollställer top/right/bottom/left och skulle annars kunna
+       skriva över positioneringen på raden efter. */
     inset: auto !important;
-    position: sticky !important;
-    /* Under menyraderna, inte under skärmens överkant: höjden på
-       #mobileMenuHost mäts i syncTopStack (app.js) eftersom den beror på
-       hur många undernivåer som är öppna just nu. */
-    top: var(--menuhost-h, 0px) !important;
+    position: static !important;
     z-index: 65;
     margin: 0 auto;
     width: 100%;
@@ -5204,12 +5203,12 @@ button.welcome-cta-secondary {
      (setupMenuAutoCollapse i app.js). Raden ligger kvar i #mobileMenuHost, så
      stacken bara blir lägre — allt som hänger under menyn (väljarark,
      klistrade rader i innehållet) följer med utan en rad extra kod. */
-  body.menu-collapsed #bottomBar,
-  body.menu-collapsed #currentViewBar,
-  body.menu-collapsed #currentSelectionBar,
-  body.menu-collapsed #moreMenuBar,
-  body.menu-collapsed #toolbar,
-  body.menu-collapsed #content .history-tabs[aria-label="Stats"] {
+  body.menu-minimized #bottomBar,
+  body.menu-minimized #currentViewBar,
+  body.menu-minimized #currentSelectionBar,
+  body.menu-minimized #moreMenuBar,
+  body.menu-minimized #toolbar,
+  body.menu-minimized #content .history-tabs[aria-label="Stats"] {
     display: none !important;
   }
 
@@ -5229,7 +5228,22 @@ button.welcome-cta-secondary {
   }
   .bottom-minimize .bottom-tab-icon-svg { width: 18px; height: 18px; }
 
-  #menuCollapsedBar:not([hidden]) { display: block; }
+  /* FAST lager, inte en rad i flödet: den kan därför tändas och släckas
+     under rullning utan att någonting flyttar sig. Det är hela skillnaden
+     mot den hopfällbara menyn — inga höjdbyten, ingen scrollkompensation. */
+  #menuCollapsedBar:not([hidden]) {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 72;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    background: var(--menu-surface);
+    border-bottom: 1px solid var(--menu-line);
+    box-shadow: var(--menu-shadow);
+  }
 
   .collapsed-menu-btn {
     display: flex;
