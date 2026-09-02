@@ -80,7 +80,7 @@ BEGIN:VEVENT
 UID:match-3017@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T123000
 DTEND;TZID=Europe/Stockholm:20260919T130000
-SUMMARY:H43 Lund 1 – KFUM Lundagård (F12 (2014) Grupp 3)
+SUMMARY:H43 Lund 1 – LUGI HF 2 (F12 (2014) Grupp 3)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
 END:VEVENT

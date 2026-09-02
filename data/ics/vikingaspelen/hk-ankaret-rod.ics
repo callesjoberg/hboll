@@ -88,7 +88,7 @@ BEGIN:VEVENT
 UID:match-3023@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T133000
 DTEND;TZID=Europe/Stockholm:20260919T140000
-SUMMARY:HK Ankaret röd – LUGI HF 2 (F12 (2014) Grupp 4)
+SUMMARY:HK Ankaret röd – KFUM Lundagård (F12 (2014) Grupp 4)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
 END:VEVENT

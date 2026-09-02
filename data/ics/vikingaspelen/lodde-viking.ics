@@ -560,7 +560,7 @@ BEGIN:VEVENT
 UID:match-3012@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T110000
 DTEND;TZID=Europe/Stockholm:20260919T113000
-SUMMARY:Lödde Viking... – LUGI HF 2 (F12 (2014) Grupp 4)
+SUMMARY:Lödde Viking... – KFUM Lundagård (F12 (2014) Grupp 4)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
 END:VEVENT

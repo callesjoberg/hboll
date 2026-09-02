@@ -133,12 +133,12 @@ LOCATION:Korsbacka E1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P9 (2017) · Matcher
 END:VEVENT
 BEGIN:VEVENT
-UID:match-3003@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T093000
-DTEND;TZID=Europe/Stockholm:20260919T100000
-SUMMARY:LUGI HF 2 – OV Helsingbo... (F12 (2014) Grupp 4)
-LOCATION:Nyvångsskolan\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
+UID:match-3008@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T103000
+DTEND;TZID=Europe/Stockholm:20260919T110000
+SUMMARY:LUGI HF 2 – Växjö HF 1 (F12 (2014) Grupp 3)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
 END:VEVENT
 BEGIN:VEVENT
 UID:match-1006@vikingaspelen.hboll
@@ -149,12 +149,12 @@ LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
-UID:match-3012@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T110000
-DTEND;TZID=Europe/Stockholm:20260919T113000
-SUMMARY:Lödde Viking... – LUGI HF 2 (F12 (2014) Grupp 4)
-LOCATION:Nyvångsskolan\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
+UID:match-3017@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T123000
+DTEND;TZID=Europe/Stockholm:20260919T130000
+SUMMARY:H43 Lund 1 – LUGI HF 2 (F12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
 END:VEVENT
 BEGIN:VEVENT
 UID:match-1015@vikingaspelen.hboll
@@ -165,12 +165,12 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
-UID:match-3023@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T133000
-DTEND;TZID=Europe/Stockholm:20260919T140000
-SUMMARY:HK Ankaret röd – LUGI HF 2 (F12 (2014) Grupp 4)
-LOCATION:Nyvångsskolan\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
+UID:match-3027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T143000
+DTEND;TZID=Europe/Stockholm:20260919T150000
+SUMMARY:Kävlinge HK ... – LUGI HF 2 (F12 (2014) Grupp 3)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
 END:VEVENT
 BEGIN:VEVENT
 UID:match-1023@vikingaspelen.hboll

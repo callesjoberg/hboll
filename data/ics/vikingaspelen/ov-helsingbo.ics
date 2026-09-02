@@ -8,7 +8,7 @@ BEGIN:VEVENT
 UID:match-3003@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T093000
 DTEND;TZID=Europe/Stockholm:20260919T100000
-SUMMARY:LUGI HF 2 – OV Helsingbo... (F12 (2014) Grupp 4)
+SUMMARY:KFUM Lundagård – OV Helsingbo... (F12 (2014) Grupp 4)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
 END:VEVENT
