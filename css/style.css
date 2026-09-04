@@ -5228,6 +5228,27 @@ button.welcome-cta-secondary {
   }
   .bottom-minimize .bottom-tab-icon-svg { width: 18px; height: 18px; }
 
+  /* FAST MINIMERAD meny: då ÄR den tunna raden menyn, och ligger kvar i
+     flödet inuti hosten. Klistrad, men utan att någonsin byta höjd — raden är
+     45 px i alla lägen, så det finns ingenting att kompensera och inget att
+     rycka till av. Överst på sidan hamnar den under sidhuvudet i stället för
+     ovanpå det, och den är framme direkt: utan detta fanns varken meny eller
+     rad i toppen, och enda vägen tillbaka var att scrolla ner först. */
+  body.menu-minimized #mobileMenuHost {
+    position: sticky;
+    top: 0;
+    z-index: 72;
+  }
+  body.menu-minimized #menuCollapsedBar:not([hidden]) {
+    position: static;
+    /* Hosten bär redan breddtaket och centreringen. Kvarvarande "margin: 0
+       auto" från det fasta läget gjorde raden till ett grid-objekt med
+       automarginaler, och då krymper den till innehållets bredd i stället
+       för att fylla raden. */
+    margin: 0;
+    max-width: none;
+  }
+
   /* FAST lager, inte en rad i flödet: den kan därför tändas och släckas
      under rullning utan att någonting flyttar sig. Det är hela skillnaden
      mot den hopfällbara menyn — inga höjdbyten, ingen scrollkompensation. */

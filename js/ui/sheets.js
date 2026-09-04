@@ -624,7 +624,11 @@ export function closeFilterBackdrop() {
     if (!host) return;
     const överTäcket = sheetMode() && document.body.classList.contains("picker-open");
     if (överTäcket) {
-      host.style.setProperty("position", "relative", "important");
+      // Minimerad meny är redan klistrad (positionerad) — rör inte den, då
+      // skulle relative lossa raden från toppen medan en väljare är öppen.
+      if (getComputedStyle(host).position === "static") {
+        host.style.setProperty("position", "relative", "important");
+      }
       host.style.setProperty("z-index", "85", "important");
     } else {
       host.style.removeProperty("position");

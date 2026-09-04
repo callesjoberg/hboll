@@ -385,7 +385,7 @@ export function initNav(deps) {
         onclick: () => setMenuMinimized(true),
       }, h("span", { class: "bottom-tab-icon", "aria-hidden": "true" },
         bottomMenuIcon("collapse"))));
-    renderCollapsedMenuBar();
+    syncCollapsedBar(true);
     renderCurrentViewBar();
     renderMoreMenuBar();
     const selectionBar = $("#currentSelectionBar");
@@ -447,29 +447,37 @@ export function initNav(deps) {
   // Kvar blir den tunna raden, som ligger som ett FAST lager ovanpå sidan i
   // stället för i flödet. Den kan därför tändas och släckas hur som helst
   // utan att en enda pixel flyttar sig.
-  // Samma regel i båda lägena: raden syns när menyn rullat ur bild. Är menyn
-  // fast minimerad har raderna ingen höjd, och då är det sidhuvudets
-  // underkant som avgör — överst på sidan ser man alltså klubb och cup, inte
-  // en rad ovanpå dem.
+  // Fast minimerad meny: raden ÄR menyn och ska alltid finnas framme, också
+  // överst på sidan. Den ligger då i flödet under sidhuvudet (se style.css)
+  // och skymmer alltså ingenting. I övriga lägen syns den när menyn rullat
+  // ur bild.
   function menuScrolledAway() {
     const host = $("#mobileMenuHost");
     if (!host) return false;
     return host.getBoundingClientRect().bottom <= 4;
   }
 
-  function syncCollapsedBar() {
+  // riktaOm: rita om radens innehåll även om synligheten inte ändrats — vy
+  // eller filter kan ha bytts och etiketten är då inaktuell. Utan flaggan
+  // skulle raden byggas om vid varje scroll-händelse i onödan.
+  function syncCollapsedBar(riktaOm = false) {
     const bar = $("#menuCollapsedBar");
     if (!bar) return;
-    const visible = sheetMode() && menuScrolledAway();
-    if (bar.hidden === !visible) return;   // oförändrat: rör inte DOM:en
+    const visible = sheetMode() && (chrome.menuMinimized || menuScrolledAway());
+    const bytteLäge = bar.hidden !== !visible;
     bar.hidden = !visible;
-    renderCollapsedMenuBar();
+    if (!bytteLäge && !riktaOm) return;
+    if (visible) renderCollapsedMenuBar();
+    else bar.replaceChildren();
     syncTopStack();
   }
 
   function setupMenuAutoCollapse() {
-    window.addEventListener("scroll", syncCollapsedBar, { passive: true });
-    window.addEventListener("resize", syncCollapsedBar, { passive: true });
+    // Inte syncCollapsedBar direkt: lyssnaren skickar in händelseobjektet,
+    // som då hade tolkats som riktaOm och byggt om raden vid varje pixel.
+    const vidScroll = () => syncCollapsedBar();
+    window.addEventListener("scroll", vidScroll, { passive: true });
+    window.addEventListener("resize", vidScroll, { passive: true });
   }
 
   // Ett tryck på raden tar dig TILL menyn i stället för att fälla ut en kopia
