@@ -1892,6 +1892,27 @@ input[type="search"]::-webkit-search-cancel-button {
   color: var(--blue);
 }
 
+/* Schemats urvalsrad är IKRYSSBAR: flera brickor kan vara på samtidigt, och
+   understrykningen (som betyder "den här fliken visas") räcker då inte — två
+   understrukna brickor läser som ett fel. Ikryssade får därför en tydlig
+   platta med bock, medan "Alla" behåller flikutseendet eftersom den är ett
+   läge och inte ett av valen. */
+[role="group"] > .table-group-tab.on:not(.selection-all) {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+}
+[role="group"] > .table-group-tab.on:not(.selection-all)::after { content: none; }
+[role="group"] > .table-group-tab.on:not(.selection-all)::before {
+  content: "✓";
+  margin-right: 5px;
+  font-size: 11px;
+}
+/* Urkryssade brickor ska se valbara ut, inte bortglömda. */
+[role="group"] > .table-group-tab:not(.on):not(.selection-all) {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+
 .table-group-tab.on::after {
   content: "";
   position: absolute;

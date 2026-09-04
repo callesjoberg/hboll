@@ -506,8 +506,13 @@ function renderMobileSelectionBar(buttons, kind) {
   selectionBar.replaceChildren(
     h("span", { class: "selection-view-label", "aria-hidden": "true" }, "Visa:"),
     h("div", {
-      class: "selection-tabs-scroll", role: "tablist",
-      "aria-label": "Visa alla eller ett valt lag eller en vald klass",
+      class: "selection-tabs-scroll",
+      // group, inte tablist: i Schema är brickorna ikryssbara växlar
+      // (aria-pressed) och flera kan vara på samtidigt.
+      role: kind === "schema" ? "group" : "tablist",
+      "aria-label": kind === "schema"
+        ? "Visa alla, eller kryssa i de klasser och lag du vill se"
+        : "Visa alla eller en vald grupp",
     }, ...buttons),
     mobileSelectionOrderControls(kind));
   selectionBar.hidden = !chrome.currentMenuOpen;
@@ -527,9 +532,27 @@ export function renderSelectionBar(buttons, kind) {
   subNav.querySelector(".desktop-selection-group")?.remove();
   if (!buttons.length) return;
   subNav.append(h("span", {
-    class: "desktop-selection-group", role: "tablist",
-    "aria-label": "Visa alla eller ett valt lag eller en vald klass",
+    class: "desktop-selection-group",
+    role: kind === "schema" ? "group" : "tablist",
+    "aria-label": kind === "schema"
+      ? "Visa alla, eller kryssa i de klasser och lag du vill se"
+      : "Visa alla eller en vald grupp",
   }, ...buttons));
+}
+
+// Urvalet sparas som en STRÄNG, inte en mängd: "all", "none" eller en
+// kommaseparerad lista med nycklar. Då går den oförändrad genom sparning,
+// delningslänk (?ssel=) och tillbaka-stacken utan att en enda rad utanför
+// den här filen behöver veta att den kan innehålla flera värden. En gammal
+// länk med ett ensamt värde är en lista med ett element.
+function selectedKeys() {
+  const raw = state.schemaSelectionKey || "all";
+  if (raw === "all" || raw === "none") return raw;
+  return new Set(raw.split(",").filter(Boolean));
+}
+
+function setSelectedKeys(set) {
+  state.schemaSelectionKey = set.size ? [...set].join(",") : "none";
 }
 
 function applySchemaSelection(main, matches) {
@@ -557,31 +580,58 @@ function applySchemaSelection(main, matches) {
     });
   }
 
-  // Ett enda val ger samma resultat i "Alla" och i valets egen flik.
+  // Ett enda val ger samma resultat i "Alla" och i valets egen bricka.
   // Visa därför tredje nivån först när det faktiskt finns något att växla.
   if (choices.length < 2) {
     state.schemaSelectionKey = "all";
     renderSelectionBar([], "schema");
     return matches;
   }
-  if (!choices.some((choice) => choice.key === state.schemaSelectionKey)) {
-    state.schemaSelectionKey = "all";
+  // Nycklar som inte längre finns i filtret städas bort; blir inget kvar
+  // faller vi tillbaka på alla i stället för att visa en tom vy man inte
+  // valt själv.
+  let valda = selectedKeys();
+  if (valda instanceof Set) {
+    const giltiga = new Set(choices.map((c) => c.key));
+    valda = new Set([...valda].filter((k) => giltiga.has(k)));
+    if (!valda.size) state.schemaSelectionKey = "all";
+    else setSelectedKeys(valda);
   }
-  const allChoices = [{ key: "all", label: "Alla", title: "Alla valda matcher" }, ...choices];
-  const buttons = () => allChoices.map((choice) => h("button", {
-    class: "table-group-tab" + (choice.key === state.schemaSelectionKey ? " on" : ""),
-    type: "button", role: "tab",
-    "aria-selected": String(choice.key === state.schemaSelectionKey),
-    title: choice.title, "aria-label": choice.title,
-    onclick: () => {
-      state.schemaSelectionKey = choice.key;
-      saveUi(); renderContent();
-    },
-  }, choice.label));
-  renderSelectionBar(buttons(), "schema");
-  if (state.schemaSelectionKey === "all") return matches;
-  const active = choices.find((choice) => choice.key === state.schemaSelectionKey);
-  return active ? matches.filter(active.matches) : matches;
+
+  const alltValt = state.schemaSelectionKey === "all";
+  const inget = state.schemaSelectionKey === "none";
+  const isOn = (key) => alltValt || (valda instanceof Set && valda.has(key));
+  const toggla = (key) => {
+    // Från "alla" betyder första trycket "bara den här" — annars hade man
+    // fått bocka ur allt man inte ville se, ett i taget.
+    const bas = alltValt ? new Set() : new Set(valda instanceof Set ? valda : []);
+    if (bas.has(key)) bas.delete(key);
+    else bas.add(key);
+    // Alla ibockade är samma sak som "alla", och sparas som det.
+    if (bas.size === choices.length) state.schemaSelectionKey = "all";
+    else setSelectedKeys(bas);
+    saveUi(); renderContent();
+  };
+
+  const buttons = [
+    h("button", {
+      class: "table-group-tab selection-all" + (alltValt ? " on" : ""),
+      type: "button", "aria-pressed": String(alltValt),
+      title: "Alla valda matcher",
+      onclick: () => { state.schemaSelectionKey = "all"; saveUi(); renderContent(); },
+    }, "Alla"),
+    ...choices.map((choice) => h("button", {
+      class: "table-group-tab" + (isOn(choice.key) ? " on" : ""),
+      type: "button", "aria-pressed": String(isOn(choice.key)),
+      title: choice.title, "aria-label": choice.title,
+      onclick: () => toggla(choice.key),
+    }, choice.label)),
+  ];
+  renderSelectionBar(buttons, "schema");
+
+  if (alltValt) return matches;
+  if (inget) return [];
+  return matches.filter((m) => choices.some((c) => valda.has(c.key) && c.matches(m)));
 }
 
 export function renderSchema(main) {
@@ -721,6 +771,15 @@ export function renderSchema(main) {
   const schemaMatches = (automaticMatches || filtered()).filter(matchesViewFilter);
   const list = sorted(applySchemaSelection(main, schemaMatches));
   if (!list.length) {
+    if (state.schemaSelectionKey === "none") {
+      main.append(h("div", { class: "banner" },
+        h("p", null, "Inga klasser eller lag är ibockade."),
+        h("button", {
+          class: "btn", type: "button",
+          onclick: () => { state.schemaSelectionKey = "all"; saveUi(); renderContent(); },
+        }, "Visa alla")));
+      return;
+    }
     if (state.scope === "club" && !scoped().length && state.matches.length) {
       main.append(h("div", { class: "banner" },
         h("p", null, state.favoriteClub + " verkar inte ha några matcher i " +
