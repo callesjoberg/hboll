@@ -442,6 +442,10 @@ HB.shortCat = shortCat;
     // per-cup-filtren i saveUi()/loadUi()).
     theme: ["auto", "light", "dark"].includes(storageGet("hb:theme"))
       ? storageGet("hb:theme") : "auto",                    // light | dark | auto
+    // Färgtema. Tomt = appens egna färger; övriga se :root[data-palette] i
+    // style.css. Ljust/mörkt gäller inom vald palett.
+    palette: ["parkett", "matchur", "beach"].includes(storageGet("hb:palette"))
+      ? storageGet("hb:palette") : "",
     teamColors: storageGet("hb:teamColors") !== "off",
     breakMinutes: storageNumber("hb:breakMinutes", 0, 0, 240), // 0 = av
     matchMinutes: storageNumber("hb:matchMinutes", 30, 1, 240), // schemarutans längd
@@ -507,6 +511,7 @@ HB.shortCat = shortCat;
 
   function applyTheme() {
     document.documentElement.dataset.theme = state.theme === "auto" ? "" : state.theme;
+    document.documentElement.dataset.palette = state.palette || "";
   }
 
   // Bygger om HB.CLUB.pattern från den valfria favoritklubben i inställ-
@@ -519,6 +524,7 @@ HB.shortCat = shortCat;
 
   function saveSettings() {
     persist("hb:theme", state.theme);
+    persist("hb:palette", state.palette || "");
     // Skriv inte nyckeln förrän klubben faktiskt valts — annars skulle ett
     // temabyte göra att nästa sidladdning tror att Alingsås HK är valt
     // och visa den klubbens märke för en besökare som aldrig valt.
@@ -2183,6 +2189,29 @@ HB.shortCat = shortCat;
       state.theme = b.dataset.themeOpt;
       saveSettings();
       syncThemeBtns();
+    }));
+
+    const paletteBtns = $$("#paletteSeg [data-palette-opt]");
+    const syncPaletteBtns = () => {
+      paletteBtns.forEach((b) => {
+        const vald = (b.dataset.paletteOpt || "") === (state.palette || "");
+        b.classList.toggle("on", vald);
+        b.setAttribute("aria-checked", String(vald));
+        // Provet målas från knappens egna data-attribut i stället för av en
+        // regel per palett: lägger man till en palett i CSS:en räcker det
+        // att lägga till knappen med sina fyra färger.
+        b.style.setProperty("--sw-paper", b.dataset.pPaper);
+        b.style.setProperty("--sw-card", b.dataset.pCard);
+        b.style.setProperty("--sw-accent", b.dataset.pAccent);
+        b.style.setProperty("--sw-mark", b.dataset.pMark);
+      });
+    };
+    syncPaletteBtns();
+    paletteBtns.forEach((b) => b.addEventListener("click", () => {
+      state.palette = b.dataset.paletteOpt || "";
+      applyTheme();
+      saveSettings();
+      syncPaletteBtns();
     }));
 
     const colorsBox = $("#teamColorsToggle");

@@ -106,6 +106,252 @@
   --orange: #c8660a;
 }
 
+/* Färgproverna i inställningarna: en miniatyr av varje palett i stället för
+   en färgruta. Ytan, kortet, accenten och märkesfärgen sitter i samma
+   inbördes förhållande som i appen, så provet svarar på "hur kommer det se
+   ut" och inte bara "vilken färg heter det". */
+.palette-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.palette-swatch {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 7px 7px 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.palette-swatch::before {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 34px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--sw-accent) 25%, transparent);
+  /* Kortet som en remsa över ytan, accenten som en list till vänster och
+     märkesfärgen som en prick — samma anatomi som ett matchkort. */
+  background:
+    radial-gradient(circle at 78% 30%, var(--sw-mark) 0 4px, rgba(0, 0, 0, 0) 5px),
+    linear-gradient(to right, var(--sw-accent) 0 4px, var(--sw-card) 4px 100%) center/100% 14px no-repeat,
+    var(--sw-paper);
+}
+.palette-swatch.on {
+  border-color: var(--blue);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+.palette-swatch:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* --- färgteman -----------------------------------------------------------
+   Varje palett byter ytfamilj (paper/card/line/ink/meny) och accent, men
+   låter LIVE rött och VINST grönt behålla sin innebörd — de är status, inte
+   dekor, och ska betyda samma sak i alla teman.
+
+   Kaskaden är densamma som för ljust/mörkt ovan, och i samma ordning:
+   palettens ljusa värden -> OS-preferens mörkt (om användaren inte tvingat
+   ljust) -> manuellt valt mörkt (vinner alltid). Utan den ordningen skulle
+   ett manuellt mörkt läge tappa paletten så fort OS:et stod på ljust.
+
+   Namnen kommer ur cupernas egen värld: parketten i hallen, matchuret på
+   väggen, och beachcuperna appen faktiskt täcker (Åhus, Bua, Göteborg
+   Beachfestival). */
+
+/* Parkett — hallgolvets björk, planlinjernas kobolt, sargens vinröda. */
+:root[data-palette="parkett"] {
+  --ink: #2b2118;
+  --ink-soft: #6b5b4a;
+  --blue: #1d5bb8;
+  --blue-deep: #143f80;
+  --yellow: #e8a33d;
+  --paper: #f7f1e6;
+  --card: #fffdf8;
+  --line: #e4d8c4;
+  --menu-surface: #efe4d1;
+  --menu-line: #cbb695;
+  --menu-shadow: 0 4px 14px rgba(70, 50, 25, 0.16);
+  --menu-fade: rgba(70, 50, 25, 0.32);
+  --live: #c3352b;
+  --won: #2f7d3f;
+  --shadow: 0 1px 3px rgba(70, 50, 25, 0.10);
+  --purple: #7a4fbf;
+  --orange: #c26a12;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="parkett"]:not([data-theme="light"]) {
+    --ink: #f2e7d8;
+    --ink-soft: #b39d84;
+    --blue: #7fb0f2;
+    --blue-deep: #b6d1f7;
+    --yellow: #f0b357;
+    --paper: #1a1410;
+    --card: #241c16;
+    --line: #3a2e24;
+    --menu-surface: #2e241c;
+    --menu-line: #5b4839;
+    --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.45);
+    --menu-fade: rgba(0, 0, 0, 0.6);
+    --live: #ff7d70;
+    --won: #6fce7f;
+    --shadow: none;
+    --purple: #c39cf5;
+    --orange: #eb9445;
+  }
+}
+:root[data-palette="parkett"][data-theme="dark"] {
+  --ink: #f2e7d8;
+  --ink-soft: #b39d84;
+  --blue: #7fb0f2;
+  --blue-deep: #b6d1f7;
+  --yellow: #f0b357;
+  --paper: #1a1410;
+  --card: #241c16;
+  --line: #3a2e24;
+  --menu-surface: #2e241c;
+  --menu-line: #5b4839;
+  --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.45);
+  --menu-fade: rgba(0, 0, 0, 0.6);
+  --live: #ff7d70;
+  --won: #6fce7f;
+  --shadow: none;
+  --purple: #c39cf5;
+  --orange: #eb9445;
+}
+
+/* Matchur — resultattavlan: grafit och bärnsten, hög kontrast och nästan
+   ingen färg utöver siffrornas. */
+:root[data-palette="matchur"] {
+  --ink: #14161a;
+  --ink-soft: #55606d;
+  /* Mörkare än den såg ut att behöva: mot menyytan gav en ljusare ton 4.21,
+     under AA:s 4.5 för brödtext, och menyetiketterna är brödtextstora. */
+  --blue: #0d64ad;
+  --blue-deep: #0a4c85;
+  --yellow: #e2960c;
+  --paper: #f2f4f7;
+  --card: #ffffff;
+  --line: #d8dee6;
+  --menu-surface: #e3e8ee;
+  --menu-line: #a8b4c2;
+  --menu-shadow: 0 4px 14px rgba(20, 22, 26, 0.14);
+  --menu-fade: rgba(20, 22, 26, 0.32);
+  --live: #cc2a1f;
+  --won: #1f7a3a;
+  --shadow: 0 1px 3px rgba(20, 22, 26, 0.09);
+  --purple: #7145c9;
+  --orange: #c05f0a;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="matchur"]:not([data-theme="light"]) {
+    --ink: #f4f6f8;
+    --ink-soft: #97a3b2;
+    --blue: #66b2ff;
+    --blue-deep: #a8d2ff;
+    --yellow: #ffb527;
+    --paper: #08090b;
+    --card: #131619;
+    --line: #232830;
+    --menu-surface: #16191d;
+    --menu-line: #3c444f;
+    --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.6);
+    --menu-fade: rgba(0, 0, 0, 0.7);
+    --live: #ff6a5c;
+    --won: #4fd07a;
+    --shadow: none;
+    --purple: #b48cff;
+    --orange: #ff9640;
+  }
+}
+:root[data-palette="matchur"][data-theme="dark"] {
+  --ink: #f4f6f8;
+  --ink-soft: #97a3b2;
+  --blue: #66b2ff;
+  --blue-deep: #a8d2ff;
+  --yellow: #ffb527;
+  --paper: #08090b;
+  --card: #131619;
+  --line: #232830;
+  --menu-surface: #16191d;
+  --menu-line: #3c444f;
+  --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.6);
+  --menu-fade: rgba(0, 0, 0, 0.7);
+  --live: #ff6a5c;
+  --won: #4fd07a;
+  --shadow: none;
+  --purple: #b48cff;
+  --orange: #ff9640;
+}
+
+/* Beach — sand, hav och kvällssol. För cuperna som faktiskt spelas i den. */
+:root[data-palette="beach"] {
+  --ink: #143038;
+  --ink-soft: #4d7079;
+  --blue: #04738c;
+  --blue-deep: #03505f;
+  --yellow: #f0a92b;
+  --paper: #fdf6e9;
+  --card: #ffffff;
+  --line: #e2dcc9;
+  --menu-surface: #e8f0ef;
+  --menu-line: #a9c4c4;
+  --menu-shadow: 0 4px 14px rgba(20, 48, 56, 0.15);
+  --menu-fade: rgba(20, 48, 56, 0.32);
+  --live: #d1452c;
+  --won: #2c7f5c;
+  --shadow: 0 1px 3px rgba(20, 48, 56, 0.09);
+  --purple: #7b5bc4;
+  --orange: #cf6c1b;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="beach"]:not([data-theme="light"]) {
+    --ink: #e8f2f2;
+    --ink-soft: #93b0b4;
+    --blue: #4dc3d9;
+    --blue-deep: #9fe1ec;
+    --yellow: #ffc352;
+    --paper: #0a1a20;
+    --card: #12262d;
+    --line: #1e373f;
+    --menu-surface: #163038;
+    --menu-line: #38606b;
+    --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.45);
+    --menu-fade: rgba(0, 0, 0, 0.6);
+    --live: #ff7a5e;
+    --won: #58d19b;
+    --shadow: none;
+    --purple: #b39bf0;
+    --orange: #ff9a4d;
+  }
+}
+:root[data-palette="beach"][data-theme="dark"] {
+  --ink: #e8f2f2;
+  --ink-soft: #93b0b4;
+  --blue: #4dc3d9;
+  --blue-deep: #9fe1ec;
+  --yellow: #ffc352;
+  --paper: #0a1a20;
+  --card: #12262d;
+  --line: #1e373f;
+  --menu-surface: #163038;
+  --menu-line: #38606b;
+  --menu-shadow: 0 5px 16px rgba(0, 0, 0, 0.45);
+  --menu-fade: rgba(0, 0, 0, 0.6);
+  --live: #ff7a5e;
+  --won: #58d19b;
+  --shadow: none;
+  --purple: #b39bf0;
+  --orange: #ff9a4d;
+}
+
 * { box-sizing: border-box; }
 
 /* overflow-x: hidden — säkerhetsnät mot att NÅGOT element (en bred

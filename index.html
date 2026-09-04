@@ -146,7 +146,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260904c">
+  <link rel="stylesheet" href="css/style.css?v=20260904h">
 </head>
 <body>
 
@@ -287,6 +287,27 @@
         <button class="chip" type="button" data-theme-opt="light">Ljust</button>
         <button class="chip" type="button" data-theme-opt="dark">Mörkt</button>
         <button class="chip" type="button" data-theme-opt="auto">Auto</button>
+      </div>
+      <!-- Färgtema. Varje knapp visar sin egen palett i miniatyr — ytan,
+           accenten och texttonen — så man ser vad man väljer i stället för
+           att gissa ur ett namn. Ljust/mörkt ovan gäller oavsett palett. -->
+      <div class="palette-picker" id="paletteSeg" role="radiogroup" aria-label="Färgtema">
+        <button class="palette-swatch" type="button" role="radio" data-palette-opt=""
+                data-p-paper="#f5f7fa" data-p-card="#ffffff" data-p-accent="#1f5fbf" data-p-mark="#f6c410">
+          <span class="palette-name">Klassisk</span>
+        </button>
+        <button class="palette-swatch" type="button" role="radio" data-palette-opt="parkett"
+                data-p-paper="#f7f1e6" data-p-card="#fffdf8" data-p-accent="#1d5bb8" data-p-mark="#e8a33d">
+          <span class="palette-name">Parkett</span>
+        </button>
+        <button class="palette-swatch" type="button" role="radio" data-palette-opt="matchur"
+                data-p-paper="#f2f4f7" data-p-card="#ffffff" data-p-accent="#0f6fbf" data-p-mark="#e2960c">
+          <span class="palette-name">Matchur</span>
+        </button>
+        <button class="palette-swatch" type="button" role="radio" data-palette-opt="beach"
+                data-p-paper="#fdf6e9" data-p-card="#ffffff" data-p-accent="#04738c" data-p-mark="#f0a92b">
+          <span class="palette-name">Beach</span>
+        </button>
       </div>
     </div>
 
@@ -432,6 +453,6 @@
   <script src="js/weather.js"></script>
   <script src="js/qr.js"></script>
   <script src="js/welcome.js?v=20260820i"></script>
-  <script type="module" src="js/app.js?v=20260904c"></script>
+  <script type="module" src="js/app.js?v=20260904h"></script>
 </body>
 </html>
