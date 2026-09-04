@@ -2574,6 +2574,9 @@ dialog.match-dialog {
     position: fixed;
     margin: 0;
     inset: 0;
+    /* Helskärm ska inte ha ram: den generella dialog-regeln sätter 1px, och
+       med radien nollställd blev det en hårfin linje runt hela skärmkanten. */
+    border: 0;
     z-index: 60;
     max-width: 100%;
     width: 100%;
@@ -2599,6 +2602,154 @@ dialog.match-dialog {
 }
 
 .dialog-x:hover { color: var(--ink); }
+
+/* --- matchark ------------------------------------------------------------
+   Ett ark för en match, med flikar för hemmalag, bortalag och plan. Rubriken
+   är densamma oavsett vilken av de tre ingångarna man kom från, så man alltid
+   vet vilken match man står i.
+
+   Formen är lånad från appens egen värld och inte hittad på: klasschippet och
+   den kondenserade typografin är samma som på matchkorten och i dagrubrikerna,
+   så arket läser som en förstoring av kortet man just tryckte på — inte som en
+   ny sorts yta. */
+.match-sheet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -18px -18px 10px;
+  padding: 4px 6px 4px 4px;
+  border-bottom: 1px solid var(--line);
+}
+/* Tillbaka som ord, inte bara en pil: på en helskärmsyta är det en väg ut ur
+   en vy, och då ska den heta något. Pilen ritas i CSS så den sitter ihop med
+   texten som en enhet. */
+.match-sheet-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.match-sheet-back::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.match-sheet-head { margin-bottom: 14px; }
+.match-sheet-eyebrow {
+  margin: 0 0 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.match-sheet-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.match-sheet-teams { flex: 1; min-width: 0; }
+.match-sheet-team {
+  font-family: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Vinnaren bär tyngden, den egna klubben färgen — samma två signaler som på
+   matchkortet, så blicken hittar rätt utan att lära om. */
+.match-sheet-team.won { color: var(--ink); }
+.match-sheet-team.us { color: var(--blue); }
+.match-sheet-score {
+  flex: 0 0 auto;
+  font-family: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+.match-sheet-when {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.match-sheet-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 4px -18px 0;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.match-sheet-tabs::-webkit-scrollbar { display: none; }
+.match-sheet-tab {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 45%;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.match-sheet-tab.on {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+.match-sheet-tabbody { padding-top: 12px; }
+/* Rubriken sitter redan i arket — lagnamnet behöver inte upprepas överst i
+   flikens eget block. */
+.match-sheet-tabbody .team-stat-block > h3 { display: none; }
+
+/* På dator är arket en centrerad kortmodal, och där är krysset det etablerade
+   sättet att stänga. "Tillbaka" hör till helskärmsvyn på mobil, där man
+   backar ut ur något man gick in i. */
+@media (min-width: 701px) {
+  .match-sheet-back { display: none; }
+  .match-sheet-bar { justify-content: flex-end; border-bottom: 0; margin-bottom: 4px; }
+}
+@media (max-width: 700px) {
+  .match-sheet .dialog-x { display: none; }
+  /* Arket bär ingen egen toppfyllning — raden gör det. Med fyllning kvar och
+     en negativ marginal för att kompensera hamnade raden fel: sticky räknar
+     top:0 från INNEHÅLLSlådan, alltså nedanför fyllningen, medan marginalen
+     drog flödet uppåt. Raden sköts då ner över rubriken den skulle stå
+     ovanför. */
+  dialog.match-dialog.match-sheet { padding-top: 0; }
+  .match-sheet-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 0 -18px 10px;
+    padding-top: max(4px, env(safe-area-inset-top));
+    background: var(--card);
+  }
+}
 
 .match-dialog-head {
   display: flex;

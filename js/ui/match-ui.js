@@ -307,27 +307,116 @@ function previousMeetingsBlock(m) {
       matchTimeLabel(pm, fmtDay) + ": " + pm.home.name + " " + (scoreText(pm.res) || "–") + " " + pm.away.name))));
 }
 
-export function openTeamQuickView(m, team) {
-  const dlg = h("dialog", { class: "match-dialog" },
-    h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
-    teamStatBlock(m, team));
-  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-  dlg.addEventListener("close", () => dlg.remove());
-  document.body.append(dlg); showMatchDialog(dlg);
+// ETT ark för en match, med flikar. Tidigare fanns tre olika dialoger med
+// tre olika utseenden: matchen (full rubrik), laget (ingen rubrik alls, bara
+// ett statistikblock) och planen (egen rubrik plus en filterknapp). De nås
+// från samma matchkort och handlar om samma match, men såg ut att komma från
+// tre olika appar — och man kunde inte gå mellan dem utan att backa ut först.
+//
+// Nu: samma rubrik i alla lägen, så man alltid vet vilken match man är inne
+// i, och flikar för hemmalag, bortalag och plan. Ingången avgör bara vilken
+// flik som är förvald.
+function matchSheetHeader(m) {
+  const sc = scoreText(m.res);
+  const sida = (team, motpart) => h("div", {
+    class: "match-sheet-team" +
+      (isClubName(team.name) ? " us" : "") +
+      (m.res && m.res.fin && m.res.winner &&
+        ((m.res.winner === "home") === (team === m.home)) ? " won" : ""),
+  }, h("span", { class: "match-sheet-team-name" }, team.name));
+  return h("div", { class: "match-sheet-head" },
+    h("p", { class: "match-sheet-eyebrow" },
+      [shortCat(m.catName), m.divName, m.roundName].filter(Boolean).join(" · ")),
+    h("div", { class: "match-sheet-score-row" },
+      h("div", { class: "match-sheet-teams" }, sida(m.home), sida(m.away)),
+      sc ? h("div", { class: "match-sheet-score" }, sc) : null),
+    h("p", { class: "match-sheet-when" },
+      [hasScheduledStart(m) ? matchTimeLabel(m, fmtDayLong) : "Tid ej satt",
+        m.arena].filter(Boolean).join(" · ")));
 }
 
-export function openArenaQuickView(arena) {
-  const matches = state.matches.filter((m) => m.arena === arena).sort((a, b) => a.start - b.start);
-  const dlg = h("dialog", { class: "match-dialog" },
-    h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
-    h("div", { class: "match-dialog-head" }, h("span", { class: "cat" }, arena),
-      h("span", null, matches.length + " matcher")),
-    h("button", { class: "btn small", type: "button",
-      onclick: () => { dlg.close(); filterByArena(arena); } }, "Filtrera schemat till " + arena),
-    h("div", { class: "arena-quick-list" }, matches.map(matchCard)));
+function arenaTabBody(m, stäng) {
+  const arena = m.arena;
+  const matcher = state.matches
+    .filter((x) => x.arena === arena)
+    .sort((a, b) => a.start - b.start);
+  return h("div", { class: "match-sheet-body" },
+    h("p", { class: "muted" }, matcher.length + " matcher på " + arena),
+    h("button", {
+      class: "btn small", type: "button",
+      onclick: () => { stäng(); filterByArena(arena); },
+    }, "Filtrera schemat till " + arena),
+    h("div", { class: "arena-quick-list" }, matcher.map(matchCard)));
+}
+
+export function openMatchSheet(m, förvaldFlik) {
+  const flikar = [
+    { key: "home", label: m.home.name, body: () => teamStatBlock(m, m.home, "home") },
+    { key: "away", label: m.away.name, body: () => teamStatBlock(m, m.away, "away") },
+  ];
+  if (m.arena) {
+    flikar.push({ key: "arena", label: m.arena, body: () => arenaTabBody(m, () => dlg.close()) });
+  }
+  // Är ett av lagen din klubb är det nästan alltid det du är ute efter.
+  const klubbFlik = isClubName(m.home.name) ? "home"
+    : isClubName(m.away.name) ? "away" : null;
+  let aktiv = flikar.some((f) => f.key === förvaldFlik)
+    ? förvaldFlik : (klubbFlik || "home");
+
+  const kropp = h("div", { class: "match-sheet-tabbody" });
+  const tabbrad = h("div", {
+    class: "match-sheet-tabs", role: "tablist",
+    "aria-label": "Lag och plan för matchen",
+  });
+  const rita = () => {
+    tabbrad.replaceChildren(...flikar.map((f) => h("button", {
+      class: "match-sheet-tab" + (f.key === aktiv ? " on" : ""),
+      type: "button", role: "tab", "aria-selected": String(f.key === aktiv),
+      title: f.label,
+      onclick: () => { aktiv = f.key; rita(); },
+    }, f.label)));
+    const vald = flikar.find((f) => f.key === aktiv) || flikar[0];
+    kropp.replaceChildren(vald.body());
+  };
+
+  const dlg = h("dialog", { class: "match-dialog match-sheet" },
+    h("div", { class: "match-sheet-bar" },
+      h("button", {
+        class: "match-sheet-back", type: "button",
+        onclick: () => dlg.close(),
+      }, "Tillbaka"),
+      h("button", {
+        class: "dialog-x", type: "button", "aria-label": "Stäng",
+        onclick: () => dlg.close(),
+      }, "×")),
+    matchSheetHeader(m),
+    playoffSourceGroupsBlock(m), previousMeetingsBlock(m),
+    tabbrad, kropp);
+  rita();
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   dlg.addEventListener("close", () => dlg.remove());
   document.body.append(dlg); showMatchDialog(dlg);
+  return dlg;
+}
+
+// Ingångarna från matchkorten pekar alla på samma ark — bara förvald flik
+// skiljer dem åt.
+export function openTeamQuickView(m, team) {
+  openMatchSheet(m, m.away && team && m.away.id === team.id ? "away" : "home");
+}
+
+export function openArenaQuickView(m, arena) {
+  // Bakåtkompatibelt: äldre anrop skickade bara arenanamnet. Då finns ingen
+  // match att sätta rubrik på, så vi plockar den första på planen.
+  if (typeof m === "string") {
+    const namn = m;
+    const första = state.matches.find((x) => x.arena === namn);
+    if (!första) return;
+    openMatchSheet(första, "arena");
+    return;
+  }
+  openMatchSheet(m, "arena");
+  void arena;
 }
 
 export function openMatchLogDialog() {
@@ -443,18 +532,7 @@ function playoffSourceGroupsBlock(match) {
 }
 
 export function openMatchDialog(m) {
-  const sc = scoreText(m.res);
-  const dlg = h("dialog", { class: "match-dialog" },
-    h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),
-    h("div", { class: "match-dialog-head" }, h("span", { class: "cat" }, shortCat(m.catName)),
-      m.divName ? h("span", { class: "div" }, m.divName) : null,
-      h("span", null, matchTimeLabel(m, fmtDayLong)), m.arena ? h("span", null, m.arena) : null,
-      sc ? h("span", { class: "match-dialog-score" }, sc) : null),
-    teamStatBlock(m, m.home, "home"), teamStatBlock(m, m.away, "away"),
-    playoffSourceGroupsBlock(m), previousMeetingsBlock(m));
-  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-  dlg.addEventListener("close", () => dlg.remove());
-  document.body.append(dlg); showMatchDialog(dlg);
+  openMatchSheet(m);
 }
 
 export function matchCard(m) {
@@ -492,9 +570,9 @@ export function matchCard(m) {
       h("span", { class: "match-head-right" },
         m.arena ? h("span", { class: "arena arena-link", role: "button", tabindex: "0",
           title: "Visa alla matcher på " + m.arena,
-          onclick: (e) => { e.stopPropagation(); openArenaQuickView(m.arena); },
+          onclick: (e) => { e.stopPropagation(); openArenaQuickView(m, m.arena); },
           onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault(); e.stopPropagation(); openArenaQuickView(m.arena);
+            e.preventDefault(); e.stopPropagation(); openArenaQuickView(m, m.arena);
           } },
         }, m.arena) : h("span", { class: "arena" }, m.arena)),
       weather ? h("span", { class: "weather", title: weather.temp + "°C" },
