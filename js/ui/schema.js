@@ -148,12 +148,20 @@ function renderTimeline(main, list) {
       }
     }
     prevGroupStart = timed ? g.start : null;
-    if (timed && !nowPlaced && gDay === today && g.start > now) {
+    // Linjen ska passera en tidslucka först när matcherna i den är SLUT,
+    // inte i samma sekund som de börjar. Utan speltiden hoppade den förbi
+    // hela blocket en minut efter avkast, och en match som pågick låg
+    // plötsligt ovanför "nu".
+    const slutar = g.start + state.matchMinutes * 60000;
+    if (timed && !nowPlaced && gDay === today && slutar > now) {
       nowPlaced = true;
+      const pågår = g.start <= now;
       wrap.append(h("div", { class: "nowline", id: "nowline" },
         h("span", null,
           "NU " + fmtTime.format(new Date(now)) +
-          " · nästa match " + countdownText(g.start))));
+          (pågår
+            ? " · pågår, slutar " + fmtTime.format(new Date(slutar))
+            : " · nästa match " + countdownText(g.start)))));
     }
     wrap.append(h("div", { class: "slot" },
       h("div", { class: "rail" },

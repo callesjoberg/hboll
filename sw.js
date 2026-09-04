@@ -12,7 +12,7 @@
 // handlern nedan raderar alla cacher med ett ANNAT namn, så ett nytt
 // namn är det enda som garanterat tömmer en gammal, envis skalcache
 // (nätverk-först räcker inte om ett enskilt anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-v49";
+const CACHE_NAME = "hboll-shell-v50";
 const SHELL_FILES = [
   "./",
   "./index.html",
