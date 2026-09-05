@@ -2356,20 +2356,33 @@ function skyttRader(doc, idx) {
       lagnamn: (lag && lag.namn) || "—", klass: (lag && lag.klass) || "",
     });
   }
-  for (const mål of Object.values(skyttLive || {})) {
+  // Mål ur pågående matcher. Matchen måste räknas EN gång per spelare, inte
+  // en gång per mål — och den saknas i CI-databasen, som bara innehåller
+  // färdigspelade matcher. Utan det här visade listan "2 matcher" för en
+  // spelare vars eget kort räknade upp tre.
+  for (const [matchId, mål] of Object.entries(skyttLive || {})) {
+    const räknadIMatchen = new Set();
     for (const g of mål) {
       const nyckel = g.lagId + "|" + g.namn;
       let rad = rader.get(nyckel);
       if (!rad) {
         const lag = idx.get(g.lagId);
         rad = { lagId: g.lagId, namn: g.namn, nr: g.nr, mål: 0, matcher: 0, live: 0,
-          lagnamn: (lag && lag.namn) || "—", klass: (lag && lag.klass) || "" };
+          lagnamn: (lag && lag.namn) || "—", klass: (lag && lag.klass) || "",
+          liveMatcher: new Set() };
         rader.set(nyckel, rad);
       }
       rad.mål++;
       rad.live++;
       if (g.nr != null) rad.nr = g.nr;
+      if (!räknadIMatchen.has(nyckel)) {
+        räknadIMatchen.add(nyckel);
+        (rad.liveMatcher || (rad.liveMatcher = new Set())).add(matchId);
+      }
     }
+  }
+  for (const rad of rader.values()) {
+    if (rad.liveMatcher) rad.matcher += rad.liveMatcher.size;
   }
   return [...rader.values()].sort((a, b) => b.mål - a.mål ||
     a.namn.localeCompare(b.namn, "sv"));
@@ -2448,10 +2461,16 @@ function skyttInnehall(doc, idx, rita, el) {
     (!fråga || r.namn.toLowerCase().includes(fråga) ||
       r.lagnamn.toLowerCase().includes(fråga)));
 
-  el.topp.textContent = doc.goals
-    ? doc.goals.named + " av " + doc.goals.total + " mål i cupen har " +
-      "registrerad målskytt. Resten syns inte här."
-    : "";
+  const liveRader = alla.filter((r) => r.live).length;
+  el.topp.replaceChildren(
+    doc.goals
+      ? doc.goals.named + " av " + doc.goals.total + " mål i cupen har " +
+        "registrerad målskytt. Resten syns inte här."
+      : "",
+    // Röd siffra behöver en förklaring där den kan uppstå — annars ser den
+    // ut som en varning.
+    liveRader ? h("span", { class: "skytt-live-nyckel" },
+      " Rött målantal = spelaren har gjort mål i en match som pågår just nu.") : null);
 
   el.klassrad.replaceChildren(
     ...[["", "Alla klasser"], ...klasser.map((k) => [k, k])].map(([v, etikett]) =>
@@ -2465,7 +2484,10 @@ function skyttInnehall(doc, idx, rita, el) {
     class: "skytt-rad" + (isClubName(r.lagnamn) ? " ours" : ""),
   },
   h("span", { class: "skytt-plats" }, String(i + 1)),
-  h("span", { class: "skytt-mal" + (r.live ? " live" : "") }, String(r.mål)),
+  h("span", {
+    class: "skytt-mal" + (r.live ? " live" : ""),
+    ...(r.live ? { title: r.live + " av målen gjordes i en match som pågår nu" } : {}),
+  }, String(r.mål)),
   h("span", {
     class: "skytt-namn spelar-lank", role: "button", tabindex: "0",
     title: "Visa " + r.namn + "s mål i cupen",
@@ -2479,7 +2501,8 @@ function skyttInnehall(doc, idx, rita, el) {
   r.nr != null ? h("span", { class: "feed-nr" }, String(r.nr)) : null,
   r.namn,
   h("span", { class: "skytt-lag" }, r.lagnamn + (r.klass ? " · " + r.klass : ""))),
-  h("span", { class: "skytt-matcher" }, r.matcher ? r.matcher + " m" : "")));
+  h("span", { class: "skytt-matcher" },
+    r.matcher ? r.matcher + (r.matcher === 1 ? " match" : " matcher") : "")));
 
   if (!träffar.length) noder.push(h("p", { class: "muted" }, "Ingen träff."));
   if (träffar.length > visade.length) {

@@ -90,6 +90,7 @@ def match_query(tid, limit, offset):
     # SKILJER sig från start (se normalize nedan).
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
             "{matches:[{... on Match:{start:{},end:{},video:{},liveStart:{},round:{},roundRank:{},"
+            "referees:[{referee:{}}],"
             "arena:{completeName:{},fieldName:{},"
             "location:{name:{},address:{street:{},city:{},lat:{},lng:{}}}},"
             "nextMatchWinner:{},nextMatchLoser:{},"
@@ -128,6 +129,13 @@ def fetch_store(host, tid):
         for resp in results:
             n = 0
             for k, v in (resp.get("responses") or {}).items():
+                # Listfält (t.ex. referees) har en LISTA i "entity" i
+                # stället för ett objekt. Utan den här grenen faller de
+                # igenom isinstance(..., dict)-villkoret nedan och tappas
+                # tyst — vilket de gjorde i första försöket.
+                if isinstance(v, dict) and isinstance(v.get("entity"), list):
+                    store[k] = v["entity"]
+                    continue
                 if isinstance(v, dict) and isinstance(v.get("entity"), dict):
                     store[k] = v["entity"]
                     if v["entity"].get("__typename") == "Match":
@@ -229,6 +237,17 @@ def normalize(store):
         # från schemat: annars är fältet bara en kopia av start (matchen
         # har inte börjat) och skulle kosta plats i varje snapshot utan
         # att säga något.
+        # Domarnamn. referees är en lista av Match$MatchReferee, som var och
+        # en pekar vidare på en Referee-entitet — två hopp, samma mönster
+        # som klubbadressen. Kostar inget extra: fältet ryms i samma
+        # MatchWindow-fråga som allt annat.
+        domare = []
+        for post in (store.get((e.get("referees") or {}).get("href")) or []):
+            namn = name_of(get(post.get("referee")))
+            if namn and namn not in domare:
+                domare.append(namn)
+        if domare:
+            match["refs"] = domare
         live_start = get(e.get("liveStart")).get("start")
         if live_start and match["start"] and abs(live_start - match["start"]) >= 60000:
             match["started"] = live_start
