@@ -2,11 +2,21 @@
 
 import { hasScheduledStart } from "../time.js";
 
-export function isLive(m, now = Date.now()) {
-  // Yngre klasser rapporterar inga resultat: deras matcher blir stående
-  // "live" med nollor. Räkna bara pågående, ej färdiga, nutida matcher.
-  return !!(hasScheduledStart(m) && m.res && m.res.live && !m.res.fin &&
-    Math.abs(m.start - now) < 6 * 3600000);
+// Cup Managers live-flagga är inte att lita på. Yngre klasser rapporterar
+// aldrig något slutresultat, så deras matcher blir stående "live" med
+// nollor — flaggan sätts vid avspark och släcks först när någon skriver
+// in resultatet, vilket ibland aldrig sker. Klockan får därför avgöra.
+//
+// m.end är matchens faktiska sluttid ur Cup Manager (ren speltid). Saknas
+// den — arkiverade upplagor, ProCup/Gothia — används fallbackMinuter, som
+// anroparen sätter till cupens härledda matchlängd.
+const LIVE_MARGINAL_MS = 15 * 60000; // förlängning och sen inrapportering
+
+export function isLive(m, now = Date.now(), fallbackMinuter = 60) {
+  if (!hasScheduledStart(m) || !m.res || !m.res.live || m.res.fin) return false;
+  if (now < m.start) return false; // kan inte pågå före avspark
+  const slut = m.end || (m.start + fallbackMinuter * 60000);
+  return now < slut + LIVE_MARGINAL_MS;
 }
 
 export function scoreText(res) {

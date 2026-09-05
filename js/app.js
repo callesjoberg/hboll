@@ -1018,7 +1018,12 @@ HB.shortCat = shortCat;
     const currentTtl = refreshTtl(state.matches);
     const fresh = state.matches.length &&
       Date.now() - state.loadedAt < currentTtl;
-    if (fresh && !force) { state.loading = false; render(); return; }
+    // Ett varv liveifyllnad direkt när matcherna finns på skärmen, i
+    // stället för att vänta ut minuttickern. Det är precis vid
+    // sidöppningen skillnaden märks: den lokala cachen kan vara timmar
+    // gammal, och då ska ställningen rättas inom sekunden — inte inom
+    // minuten. liveFill har egen strypning, så extra anrop kostar inget.
+    if (fresh && !force) { state.loading = false; render(); liveFill(); return; }
     state.loading = true;
     state.error = null;
     render();
@@ -1041,6 +1046,7 @@ HB.shortCat = shortCat;
         }
         state.loading = false;
         render();
+        liveFill();
         return;
       }
       const changed = snapshot.ts !== previousDataTs ||
@@ -1087,6 +1093,7 @@ HB.shortCat = shortCat;
     }
     state.loading = false;
     render();
+    liveFill();
   }
 
   // --- liveifyllnad -----------------------------------------------------

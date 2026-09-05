@@ -94,7 +94,7 @@ export function renderHero(main) {
   const isNewCard = heroLastAnimatedIdx !== heroIndex;
   heroLastAnimatedIdx = heroIndex;
   const m = matches[heroIndex];
-  const live = isLive(m);
+  const live = isLive(m, Date.now(), state.matchMinutes);
   const carousel = matches.length > 1;
   const step = (dir) => {
     heroDir = dir;
@@ -686,7 +686,7 @@ function ärNäraITid(m) {
   // Otidsatta matcher har ingen närhet att gradera på — visa dem fullt
   // hellre än att tysta ner dem av en slump.
   if (!hasScheduledStart(m)) return true;
-  if (isLive(m)) return true;
+  if (isLive(m, Date.now(), state.matchMinutes)) return true;
   return näraITid(m.start, matchSlut(m), Date.now());
 }
 
@@ -709,7 +709,7 @@ export function uppdateraKortTäthet() {
 
 export function matchCard(m, spec = {}) {
   const sc = scoreText(m.res);
-  const live = isLive(m);
+  const live = isLive(m, Date.now(), state.matchMinutes);
   const weather = !cup().indoor && hasScheduledStart(m) && (!m.res || !m.res.fin)
     ? HB.weather.at(HB.weather.cached(cup()), m.start) : null;
   const teamEl = (side) => {
