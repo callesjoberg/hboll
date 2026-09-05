@@ -2501,13 +2501,13 @@ function skyttInnehall(doc, idx, rita, el) {
   if (skyttFlik === "utvisningar") {
     el.topp.textContent = "";
     el.klassrad.replaceChildren();
-    el.lista.replaceChildren(...disciplinLista(doc, true).filter(Boolean));
+    el.lista.replaceChildren(...disciplinLista(doc, true, rita).filter(Boolean));
     return;
   }
   if (skyttFlik === "domare") {
     el.topp.textContent = "";
     el.klassrad.replaceChildren();
-    el.lista.replaceChildren(...domarLista(doc, true).filter(Boolean));
+    el.lista.replaceChildren(...domarLista(doc, true, rita).filter(Boolean));
     return;
   }
   if (!doc || !(doc.players || []).length) {
@@ -2586,9 +2586,7 @@ function skyttInnehall(doc, idx, rita, el) {
 // utvisningar det blivit i dem, och hur många av era egna matcher de
 // dömt. Allt räknas ur data som redan finns — domarnamnen ligger i
 // snapshotten, utvisningarna i skyttedatabasen. Inga nya anrop.
-const DOMARE_TOPP = 15;
-
-function domarLista(doc, utanRubrik) {
+function domarLista(doc, utanRubrik, ritaOm) {
   const disc = new Map();
   const fält = (doc && doc.disciplineFields) || [];
   const iAntal = fält.indexOf("penaltiesCount");
@@ -2628,7 +2626,7 @@ function domarLista(doc, utanRubrik) {
       alla.length + " domare har dömt matcher i cupen." +
       (visaUtv ? " Snittet är " + clubMetricNumber.format(cupSnitt) +
         " utvisningar per granskad match." : "")),
-    h("div", { class: "skytt-lista-box" }, alla.slice(0, DOMARE_TOPP).map((r, i) =>
+    h("div", { class: "skytt-lista-box" }, alla.slice(0, skyttVisade).map((r, i) =>
       h("div", { class: "skytt-rad" + (r.egna ? " ours" : "") },
         h("span", { class: "skytt-plats" }, String(i + 1)),
         h("span", { class: "skytt-mal" }, String(r.matcher)),
@@ -2647,15 +2645,17 @@ function domarLista(doc, utanRubrik) {
               : ""))),
         h("span", { class: "skytt-matcher" },
           visaUtv && r.mätta ? clubMetricNumber.format(snitt(r)) + "/match" : "")))),
+    alla.length > skyttVisade ? h("button", {
+      class: "btn small", type: "button",
+      onclick: () => { skyttVisade += SKYTT_STEG; ritaOm(); },
+    }, "Visa fler (" + (alla.length - skyttVisade) + " kvar)") : null,
   ];
 }
 
 // Matcherna med flest utvisningar i cupen. Ritas bara när cupen faktiskt
 // registrerar dem: Örebrocupen gör det (33 av 272 matcher), Göteborg Cup
 // och Hällby inte alls, och då säger en tom lista bara emot sig själv.
-const DISC_TOPP = 10;
-
-function disciplinLista(doc, utanRubrik) {
+function disciplinLista(doc, utanRubrik, ritaOm) {
   const rader = (doc && doc.discipline) || [];
   const fält = (doc && doc.disciplineFields) || [];
   const iAntal = fält.indexOf("penaltiesCount");
@@ -2666,14 +2666,14 @@ function disciplinLista(doc, utanRubrik) {
   const topp = rader
     .map((d) => ({ d, antal: (d.h[iAntal] || 0) + (d.a[iAntal] || 0), m: namn.get(d.m) }))
     .filter((r) => r.antal && r.m)
-    .sort((a, b) => b.antal - a.antal)
-    .slice(0, DISC_TOPP);
+    .sort((a, b) => b.antal - a.antal);
+  const visade = topp.slice(0, skyttVisade);
   if (!topp.length) return [];
   return [
     utanRubrik ? null : h("h3", { class: "skytt-rubrik" }, "Flest utvisningar"),
     h("p", { class: "muted skytt-topp" },
       rader.length + " av cupens matcher har registrerade utvisningar eller kort."),
-    h("div", { class: "skytt-lista-box" }, topp.map((r, i) => h("div", {
+    h("div", { class: "skytt-lista-box" }, visade.map((r, i) => h("div", {
       class: "skytt-rad" + (isClubName(r.m.home.name) || isClubName(r.m.away.name) ? " ours" : ""),
       role: "button", tabindex: "0",
       title: "Öppna matchen",
@@ -2690,6 +2690,10 @@ function disciplinLista(doc, utanRubrik) {
         [HB.shortCat(r.m.catName), r.m.divName].filter(Boolean).join(" · "))),
     h("span", { class: "skytt-matcher" },
       iMin >= 0 ? ((r.d.h[iMin] || 0) + (r.d.a[iMin] || 0)) + " min" : "")))),
+    topp.length > visade.length ? h("button", {
+      class: "btn small", type: "button",
+      onclick: () => { skyttVisade += SKYTT_STEG; ritaOm(); },
+    }, "Visa fler (" + (topp.length - visade.length) + " kvar)") : null,
   ];
 }
 
