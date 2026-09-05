@@ -1837,6 +1837,107 @@ input[type="search"]::-webkit-search-cancel-button {
 .untimed-panel[open] .untimed-summary { border-bottom: 1px solid var(--line); }
 .untimed-panel-body { padding: 10px; }
 
+/* "Nästa på banan" — utfällbar lucka mot den ofiltrerade listan, se
+   banPanel i js/ui/match-ui.js. Ligger inuti matchkortet men ska läsas
+   som en fotnot till det, inte som en del av matchen. */
+.next-court {
+  border-top: 1px solid var(--line);
+  margin: 8px -12px -10px;
+}
+
+.next-court-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.next-court-summary::-webkit-details-marker { display: none; }
+.next-court-summary::marker { content: ""; }
+
+.next-court-title {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.next-court-count {
+  min-width: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink-soft) 16%, transparent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.next-court-summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 2px solid var(--ink-soft);
+  border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg);
+  transition: transform 0.16s ease;
+}
+.next-court[open] .next-court-summary::after { transform: rotate(225deg); }
+
+.next-court-list {
+  display: grid;
+  gap: 1px;
+  padding: 0 12px 10px;
+}
+
+.next-court-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 6px;
+  margin: 0 -6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.next-court-row:hover,
+.next-court-row:focus-visible {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  outline: none;
+}
+
+.next-court-time {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.next-court-cat {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.next-court-teams {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Egna lag ska gå att hitta i listan utan att läsa den. */
+.next-court-row.ours .next-court-teams { font-weight: 600; }
+.next-court-row.ours .next-court-time { color: var(--blue); }
+
 .match {
   background: var(--card);
   border: 1px solid var(--line);

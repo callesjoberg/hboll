@@ -121,7 +121,7 @@ function renderTimeline(main, list) {
         h("span", { class: "untimed-summary-count" },
           g.items.length + " " + (g.items.length === 1 ? "match" : "matcher"))),
       h("div", { class: "untimed-panel-body" },
-        h("div", { class: "slot-matches" }, g.items.map(matchCard))));
+        h("div", { class: "slot-matches" }, g.items.map((m) => matchCard(m)))));
       panel.addEventListener("toggle", () => { untimedPanelOpen = panel.open; });
       wrap.append(panel);
       prevGroupStart = null;
@@ -189,7 +189,7 @@ function renderTimeline(main, list) {
         // ligger några minuter efter slutsignalen.
         pågår ? h("div", { class: "slot-now", id: "nowline" },
           "NU " + fmtTime.format(new Date(now)) + " · pågår") : null,
-        g.items.map(matchCard))));
+        g.items.map((m) => matchCard(m)))));
   }
   main.append(wrap);
   // Nyast/kommande överst: bygg allt i den vanliga (äldst→nyast) ordningen

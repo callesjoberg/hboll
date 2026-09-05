@@ -3,7 +3,7 @@
 import { h, $ } from "../dom.js";
 import { isLive, scoreText, periodScores } from "../domain/match.js";
 import {
-  hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock,
+  hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock, fmtTime, dayKey,
 } from "../time.js";
 import { cohortKey, cohortLabel, shortCat } from "../domain/category.js";
 
@@ -360,7 +360,8 @@ function arenaTabBody(m, stäng) {
       class: "btn small", type: "button",
       onclick: () => { stäng(); filterByArena(arena); },
     }, "Filtrera schemat till " + arena),
-    h("div", { class: "arena-quick-list" }, matcher.map(matchCard)));
+    h("div", { class: "arena-quick-list" },
+      matcher.map((x) => matchCard(x, { utanBanpanel: true }))));
 }
 
 export function openMatchSheet(m, förvaldFlik) {
@@ -549,7 +550,89 @@ export function openMatchDialog(m) {
   openMatchSheet(m);
 }
 
-export function matchCard(m) {
+// --- nästa på banan ---------------------------------------------------
+// Ett filtrerat schema visar bara de egna matcherna, vilket är hela
+// poängen. Men står man vid sidan av planen vill man ofta veta vilka som
+// går på när ens eget lag går av — utan att först rensa filtret och
+// leta. Kortet får därför en egen liten lucka mot den OFILTRERADE
+// listan: nästa tre matcher på samma bana samma dag.
+
+const NÄSTA_PÅ_BANAN = 3;
+// Vilka kort som står öppna. Modulnivå, inte state: rent UI-tillstånd
+// som ska överleva en omrendering men inte en omladdning.
+const öppnaBanpaneler = new Set();
+// state.matches byts ut som HELHET när ny data kommer (loadCup,
+// liveifyllnaden). En WeakMap på just den arrayen ger därför ett index
+// som aldrig kan bli inaktuellt, utan att någon behöver komma ihåg att
+// rensa det. Utan index skulle varje kort skanna hela cupen — 600 kort
+// mot Åhus 6000 matcher är miljontals jämförelser per omritning.
+const banIndexCache = new WeakMap();
+
+function banIndex() {
+  const träffad = banIndexCache.get(state.matches);
+  if (träffad) return träffad;
+  const idx = new Map();
+  for (const m of state.matches) {
+    if (!m.arena || !m.start) continue;
+    const key = m.arena + "|" + dayKey(m.start);
+    let lista = idx.get(key);
+    if (!lista) idx.set(key, (lista = []));
+    lista.push(m);
+  }
+  for (const lista of idx.values()) lista.sort((a, b) => a.start - b.start);
+  banIndexCache.set(state.matches, idx);
+  return idx;
+}
+
+function nästaPåBanan(m) {
+  if (!m.arena || !m.start) return [];
+  const lista = banIndex().get(m.arena + "|" + dayKey(m.start)) || [];
+  const efter = [];
+  for (const x of lista) {
+    if (x.start <= m.start || x.id === m.id) continue;
+    efter.push(x);
+    if (efter.length === NÄSTA_PÅ_BANAN) break;
+  }
+  return efter;
+}
+
+function banPanel(m) {
+  const kommande = nästaPåBanan(m);
+  if (!kommande.length) return null;
+  const panel = h("details", {
+    class: "next-court",
+    ...(öppnaBanpaneler.has(m.id) ? { open: "" } : {}),
+  },
+  // Klick och tangenttryck får inte bubbla: hela kortet är en knapp som
+  // öppnar matcharket, och att fälla ut listan ska inte göra det.
+  h("summary", {
+    class: "next-court-summary",
+    onclick: (e) => e.stopPropagation(),
+    onkeydown: (e) => e.stopPropagation(),
+  }, h("span", { class: "next-court-title" }, "Nästa på banan"),
+  h("span", { class: "next-court-count" }, String(kommande.length))),
+  h("div", { class: "next-court-list" }, kommande.map((x) => h("div", {
+    class: "next-court-row" + (isClubMatch(x) ? " ours" : ""),
+    role: "button", tabindex: "0",
+    title: x.home.name + " – " + x.away.name,
+    onclick: (e) => { e.stopPropagation(); openMatchDialog(x); },
+    onkeydown: (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchDialog(x); }
+    },
+  },
+  h("span", { class: "next-court-time" }, fmtTime.format(new Date(x.start))),
+  h("span", { class: "next-court-cat" }, shortCat(x.catName)),
+  h("span", { class: "next-court-teams" },
+    (x.home.name || "–") + " – " + (x.away.name || "–"))))));
+  panel.addEventListener("toggle", () => {
+    if (panel.open) öppnaBanpaneler.add(m.id);
+    else öppnaBanpaneler.delete(m.id);
+  });
+  return panel;
+}
+
+export function matchCard(m, spec = {}) {
   const sc = scoreText(m.res);
   const live = isLive(m);
   const weather = !cup().indoor && hasScheduledStart(m) && (!m.res || !m.res.fin)
@@ -595,5 +678,8 @@ export function matchCard(m) {
       h("div", { class: "score" + (live ? " live" : "") + (sc === "spelad" ? " played" : "") +
         (!sc && !live ? " pending" : "") },
       live ? h("span", { class: "live-tag" }, h("span", { class: "live-dot" }), "LIVE") : null,
-      sc || (live ? "" : "–"))));
+      sc || (live ? "" : "–"))),
+    // Bortvald där den vore ren upprepning — arena-fliken i matcharket
+    // listar redan hela banan.
+    spec.utanBanpanel ? null : banPanel(m));
 }

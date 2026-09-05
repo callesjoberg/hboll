@@ -1117,6 +1117,12 @@ HB.shortCat = shortCat;
       liveFillNext = Date.now() + LIVE_FILL_MAX_MS;
       return;
     }
+    // Står en match mitt i sin ruta ska takten ligga kvar på en minut
+    // även när varvet inte gav något nytt. Minuterna mellan två mål är
+    // inte ett tecken på att inget händer — och att då trappa upp till
+    // åtta minuter vore precis fel läge att sluta titta.
+    const spelasNu = kandidater.some((m) =>
+      Date.now() < m.start + state.matchMinutes * 60000);
     const cupGen = cupGeneration;
     liveFillBusy = true;
     try {
@@ -1143,7 +1149,7 @@ HB.shortCat = shortCat;
           HB.api.localDataTs[c.id] || 0);
         render();
       }
-      liveFillPause = ändrade ? LIVE_FILL_MS
+      liveFillPause = (ändrade || spelasNu) ? LIVE_FILL_MS
         : Math.min(liveFillPause * 2, LIVE_FILL_MAX_MS);
     } catch {
       // Källan kan vara nere eller strypa oss — snapshotten duger så
