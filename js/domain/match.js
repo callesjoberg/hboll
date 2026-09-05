@@ -73,6 +73,22 @@ export function periodScores(res) {
   return delar.length >= 2 ? delar : [];
 }
 
+// Vilken period som spelas NU (1-baserad) — men bara när datan bevisar
+// det. Sekretariatet kan välja att dela matchen i halvlekar eller att
+// köra en enda löpande rapportering; i Göteborg Cup gör 164 matcher det
+// förra och 126 det senare. Matchfeedens events bär ett period-fält, och
+// för dem som delar syns samma sak gratis i periodScores: listan får en
+// ny post när nästa period startas, så antalet poster ÄR periodnumret.
+// Delar de inte stannar antalet på ett hela matchen — och då säger vi
+// hellre ingenting än fel. Ingen trimning av tomma poster här: en
+// nystartad andra halvlek står på 0–0 tills första målet, och det är
+// just det läget vi vill kunna namnge.
+export function livePeriod(m) {
+  if (!m || !m.res || m.res.fin || !m.res.live) return 0;
+  const per = m.res.per || [];
+  return per.length >= 2 ? per.length : 0;
+}
+
 export function clubOutcomeLetter(m, teamId) {
   if (!(m.res && m.res.fin) || m.res.wo) return null;
   if (!m.res.winner) return "O";

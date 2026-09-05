@@ -2,7 +2,7 @@
 
 import { h, $ } from "../dom.js";
 import {
-  isLive, scoreText, periodScores, matchStart, matchEnd, kickoffDrift,
+  isLive, scoreText, periodScores, matchStart, matchEnd, kickoffDrift, livePeriod,
 } from "../domain/match.js";
 import {
   hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock, fmtTime, dayKey,
@@ -332,7 +332,7 @@ function matchSheetHeader(m) {
     h("div", { class: "match-sheet-score-row" },
       h("div", { class: "match-sheet-teams" }, sida(m.home), sida(m.away)),
       sc ? h("div", { class: "match-sheet-score" }, sc) : null),
-    periodRad(m.res),
+    periodRad(m),
     videoLänk(m, { medText: true }),
     h("p", { class: "match-sheet-when" },
       [hasScheduledStart(m) ? matchTimeLabel(m, fmtDayLong) : "Tid ej satt",
@@ -340,10 +340,24 @@ function matchSheetHeader(m) {
         m.arena].filter(Boolean).join(" · ")));
 }
 
+function periodEtikett(period) {
+  return period === 2 ? "Andra halvlek" : svOrdinal(period) + " perioden";
+}
+
 // Två perioder är en handbollsmatch — då är första perioden helt enkelt
 // halvtidsställningen, och det är så man pratar om den. Fler perioder är
 // basket eller beachhandboll; där säger uppdelningen mer än en etikett.
-function periodRad(res) {
+function periodRad(m) {
+  const res = m.res;
+  // Pågår matchen och sekretariatet har startat nästa period vet vi var
+  // vi är — då är det viktigare än uppdelningen så här långt.
+  const nu = livePeriod(m);
+  if (nu) {
+    const första = (res.per || [])[0] || {};
+    return h("p", { class: "match-sheet-periods" },
+      periodEtikett(nu) +
+      (första.h || första.a ? " · halvtid " + första.h + "–" + första.a : ""));
+  }
   const perioder = periodScores(res);
   if (!perioder.length) return null;
   const delar = perioder.map((p) => p.h + "–" + p.a);
@@ -764,7 +778,8 @@ export function matchCard(m, spec = {}) {
     h("div", { class: "match-body" }, h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
       h("div", { class: "score" + (live ? " live" : "") + (sc === "spelad" ? " played" : "") +
         (!sc && !live ? " pending" : "") },
-      live ? h("span", { class: "live-tag" }, h("span", { class: "live-dot" }), "LIVE") : null,
+      live ? h("span", { class: "live-tag" }, h("span", { class: "live-dot" }),
+        "LIVE" + (livePeriod(m) ? " " + svOrdinal(livePeriod(m)) : "")) : null,
       sc || (live ? "" : "–"))),
     // Rad 2: metaraden. Klass/grupp/rond bekräftar bara vad man redan
     // filtrerat fram — de ska inte leda kortet.
