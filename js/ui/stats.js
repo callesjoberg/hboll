@@ -1010,6 +1010,28 @@ function renderClubMetric(total, yearStats, key) {
       " · median " + clubMetricNumber.format(summary.median)));
 }
 
+// Vinst/oavgjort/förlust och målsnitt per år. Bara avgjorda matcher
+// räknas, och möten mellan klubbens EGNA lag hoppas över — de kan varken
+// vinnas eller förloras av klubben som helhet.
+function renderClubResult(r) {
+  if (!r.played) return h("span", { class: "club-metric-cell muted" }, "–");
+  const andel = Math.round((r.won / r.played) * 100);
+  const perÅr = r.yearStats.filter((y) => y.played);
+  return h("span", { class: "club-metric-cell" },
+    h("strong", null, andel + " %"),
+    h("small", null, r.won + "V " + r.drawn + "O " + r.lost + "F" +
+      (perÅr.length > 1 ? " · " + perÅr.length + " år" : "")));
+}
+
+function renderClubGoals(r) {
+  if (!r.played) return h("span", { class: "club-metric-cell muted" }, "–");
+  const snitt = (n) => clubMetricNumber.format(n / r.played);
+  const diff = (r.gf - r.ga) / r.played;
+  return h("span", { class: "club-metric-cell" },
+    h("strong", null, (diff > 0 ? "+" : "") + clubMetricNumber.format(diff)),
+    h("small", null, snitt(r.gf) + " gjorda · " + snitt(r.ga) + " insläppta"));
+}
+
 // Riktig förloppsindikator för en pågående computeClubRows()-hämtning —
 // en obestämd "Hämtar …" kändes som att sidan hängt sig på en sökning
 // som (första gången, innan IndexedDB-cachen i fetchArchiveEdition hunnit
@@ -1078,6 +1100,23 @@ function clubEditionStats(cupId, edition, matches, teamQuery) {
   const classes = new Set();
   const names = new Set();
   let matchCount = 0;
+  // Klasser som INTE för resultat. De yngsta åldrarna och para-handbollen
+  // spelar utan räknad ställning: matcherna markeras färdiga med 0–0 och
+  // winner: null, och att räkna dem som oavgjorda gav Junicupen 50
+  // "oavgjorda" av 61 matcher och en vinstandel på 11 %. Signalen är
+  // klassvid — en klass som aldrig har ett enda mål på någon match för
+  // inte protokoll — vilket är säkrare än att kasta enskilda 0–0, som
+  // faktiskt förekommer i fotboll.
+  const klassHarMål = new Set();
+  for (const m of matches) {
+    const r = m.res;
+    if (m.catName && r && ((r.hg || 0) > 0 || (r.ag || 0) > 0)) klassHarMål.add(m.catName);
+  }
+  // Resultat, inte bara deltagande. Räknas bara på AVGJORDA matcher — en
+  // halvspelad upplaga ska inte se ut som en svag årgång. Möter klubben
+  // sig själv (två egna lag i samma match) hoppas den över: den kan
+  // varken vinnas eller förloras av klubben som helhet.
+  let played = 0, won = 0, drawn = 0, lost = 0, gf = 0, ga = 0;
   for (const m of matches) {
     const homeIsUs = matchesBooleanQuery(m.home.name.toLowerCase(), normalizedQuery);
     const awayIsUs = matchesBooleanQuery(m.away.name.toLowerCase(), normalizedQuery);
@@ -1086,9 +1125,23 @@ function clubEditionStats(cupId, edition, matches, teamQuery) {
     if (homeIsUs && m.home.id != null) { teamIds.add(m.home.id); names.add(m.home.name); }
     if (awayIsUs && m.away.id != null) { teamIds.add(m.away.id); names.add(m.away.name); }
     if (m.catName) classes.add(m.catName);
+    const res = m.res;
+    if (!res || !res.fin || res.wo || res.hidden) continue;
+    if (homeIsUs === awayIsUs) continue;
+    if (!m.catName || !klassHarMål.has(m.catName)) continue;
+    const våra = homeIsUs ? res.hg : res.ag;
+    const deras = homeIsUs ? res.ag : res.hg;
+    if (!Number.isFinite(våra) || !Number.isFinite(deras)) continue;
+    played++;
+    gf += våra;
+    ga += deras;
+    if (våra > deras) won++;
+    else if (våra < deras) lost++;
+    else drawn++;
   }
   const result = { teams: teamIds.size, matches: matchCount,
-    classes: [...classes], names: [...names] };
+    classes: [...classes], names: [...names],
+    played, won, drawn, lost, gf, ga };
   clubEditionStatsCache.set(key, result);
   // Ett långt användningspass med många fritextfrågor ska inte kunna
   // växa cachen utan gräns. Äldsta beräkningen är billig att göra om.
@@ -1133,6 +1186,7 @@ function computeClubRows(cupIds, teamQuery, selectedYears = state.clubYears) {
     const years = [];
     const yearStats = [];
     let totalTeams = 0, totalMatches = 0;
+    let totPlayed = 0, totWon = 0, totDrawn = 0, totLost = 0, totGf = 0, totGa = 0;
     const classes = new Set();
     // Rå lagnamn (inte bara antal) som faktiskt matchade söktermen — låter
     // Klubbjämförelsens radexpansion (se clubCompareDetailBlock) visa EXAKT
@@ -1162,9 +1216,18 @@ function computeClubRows(cupIds, teamQuery, selectedYears = state.clubYears) {
       if (editionStats.teams) {
         years.push(em.edition);
         yearStats.push({ edition: em.edition, teams: editionStats.teams,
-          matches: editionStats.matches, classes: editionStats.classes.length });
+          matches: editionStats.matches, classes: editionStats.classes.length,
+          played: editionStats.played, won: editionStats.won,
+          drawn: editionStats.drawn, lost: editionStats.lost,
+          gf: editionStats.gf, ga: editionStats.ga });
         totalTeams += editionStats.teams;
         totalMatches += editionStats.matches;
+        totPlayed += editionStats.played;
+        totWon += editionStats.won;
+        totDrawn += editionStats.drawn;
+        totLost += editionStats.lost;
+        totGf += editionStats.gf;
+        totGa += editionStats.ga;
       }
     }
     if (years.length) {
@@ -1172,6 +1235,8 @@ function computeClubRows(cupIds, teamQuery, selectedYears = state.clubYears) {
       rows.push({
         cupId, cupName: (cupObj && cupObj.name) || cupId, years: years.sort(),
         totalTeams, totalMatches, totalClasses: classes.size,
+        played: totPlayed, won: totWon, drawn: totDrawn, lost: totLost,
+        gf: totGf, ga: totGa,
         yearStats: yearStats.sort((a, b) => a.edition.localeCompare(b.edition)),
         classes, names,
       });
@@ -1376,6 +1441,14 @@ function renderClubView(root) {
       render: (r) => renderClubMetric(r.totalMatches, r.yearStats, "matches") },
     { key: "classes", label: "Klasser totalt", defaultDir: -1, get: (r) => r.totalClasses,
       render: (r) => renderClubMetric(r.totalClasses, r.yearStats, "classes") },
+    // Resultat, inte bara deltagande. Andelen vinster och målsnittet
+    // säger något om årgången; "42 matcher" gör det inte.
+    { key: "won", label: "Vinstandel", defaultDir: -1,
+      get: (r) => (r.played ? r.won / r.played : -1),
+      render: (r) => renderClubResult(r) },
+    { key: "gd", label: "Mål/match", defaultDir: -1,
+      get: (r) => (r.played ? (r.gf - r.ga) / r.played : -99),
+      render: (r) => renderClubGoals(r) },
   ];
   // Klickbar rad (se sortableTable) — går ner en nivå till cupens egna
   // klasser (renderClubCupDetail) i stället för att bara visa aggregatet.
