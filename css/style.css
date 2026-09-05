@@ -1861,6 +1861,70 @@ input[type="search"]::-webkit-search-cancel-button {
 .untimed-panel[open] .untimed-summary { border-bottom: 1px solid var(--line); }
 .untimed-panel-body { padding: 10px; }
 
+/* Matchhändelser — mål för mål med löpande ställning och målskytt.
+   Läses uppifrån och ner som en live-feed, nyast överst. */
+.feed-list { display: grid; gap: 1px; }
+
+.feed-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+}
+
+/* Bortalagets mål tonas svagt så sidan går att se utan att läsa namnet. */
+.feed-row.away { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+
+.feed-time {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.feed-score {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  min-width: 44px;
+}
+
+.feed-who { min-width: 0; font-size: 14px; }
+
+.feed-nr {
+  display: inline-block;
+  min-width: 20px;
+  margin-right: 6px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  color: var(--blue);
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+}
+
+.feed-team { margin-left: 7px; color: var(--ink-soft); font-size: 12px; }
+.feed-team.only { margin-left: 0; font-size: 14px; color: var(--ink); }
+
+.feed-mark {
+  margin: 10px 0 4px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.feed-note { margin-top: 12px; font-size: 12px; }
+
 /* Länk till matchsändningen (SolidSport/Handbollplay). På kortet bara en
    spelknapp i huvudets högerkant; i matcharket samma knapp med text.
    Medvetet INTE i livefärgen — röd betyder "spelas nu" i den här appen,

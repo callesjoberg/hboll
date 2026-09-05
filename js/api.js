@@ -545,6 +545,48 @@ window.HB = window.HB || {};
     return matches;
   }
 
+  // --- matchfeed ---------------------------------------------------------
+
+  // Cup Managers live-feed: ett event per mål, periodstart och periodslut,
+  // med löpande ställning och — när sekretariatet registrerat det —
+  // målskyttens namn och nummer. Ungefär hälften av målen i Göteborg Cup
+  // har en spelare; resten är bara ett mål för ett lag.
+  //
+  // Events måste expanderas med KONKRETA typfragment. `events:[{}]` och
+  // `[{... on MatchEvent:{}}]` ger noll entiteter — det abstrakta
+  // basnamnet matchar ingenting. Okända typnamn i listan är däremot
+  // ofarliga (testat), så listan får gärna vara bredare än vad som
+  // faktiskt förekommer.
+  const FEED_TYPES = ["MatchGoal", "MatchStart", "MatchStop",
+    "MatchPenalty", "MatchCard", "MatchTimeout"];
+  const FEED_FRAGMENT = "{" +
+    FEED_TYPES.map((t) => "... on " + t + ":{}").join(",") + "}";
+
+  async function fetchMatchFeed(cup, matchId) {
+    if (cup.dataUrl || !matchId) return null;
+    const r = await call(cup,
+      "Match({id:" + matchId + "}){feed:{events:[" + FEED_FRAGMENT + "]}}");
+    const entiteter = Object.values(r.responses || {})
+      .map((v) => v && v.entity).filter((e) => e && typeof e === "object");
+    const feed = entiteter.find((e) => e.__typename === "MatchFeed");
+    const events = entiteter
+      .filter((e) => FEED_TYPES.includes(e.__typename))
+      .map((e) => ({
+        typ: e.__typename === "MatchGoal" ? "mal"
+          : e.__typename === "MatchStart" ? "start"
+            : e.__typename === "MatchStop" ? "stopp" : "annat",
+        side: e.side || null,
+        player: e.playerName || null,
+        nr: Number.isFinite(e.playerNr) ? e.playerNr : null,
+        hg: e.homeScore, ag: e.awayScore,
+        period: e.period || 0,
+        at: normalizeStart(e.absoluteTime),
+      }))
+      // absoluteTime är enda pålitliga ordningen: store:n är osorterad.
+      .sort((a, b) => a.at - b.at);
+    return { start: normalizeStart(feed && feed.liveStartTime), events };
+  }
+
   // --- tabeller ---------------------------------------------------------
 
   // `cacheable` skickas in av app.js (som känner till matchresultaten) och
@@ -1012,7 +1054,7 @@ window.HB = window.HB || {};
   }
 
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
-             fetchMatches, fetchIncremental, fetchMatchesByIds, fetchTable,
+             fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,

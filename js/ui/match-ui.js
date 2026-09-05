@@ -382,6 +382,77 @@ function arenaTabBody(m, stäng) {
       matcher.map((x) => matchCard(x, { utanBanpanel: true, alltidFull: true }))));
 }
 
+// --- matchhändelser ---------------------------------------------------
+// Live-feeden: mål för mål med löpande ställning och målskytt, samma
+// information som cupens egen matchsida visar. Hämtas först när fliken
+// öppnas — ett anrop per match, och bara för den match man faktiskt
+// tittar på.
+
+function feedRad(m, e) {
+  const lag = e.side === "away" ? m.away : m.home;
+  return h("div", { class: "feed-row " + (e.side === "away" ? "away" : "home") },
+    h("span", { class: "feed-time" }, e.at ? fmtTime.format(new Date(e.at)) : "–"),
+    h("span", { class: "feed-score" }, e.hg + "–" + e.ag),
+    h("span", { class: "feed-who" },
+      // Ungefär hälften av målen saknar registrerad skytt. Då är laget
+      // det enda vi vet, och det är bättre än en tom rad.
+      e.player
+        ? h("span", null,
+          e.nr != null ? h("span", { class: "feed-nr" }, String(e.nr)) : null,
+          e.player, h("span", { class: "feed-team" }, lag.name))
+        : h("span", { class: "feed-team only" }, lag.name)));
+}
+
+function feedNoder(m, feed) {
+  const events = (feed && feed.events) || [];
+  const mål = events.filter((e) => e.typ === "mal");
+  if (!mål.length) {
+    return [h("p", { class: "muted" },
+      "Inga registrerade händelser för den här matchen.")];
+  }
+  const noder = [];
+  let sedd = null;
+  // Nyast överst — det är den ordningen man läser en pågående match i.
+  for (const e of [...mål].reverse()) {
+    if (sedd !== null && e.period !== sedd) {
+      noder.push(h("div", { class: "feed-mark" },
+        sedd === 1 ? "Andra halvlek" : svOrdinal(sedd + 1) + " perioden"));
+    }
+    sedd = e.period;
+    noder.push(feedRad(m, e));
+  }
+  const skyttar = mål.filter((e) => e.player).length;
+  noder.push(h("p", { class: "muted feed-note" },
+    skyttar === mål.length
+      ? mål.length + " mål"
+      : skyttar + " av " + mål.length + " mål har registrerad målskytt"));
+  return noder;
+}
+
+function feedTabBody(m) {
+  const box = h("div", { class: "match-sheet-body feed-list" },
+    h("p", { class: "muted" }, "Hämtar matchhändelser …"));
+  const ladda = () => HB.api.fetchMatchFeed(cup(), m.id)
+    .then((feed) => { if (box.isConnected) box.replaceChildren(...feedNoder(m, feed)); })
+    .catch(() => {
+      if (box.isConnected) {
+        box.replaceChildren(h("p", { class: "muted" },
+          "Kunde inte hämta matchhändelserna just nu."));
+      }
+    });
+  ladda();
+  // Pågår matchen ska nya mål dyka upp av sig själva. Intervallet städas
+  // när arket stängs: dialogen tas bort ur DOM:en (se close-lyssnaren i
+  // openMatchSheet), så isConnected blir falskt.
+  if (isLive(m, Date.now(), state.matchMinutes)) {
+    const timer = setInterval(() => {
+      if (!box.isConnected) { clearInterval(timer); return; }
+      ladda();
+    }, 30000);
+  }
+  return box;
+}
+
 export function openMatchSheet(m, förvaldFlik) {
   const flikar = [
     { key: "home", label: m.home.name, body: () => teamStatBlock(m, m.home, "home") },
@@ -390,11 +461,17 @@ export function openMatchSheet(m, förvaldFlik) {
   if (m.arena) {
     flikar.push({ key: "arena", label: m.arena, body: () => arenaTabBody(m, () => dlg.close()) });
   }
+  // Feeden finns bara hos Cup Manager, och bara för matcher som börjat.
+  const harFeed = !cup().dataUrl && m.id &&
+    (isLive(m, Date.now(), state.matchMinutes) || (m.res && m.res.fin));
+  if (harFeed) flikar.push({ key: "feed", label: "Mål", body: () => feedTabBody(m) });
   // Är ett av lagen din klubb är det nästan alltid det du är ute efter.
   const klubbFlik = isClubName(m.home.name) ? "home"
     : isClubName(m.away.name) ? "away" : null;
-  let aktiv = flikar.some((f) => f.key === förvaldFlik)
-    ? förvaldFlik : (klubbFlik || "home");
+  // Pågår matchen är målen det man kom för.
+  const förval = harFeed && isLive(m, Date.now(), state.matchMinutes)
+    ? "feed" : (klubbFlik || "home");
+  let aktiv = flikar.some((f) => f.key === förvaldFlik) ? förvaldFlik : förval;
 
   const kropp = h("div", { class: "match-sheet-tabbody" });
   const tabbrad = h("div", {
