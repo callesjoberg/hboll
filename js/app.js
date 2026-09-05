@@ -28,7 +28,9 @@ import {
 } from "./domain/calendar.js";
 import { refreshTtl, allMatchesFinished } from "./domain/refresh.js";
 import { guessMatchMinutes } from "./domain/match-length.js";
-import { liveGapMatches, resultChanged } from "./domain/live-gap.js";
+import {
+  liveGapMatches, resultChanged, MAX_LIVE_MATCHER,
+} from "./domain/live-gap.js";
 import {
   groupPlayoffRounds, playoffGroupReference,
 } from "./domain/playoff.js";
@@ -1111,9 +1113,23 @@ HB.shortCat = shortCat;
     // Fråga bara om det användaren faktiskt tittar på: det egna urvalet om
     // ett filter är aktivt, annars klubbens matcher. Med ett anrop per
     // match är skillnaden avgörande — Alingsås matcher i Göteborg Cup ger
-    // två kandidater mitt i en speldag, hela cupen ger hundratals.
+    // fyra kandidater mitt i en speldag, hela cupen ger hundratals.
     const fokus = hasFilterSelection() ? filtered() : scoped();
-    const kandidater = liveGapMatches(fokus.length ? fokus : state.matches);
+    const bas = fokus.length ? fokus : state.matches;
+    const primära = liveGapMatches(bas);
+    // Grupptabellerna räknas fram LOKALT ur matcherna för Cup Manager-
+    // cuper (se ensureTable i ui/playoffs.js — snapshotten har inga
+    // färdiga tabeller). De blir alltså aldrig färskare än matcherna de
+    // bygger på, och en tabell där bara dina egna rader tickar är värre
+    // än en som står stilla. Ta därför med de ospelade matcherna i samma
+    // divisioner, i andra hand efter dina egna.
+    const divisioner = new Set(bas.map((m) => m.divId).filter((id) => id != null));
+    const valda = new Set(primära.map((m) => m.id));
+    const sekundära = divisioner.size
+      ? liveGapMatches(state.matches.filter((m) => divisioner.has(m.divId)))
+        .filter((m) => !valda.has(m.id))
+      : [];
+    const kandidater = primära.concat(sekundära).slice(0, MAX_LIVE_MATCHER);
     if (!kandidater.length) {
       liveFillNext = Date.now() + LIVE_FILL_MAX_MS;
       return;
