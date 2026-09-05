@@ -521,7 +521,8 @@ HB.shortCat = shortCat;
   Object.defineProperty(state, "matchMinutes", {
     enumerable: true,
     get() {
-      return (state.matchMinutesAuto && derivedMatchMinutes()) || state.matchMinutesManual;
+      const härledd = state.matchMinutesAuto && derivedMatchMinutes();
+      return (härledd && härledd.minuter) || state.matchMinutesManual;
     },
     // Att skriva till matchMinutes är alltid ett medvetet val i
     // inställningarna — då slutar värdet följa cupen.
@@ -2436,11 +2437,15 @@ HB.shortCat = shortCat;
       matchMinAutoBox.checked = state.matchMinutesAuto;
       matchMinInput.value = state.matchMinutes;
       matchMinInput.disabled = state.matchMinutesAuto && !!härledd;
-      matchMinHint.textContent = härledd
-        ? "Cupens schema lägger matcherna i rutor om " + härledd +
-          " minuter (speltid plus halvlek och planbyte)."
-        : "Den här cupens schema räcker inte till för att läsa av " +
-          "matchlängden — ange den själv.";
+      matchMinHint.textContent = !härledd
+        ? "Den här cupens data räcker inte till för att läsa av " +
+          "matchlängden — ange den själv."
+        : härledd.källa === "speltid"
+          ? "Cupen anger " + härledd.minuter + " minuter per match " +
+            "(speltid inklusive halvlek)."
+          : "Cupen anger ingen speltid. " + härledd.minuter + " minuter är " +
+            "avståndet mellan avsparkarna på samma plan — speltid plus " +
+            "halvlek och tid för nästa lag att ställa upp.";
     };
     syncMatchMinutes();
     matchMinInput.addEventListener("change", () => {
