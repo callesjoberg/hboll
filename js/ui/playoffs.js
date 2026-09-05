@@ -856,13 +856,13 @@ function bracketTableBlock(div, projMap, relevantIds) {
         headerCell("Resultat", "resultat"),
         headerCell("Tid", "tid"),
         headerCell("Bana", "bana"))),
-      h("tbody", null, rows.map((m) => {
+      h("tbody", null, rows.flatMap((m) => {
         const sc = scoreText(m.res);
         const proj = projMap ? projMap.get(m.id) : null;
         const homeSide = proj ? proj.home : { name: m.home.name || "TBD", certain: true };
         const awaySide = proj ? proj.away : { name: m.away.name || "TBD", certain: true };
         const homeName = homeSide.name, awayName = awaySide.name;
-        return h("tr", {
+        const rad = h("tr", {
           class: "bracket-table-row" + (isClubMatch(m) ? " us" : "") +
             (proj && proj.predicted ? " predicted-match" : "") +
             (relevantIds && relevantIds.has(m.id) ? " relevant-path" : ""),
@@ -891,6 +891,17 @@ function bracketTableBlock(div, projMap, relevantIds) {
           h("td", { class: "pts" }, proj && proj.predicted ? "Prognos" : (sc || "–")),
           h("td", null, matchTimeLabel(m)),
           h("td", null, m.arena || ""));
+        // Sex kolumner ryms inte på en mobilskärm — banan föll utanför
+        // kanten och gick inte att se alls. Den får därför en egen rad
+        // under matchen, som CSS växlar in i stället för kolumnen när
+        // skärmen är smal. Samma klick som matchraden.
+        const banrad = m.arena ? h("tr", {
+          class: "bracket-table-arena" + (isClubMatch(m) ? " us" : "") +
+            (relevantIds && relevantIds.has(m.id) ? " relevant-path" : ""),
+          role: "button", tabindex: "-1",
+          onclick: () => openMatchDialog(m),
+        }, h("td", { colspan: "6" }, m.arena)) : null;
+        return banrad ? [rad, banrad] : [rad];
       }))),
     showAllPlayedButtonCount(hiddenCount, state.recentMatchCount, () => {
       state.showAllPlayedBracket = true; renderContent();

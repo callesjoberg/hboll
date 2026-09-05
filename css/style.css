@@ -1872,6 +1872,26 @@ input[type="search"]::-webkit-search-cancel-button {
   opacity: 1;
 }
 
+/* Slutspelstabellen: sex kolumner ryms inte på en mobilskärm, och det
+   var banan som föll utanför kanten. På smala skärmar göms kolumnen och
+   banan får en egen rad under matchen i stället. */
+.bracket-table-arena { display: none; }
+
+@media (max-width: 760px) {
+  .bracket-table th:nth-child(6),
+  .bracket-table td:nth-child(6) { display: none; }
+
+  .bracket-table-arena { display: table-row; cursor: pointer; }
+  .bracket-table-arena > td {
+    padding: 0 8px 8px;
+    border-top: 0;
+    color: var(--ink-soft);
+    font-size: 12px;
+  }
+  /* Matchraden ska inte avslutas med en linje mitt emot sin egen bana. */
+  .bracket-table-row:has(+ .bracket-table-arena) > td { border-bottom: 0; }
+}
+
 /* Form i cupen: lag, V/O/F och mål gjorda–insläppta. */
 .form-block { margin-top: 12px; }
 .form-rad {
