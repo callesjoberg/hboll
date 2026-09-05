@@ -476,12 +476,29 @@ window.HB = window.HB || {};
     const unfinished = cachedMatches.filter((m) => !(m.res && m.res.fin));
     if (!unfinished.length) return cachedMatches; // inget kan ha ändrats — inget att hämta
     if (unfinished.length > INCREMENTAL_MAX) return null; // för många — full hämtning är snabbare
+    const fresh = await fetchMatchesByIds(cup, unfinished.map((m) => m.id), onProgress);
+    const freshById = new Map(fresh.map((m) => [m.id, m]));
+    const merged = cachedMatches.map((m) => freshById.get(m.id) || m);
+    merged.sort((a, b) => a.start - b.start || a.arena.localeCompare(b.arena, "sv"));
+    return merged;
+  }
+
+  // Hämta ett fåtal namngivna matcher direkt från källan. Används dels av
+  // fetchIncremental ovan, dels av liveifyllnaden i app.js: den
+  // gemensamma snapshotten byggs av CI och kan ligga några minuter efter,
+  // och under matchtid frågar appen därför källan själv om just de
+  // matcher som saknar slutresultat (se domain/live-gap.js).
+  //
+  // ProCup/Gothia (dataUrl-cuper) har ingen webbläsarvänlig väg till
+  // källan — de returnerar tomt och faller tillbaka på snapshotten.
+  async function fetchMatchesByIds(cup, ids, onProgress) {
+    if (cup.dataUrl || !ids || !ids.length) return [];
     const combinedStore = {};
     let done = 0;
-    for (let i = 0; i < unfinished.length; i += CONC) {
-      const batch = unfinished.slice(i, i + CONC);
+    for (let i = 0; i < ids.length; i += CONC) {
+      const batch = ids.slice(i, i + CONC);
       const results = await Promise.all(
-        batch.map((m) => call(cup, "Match({id:" + m.id + "})" + singleMatchFields())));
+        batch.map((id) => call(cup, "Match({id:" + id + "})" + singleMatchFields())));
       for (const r of results) {
         for (const [k, v] of Object.entries(r.responses || {})) {
           if (v && typeof v === "object" && v.entity && typeof v.entity === "object") {
@@ -490,20 +507,16 @@ window.HB = window.HB || {};
         }
       }
       done += batch.length;
-      if (onProgress) onProgress(done, unfinished.length);
+      if (onProgress) onProgress(done, ids.length);
     }
-    const freshById = new Map(normalize(combinedStore).map((m) => [m.id, m]));
-    const merged = cachedMatches.map((m) => freshById.get(m.id) || m);
-    merged.sort((a, b) => a.start - b.start || a.arena.localeCompare(b.arena, "sv"));
-    // Slå ihop (inte ersätt): combinedStore täcker bara de OSPELADE
+    // Slå ihop (inte ersätt): combinedStore täcker bara de efterfrågade
     // matchernas lag/klubbar — att skriva över hela clubGeo[cup.id] här
-    // skulle tappa alla klubbar från redan avgjorda matcher.
+    // skulle tappa alla klubbar från övriga matcher.
     Object.assign(clubGeo[cup.id] = clubGeo[cup.id] || {}, clubGeoFromStore(combinedStore));
-    // Samma sammanslagning för banorna: en bana som bara har spelade
-    // matcher kvar finns inte i combinedStore, och skulle tappas av en
-    // rak överskrivning.
+    // Samma sammanslagning för banorna: en bana utan efterfrågade matcher
+    // finns inte i combinedStore, och skulle tappas av en rak överskrivning.
     Object.assign(arenaGeo[cup.id] = arenaGeo[cup.id] || {}, arenaGeoFromStore(combinedStore));
-    return merged;
+    return normalize(combinedStore);
   }
 
   async function fetchMatches(cup, onProgress) {
@@ -982,7 +995,7 @@ window.HB = window.HB || {};
   }
 
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
-             fetchMatches, fetchIncremental, fetchTable,
+             fetchMatches, fetchIncremental, fetchMatchesByIds, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,

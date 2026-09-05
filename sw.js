@@ -13,7 +13,7 @@
 // ett ANNAT namn, så ett nytt namn är det enda som garanterat tömmer en
 // gammal, envis skalcache (nätverk-först räcker inte om ett enskilt
 // anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-20260905d";
+const CACHE_NAME = "hboll-shell-20260905g";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -37,6 +37,7 @@ const SHELL_FILES = [
   "./js/domain/club-match.js",
   "./js/domain/match.js",
   "./js/domain/match-length.js",
+  "./js/domain/live-gap.js",
   "./js/domain/tables.js",
   "./js/domain/cup.js",
   "./js/domain/placeholder.js",

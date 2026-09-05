@@ -28,6 +28,7 @@ import {
 } from "./domain/calendar.js";
 import { refreshTtl, allMatchesFinished } from "./domain/refresh.js";
 import { guessMatchMinutes } from "./domain/match-length.js";
+import { liveGapMatches, resultChanged } from "./domain/live-gap.js";
 import {
   groupPlayoffRounds, playoffGroupReference,
 } from "./domain/playoff.js";
@@ -452,6 +453,7 @@ HB.shortCat = shortCat;
     // Schemarutans längd. matchMinutes är en beräknad egenskap (se
     // nedanför state): är matchMinutesAuto på härleds längden ur den
     // öppna cupens eget schema, annars gäller användarens egna minuter.
+    liveFilledAt: 0,        // senast liveifyllnaden gav ett nytt resultat
     matchMinutesAuto: storageGet("hb:matchMinutesAuto") !== "off",
     matchMinutesManual: storageNumber("hb:matchMinutes", 30, 1, 240),
     revealBatchSize: storageNumber("hb:revealBatchSize", 4, 1, 100),
@@ -1084,6 +1086,79 @@ HB.shortCat = shortCat;
     render();
   }
 
+  // --- liveifyllnad -----------------------------------------------------
+  // Den gemensamma snapshotten i data/ byggs av CI. CI-jobbet mal numera
+  // vidare i femminuterstakt under matchtid (se scripts/ci_update_loop.sh),
+  // men fem minuter är fortfarande en evighet mitt i en match. Därför
+  // frågar appen källan direkt om just de matcher som saknar slutresultat
+  // — de som pågår och de som nyss spelats klart (se domain/live-gap.js).
+  //
+  // Snålt med flit: ett anrop per match, högst 40 åt gången, bara medan
+  // fliken är synlig, och takten trappas ner mot åtta minuter så fort ett
+  // varv inte gav något nytt. En cup som aldrig rapporterar resultat ska
+  // inte kosta ett anrop i minuten i tolv timmar.
+  const LIVE_FILL_MS = 60000;
+  const LIVE_FILL_MAX_MS = 8 * 60000;
+  let liveFillNext = 0;
+  let liveFillPause = LIVE_FILL_MS;
+  let liveFillBusy = false;
+
+  async function liveFill() {
+    const c = cup();
+    if (liveFillBusy || state.loading || !c || c.dataUrl) return;
+    if (Date.now() < liveFillNext) return;
+    // Fråga bara om det användaren faktiskt tittar på: det egna urvalet om
+    // ett filter är aktivt, annars klubbens matcher. Med ett anrop per
+    // match är skillnaden avgörande — Alingsås matcher i Göteborg Cup ger
+    // två kandidater mitt i en speldag, hela cupen ger hundratals.
+    const fokus = hasFilterSelection() ? filtered() : scoped();
+    const kandidater = liveGapMatches(fokus.length ? fokus : state.matches);
+    if (!kandidater.length) {
+      liveFillNext = Date.now() + LIVE_FILL_MAX_MS;
+      return;
+    }
+    const cupGen = cupGeneration;
+    liveFillBusy = true;
+    try {
+      const färska = await HB.api.fetchMatchesByIds(c, kandidater.map((m) => m.id));
+      if (cupGen !== cupGeneration) return;
+      const färskById = new Map(färska.map((m) => [m.id, m]));
+      let ändrade = 0;
+      state.matches = state.matches.map((m) => {
+        const ny = färskById.get(m.id);
+        if (!ny) return m;
+        if (resultChanged(m, ny)) ändrade++;
+        return ny;
+      });
+      if (ändrade) {
+        state.liveFilledAt = Date.now();
+        // Ändrade resultat betyder ändrade tabeller och slutspelsträd.
+        // resetMatchUi() körs INTE: inga matcher har tillkommit eller
+        // försvunnit, och den skulle slänga "visa fler"-läget varje minut.
+        state.tables = {};
+        state.playoffs = {};
+        state.groupTables = {};
+        HB.api.invalidateSubCaches(c);
+        HB.api.writeCache(c, state.matches, state.loadedAt,
+          HB.api.localDataTs[c.id] || 0);
+        render();
+      }
+      liveFillPause = ändrade ? LIVE_FILL_MS
+        : Math.min(liveFillPause * 2, LIVE_FILL_MAX_MS);
+    } catch {
+      // Källan kan vara nere eller strypa oss — snapshotten duger så
+      // länge, backa av och försök igen senare.
+      liveFillPause = Math.min(liveFillPause * 2, LIVE_FILL_MAX_MS);
+    } finally {
+      liveFillBusy = false;
+      liveFillNext = Date.now() + liveFillPause;
+    }
+  }
+
+  // Exponerad för felsökning: HB.liveFill() i konsolen kör ett varv nu
+  // i stället för att vänta ut minuttakten.
+  HB.liveFill = liveFill;
+
   function switchCup(id) {
     if (id === state.cupId) return;
     cupGeneration++;
@@ -1093,6 +1168,9 @@ HB.shortCat = shortCat;
     state.groupTables = {};
     state.matches = [];
     state.loadedAt = 0;
+    state.liveFilledAt = 0;
+    liveFillNext = 0;
+    liveFillPause = LIVE_FILL_MS;
     resetMatchUi();
     stashedFilter = null;
     // Sökrutan hör till den cup man stod i — en ny cup ska mötas av sitt
@@ -2010,7 +2088,11 @@ HB.shortCat = shortCat;
     const timed = visibleMatches.filter((m) => m.start).length;
     const untimed = n - timed;
     const dataTs = HB.api.localDataTs[state.cupId];
-    const when = new Date(dataTs || state.loadedAt);
+    // Har liveifyllnaden hämtat ett färskare resultat än snapshotten är
+    // det DEN tidsstämpeln som gäller — annars ser appen ut att visa
+    // gammal data samtidigt som ställningen tickar.
+    const live = state.liveFilledAt > (dataTs || 0);
+    const when = new Date(live ? state.liveFilledAt : (dataTs || state.loadedAt));
     // Visa datum om tidsstämpeln inte är idag — annars ser t.ex. en sedan
     // länge avslutad cups "12:10" ut som idag fastän datan hämtades för
     // flera dagar sen (det som förvirrade här).
@@ -2020,7 +2102,8 @@ HB.shortCat = shortCat;
     const matchLabel = untimed
       ? timed + " tidsatta matcher · " + untimed + " utan tid"
       : n + " matcher";
-    const label = (dataTs ? "Data hämtad " : "Uppdaterad ") + fmt.format(when) + " · " + matchLabel;
+    const label = (live ? "Live " : dataTs ? "Data hämtad " : "Uppdaterad ") +
+      fmt.format(when) + " · " + matchLabel;
     // Klickbar — öppnar en logg över exakt VILKA matcher som räknas in i
     // antalet ovan (samma urval, scoped(), se openMatchLogDialog).
     el.append(h("button", {
@@ -2709,12 +2792,15 @@ HB.shortCat = shortCat;
       if (!Number.isFinite(ttl) || !state.loadedAt) return false;
       return Date.now() - state.loadedAt > ttl;
     };
-    setInterval(() => {
-      if (document.visibilityState === "visible" && autoRefreshDue()) loadCup();
-    }, 60000);
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && autoRefreshDue()) loadCup();
-    });
+    const tick = () => {
+      if (document.visibilityState !== "visible") return;
+      if (autoRefreshDue()) loadCup();
+      // Liveifyllnaden har sin egen, tätare takt och sin egen paus — den
+      // ska köras även när snapshottens TTL inte gått ut.
+      liveFill();
+    };
+    setInterval(tick, 60000);
+    document.addEventListener("visibilitychange", tick);
     // Nedräkningen i heron tickar utan full omrendering.
     setInterval(tickHeroCountdown, 30000);
   }
