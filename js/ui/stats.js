@@ -2539,7 +2539,68 @@ function skyttInnehall(doc, idx, rita, el) {
       onclick: () => { skyttVisade += SKYTT_STEG; rita(); },
     }, "Visa fler (" + (träffar.length - visade.length) + " kvar)"));
   }
-  el.lista.replaceChildren(...noder, ...disciplinLista(doc));
+  el.lista.replaceChildren(...noder, ...disciplinLista(doc), ...domarLista(doc));
+}
+
+// Domarna i cupen: hur många matcher var och en dömt, hur många
+// utvisningar det blivit i dem, och hur många av era egna matcher de
+// dömt. Allt räknas ur data som redan finns — domarnamnen ligger i
+// snapshotten, utvisningarna i skyttedatabasen. Inga nya anrop.
+const DOMARE_TOPP = 15;
+
+function domarLista(doc) {
+  const disc = new Map();
+  const fält = (doc && doc.disciplineFields) || [];
+  const iAntal = fält.indexOf("penaltiesCount");
+  for (const d of (doc && doc.discipline) || []) {
+    if (iAntal >= 0) disc.set(d.m, (d.h[iAntal] || 0) + (d.a[iAntal] || 0));
+  }
+  const granskade = new Set((doc && doc.done) || []);
+
+  const rader = new Map();
+  for (const m of state.matches) {
+    for (const namn of m.refs || []) {
+      let rad = rader.get(namn);
+      if (!rad) rader.set(namn, (rad = { namn, matcher: 0, egna: 0, utv: 0, mätta: 0 }));
+      rad.matcher++;
+      if (isClubName(m.home.name) || isClubName(m.away.name)) rad.egna++;
+      // Bara matcher som skyttedatabasen faktiskt gått igenom räknas i
+      // utvisningssnittet — annars ser en ogranskad match ut som noll.
+      if (granskade.has(m.id)) {
+        rad.mätta++;
+        rad.utv += disc.get(m.id) || 0;
+      }
+    }
+  }
+  if (!rader.size) return [];
+  const alla = [...rader.values()].sort((a, b) => b.matcher - a.matcher ||
+    a.namn.localeCompare(b.namn, "sv"));
+  const visaUtv = alla.some((r) => r.utv > 0);
+  const snitt = (r) => (r.mätta ? r.utv / r.mätta : 0);
+  const cupSnitt = (() => {
+    const m = alla.reduce((a, r) => a + r.mätta, 0);
+    return m ? alla.reduce((a, r) => a + r.utv, 0) / m : 0;
+  })();
+
+  return [
+    h("h3", { class: "skytt-rubrik" }, "Domare"),
+    h("p", { class: "muted skytt-topp" },
+      alla.length + " domare har dömt matcher i cupen." +
+      (visaUtv ? " Snittet är " + clubMetricNumber.format(cupSnitt) +
+        " utvisningar per granskad match." : "")),
+    h("div", { class: "skytt-lista-box" }, alla.slice(0, DOMARE_TOPP).map((r, i) =>
+      h("div", { class: "skytt-rad" + (r.egna ? " ours" : "") },
+        h("span", { class: "skytt-plats" }, String(i + 1)),
+        h("span", { class: "skytt-mal" }, String(r.matcher)),
+        h("span", { class: "skytt-namn" }, r.namn,
+          h("span", { class: "skytt-lag" },
+            (r.egna ? r.egna + " av era matcher" : "inga av era matcher") +
+            (visaUtv && r.mätta
+              ? " · " + r.utv + " utvisningar på " + r.mätta + " granskade"
+              : ""))),
+        h("span", { class: "skytt-matcher" },
+          visaUtv && r.mätta ? clubMetricNumber.format(snitt(r)) + "/match" : "")))),
+  ];
 }
 
 // Matcherna med flest utvisningar i cupen. Ritas bara när cupen faktiskt
@@ -2594,7 +2655,7 @@ const STATS_TABS = [
   ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
   ["cuper", "Cuper", renderCupsOverviewView],
   ["historik", "Historik", renderHistoryView],
-  ["skyttar", "Skyttar", renderScorersView],
+  ["skyttar", "Skyttar & domare", renderScorersView],
 ];
 
 export function renderStatsView(root) {
