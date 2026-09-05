@@ -354,7 +354,13 @@ function matchSheetHeader(m) {
     h("p", { class: "match-sheet-when" },
       [hasScheduledStart(m) ? matchTimeLabel(m, fmtDayLong) : "Tid ej satt",
         kickoffDrift(m) ? "avkast " + fmtTime.format(new Date(m.started)) : null,
-        m.arena].filter(Boolean).join(" · ")));
+        m.arena].filter(Boolean).join(" · ")),
+    // Domarna kommer med i samma MatchWindow-fråga som allt annat, alltså
+    // gratis, och de finns redan innan matchen spelats.
+    (m.refs && m.refs.length)
+      ? h("p", { class: "match-sheet-refs" },
+        (m.refs.length === 1 ? "Domare: " : "Domare: ") + m.refs.join(", "))
+      : null);
 }
 
 function periodEtikett(period) {
@@ -957,9 +963,25 @@ function playoffSourceGroupsBlock(match) {
           : await ensureDialogTable(div.id);
         if (!rows.length) continue;
         const ranks = [...ref.ranks].sort((a, b) => a - b);
+        // Tabellen visar spelade matcher per lag, men inte hur många som
+        // återstår — och en fyralagsgrupp är tre omgångar, inte två. Utan
+        // den raden ser en tabell där alla spelat lika många ut som färdig,
+        // och man undrar varför platsen inte är avgjord.
+        const gruppens = groupMatches.filter((m) => m.divId === div.id);
+        const kvar = gruppens.filter((m) => !(m.res && m.res.fin))
+          .sort((a, b) => a.start - b.start);
         cards.push(h("div", { class: "playoff-source-table table-box" },
           h("h4", null, div.name || ref.label,
             h("span", { class: "muted" }, " · plats " + ranks.join(", ") + " går till matchen")),
+          gruppens.length ? h("p", { class: "muted playoff-source-progress" },
+            kvar.length === 0
+              ? "Alla " + gruppens.length + " gruppmatcher spelade — platsen är klar."
+              : (gruppens.length - kvar.length) + " av " + gruppens.length +
+                " gruppmatcher spelade. " +
+                (kvar.length === 1 ? "Avgörs i " : "Återstår bland annat ") +
+                kvar[0].home.name + " – " + kvar[0].away.name +
+                (hasScheduledStart(kvar[0])
+                  ? ", " + matchTimeLabel(kvar[0], fmtDay) : "") + ".") : null,
           h("table", { class: "standings" }, h("thead", null, h("tr", null,
             h("th", null, "#"), h("th", { class: "l" }, "Lag"), h("th", null, "S"),
             h("th", null, "+/−"), h("th", null, "P"))),

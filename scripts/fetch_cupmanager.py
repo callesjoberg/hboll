@@ -180,7 +180,9 @@ def normalize(store):
 
     matches = []
     for e in store.values():
-        if e.get("__typename") != "Match":
+        # store innehåller även listposter (referees) — de har
+        # ingen __typename och ska hoppas över.
+        if not isinstance(e, dict) or e.get("__typename") != "Match":
             continue
         home, away = get(e.get("home")), get(e.get("away"))
         arena, division = get(e.get("arena")), get(e.get("division"))
@@ -279,7 +281,9 @@ def arenas_from_store(store):
 
     arenas = {}
     for e in store.values():
-        if e.get("__typename") != "Arena":
+        # store innehåller även listposter (referees) — de har
+        # ingen __typename och ska hoppas över.
+        if not isinstance(e, dict) or e.get("__typename") != "Arena":
             continue
         name = e.get("completeName") or e.get("fieldName") or ""
         if not name:
@@ -309,7 +313,9 @@ def clubs_from_store(store):
 
     clubs = {}
     for e in store.values():
-        if e.get("__typename") != "NameClub":
+        # store innehåller även listposter (referees) — de har
+        # ingen __typename och ska hoppas över.
+        if not isinstance(e, dict) or e.get("__typename") != "NameClub":
             continue
         name = e.get("name")
         if not name:

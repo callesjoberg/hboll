@@ -1863,6 +1863,10 @@ input[type="search"]::-webkit-search-cancel-button {
 
 /* Skytteligan (Statistik → Skyttar). Läses som en resultatlista: platsen
    och målen först, spelaren i mitten, laget som svans. */
+.match-sheet-refs { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+
+.playoff-source-progress { margin: 2px 0 8px; font-size: 12px; }
+
 .skytt-topp { margin: 0 0 10px; }
 .skytt-live-nyckel { color: var(--live); }
 .skytt-verktyg { margin-bottom: 8px; }
