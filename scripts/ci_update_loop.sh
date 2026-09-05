@@ -31,6 +31,7 @@ hämta() {
   python3 scripts/fetch_gothia.py                || return 1
   python3 scripts/fetch_cupmanager.py            || return 1
   python3 scripts/build_snapshot_index.py        || return 1
+  python3 scripts/fetch_scorers.py               || return 1
   python3 scripts/build_club_directory.py        || return 1
   python3 scripts/archive_results.py             || return 1
   python3 scripts/build_team_index.py            || return 1
