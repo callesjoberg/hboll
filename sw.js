@@ -8,11 +8,12 @@
    här — appen har redan sin egen, mer träffsäkra cachningslogik för den
    datan (se js/api.js). */
 
-// Bumpa vid varje driftsättning som MÅSTE nå ut direkt. activate-
-// handlern nedan raderar alla cacher med ett ANNAT namn, så ett nytt
-// namn är det enda som garanterat tömmer en gammal, envis skalcache
-// (nätverk-först räcker inte om ett enskilt anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-v50";
+// Sätts av scripts/bump_assets.py till samma versionsnyckel som
+// index.html använder. activate-handlern nedan raderar alla cacher med
+// ett ANNAT namn, så ett nytt namn är det enda som garanterat tömmer en
+// gammal, envis skalcache (nätverk-först räcker inte om ett enskilt
+// anrop råkar falla tillbaka).
+const CACHE_NAME = "hboll-shell-20260905a";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -95,6 +96,8 @@ self.addEventListener("fetch", (e) => {
         }
         return resp;
       })
-      .catch(() => caches.match(e.request))
+      // ignoreSearch: moduler hämtas med ?v=<nyckel> via importmappen i
+      // index.html, medan SHELL_FILES ovan cachas utan nyckel.
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
 });
