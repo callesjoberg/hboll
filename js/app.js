@@ -27,6 +27,7 @@ import {
   calendarSubscribeUrl as teamCalendarUrl, calendarWebcalUrl as toWebcalUrl,
 } from "./domain/calendar.js";
 import { refreshTtl, allMatchesFinished } from "./domain/refresh.js";
+import { guessMatchMinutes } from "./domain/match-length.js";
 import {
   groupPlayoffRounds, playoffGroupReference,
 } from "./domain/playoff.js";
@@ -448,7 +449,11 @@ HB.shortCat = shortCat;
       ? storageGet("hb:palette") : "",
     teamColors: storageGet("hb:teamColors") !== "off",
     breakMinutes: storageNumber("hb:breakMinutes", 0, 0, 240), // 0 = av
-    matchMinutes: storageNumber("hb:matchMinutes", 30, 1, 240), // schemarutans längd
+    // Schemarutans längd. matchMinutes är en beräknad egenskap (se
+    // nedanför state): är matchMinutesAuto på härleds längden ur den
+    // öppna cupens eget schema, annars gäller användarens egna minuter.
+    matchMinutesAuto: storageGet("hb:matchMinutesAuto") !== "off",
+    matchMinutesManual: storageNumber("hb:matchMinutes", 30, 1, 240),
     revealBatchSize: storageNumber("hb:revealBatchSize", 4, 1, 100),
     recentMatchCount: storageNumber("hb:recentMatchCount", 2, 0, 100),
     advancedPlayoffTable: storageGet("hb:advancedPlayoffTable") === "on",
@@ -497,6 +502,33 @@ HB.shortCat = shortCat;
     })(),
   };
 
+  // Cup Manager publicerar bara starttider, aldrig matchlängder — men
+  // schemat bär måttet i sig (se domain/match-length.js). Räkna om bara
+  // när cupen eller matchmängden ändrats; heuristiken går igenom alla
+  // matcher och läses av vid varje omritning.
+  let autoMinutesKey = "";
+  let autoMinutes = null;
+  function derivedMatchMinutes() {
+    const key = state.cupId + ":" + state.matches.length;
+    if (key !== autoMinutesKey) {
+      autoMinutesKey = key;
+      autoMinutes = guessMatchMinutes(state.matches);
+    }
+    return autoMinutes;
+  }
+  Object.defineProperty(state, "matchMinutes", {
+    enumerable: true,
+    get() {
+      return (state.matchMinutesAuto && derivedMatchMinutes()) || state.matchMinutesManual;
+    },
+    // Att skriva till matchMinutes är alltid ett medvetet val i
+    // inställningarna — då slutar värdet följa cupen.
+    set(minuter) {
+      state.matchMinutesManual = minuter;
+      state.matchMinutesAuto = false;
+    },
+  });
+
   // Ett enda omritningsjobb per bildruta räcker när många arkivår blir
   // klara samtidigt. Utan sammanslagning byggdes hela Klubb/Lag-vyn om en
   // gång per fil och kändes låst trots att data redan strömmade in.
@@ -534,7 +566,8 @@ HB.shortCat = shortCat;
     updateClubLogo();
     persist("hb:teamColors", state.teamColors ? "on" : "off");
     persist("hb:breakMinutes", String(state.breakMinutes));
-    persist("hb:matchMinutes", String(state.matchMinutes));
+    persist("hb:matchMinutesAuto", state.matchMinutesAuto ? "on" : "off");
+    persist("hb:matchMinutes", String(state.matchMinutesManual));
     persist("hb:revealBatchSize", String(state.revealBatchSize));
     persist("hb:recentMatchCount", String(state.recentMatchCount));
     persist("hb:advancedPlayoffTable", state.advancedPlayoffTable ? "on" : "off");
@@ -2305,11 +2338,37 @@ HB.shortCat = shortCat;
     });
 
     const matchMinInput = $("#matchMinutesInput");
-    matchMinInput.value = state.matchMinutes;
+    const matchMinAutoBox = $("#matchMinutesAutoToggle");
+    const matchMinHint = $("#matchMinutesHint");
+    // Cupens matchlängd kan bara läsas av när dess schema är laddat, så
+    // rutan fylls i när inställningarna öppnas — inte en gång vid start.
+    const syncMatchMinutes = () => {
+      const härledd = derivedMatchMinutes();
+      matchMinAutoBox.checked = state.matchMinutesAuto;
+      matchMinInput.value = state.matchMinutes;
+      matchMinInput.disabled = state.matchMinutesAuto && !!härledd;
+      matchMinHint.textContent = härledd
+        ? "Cupens schema lägger matcherna i rutor om " + härledd +
+          " minuter (speltid plus halvlek och planbyte)."
+        : "Den här cupens schema räcker inte till för att läsa av " +
+          "matchlängden — ange den själv.";
+    };
+    syncMatchMinutes();
     matchMinInput.addEventListener("change", () => {
       state.matchMinutes = Math.max(5, +matchMinInput.value || 30);
-      matchMinInput.value = state.matchMinutes;
       saveSettings();
+      syncMatchMinutes();
+      renderContent();
+    });
+    matchMinAutoBox.addEventListener("change", () => {
+      // Läs av gällande längd FÖRE bytet: avbockad ska behålla det
+      // avlästa värdet som utgångspunkt i stället för att kasta tillbaka
+      // användaren till ett gammalt manuellt tal.
+      const gällande = state.matchMinutes;
+      state.matchMinutesAuto = matchMinAutoBox.checked;
+      if (!state.matchMinutesAuto) state.matchMinutesManual = gällande;
+      saveSettings();
+      syncMatchMinutes();
       renderContent();
     });
 
@@ -2344,6 +2403,7 @@ HB.shortCat = shortCat;
     // i slutspelsvyn) — synka kryssrutan mot state igen varje gång dialogen
     // öppnas, annars kan den visa fel läge efter en sådan ändring.
     const openSettings = () => {
+      syncMatchMinutes();
       advTableBox.checked = state.playoffView === "table";
       projBox.checked = state.showPlayoffProjection;
       if (pathBox) pathBox.checked = state.showPlayoffPath;
