@@ -488,6 +488,21 @@ function feedGraf(m, feed) {
           " mål till " + ledare));
 }
 
+function spelarKnapp(namn, lag, nr) {
+  return h("span", {
+    class: "spelar-lank", role: "button", tabindex: "0",
+    title: "Visa " + namn + "s mål i cupen",
+    onclick: (e) => { e.stopPropagation(); openPlayerSheet(namn, lag.id); },
+    onkeydown: (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault(); openPlayerSheet(namn, lag.id);
+      }
+    },
+  }, nr != null ? h("span", { class: "feed-nr" }, String(nr)) : null,
+  namn, h("span", { class: "feed-team" }, lag.name));
+}
+
 function feedRad(m, e) {
   const lag = e.side === "away" ? m.away : m.home;
   return h("div", { class: "feed-row " + (e.side === "away" ? "away" : "home") },
@@ -497,9 +512,7 @@ function feedRad(m, e) {
       // Ungefär hälften av målen saknar registrerad skytt. Då är laget
       // det enda vi vet, och det är bättre än en tom rad.
       e.player
-        ? h("span", null,
-          e.nr != null ? h("span", { class: "feed-nr" }, String(e.nr)) : null,
-          e.player, h("span", { class: "feed-team" }, lag.name))
+        ? spelarKnapp(e.player, lag, e.nr)
         : h("span", { class: "feed-team only" }, lag.name)));
 }
 
@@ -519,7 +532,8 @@ function feedPerSpelare(m, mål) {
     const nyckel = (lag.id || e.side) + "|" + (e.player || "");
     let rad = rader.get(nyckel);
     if (!rad) {
-      rad = { namn: e.player, nr: e.nr, lag: lag.name, side: e.side, antal: 0 };
+      rad = { namn: e.player, nr: e.nr, lag: lag.name, lagId: lag.id,
+        side: e.side, antal: 0 };
       rader.set(nyckel, rad);
     }
     if (e.nr != null) rad.nr = e.nr;
@@ -533,11 +547,39 @@ function feedAggRad(rad) {
     h("span", { class: "feed-score" }, String(rad.antal)),
     h("span", { class: "feed-who" },
       rad.namn
-        ? h("span", null,
-          rad.nr != null ? h("span", { class: "feed-nr" }, String(rad.nr)) : null,
-          rad.namn, h("span", { class: "feed-team" }, rad.lag))
+        ? spelarKnapp(rad.namn, { id: rad.lagId, name: rad.lag }, rad.nr)
         : h("span", { class: "feed-team only" },
           "Utan registrerad skytt · " + rad.lag)));
+}
+
+// Utvisningar, kort och timeouter per lag. Fältet finns i alla cuper men
+// fylls bara i av vissa sekretariat — Örebrocupen registrerar tvåminutare,
+// Göteborg Cup och Hällby inga alls. Ritas därför bara när det faktiskt
+// finns något, i stället för att visa en rad nollor som ser ut som ett
+// påstående om att matchen var utvisningsfri.
+function feedDisciplin(m, feed) {
+  const st = feed && feed.stats;
+  if (!st) return null;
+  const rad = (lag, s) => {
+    if (!s) return null;
+    const delar = [];
+    if (s.utvisningar) {
+      delar.push(s.utvisningar + (s.utvisningsminuter
+        ? " utvisningar (" + s.utvisningsminuter + " min)" : " utvisningar"));
+    }
+    if (s.rött) delar.push(s.rött + " rött");
+    if (s.gult) delar.push(s.gult + " gult");
+    if (s.grönt) delar.push(s.grönt + " grönt");
+    if (s.timeouts) delar.push(s.timeouts + " timeout" + (s.timeouts > 1 ? "er" : ""));
+    if (!delar.length) return null;
+    return h("div", { class: "feed-disc-rad" },
+      h("span", { class: "feed-team only" }, lag.name),
+      h("span", null, delar.join(" · ")));
+  };
+  const rader = [rad(m.home, st.home), rad(m.away, st.away)].filter(Boolean);
+  if (!rader.length) return null;
+  return h("div", { class: "feed-disc" },
+    h("div", { class: "feed-mark" }, "Utvisningar och kort"), ...rader);
 }
 
 function feedNoder(m, feed, rita) {
@@ -579,6 +621,8 @@ function feedNoder(m, feed, rita) {
     noder.push(...rader.map(feedAggRad));
   }
 
+  const disc = feedDisciplin(m, feed);
+  if (disc) noder.push(disc);
   const skyttar = mål.filter((e) => e.player).length;
   noder.push(h("p", { class: "muted feed-note" },
     skyttar === mål.length
@@ -613,6 +657,78 @@ function feedTabBody(m) {
     }, 30000);
   }
   return box;
+}
+
+// --- spelarark -------------------------------------------------------
+// Vilka matcher gjordes målen i? Skyttedatabasen lagrar bara totaler, så
+// svaret hämtas ur lagets egna matchfeeds — ett lag spelar en handfull
+// matcher i en cup, så det är några anrop, inte hundratals. Kostar inget
+// förrän någon klickar på ett namn.
+
+export function openPlayerSheet(namn, lagId) {
+  const lagets = state.matches
+    .filter((m) => (m.home && m.home.id === lagId) || (m.away && m.away.id === lagId))
+    .filter((m) => m.res && (m.res.fin || m.res.live))
+    .sort((a, b) => a.start - b.start);
+  const lagnamn = (() => {
+    const m = lagets[0];
+    if (!m) return "";
+    return (m.home && m.home.id === lagId ? m.home : m.away).name;
+  })();
+
+  const kropp = h("div", { class: "match-sheet-body" },
+    h("p", { class: "muted" }, "Hämtar målen …"));
+  const dlg = h("dialog", { class: "match-dialog match-sheet" },
+    h("div", { class: "match-sheet-bar" },
+      h("button", { class: "match-sheet-back", type: "button", onclick: () => dlg.close() }, "Tillbaka"),
+      h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×")),
+    h("div", { class: "match-sheet-head" },
+      h("p", { class: "match-sheet-eyebrow" }, lagnamn),
+      h("div", { class: "match-sheet-score-row" },
+        h("div", { class: "match-sheet-teams" },
+          h("div", { class: "match-sheet-team us" },
+            h("span", { class: "match-sheet-team-name" }, namn))))),
+    kropp);
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener("close", () => dlg.remove());
+  document.body.append(dlg); showMatchDialog(dlg);
+
+  Promise.all(lagets.map((m) => HB.api.fetchMatchFeed(cup(), m.id)
+    .then((feed) => ({ m, mål: ((feed && feed.events) || []).filter((e) =>
+      e.typ === "mal" && e.player === namn &&
+      (e.side === "away" ? m.away : m.home).id === lagId) }))
+    .catch(() => ({ m, mål: [] }))))
+    .then((rader) => {
+      if (!dlg.isConnected) return;
+      const träffar = rader.filter((r) => r.mål.length);
+      const totalt = träffar.reduce((n, r) => n + r.mål.length, 0);
+      if (!totalt) {
+        kropp.replaceChildren(h("p", { class: "muted" },
+          "Inga registrerade mål i den här cupen."));
+        return;
+      }
+      kropp.replaceChildren(
+        h("p", { class: "muted" },
+          totalt + " mål på " + träffar.length + " " +
+          (träffar.length === 1 ? "match" : "matcher") + " i " + cup().name),
+        ...träffar.map(({ m, mål }) => {
+          const motstånd = (m.home && m.home.id === lagId ? m.away : m.home).name;
+          return h("div", { class: "spelar-match" },
+            h("div", { class: "spelar-match-topp" },
+              h("span", { class: "spelar-antal" }, String(mål.length)),
+              h("span", { class: "spelar-motstand" }, "mot " + motstånd,
+                h("span", { class: "feed-team" },
+                  matchTimeLabel(m, fmtDay) + " · " + shortCat(m.catName))),
+              h("button", {
+                class: "btn small", type: "button",
+                onclick: () => { dlg.close(); openMatchSheet(m, "feed"); },
+              }, "Matchen")),
+            h("div", { class: "spelar-tider" }, mål.map((e) =>
+              h("span", { class: "spelar-tid" },
+                fmtTime.format(new Date(e.at)) + " · " + e.hg + "–" + e.ag))));
+        }));
+    });
+  return dlg;
 }
 
 export function openMatchSheet(m, förvaldFlik) {

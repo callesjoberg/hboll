@@ -1936,6 +1936,59 @@ input[type="search"]::-webkit-search-cancel-button {
    Läses uppifrån och ner som en live-feed, nyast överst. */
 .feed-list { display: grid; gap: 1px; }
 
+/* Klickbart spelarnamn — diskret tills man rör vid det, som lagnamnen
+   på matchkorten. */
+.spelar-lank { cursor: pointer; }
+.spelar-lank:hover,
+.spelar-lank:focus-visible { text-decoration: underline; text-decoration-style: dotted; }
+
+.feed-disc { margin-top: 14px; }
+.feed-disc-rad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.spelar-match {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.spelar-match-topp {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.spelar-antal {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  min-width: 24px;
+}
+
+.spelar-motstand { flex: 1; min-width: 0; font-size: 14px; }
+.spelar-motstand .feed-team { display: block; margin-left: 0; }
+
+.spelar-tider {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0 34px;
+}
+
+.spelar-tid {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 .feed-sorts {
   display: flex;
   gap: 6px;

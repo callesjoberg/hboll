@@ -565,7 +565,8 @@ window.HB = window.HB || {};
   async function fetchMatchFeed(cup, matchId) {
     if (cup.dataUrl || !matchId) return null;
     const r = await call(cup,
-      "Match({id:" + matchId + "}){feed:{events:[" + FEED_FRAGMENT + "]}}");
+      "Match({id:" + matchId + "}){feed:{events:[" + FEED_FRAGMENT + "]," +
+      "statistics:{}}}");
     const entiteter = Object.values(r.responses || {})
       .map((v) => v && v.entity).filter((e) => e && typeof e === "object");
     const feed = entiteter.find((e) => e.__typename === "MatchFeed");
@@ -584,7 +585,20 @@ window.HB = window.HB || {};
       }))
       // absoluteTime är enda pålitliga ordningen: store:n är osorterad.
       .sort((a, b) => a.at - b.at);
-    return { start: normalizeStart(feed && feed.liveStartTime), events };
+    // Lagstatistik: utvisningar, kort och timeouter. Fältet finns i alla
+    // cuper men fylls bara i av vissa sekretariat — Örebrocupen har
+    // tvåminutare, Göteborg Cup och Hällby har inga alls. Per LAG, inte
+    // per spelare, och utan tidpunkter.
+    const stat = entiteter.find((e) => e.__typename === "MatchFeed$EventStatistics");
+    const sida = (s) => (s ? {
+      utvisningar: s.penaltiesCount || 0, utvisningsminuter: s.penaltiesMinutes || 0,
+      rött: s.redCards || 0, gult: s.yellowCards || 0, grönt: s.greenCards || 0,
+      timeouts: s.timeouts || 0,
+    } : null);
+    return {
+      start: normalizeStart(feed && feed.liveStartTime), events,
+      stats: stat ? { home: sida(stat.home), away: sida(stat.away) } : null,
+    };
   }
 
   // Den CI-byggda målskyttestatistiken (scripts/fetch_scorers.py). En

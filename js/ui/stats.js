@@ -3,7 +3,7 @@
 import { h, $ } from "../dom.js";
 import { attachAutocomplete, chip, withClearButton } from "./controls.js";
 import { buildPicker } from "./toolbar.js";
-import { matchCard } from "./match-ui.js";
+import { matchCard, openPlayerSheet } from "./match-ui.js";
 import { bracketBlock, drawBracketConnectors } from "./playoffs.js";
 import { countryDisplayName, renderMapView } from "./map.js";
 import { MULTI_COLOR_PALETTE } from "./palette.js";
@@ -2393,10 +2393,19 @@ function skyttInnehall(doc, idx, rita, el) {
   },
   h("span", { class: "skytt-plats" }, String(i + 1)),
   h("span", { class: "skytt-mal" + (r.live ? " live" : "") }, String(r.mål)),
-  h("span", { class: "skytt-namn" },
-    r.nr != null ? h("span", { class: "feed-nr" }, String(r.nr)) : null,
-    r.namn,
-    h("span", { class: "skytt-lag" }, r.lagnamn + (r.klass ? " · " + r.klass : ""))),
+  h("span", {
+    class: "skytt-namn spelar-lank", role: "button", tabindex: "0",
+    title: "Visa " + r.namn + "s mål i cupen",
+    onclick: () => openPlayerSheet(r.namn, r.lagId),
+    onkeydown: (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault(); openPlayerSheet(r.namn, r.lagId);
+      }
+    },
+  },
+  r.nr != null ? h("span", { class: "feed-nr" }, String(r.nr)) : null,
+  r.namn,
+  h("span", { class: "skytt-lag" }, r.lagnamn + (r.klass ? " · " + r.klass : ""))),
   h("span", { class: "skytt-matcher" }, r.matcher ? r.matcher + " m" : "")));
 
   if (!träffar.length) noder.push(h("p", { class: "muted" }, "Ingen träff."));
