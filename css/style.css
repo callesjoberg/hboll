@@ -1876,6 +1876,14 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .skytt-lista-box { display: grid; gap: 1px; }
 
+.skytt-rubrik {
+  margin: 22px 0 4px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 19px;
+}
+
+.feed-disc-jmf { margin: 8px 0 0; font-size: 12px; }
+
 .skytt-rad {
   display: grid;
   grid-template-columns: 28px 34px 1fr auto;

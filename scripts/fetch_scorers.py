@@ -44,19 +44,45 @@ FEED_TYPES = ["MatchGoal", "MatchStart", "MatchStop"]
 FEED_FRAGMENT = "{" + ",".join(f"... on {t}:{{}}" for t in FEED_TYPES) + "}"
 
 
-def match_goals(host, tid, match_id):
-    """[(side, spelarnamn|None, nummer|None)] för en match."""
-    q = f"Match({{id:{match_id}}}){{feed:{{events:[{FEED_FRAGMENT}]}}}}"
+# Ordning i de kompakta disciplinlistorna nedan. Fasta index i stället för
+# nycklar: raden lagras per match och lag, och sex nyckelnamn per rad hade
+# fyrdubblat filen utan att säga mer.
+DISC_FALT = ("penaltiesCount", "penaltiesMinutes", "redCards", "yellowCards",
+             "greenCards", "timeouts")
+
+
+def match_feed(host, tid, match_id):
+    """(mål, disciplin) för en match.
+
+    mål: [(side, spelarnamn|None, nummer|None)]
+    disciplin: {"h": [...], "a": [...]} med DISC_FALT-ordningen, eller None
+               när cupen inte registrerar något sådant."""
+    q = (f"Match({{id:{match_id}}}){{feed:{{events:[{FEED_FRAGMENT}],"
+         f"statistics:{{}}}}}}")
     doc = api_call(host, tid, q)
-    ut = []
+    mål = []
+    stat = None
     for v in (doc.get("responses") or {}).values():
         e = (v or {}).get("entity") or {}
-        if e.get("__typename") != "MatchGoal":
-            continue
-        nr = e.get("playerNr")
-        ut.append((e.get("side"), e.get("playerName") or None,
-                   nr if isinstance(nr, int) else None))
-    return ut
+        typ = e.get("__typename")
+        if typ == "MatchGoal":
+            nr = e.get("playerNr")
+            mål.append((e.get("side"), e.get("playerName") or None,
+                        nr if isinstance(nr, int) else None))
+        elif typ == "MatchFeed$EventStatistics":
+            stat = e
+    disc = None
+    if stat:
+        rader = {}
+        for kort, sida in (("h", "home"), ("a", "away")):
+            s = stat.get(sida) or {}
+            rader[kort] = [int(s.get(f) or 0) for f in DISC_FALT]
+        # Bara matcher där något faktiskt hänt sparas. Alla nollor betyder
+        # antingen en händelsefri match eller ett sekretariat som inte
+        # registrerar — och de går inte att skilja åt, så vi påstår inget.
+        if any(any(rad) for rad in rader.values()):
+            disc = rader
+    return mål, disc
 
 
 def load_existing(path):
@@ -67,6 +93,7 @@ def load_existing(path):
     doc.setdefault("done", [])
     doc.setdefault("players", [])
     doc.setdefault("goals", {"total": 0, "named": 0})
+    doc.setdefault("discipline", [])
     return doc
 
 
@@ -82,7 +109,8 @@ def build(cup, only_new=True):
 
     path = ROOT / "data" / f"scorers-{cup_id}.json"
     doc = load_existing(path) if only_new else {
-        "done": [], "players": [], "goals": {"total": 0, "named": 0}}
+        "done": [], "players": [], "goals": {"total": 0, "named": 0},
+        "discipline": []}
     klara = set(doc["done"])
     # (lag-id, namn) -> rad. Nummer kan byta mellan matcher; senaste vinner.
     index = {(p["t"], p["n"]): p for p in doc["players"]}
@@ -96,19 +124,23 @@ def build(cup, only_new=True):
 
     def hamta(m):
         try:
-            return m, match_goals(cup["host"], cup["tournamentId"], m["id"])
+            return m, match_feed(cup["host"], cup["tournamentId"], m["id"])
         except Exception:
             return m, None
 
     with ThreadPoolExecutor(max_workers=CONC) as ex:
         resultat = list(ex.map(hamta, att_hamta))
 
+    disc_index = {d["m"]: d for d in doc["discipline"]}
     nya = 0
-    for m, goals in resultat:
-        if goals is None:
+    for m, svar in resultat:
+        if svar is None:
             continue  # nätfel — försök igen nästa körning, markera inte klar
+        goals, disc = svar
         klara.add(m["id"])
         nya += 1
+        if disc:
+            disc_index[m["id"]] = {"m": m["id"], **disc}
         sett_i_matchen = set()
         for side, namn, nr in goals:
             doc["goals"]["total"] += 1
@@ -135,10 +167,16 @@ def build(cup, only_new=True):
     doc["ts"] = int(time.time() * 1000)
     doc["done"] = sorted(klara)
     doc["players"] = sorted(index.values(), key=lambda p: (-p["g"], p["n"]))
+    # Mest händelserika först — det är den ordning listan läses i.
+    doc["discipline"] = sorted(
+        disc_index.values(),
+        key=lambda d: -(sum(d["h"][:1]) + sum(d["a"][:1])))
+    doc["disciplineFields"] = list(DISC_FALT)
     path.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
     kvar = " (fler kvar till nästa körning)" if kapat else ""
     return (f"{path.name}: +{nya} matcher, {len(doc['players'])} spelare, "
-            f"{doc['goals']['named']}/{doc['goals']['total']} mål med skytt{kvar}")
+            f"{doc['goals']['named']}/{doc['goals']['total']} mål med skytt, "
+            f"{len(doc['discipline'])} matcher med utvisning/kort{kvar}")
 
 
 def main():

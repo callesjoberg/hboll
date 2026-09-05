@@ -3,7 +3,7 @@
 import { h, $ } from "../dom.js";
 import { attachAutocomplete, chip, withClearButton } from "./controls.js";
 import { buildPicker } from "./toolbar.js";
-import { matchCard, openPlayerSheet } from "./match-ui.js";
+import { matchCard, openPlayerSheet, openMatchSheet } from "./match-ui.js";
 import { bracketBlock, drawBracketConnectors } from "./playoffs.js";
 import { countryDisplayName, renderMapView } from "./map.js";
 import { MULTI_COLOR_PALETTE } from "./palette.js";
@@ -2415,7 +2415,50 @@ function skyttInnehall(doc, idx, rita, el) {
       onclick: () => { skyttVisade += SKYTT_STEG; rita(); },
     }, "Visa fler (" + (träffar.length - visade.length) + " kvar)"));
   }
-  el.lista.replaceChildren(...noder);
+  el.lista.replaceChildren(...noder, ...disciplinLista(doc));
+}
+
+// Matcherna med flest utvisningar i cupen. Ritas bara när cupen faktiskt
+// registrerar dem: Örebrocupen gör det (33 av 272 matcher), Göteborg Cup
+// och Hällby inte alls, och då säger en tom lista bara emot sig själv.
+const DISC_TOPP = 10;
+
+function disciplinLista(doc) {
+  const rader = (doc && doc.discipline) || [];
+  const fält = (doc && doc.disciplineFields) || [];
+  const iAntal = fält.indexOf("penaltiesCount");
+  const iMin = fält.indexOf("penaltiesMinutes");
+  if (!rader.length || iAntal < 0) return [];
+  const namn = new Map();
+  for (const m of state.matches) namn.set(m.id, m);
+  const topp = rader
+    .map((d) => ({ d, antal: (d.h[iAntal] || 0) + (d.a[iAntal] || 0), m: namn.get(d.m) }))
+    .filter((r) => r.antal && r.m)
+    .sort((a, b) => b.antal - a.antal)
+    .slice(0, DISC_TOPP);
+  if (!topp.length) return [];
+  return [
+    h("h3", { class: "skytt-rubrik" }, "Flest utvisningar"),
+    h("p", { class: "muted skytt-topp" },
+      rader.length + " av cupens matcher har registrerade utvisningar eller kort."),
+    h("div", { class: "skytt-lista-box" }, topp.map((r, i) => h("div", {
+      class: "skytt-rad" + (isClubName(r.m.home.name) || isClubName(r.m.away.name) ? " ours" : ""),
+      role: "button", tabindex: "0",
+      title: "Öppna matchen",
+      onclick: () => openMatchSheet(r.m, "feed"),
+      onkeydown: (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchSheet(r.m, "feed"); }
+      },
+    },
+    h("span", { class: "skytt-plats" }, String(i + 1)),
+    h("span", { class: "skytt-mal" }, String(r.antal)),
+    h("span", { class: "skytt-namn" },
+      r.m.home.name + " – " + r.m.away.name,
+      h("span", { class: "skytt-lag" },
+        [HB.shortCat(r.m.catName), r.m.divName].filter(Boolean).join(" · "))),
+    h("span", { class: "skytt-matcher" },
+      iMin >= 0 ? ((r.d.h[iMin] || 0) + (r.d.a[iMin] || 0)) + " min" : "")))),
+  ];
 }
 
 const STATS_TABS = [

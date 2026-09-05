@@ -557,15 +557,40 @@ function feedAggRad(rad) {
 // Göteborg Cup och Hällby inga alls. Ritas därför bara när det faktiskt
 // finns något, i stället för att visa en rad nollor som ser ut som ett
 // påstående om att matchen var utvisningsfri.
-function feedDisciplin(m, feed) {
+// Hur den här matchen förhåller sig till resten av cupen. Bara meningsfullt
+// när cupen faktiskt registrerar utvisningar — gör den inte det är noll
+// inte ett lugnt spel utan ett tomt fält, och då sägs ingenting.
+function disciplinJamforelse(egna, doc) {
+  if (!doc || !Array.isArray(doc.discipline) || !doc.discipline.length) return null;
+  const fält = doc.disciplineFields || [];
+  const i = fält.indexOf("penaltiesCount");
+  if (i < 0) return null;
+  const granskade = (doc.done || []).length;
+  if (granskade < 20) return null; // för litet underlag för en jämförelse
+  const summa = (d) => (d.h[i] || 0) + (d.a[i] || 0);
+  const fler = doc.discipline.filter((d) => summa(d) > egna).length;
+  const andel = Math.round(((granskade - fler) / granskade) * 100);
+  if (!egna) {
+    const utan = granskade - doc.discipline.filter((d) => summa(d) > 0).length;
+    return "Inga utvisningar — som i " + utan + " av cupens " + granskade +
+      " granskade matcher.";
+  }
+  return fler === 0
+    ? "Flest utvisningar i hela cupen så här långt."
+    : "Fler utvisningar än " + andel + " % av cupens " + granskade +
+      " granskade matcher.";
+}
+
+function feedDisciplin(m, feed, skyttDoc) {
   const st = feed && feed.stats;
   if (!st) return null;
   const rad = (lag, s) => {
     if (!s) return null;
     const delar = [];
     if (s.utvisningar) {
-      delar.push(s.utvisningar + (s.utvisningsminuter
-        ? " utvisningar (" + s.utvisningsminuter + " min)" : " utvisningar"));
+      const ord = s.utvisningar === 1 ? " utvisning" : " utvisningar";
+      delar.push(s.utvisningar + ord + (s.utvisningsminuter
+        ? " (" + s.utvisningsminuter + " min)" : ""));
     }
     if (s.rött) delar.push(s.rött + " rött");
     if (s.gult) delar.push(s.gult + " gult");
@@ -577,12 +602,16 @@ function feedDisciplin(m, feed) {
       h("span", null, delar.join(" · ")));
   };
   const rader = [rad(m.home, st.home), rad(m.away, st.away)].filter(Boolean);
-  if (!rader.length) return null;
+  const egna = (st.home ? st.home.utvisningar : 0) + (st.away ? st.away.utvisningar : 0);
+  const jmf = disciplinJamforelse(egna, skyttDoc);
+  if (!rader.length && !jmf) return null;
   return h("div", { class: "feed-disc" },
-    h("div", { class: "feed-mark" }, "Utvisningar och kort"), ...rader);
+    h("div", { class: "feed-mark" }, "Utvisningar och kort"),
+    ...rader,
+    jmf ? h("p", { class: "muted feed-disc-jmf" }, jmf) : null);
 }
 
-function feedNoder(m, feed, rita) {
+function feedNoder(m, feed, rita, skyttDoc) {
   const events = (feed && feed.events) || [];
   const mål = events.filter((e) => e.typ === "mal");
   if (!mål.length) {
@@ -621,7 +650,7 @@ function feedNoder(m, feed, rita) {
     noder.push(...rader.map(feedAggRad));
   }
 
-  const disc = feedDisciplin(m, feed);
+  const disc = feedDisciplin(m, feed, skyttDoc);
   if (disc) noder.push(disc);
   const skyttar = mål.filter((e) => e.player).length;
   noder.push(h("p", { class: "muted feed-note" },
@@ -635,11 +664,17 @@ function feedTabBody(m) {
   const box = h("div", { class: "match-sheet-body feed-list" },
     h("p", { class: "muted" }, "Hämtar matchhändelser …"));
   let senaste = null;
+  let skyttDoc = null;
   const rita = () => {
-    if (box.isConnected) box.replaceChildren(...feedNoder(m, senaste, rita));
+    if (box.isConnected) box.replaceChildren(...feedNoder(m, senaste, rita, skyttDoc));
   };
-  const ladda = () => HB.api.fetchMatchFeed(cup(), m.id)
-    .then((feed) => { senaste = feed; rita(); })
+  const ladda = () => Promise.all([
+    HB.api.fetchMatchFeed(cup(), m.id),
+    // Cachead per cup — kostar inget efter första gången, och ger
+    // jämförelsen "fler utvisningar än resten av cupen".
+    HB.api.fetchScorers(cup()),
+  ])
+    .then(([feed, doc]) => { senaste = feed; skyttDoc = doc; rita(); })
     .catch(() => {
       if (box.isConnected) {
         box.replaceChildren(h("p", { class: "muted" },
