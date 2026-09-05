@@ -652,16 +652,42 @@ export function drawBracketConnectors(boxEl, div, zoomOverride) {
   bracketEl.prepend(svg);
 }
 
+// Ordna varje omgång efter TRÄDET, inte efter klockan. Tidsordning var
+// den egentliga orsaken till att linjerna såg röriga ut: två matcher som
+// matar samma kvartsfinal kunde hamna i var sin ände av sin kolumn, och
+// då måste förbindelsen korsa hela trädet. Sorterar man i stället varje
+// omgång efter var dess MÅLMATCH ligger i nästa kolumn hamnar matarna
+// bredvid varandra och linjerna blir korta och parallella.
+//
+// Finalen (sist i listan) har ingen efterföljare och sorteras på tid som
+// förut; övriga omgångar följer den bakåt.
+function bracketRounds(div) {
+  const rounds = groupPlayoffRounds(div).map(([nyckel, ms]) => [nyckel, [...ms]]);
+  if (!rounds.length) return rounds;
+  const tid = (a, b) => (state.playoffTimeOrder === "asc"
+    ? a.start - b.start : b.start - a.start);
+  rounds[rounds.length - 1][1].sort(tid);
+  for (let i = rounds.length - 2; i >= 0; i--) {
+    const nästa = new Map(rounds[i + 1][1].map((m, index) => [m.id, index]));
+    rounds[i][1].sort((a, b) => {
+      // Matcher utan känd målmatch läggs sist i stället för att blandas in.
+      const ia = nästa.has(a.nextWinnerId) ? nästa.get(a.nextWinnerId) : Infinity;
+      const ib = nästa.has(b.nextWinnerId) ? nästa.get(b.nextWinnerId) : Infinity;
+      if (ia !== ib) return ia - ib;
+      return (a.matchRank || 0) - (b.matchRank || 0) || tid(a, b);
+    });
+  }
+  return rounds;
+}
+
 export function bracketBlock(div, projMap, matchOnClick, relevantIds) {
   return h("section", { class: "bracket-box" },
     h("h3", null, div.name),
     h("div", { class: "bracket" },
-      groupPlayoffRounds(div).map(([, ms]) =>
+      bracketRounds(div).map(([, ms]) =>
         h("div", { class: "bracket-round" },
           h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
-          [...ms].sort((a, b) => state.playoffTimeOrder === "asc"
-            ? a.start - b.start : b.start - a.start)
-            .map((m) => bracketMatchBox(m, projMap, matchOnClick, relevantIds))))));
+          ms.map((m) => bracketMatchBox(m, projMap, matchOnClick, relevantIds))))));
 }
 
 function relevantPlayoffMatchIds(div, catId, edition) {
