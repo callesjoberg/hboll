@@ -13,7 +13,11 @@
 // ett ANNAT namn, så ett nytt namn är det enda som garanterat tömmer en
 // gammal, envis skalcache (nätverk-först räcker inte om ett enskilt
 // anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+<<<<<<< HEAD
+const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+=======
+const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+>>>>>>> parent of 77d8ca9 (Låt koden äga slutspelsträdets placering, och rita om vid måttändring)
 const SHELL_FILES = [
   "./",
   "./index.html",

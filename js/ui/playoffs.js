@@ -595,29 +595,13 @@ function bracketMatchBox(m, projMap, onClick, relevantIds) {
 // går direkt in i 1/8-final, så 1/16 och 1/8 kan ha lika många matcher.
 // Följden var att finalen hamnade långt ner i stället för mitt för sina
 // semifinaler, och samma sak en bit uppåt i varje omgång.
-function layoutBracket(bracketEl, div, zoom) {
+function layoutBracket(bracketEl, div) {
   const kolumner = [...bracketEl.querySelectorAll(".bracket-round")];
   if (kolumner.length < 2) return;
   const rutor = kolumner.map((k) => [...k.querySelectorAll("[data-match-id]")]);
   if (rutor.some((rad) => !rad.length)) return;
-
-  // Nollställ föregående pass INNAN mätningen, annars mäts rutorna där de
-  // hamnade förra gången och felet ackumuleras vid varje zoomsteg.
-  bracketEl.style.minHeight = "";
+  // Nollställ ett tidigare pass så mätningen utgår från grundläget.
   for (const rad of rutor) for (const el of rad) el.style.transform = "";
-
-  // Mät i lokala (ozoomade) enheter — samma koordinatrum som transformen
-  // uttrycks i. offsetTop duger inte: under CSS zoom rapporterar
-  // webbläsarna det olika, och flyttarna blev fel efter en zoomning.
-  const bas = bracketEl.getBoundingClientRect();
-  const mått = new Map();
-  for (const rad of rutor) {
-    for (const el of rad) {
-      const r = el.getBoundingClientRect();
-      mått.set(el, { topp: (r.top - bas.top) / zoom, höjd: r.height / zoom });
-    }
-  }
-  const mitt = (el) => mått.get(el).topp + mått.get(el).höjd / 2;
 
   const matare = new Map(); // målmatch-id -> [matarelement]
   for (const m of div.matches) {
@@ -630,13 +614,11 @@ function layoutBracket(bracketEl, div, zoom) {
   }
 
   const GAP = 12;
-  const plats = new Map();
-  let störstaBotten = 0;
-  for (const el of rutor[0]) {
-    plats.set(el, mitt(el));
-    störstaBotten = Math.max(störstaBotten, mått.get(el).topp + mått.get(el).höjd);
-  }
+  const mitt = (el) => el.offsetTop + el.offsetHeight / 2;
+  const plats = new Map(); // element -> mittpunkt efter flytt
+  for (const el of rutor[0]) plats.set(el, mitt(el));
 
+  let störstaBotten = 0;
   for (let i = 1; i < rutor.length; i++) {
     const rad = rutor[i];
     const önskad = rad.map((el) => {
@@ -646,10 +628,10 @@ function layoutBracket(bracketEl, div, zoom) {
         ? centra.reduce((a, b) => a + b, 0) / centra.length
         : mitt(el);
     });
-    // Sopa uppifrån: en match får aldrig hamna ovanför sin föregångare.
+    // Krockhantering: sopa uppifrån och tryck ner det som inte får plats.
     let förraBotten = -Infinity;
     for (let j = 0; j < rad.length; j++) {
-      const höjd = mått.get(rad[j]).höjd;
+      const höjd = rad[j].offsetHeight;
       const c = Math.max(önskad[j], förraBotten + GAP + höjd / 2);
       önskad[j] = c;
       förraBotten = c + höjd / 2;
@@ -662,41 +644,15 @@ function layoutBracket(bracketEl, div, zoom) {
         ? "" : "translateY(" + flytt.toFixed(1) + "px)";
     }
   }
-  // transform växer inte layouthöjden — utan detta hamnar de nedflyttade
-  // rutorna utanför trädets egen ruta.
+  // transform påverkar inte layouthöjden — utan detta klipps de nedflyttade
+  // rutorna av trädets egen höjd.
   bracketEl.style.minHeight = Math.ceil(störstaBotten + GAP) + "px";
-}
-
-// Rita om när trädets mått ändras. En zoomning byter CSS zoom på
-// .bracket-row, och webbläsaren hinner inte alltid tillämpa den innan
-// requestAnimationFrame-passet mäter — då hamnade linjerna kvar på den
-// gamla nivån tills nästa omritning. En ResizeObserver fångar varje
-// faktisk måttändring, oavsett vad som orsakade den: zoom, teckensnitt
-// som laddat klart, eller en fönsterbredd som ändrats.
-const bevakade = new WeakMap();
-
-function bevakaBracket(boxEl, div) {
-  const bracketEl = boxEl.querySelector(".bracket");
-  if (!bracketEl || bevakade.has(bracketEl) || typeof ResizeObserver !== "function") return;
-  let väntar = 0;
-  const obs = new ResizeObserver(() => {
-    if (väntar) return;
-    väntar = requestAnimationFrame(() => {
-      väntar = 0;
-      if (bracketEl.isConnected) drawBracketConnectors(boxEl, div);
-    });
-  });
-  // Observera en RUTA, inte trädet självt: trädets egen minHeight sätts av
-  // layoutBracket, så att observera det skulle mata tillbaka i sig självt.
-  const ruta = bracketEl.querySelector("[data-match-id]");
-  if (!ruta) return;
-  obs.observe(ruta);
-  bevakade.set(bracketEl, obs);
 }
 
 export function drawBracketConnectors(boxEl, div, zoomOverride) {
   const bracketEl = boxEl.querySelector(".bracket");
   if (!bracketEl) return;
+  layoutBracket(bracketEl, div);
   const old = bracketEl.querySelector(".bracket-connectors");
   if (old) old.remove();
   // SVG:n hamnar SJÄLV inuti .bracket-row (samma element som får CSS
@@ -719,7 +675,6 @@ export function drawBracketConnectors(boxEl, div, zoomOverride) {
   // innehållsytan OCH är redan i lokala (ozoomade) enheter — behöver
   // alltså inte delas med zoom, till skillnad från positionsmåtten.
   const zoom = zoomOverride != null ? zoomOverride : (state.bracketZoom || 1);
-  layoutBracket(bracketEl, div, zoom);
   const raw = bracketEl.getBoundingClientRect();
   const base = {
     left: raw.left, top: raw.top,
@@ -1205,10 +1160,7 @@ export function renderPlayoffs(main) {
     // (main.append ovan) innan getBoundingClientRect() ger meningsfulla
     // mått — requestAnimationFrame räcker, kräver ingen extra timeout.
     requestAnimationFrame(() => {
-      pendingConnectors.forEach(({ el, div }) => {
-        drawBracketConnectors(el, div);
-        bevakaBracket(el, div);
-      });
+      pendingConnectors.forEach(({ el, div }) => drawBracketConnectors(el, div));
     });
   }
 }
