@@ -3312,7 +3312,13 @@ dialog#settingsDialog { max-width: 380px; }
 .fav-team-star {
   margin-left: 5px;
   font-size: 0.85em;
+  /* Emojins egen baslinje sitter lägre än textens, så vertical-align:
+     middle lämnar stjärnan drygt en pixel under radens mitt. Lyft den med
+     en andel av teckenstorleken, inte ett fast pixeltal, så korrigeringen
+     följer med när kortet komprimeras och texten krymper. */
   vertical-align: middle;
+  position: relative;
+  top: -0.075em;
 }
 
 /* vätskepaus-indikator i tidslinjen */
