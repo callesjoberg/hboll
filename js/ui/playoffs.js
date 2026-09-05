@@ -585,19 +585,6 @@ function bracketMatchBox(m, projMap, onClick, relevantIds) {
 // elbow som förut (rakt ut, rakt över, rakt in) men med en liten kurva i
 // svängarna, som i välgjorda bracket-visualiseringar. Om käll- och
 // målmatchen råkar ligga i exakt samma höjd blir det bara en rak linje.
-function roundedElbowPath(x1, y1, midX, y2, x2, r) {
-  if (Math.abs(y2 - y1) < 1) return "M" + x1 + "," + y1 + " L" + x2 + "," + y2;
-  const dir = y2 > y1 ? 1 : -1;
-  const rr = Math.max(0, Math.min(r, Math.abs(y2 - y1) / 2, Math.abs(midX - x1), Math.abs(x2 - midX)));
-  return [
-    "M" + x1 + "," + y1,
-    "L" + (midX - rr) + "," + y1,
-    "Q" + midX + "," + y1 + " " + midX + "," + (y1 + rr * dir),
-    "L" + midX + "," + (y2 - rr * dir),
-    "Q" + midX + "," + y2 + " " + (midX + rr) + "," + y2,
-    "L" + x2 + "," + y2,
-  ].join(" ");
-}
 
 // zoomOverride: historikens brackettrad har ingen egen zoomreglering
 // (renderas alltid utan CSS zoom) och ska inte påverkas av vad
@@ -645,10 +632,21 @@ export function drawBracketConnectors(boxEl, div, zoomOverride) {
     const sr = src.getBoundingClientRect(), dr = dst.getBoundingClientRect();
     const x1 = (sr.right - base.left) / zoom, y1 = (sr.top + sr.height / 2 - base.top) / zoom;
     const x2 = (dr.left - base.left) / zoom, y2 = (dr.top + dr.height / 2 - base.top) / zoom;
+    // Mjuk kurva i stället för knä. Alla knän mellan två omgångar hade
+    // sitt lodräta ben på SAMMA x (mitt emellan kolumnerna), så med många
+    // matcher lade de sig ovanpå varandra till en enda lodrät linje genom
+    // hela trädet — omöjlig att följa tillbaka till rätt match. En bezier
+    // har inget gemensamt lodrätt segment: varje väg är sin egen båge.
     const midX = (x1 + x2) / 2;
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("class", "bracket-connector-line" + (isClubMatch(m) ? " ours" : ""));
-    path.setAttribute("d", roundedElbowPath(x1, y1, midX, y2, x2, 10));
+    path.setAttribute("class", "bracket-connector-line" +
+      (isClubMatch(m) ? " ours" : ""));
+    path.setAttribute("d", "M " + x1.toFixed(1) + " " + y1.toFixed(1) +
+      " C " + midX.toFixed(1) + " " + y1.toFixed(1) + ", " +
+      midX.toFixed(1) + " " + y2.toFixed(1) + ", " +
+      x2.toFixed(1) + " " + y2.toFixed(1));
+    // Låter kortet lysa upp sin egen väg vidare vid hover/fokus.
+    path.setAttribute("data-from", String(m.id));
     svg.appendChild(path);
   }
   bracketEl.prepend(svg);

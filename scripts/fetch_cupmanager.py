@@ -90,7 +90,7 @@ def match_query(tid, limit, offset):
     # SKILJER sig från start (se normalize nedan).
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
             "{matches:[{... on Match:{start:{},end:{},video:{},liveStart:{},round:{},roundRank:{},"
-            "referees:[{referee:{}}],"
+            "referees:[{referee:{}}],matchStats:{},"
             "arena:{completeName:{},fieldName:{},"
             "location:{name:{},address:{street:{},city:{},lat:{},lng:{}}}},"
             "nextMatchWinner:{},nextMatchLoser:{},"
@@ -250,6 +250,21 @@ def normalize(store):
                 domare.append(namn)
         if domare:
             match["refs"] = domare
+        # Lagens form i cupen fram till matchen — samma siffror som cupens
+        # egen matchsida visar under "Lagstatistik". Ryms i fönsterfrågan,
+        # alltså gratis. Ordning: spelade, vunna, oavgjorda, förlorade,
+        # gjorda mål, insläppta mål.
+        st = get(e.get("matchStats"))
+        form = {
+            "h": [st.get("homePlayed") or 0, st.get("homeWon") or 0,
+                  st.get("homeTied") or 0, st.get("homeLost") or 0,
+                  st.get("homeMadeGoals") or 0, st.get("homeLostGoals") or 0],
+            "a": [st.get("awayPlayed") or 0, st.get("awayWon") or 0,
+                  st.get("awayTied") or 0, st.get("awayLost") or 0,
+                  st.get("awayMadeGoals") or 0, st.get("awayLostGoals") or 0],
+        }
+        if any(form["h"]) or any(form["a"]):
+            match["form"] = form
         live_start = get(e.get("liveStart")).get("start")
         if live_start and match["start"] and abs(live_start - match["start"]) >= 60000:
             match["started"] = live_start

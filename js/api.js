@@ -181,7 +181,8 @@ window.HB = window.HB || {};
     return (
       "MatchWindow({limit:" + limit + ",offset:" + offset +
       ",tournamentId:" + cup.tournamentId + "})" +
-      "{matches:[{... on Match:{start:{},end:{},video:{},liveStart:{},arena:" + ARENA_FIELDS + ",round:{}," +
+      "{matches:[{... on Match:{start:{},end:{},video:{},liveStart:{},matchStats:{}," +
+      "arena:" + ARENA_FIELDS + ",round:{}," +
       "away:{team:" + TEAM_FIELDS + "},division:{category:{},name:{}}," +
       "home:{team:" + TEAM_FIELDS + "},result:{}}}]}"
     );
@@ -332,11 +333,21 @@ window.HB = window.HB || {};
       const startedRaw = normalizeStart((storeGet(store, e.liveStart) || {}).start);
       const started = startedRaw &&
         Math.abs(startedRaw - normalizeStart(e.start)) >= 60000 ? startedRaw : 0;
+      // Lagens form i cupen fram till matchen. Ordning: spelade, vunna,
+      // oavgjorda, förlorade, gjorda mål, insläppta mål — samma som
+      // scripts/fetch_cupmanager.py skriver i snapshotten.
+      const st = storeGet(store, e.matchStats) || {};
+      const formSida = (p) => [st[p + "Played"] || 0, st[p + "Won"] || 0,
+        st[p + "Tied"] || 0, st[p + "Lost"] || 0,
+        st[p + "MadeGoals"] || 0, st[p + "LostGoals"] || 0];
+      const form = { h: formSida("home"), a: formSida("away") };
+      const harForm = form.h.some(Boolean) || form.a.some(Boolean);
       matches.push({
         id: e.id,
         start: normalizeStart(e.start), // 0 = tid ej satt
         end: normalizeStart(e.end),     // 0 = okänd
         ...(started ? { started } : {}),
+        ...(harForm ? { form } : {}),
         ...(video.externalLink ? { video: video.externalLink } : {}),
         arena: arena.completeName || arena.fieldName || "",
         divId: division.id || refId(e.division),

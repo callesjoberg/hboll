@@ -335,6 +335,24 @@ function previousMeetingsBlock(m) {
 // Nu: samma rubrik i alla lägen, så man alltid vet vilken match man är inne
 // i, och flikar för hemmalag, bortalag och plan. Ingången avgör bara vilken
 // flik som är förvald.
+// Lagens form i cupen fram till matchen — vunna/oavgjorda/förlorade och
+// mål gjorda mot insläppta, sida vid sida. Samma siffror som cupens egen
+// matchsida visar, och de följer med i fönsterfrågan utan extra anrop.
+function formBlock(m) {
+  if (!m.form) return null;
+  const rad = (lag, f) => {
+    if (!f || !f[0]) return null;
+    return h("div", { class: "form-rad" + (isClubName(lag.name) ? " us" : "") },
+      h("span", { class: "form-lag" }, lag.name),
+      h("span", { class: "form-vof" }, f[1] + "V " + f[2] + "O " + f[3] + "F"),
+      h("span", { class: "form-mal" }, f[4] + "–" + f[5]));
+  };
+  const rader = [rad(m.home, m.form.h), rad(m.away, m.form.a)].filter(Boolean);
+  if (!rader.length) return null;
+  return h("div", { class: "form-block" },
+    h("div", { class: "feed-mark" }, "Form i cupen"), ...rader);
+}
+
 function matchSheetHeader(m) {
   const sc = scoreText(m.res);
   const sida = (team, motpart) => h("div", {
@@ -357,6 +375,7 @@ function matchSheetHeader(m) {
         m.arena].filter(Boolean).join(" · ")),
     // Domarna kommer med i samma MatchWindow-fråga som allt annat, alltså
     // gratis, och de finns redan innan matchen spelats.
+    formBlock(m),
     (m.refs && m.refs.length)
       ? h("p", { class: "match-sheet-refs" },
         (m.refs.length === 1 ? "Domare: " : "Domare: ") + m.refs.join(", "))
