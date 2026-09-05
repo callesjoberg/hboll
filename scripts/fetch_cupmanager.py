@@ -82,8 +82,14 @@ def match_query(tid, limit, offset):
     #
     # video: SolidSport-/Handbollplay-sändningen för matchen. Bara en del
     # matcher och en del cuper har någon.
+    #
+    # liveStart: när sekretariatet faktiskt startade matchklockan. Matcher
+    # drar över eller tidigareläggs — en 09:00-match i Göteborg Cup kastade
+    # av 08:20. FÄLLA: för matcher som inte börjat ekar fältet bara den
+    # schemalagda tiden på sekunden, så det säger ingenting förrän det
+    # SKILJER sig från start (se normalize nedan).
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
-            "{matches:[{... on Match:{start:{},end:{},video:{},round:{},roundRank:{},"
+            "{matches:[{... on Match:{start:{},end:{},video:{},liveStart:{},round:{},roundRank:{},"
             "arena:{completeName:{},fieldName:{},"
             "location:{name:{},address:{street:{},city:{},lat:{},lng:{}}}},"
             "nextMatchWinner:{},nextMatchLoser:{},"
@@ -219,6 +225,13 @@ def normalize(store):
         video = get(get(e.get("video"))).get("externalLink")
         if video:
             match["video"] = video
+        # Faktisk avkasttid, men bara när den skiljer sig minst en minut
+        # från schemat: annars är fältet bara en kopia av start (matchen
+        # har inte börjat) och skulle kosta plats i varje snapshot utan
+        # att säga något.
+        live_start = get(e.get("liveStart")).get("start")
+        if live_start and match["start"] and abs(live_start - match["start"]) >= 60000:
+            match["started"] = live_start
         matches.append(match)
     matches.sort(key=lambda m: (m["start"], m["arena"]))
     return matches

@@ -1,7 +1,9 @@
 /* match-ui.js — hero, matchkort och matchdialoger. */
 
 import { h, $ } from "../dom.js";
-import { isLive, scoreText, periodScores } from "../domain/match.js";
+import {
+  isLive, scoreText, periodScores, matchStart, matchEnd, kickoffDrift,
+} from "../domain/match.js";
 import {
   hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock, fmtTime, dayKey,
 } from "../time.js";
@@ -334,6 +336,7 @@ function matchSheetHeader(m) {
     videoLänk(m, { medText: true }),
     h("p", { class: "match-sheet-when" },
       [hasScheduledStart(m) ? matchTimeLabel(m, fmtDayLong) : "Tid ej satt",
+        kickoffDrift(m) ? "avkast " + fmtTime.format(new Date(m.started)) : null,
         m.arena].filter(Boolean).join(" · ")));
 }
 
@@ -620,6 +623,22 @@ function nästaPåBanan(m) {
   return efter;
 }
 
+// Avkasttiden visas bara när den avviker märkbart — en halv minut hit
+// eller dit är brus, men "avkast 08:20" på en 09:00-match är precis vad
+// man behöver veta för att inte missa den.
+const VISA_AVVIKELSE_MS = 3 * 60000;
+
+function kickoffEl(m) {
+  const drift = kickoffDrift(m);
+  if (!drift || Math.abs(drift) < VISA_AVVIKELSE_MS) return null;
+  const minuter = Math.round(Math.abs(drift) / 60000);
+  return h("span", {
+    class: "kickoff",
+    title: "Schemalagd " + fmtTime.format(new Date(m.start)) + ", avkast " +
+      minuter + " min " + (drift > 0 ? "senare" : "tidigare"),
+  }, "avkast " + fmtTime.format(new Date(m.started)));
+}
+
 function banPanel(m) {
   const kommande = nästaPåBanan(m);
   if (!kommande.length) return null;
@@ -669,13 +688,6 @@ function banPanel(m) {
 const FÖRVARNING_MS = 75 * 60000; // uppvärmning börjar ~en timme före, plus gångväg
 const EFTERGLÖD_MS = 20 * 60000;  // slutresultatet är färskvara
 
-// m.end är matchens FAKTISKA sluttid (ren speltid inklusive halvlek).
-// Saknas den faller vi tillbaka på den härledda rutlängden — samma
-// antagande som NU-linjen i schema.js.
-function matchSlut(m) {
-  return m.end || (m.start ? m.start + state.matchMinutes * 60000 : 0);
-}
-
 function näraITid(start, slut, nu) {
   if (nu < start) return start - nu <= FÖRVARNING_MS;
   if (nu < slut) return true;
@@ -687,7 +699,10 @@ function ärNäraITid(m) {
   // hellre än att tysta ner dem av en slump.
   if (!hasScheduledStart(m)) return true;
   if (isLive(m, Date.now(), state.matchMinutes)) return true;
-  return näraITid(m.start, matchSlut(m), Date.now());
+  // Räknat på FAKTISK avkasttid när den är känd: en match som drog igång
+  // en halvtimme tidigt ska inte stå kvar som "strax" en halvtimme för
+  // länge, och en som drog över ska inte kompakteras medan den spelas.
+  return näraITid(matchStart(m), matchEnd(m, state.matchMinutes), Date.now());
 }
 
 // Klockan går även när ingen ny data kommer, så tätheten måste kunna
@@ -737,7 +752,8 @@ export function matchCard(m, spec = {}) {
     style: tint ? "--card-tint:" + tint : null, role: "button", tabindex: "0",
     // Läses av uppdateraKortTäthet(), som växlar .kompakt utan omrendering.
     ...(hasScheduledStart(m)
-      ? { "data-start": String(m.start), "data-slut": String(matchSlut(m)) } : {}),
+      ? { "data-start": String(matchStart(m)),
+        "data-slut": String(matchEnd(m, state.matchMinutes)) } : {}),
     "aria-label": "Visa lagstatistik för " + m.home.name + " mot " + m.away.name,
     onclick: () => openMatchDialog(m),
     onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchDialog(m); } },
@@ -754,6 +770,7 @@ export function matchCard(m, spec = {}) {
     // filtrerat fram — de ska inte leda kortet.
     h("div", { class: "match-meta" },
       h("span", { class: "cat" }, shortCat(m.catName)),
+      kickoffEl(m),
       (m.edition || (state.years.size ? cup().edition : null))
         ? h("span", { class: "match-year-badge" }, m.edition || cup().edition) : null,
       m.divName ? h("span", { class: "div" }, m.divName) : null,

@@ -181,7 +181,7 @@ window.HB = window.HB || {};
     return (
       "MatchWindow({limit:" + limit + ",offset:" + offset +
       ",tournamentId:" + cup.tournamentId + "})" +
-      "{matches:[{... on Match:{start:{},end:{},video:{},arena:" + ARENA_FIELDS + ",round:{}," +
+      "{matches:[{... on Match:{start:{},end:{},video:{},liveStart:{},arena:" + ARENA_FIELDS + ",round:{}," +
       "away:{team:" + TEAM_FIELDS + "},division:{category:{},name:{}}," +
       "home:{team:" + TEAM_FIELDS + "},result:{}}}]}"
     );
@@ -326,10 +326,17 @@ window.HB = window.HB || {};
       // pekar på Video-entiteten (samma indirektion som klubbadressen).
       const videoRef = storeGet(store, e.video) || {};
       const video = storeGet(store, videoRef) || videoRef;
+      // Faktisk avkasttid — men bara när den skiljer sig minst en minut
+      // från schemat. För matcher som inte börjat ekar fältet start på
+      // sekunden och säger alltså ingenting.
+      const startedRaw = normalizeStart((storeGet(store, e.liveStart) || {}).start);
+      const started = startedRaw &&
+        Math.abs(startedRaw - normalizeStart(e.start)) >= 60000 ? startedRaw : 0;
       matches.push({
         id: e.id,
         start: normalizeStart(e.start), // 0 = tid ej satt
         end: normalizeStart(e.end),     // 0 = okänd
+        ...(started ? { started } : {}),
         ...(video.externalLink ? { video: video.externalLink } : {}),
         arena: arena.completeName || arena.fieldName || "",
         divId: division.id || refId(e.division),
@@ -459,7 +466,7 @@ window.HB = window.HB || {};
   // enskilda Match({id})-anrop och den stora fönsterfrågan strukturellt
   // identiska så normalize() kan användas rakt av på båda.
   function singleMatchFields() {
-    return "{start:{},end:{},video:{},arena:" + ARENA_FIELDS + ",round:{},away:{team:" + TEAM_FIELDS + "}," +
+    return "{start:{},end:{},video:{},liveStart:{},arena:" + ARENA_FIELDS + ",round:{},away:{team:" + TEAM_FIELDS + "}," +
       "division:{category:{},name:{}},home:{team:" + TEAM_FIELDS + "},result:{}}";
   }
 

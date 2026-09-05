@@ -12,11 +12,35 @@ import { hasScheduledStart } from "../time.js";
 // anroparen sätter till cupens härledda matchlängd.
 const LIVE_MARGINAL_MS = 15 * 60000; // förlängning och sen inrapportering
 
+// Matchens VERKLIGA fönster. m.started är avkasttiden ur Cup Managers
+// liveStart och finns bara när sekretariatet startat klockan på en annan
+// minut än schemat sa — matcher tidigareläggs och drar över, en
+// 09:00-match i Göteborg Cup kastade av 08:20. Speltiden (m.end - m.start)
+// är däremot densamma oavsett när det faktiskt drog igång, så den
+// förskjuts med startens avvikelse i stället för att räknas om.
+export function matchStart(m) {
+  return (m && (m.started || m.start)) || 0;
+}
+
+export function matchEnd(m, fallbackMinuter = 60) {
+  const start = matchStart(m);
+  if (!start) return 0;
+  const speltid = m.end && m.start && m.end > m.start
+    ? m.end - m.start
+    : fallbackMinuter * 60000;
+  return start + speltid;
+}
+
+// Hur långt från schemat matchen faktiskt kastade av, i ms. 0 när vi inte
+// vet (fältet lagras bara när det skiljer minst en minut).
+export function kickoffDrift(m) {
+  return m && m.started && m.start ? m.started - m.start : 0;
+}
+
 export function isLive(m, now = Date.now(), fallbackMinuter = 60) {
   if (!hasScheduledStart(m) || !m.res || !m.res.live || m.res.fin) return false;
-  if (now < m.start) return false; // kan inte pågå före avspark
-  const slut = m.end || (m.start + fallbackMinuter * 60000);
-  return now < slut + LIVE_MARGINAL_MS;
+  if (now < matchStart(m)) return false; // kan inte pågå före avspark
+  return now < matchEnd(m, fallbackMinuter) + LIVE_MARGINAL_MS;
 }
 
 export function scoreText(res) {
