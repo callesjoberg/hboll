@@ -502,7 +502,44 @@ function feedRad(m, e) {
         : h("span", { class: "feed-team only" }, lag.name)));
 }
 
-function feedNoder(m, feed) {
+// Tid = händelseordning, Mål och Namn = samma lista aggregerad per
+// spelare. Det är alltså inte tre sorteringar av samma rader utan två
+// former: matchens förlopp, och vem som gjorde vad. Modulnivå så valet
+// följer med när man öppnar nästa match.
+let feedSort = "tid";
+const FEED_SORTS = [["tid", "Tid"], ["mal", "Mål"], ["namn", "Namn"]];
+
+// Mål per spelare i EN match. Mål utan registrerad skytt samlas per lag
+// i stället för att försvinna — de är en del av resultatet.
+function feedPerSpelare(m, mål) {
+  const rader = new Map();
+  for (const e of mål) {
+    const lag = e.side === "away" ? m.away : m.home;
+    const nyckel = (lag.id || e.side) + "|" + (e.player || "");
+    let rad = rader.get(nyckel);
+    if (!rad) {
+      rad = { namn: e.player, nr: e.nr, lag: lag.name, side: e.side, antal: 0 };
+      rader.set(nyckel, rad);
+    }
+    if (e.nr != null) rad.nr = e.nr;
+    rad.antal++;
+  }
+  return [...rader.values()];
+}
+
+function feedAggRad(rad) {
+  return h("div", { class: "feed-row " + (rad.side === "away" ? "away" : "home") },
+    h("span", { class: "feed-score" }, String(rad.antal)),
+    h("span", { class: "feed-who" },
+      rad.namn
+        ? h("span", null,
+          rad.nr != null ? h("span", { class: "feed-nr" }, String(rad.nr)) : null,
+          rad.namn, h("span", { class: "feed-team" }, rad.lag))
+        : h("span", { class: "feed-team only" },
+          "Utan registrerad skytt · " + rad.lag)));
+}
+
+function feedNoder(m, feed, rita) {
   const events = (feed && feed.events) || [];
   const mål = events.filter((e) => e.typ === "mal");
   if (!mål.length) {
@@ -512,16 +549,35 @@ function feedNoder(m, feed) {
   const noder = [];
   const graf = feedGraf(m, feed);
   if (graf) noder.push(graf);
-  let sedd = null;
-  // Nyast överst — det är den ordningen man läser en pågående match i.
-  for (const e of [...mål].reverse()) {
-    if (sedd !== null && e.period !== sedd) {
-      noder.push(h("div", { class: "feed-mark" },
-        sedd === 1 ? "Andra halvlek" : svOrdinal(sedd + 1) + " perioden"));
+  noder.push(h("div", { class: "feed-sorts", role: "group", "aria-label": "Sortera" },
+    FEED_SORTS.map(([v, etikett]) => h("button", {
+      class: "chip small" + (feedSort === v ? " on" : ""), type: "button",
+      onclick: () => { feedSort = v; rita(); },
+    }, etikett))));
+
+  if (feedSort === "tid") {
+    let sedd = null;
+    // Nyast överst — det är den ordningen man läser en pågående match i.
+    for (const e of [...mål].reverse()) {
+      if (sedd !== null && e.period !== sedd) {
+        noder.push(h("div", { class: "feed-mark" },
+          sedd === 1 ? "Andra halvlek" : svOrdinal(sedd + 1) + " perioden"));
+      }
+      sedd = e.period;
+      noder.push(feedRad(m, e));
     }
-    sedd = e.period;
-    noder.push(feedRad(m, e));
+  } else {
+    const rader = feedPerSpelare(m, mål);
+    rader.sort(feedSort === "mal"
+      // Utan skytt sist i mållistan: en klump på fem mål ska inte lägga
+      // sig före matchens bäste skytt.
+      ? (a, b) => (a.namn ? 0 : 1) - (b.namn ? 0 : 1) || b.antal - a.antal ||
+        (a.namn || "").localeCompare(b.namn || "", "sv")
+      : (a, b) => (a.namn ? 0 : 1) - (b.namn ? 0 : 1) ||
+        (a.namn || "").localeCompare(b.namn || "", "sv"));
+    noder.push(...rader.map(feedAggRad));
   }
+
   const skyttar = mål.filter((e) => e.player).length;
   noder.push(h("p", { class: "muted feed-note" },
     skyttar === mål.length
@@ -533,8 +589,12 @@ function feedNoder(m, feed) {
 function feedTabBody(m) {
   const box = h("div", { class: "match-sheet-body feed-list" },
     h("p", { class: "muted" }, "Hämtar matchhändelser …"));
+  let senaste = null;
+  const rita = () => {
+    if (box.isConnected) box.replaceChildren(...feedNoder(m, senaste, rita));
+  };
   const ladda = () => HB.api.fetchMatchFeed(cup(), m.id)
-    .then((feed) => { if (box.isConnected) box.replaceChildren(...feedNoder(m, feed)); })
+    .then((feed) => { senaste = feed; rita(); })
     .catch(() => {
       if (box.isConnected) {
         box.replaceChildren(h("p", { class: "muted" },

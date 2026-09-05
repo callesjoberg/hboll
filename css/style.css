@@ -1936,6 +1936,16 @@ input[type="search"]::-webkit-search-cancel-button {
    Läses uppifrån och ner som en live-feed, nyast överst. */
 .feed-list { display: grid; gap: 1px; }
 
+.feed-sorts {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+/* Aggregerad rad (Mål/Namn) har ingen tidkolumn — låt antalet och
+   spelaren dela på bredden i stället för att lämna ett tomt spår. */
+.feed-row:not(:has(.feed-time)) { grid-template-columns: auto 1fr; }
+
 .feed-row {
   display: grid;
   grid-template-columns: auto auto 1fr;
