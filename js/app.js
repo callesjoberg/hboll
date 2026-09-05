@@ -2835,6 +2835,16 @@ HB.shortCat = shortCat;
     };
     setInterval(tick, 60000);
     document.addEventListener("visibilitychange", tick);
+    // Pekare eller tangentbord? Styr om fokusringen ska ritas (se
+    // body.pekarläge i style.css). Capture-fasen så att inget handtag
+    // hinner stoppa händelsen först.
+    const pekarläge = (på) => document.body.classList.toggle("pekarläge", på);
+    pekarläge(true); // fingret är förvalet, ringen tänds vid första tabben
+    addEventListener("pointerdown", () => pekarläge(true), true);
+    addEventListener("keydown", (e) => {
+      if (e.key === "Tab" || e.key === "Escape" || e.key.startsWith("Arrow")) pekarläge(false);
+    }, true);
+
     // Nedräkningen i heron tickar utan full omrendering.
     setInterval(tickHeroCountdown, 30000);
     // Matchkortens täthet följer klockan, inte datan: ett kort som närmar

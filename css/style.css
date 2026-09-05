@@ -402,10 +402,34 @@ body {
 
 button { font: inherit; color: inherit; cursor: pointer; }
 
+/* Ingen systemgrå tryckruta. iOS ritar en egen halvgenomskinlig ruta runt
+   allt tappbart — runt ett lagnamn eller en tillbaka-knapp blir det en stor
+   grå rektangel som ser ut som en bugg. Elementen har egna :active-lägen
+   nedan i stället, så trycket känns fortfarande av. */
+html { -webkit-tap-highlight-color: transparent; }
+
 :focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
+
+/* Fokusringen är till för tangentbordet. Webbläsarnas egen
+   :focus-visible-heuristik räcker inte hela vägen: när en dialog stängs
+   flyttas fokus programmatiskt, och markeringen kan ärvas från det som var
+   fokuserat innan — då ramas ett lagnamn in i blått långt efter att man
+   tryckt på det. Klassen sätts av pointerdown/keydown i js/app.js.
+   Textfält behåller sin ring oavsett: där betyder den "här skriver du". */
+body.pekarläge :focus-visible:not(input):not(textarea):not(select) {
+  outline: none;
+}
+
+/* Tryckrespons i stället för systemrutan. */
+.match:active { border-color: var(--blue); }
+.teams .team[role="button"]:active,
+.match-court:active,
+.next-court-row:active,
+.match-sheet-back:active,
+.match-video:active { opacity: 0.55; }
 
 .skip-link {
   position: absolute;
