@@ -198,6 +198,22 @@ function findTableRow(rows, team) {
   return rows.find((r) => r.teamId === team.id) || rows.find((r) => r.name === team.name);
 }
 
+// Vilket matchark som står öppet just nu, och på vilken flik. Klickar man
+// "Kommande matcher" inne i arket stängs det och HELA vyn filtreras om till
+// laget — och då ska Tillbaka föra en tillbaka till arket man kom från,
+// inte bara till listan som råkade ligga bakom det. app.js stashar
+// kontexten i stashFilterIfNeeded och lämnar tillbaka den i
+// restoreStashedFilter.
+let öppetArk = null;
+
+export function currentSheetContext() {
+  return öppetArk;
+}
+
+export function reopenSheet(ctx) {
+  if (ctx && ctx.match) openMatchSheet(ctx.match, ctx.flik);
+}
+
 export function closeMatchDialog() {
   const dlg = $(".match-dialog");
   if (dlg) dlg.close();
@@ -809,6 +825,7 @@ export function openMatchSheet(m, förvaldFlik) {
       onclick: () => { aktiv = f.key; rita(); },
     }, f.label)));
     const vald = flikar.find((f) => f.key === aktiv) || flikar[0];
+    öppetArk = { match: m, flik: vald.key };
     kropp.replaceChildren(vald.body());
   };
 
@@ -827,7 +844,7 @@ export function openMatchSheet(m, förvaldFlik) {
     tabbrad, kropp);
   rita();
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-  dlg.addEventListener("close", () => dlg.remove());
+  dlg.addEventListener("close", () => { öppetArk = null; dlg.remove(); });
   document.body.append(dlg); showMatchDialog(dlg);
   return dlg;
 }

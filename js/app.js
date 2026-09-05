@@ -69,6 +69,7 @@ import {
   initMatchUi, resetMatchUi, tickHeroCountdown, renderHero,
   openMatchDialog, openTeamQuickView, openArenaQuickView, openMatchLogDialog,
   closeMatchDialog, countdownText, uppdateraKortTäthet,
+  currentSheetContext, reopenSheet,
 } from "./ui/match-ui.js";
 import { initReveal } from "./ui/reveal.js";
 import {
@@ -2212,6 +2213,9 @@ HB.shortCat = shortCat;
       playoffCatTab: state.playoffCatTab,
       schemaShowAllCup: state.schemaShowAllCup,
       scrollY: window.scrollY,
+      // Stod ett matchark öppet ska Tillbaka föra en dit igen, inte bara
+      // till listan bakom det.
+      sheet: currentSheetContext(),
     };
   }
 
@@ -2240,6 +2244,7 @@ HB.shortCat = shortCat;
     saveUi();
     render();
     requestAnimationFrame(() => window.scrollTo({ top: previous.scrollY || 0, behavior: "auto" }));
+    reopenSheet(previous.sheet);
     return true;
   }
 
