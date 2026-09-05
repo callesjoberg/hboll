@@ -853,7 +853,9 @@ export function renderSchema(main) {
         wrap.append(sect);
       }
       const card = matchCard(m);
-      card.prepend(h("div", { class: "when" }, matchTimeLabel(m, fmtDay)));
+      // In i metaraden, inte överst på kortet: lagen ska stå först.
+      card.querySelector(".match-meta")
+        .prepend(h("span", { class: "when" }, matchTimeLabel(m, fmtDay)));
       sect.append(card);
     }
     main.append(wrap);

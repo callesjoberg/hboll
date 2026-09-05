@@ -362,7 +362,7 @@ function arenaTabBody(m, stäng) {
       onclick: () => { stäng(); filterByArena(arena); },
     }, "Filtrera schemat till " + arena),
     h("div", { class: "arena-quick-list" },
-      matcher.map((x) => matchCard(x, { utanBanpanel: true }))));
+      matcher.map((x) => matchCard(x, { utanBanpanel: true, alltidFull: true }))));
 }
 
 export function openMatchSheet(m, förvaldFlik) {
@@ -656,6 +656,57 @@ function banPanel(m) {
   return panel;
 }
 
+// --- täthet -----------------------------------------------------------
+// Hur mycket ett kort visar avgörs av NÄRHETEN I TID, inte av en
+// inställning och inte av ett tryck. Ett kort man ska gå till inom
+// kvarten står alltid fullt utfällt; ett om sex timmar är en rad. Ingen
+// knapp att hitta, inget läge att komma ihåg — och blocket där korten
+// "öppnar sig" är i sig en andra markering av var nuet ligger.
+//
+// Regeln får INTE bero på favoritlag eller egen klubb: filtrerar man
+// schemat till sin klubb är varje match en klubbmatch, och då skulle
+// ingenting kompakteras. Bara tiden varierar inom vyn.
+const FÖRVARNING_MS = 75 * 60000; // uppvärmning börjar ~en timme före, plus gångväg
+const EFTERGLÖD_MS = 20 * 60000;  // slutresultatet är färskvara
+
+// m.end är matchens FAKTISKA sluttid (ren speltid inklusive halvlek).
+// Saknas den faller vi tillbaka på den härledda rutlängden — samma
+// antagande som NU-linjen i schema.js.
+function matchSlut(m) {
+  return m.end || (m.start ? m.start + state.matchMinutes * 60000 : 0);
+}
+
+function näraITid(start, slut, nu) {
+  if (nu < start) return start - nu <= FÖRVARNING_MS;
+  if (nu < slut) return true;
+  return nu - slut <= EFTERGLÖD_MS;
+}
+
+function ärNäraITid(m) {
+  // Otidsatta matcher har ingen närhet att gradera på — visa dem fullt
+  // hellre än att tysta ner dem av en slump.
+  if (!hasScheduledStart(m)) return true;
+  if (isLive(m)) return true;
+  return näraITid(m.start, matchSlut(m), Date.now());
+}
+
+// Klockan går även när ingen ny data kommer, så tätheten måste kunna
+// ändras utan omrendering: en full omritning varje minut vore både dyr
+// på 600 kort och farlig (aktiva fält tappar fokus). Här räcker en
+// klassväxling på det som redan står i DOM:en.
+//
+// Ett kort som växlar till fullt läge får allt UTOM en nybyggd banpanel
+// förrän nästa riktiga omrendering. Medvetet: panelen kräver DOM, och att
+// bygga den för varje kort i förväg vore tusentals noder i en stor cup.
+export function uppdateraKortTäthet() {
+  const nu = Date.now();
+  for (const el of document.querySelectorAll(".match[data-start]")) {
+    const start = Number(el.dataset.start);
+    const slut = Number(el.dataset.slut) || start;
+    el.classList.toggle("kompakt", !näraITid(start, slut, nu));
+  }
+}
+
 export function matchCard(m, spec = {}) {
   const sc = scoreText(m.res);
   const live = isLive(m);
@@ -675,36 +726,54 @@ export function matchCard(m, spec = {}) {
     side.name || "–", isFavoriteTeam(side.name, m.catName) ? h("span", { class: "fav-team-star" }, "⭐") : null);
   };
   const tint = cardTintColor(m);
+  const nära = spec.alltidFull || ärNäraITid(m);
+  const väderEl = weather
+    ? h("span", { class: "weather", title: weather.temp + "°C" },
+      weather.icon, weather.temp + "°") : null;
+  const videoEl = videoLänk(m);
   return h("article", {
-    class: "match" + (isClubMatch(m) ? " ours" : "") + (tint ? " tinted" : ""),
+    class: "match" + (isClubMatch(m) ? " ours" : "") + (tint ? " tinted" : "") +
+      (nära ? "" : " kompakt"),
     style: tint ? "--card-tint:" + tint : null, role: "button", tabindex: "0",
+    // Läses av uppdateraKortTäthet(), som växlar .kompakt utan omrendering.
+    ...(hasScheduledStart(m)
+      ? { "data-start": String(m.start), "data-slut": String(matchSlut(m)) } : {}),
     "aria-label": "Visa lagstatistik för " + m.home.name + " mot " + m.away.name,
     onclick: () => openMatchDialog(m),
     onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMatchDialog(m); } },
   },
-    h("div", { class: "match-head" }, h("span", { class: "cat" }, shortCat(m.catName)),
-      (m.edition || (state.years.size ? cup().edition : null))
-        ? h("span", { class: "match-year-badge" }, m.edition || cup().edition) : null,
-      m.divName ? h("span", { class: "div" }, m.divName) : null,
-      m.roundName && m.roundName !== m.divName ? h("span", { class: "div" }, m.roundName) : null,
-      outcomeLetter(m) ? h("span", { class: "outcome-badge outcome-" + outcomeLetter(m).toLowerCase() }, outcomeLetter(m)) : null,
-      h("span", { class: "match-head-right" },
-        m.arena ? h("span", { class: "arena arena-link", role: "button", tabindex: "0",
-          title: "Visa alla matcher på " + m.arena,
-          onclick: (e) => { e.stopPropagation(); openArenaQuickView(m, m.arena); },
-          onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault(); e.stopPropagation(); openArenaQuickView(m, m.arena);
-          } },
-        }, m.arena) : h("span", { class: "arena" }, m.arena),
-      videoLänk(m)),
-      weather ? h("span", { class: "weather", title: weather.temp + "°C" },
-        weather.icon, weather.temp + "°") : null),
+    // Rad 1: lagen. Kortets rubrik — det är dem man söker efter, och det
+    // är samma typografi som matcharkets .match-sheet-team, så kortet
+    // läses som en miniatyr av arket i stället för som en egen dialekt.
     h("div", { class: "match-body" }, h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),
       h("div", { class: "score" + (live ? " live" : "") + (sc === "spelad" ? " played" : "") +
         (!sc && !live ? " pending" : "") },
       live ? h("span", { class: "live-tag" }, h("span", { class: "live-dot" }), "LIVE") : null,
       sc || (live ? "" : "–"))),
-    // Bortvald där den vore ren upprepning — arena-fliken i matcharket
-    // listar redan hela banan.
-    spec.utanBanpanel ? null : banPanel(m));
+    // Rad 2: metaraden. Klass/grupp/rond bekräftar bara vad man redan
+    // filtrerat fram — de ska inte leda kortet.
+    h("div", { class: "match-meta" },
+      h("span", { class: "cat" }, shortCat(m.catName)),
+      (m.edition || (state.years.size ? cup().edition : null))
+        ? h("span", { class: "match-year-badge" }, m.edition || cup().edition) : null,
+      m.divName ? h("span", { class: "div" }, m.divName) : null,
+      m.roundName && m.roundName !== m.divName ? h("span", { class: "div" }, m.roundName) : null,
+      outcomeLetter(m) ? h("span", { class: "outcome-badge outcome-" + outcomeLetter(m).toLowerCase() }, outcomeLetter(m)) : null,
+      // Tom wrapper skulle äta gap och skjuta banan åt sidan — bygg den
+      // bara när den faktiskt har innehåll.
+      (väderEl || videoEl) ? h("span", { class: "match-meta-right" }, väderEl, videoEl) : null,
+      // Rad 3: banan. Sist i DOM:en men egen rad i fullt läge och grå
+      // svans på metaraden i tätt — ETT element, två lägen, så tätheten
+      // kan växlas med enbart en klass.
+      m.arena ? h("span", {
+        class: "match-court arena-link", role: "button", tabindex: "0",
+        title: "Visa alla matcher på " + m.arena,
+        onclick: (e) => { e.stopPropagation(); openArenaQuickView(m, m.arena); },
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault(); e.stopPropagation(); openArenaQuickView(m, m.arena);
+        } },
+      }, m.arena) : null),
+    // Banpanelen är en "står-vid-planen"-funktion. Den hör inte hemma på
+    // en match om sex timmar, och den är kortets dyraste rad i höjd.
+    (spec.utanBanpanel || !nära) ? null : banPanel(m));
 }

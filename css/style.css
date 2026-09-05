@@ -2010,19 +2010,38 @@ input[type="search"]::-webkit-search-cancel-button {
   border-left-color: var(--card-tint);
 }
 
-.match-head {
+/* Metaraden. Klass, grupp och rond bekräftar bara vad man redan
+   filtrerat fram — de leder inte kortet längre. Banan ligger sist i
+   ordningen men bryter till egen rad (flex-basis 100 %). */
+.match-meta {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
   align-items: baseline;
+  column-gap: 8px;
+  row-gap: 2px;
+  margin-top: 4px;
   font-size: 11px;
   color: var(--ink-soft);
-  margin-bottom: 2px;
 }
 
-.match-head .cat {
+.match-meta .cat {
   font-weight: 600;
   color: var(--blue);
   letter-spacing: 0.04em;
+}
+
+.match-meta .cat,
+.match-meta .div,
+.match-meta .when,
+.match-meta .outcome-badge,
+.match-meta .match-year-badge { flex: none; }
+
+.match-meta-right {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: none;
 }
 
 /* Syns bara på matcher som blandats in från ett extra år (årsväljaren i
@@ -2054,55 +2073,58 @@ input[type="search"]::-webkit-search-cancel-button {
 .outcome-o { background: #8a94a3; }
 .outcome-f { background: var(--live); }
 
-.match-head-right {
-  margin-left: auto;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-}
-
 .weather {
   flex-shrink: 0;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.match-head .arena {
+/* Banan får egen rad över hela kortbredden. Radbrytning, INTE ellips:
+   ett bannamn är byggt "<hall> <bana>" och informationen sitter i
+   svansen — "Prioritet Serneke Arena Serneke A". En ellips äter alltid
+   svansen, alltså exakt det tecken som skiljer din bana från de fem
+   andra i hallen. Två rader är taket; på mobilens smalaste kort (~244 px)
+   ryms ~46 tecken, så skyddsnätet slår sällan till. */
+.match-court {
+  flex: 1 0 100%;
   min-width: 0;
-  white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  text-overflow: clip;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  font-size: 13px;
+  margin-top: 2px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1.2;
   color: var(--ink);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
-.match-head .arena::-webkit-scrollbar { display: none; }
+.match-court.arena-link { cursor: pointer; }
+.match-court.arena-link:hover { text-decoration: underline; }
 
-@media (max-width: 700px) {
-  /* Rad 1: klass + väder i övre högra hörnet. Rad 2: arenan på egen rad
-     (hela kortbredden, svepbart om namnet är längre). */
-  .match-head { flex-wrap: wrap; row-gap: 2px; }
-  .match-head .weather {
-    order: 1;
-    margin-left: auto;
-  }
-  .match-head-right {
-    flex: 1 0 100%;
-    width: 100%;
-    margin-left: 0;
-    order: 2;
-  }
-  .match-head-right .arena { flex: 1 1 auto; }
+/* Tätt läge — matcher långt från nu. Banan GÖMS inte, den degraderas
+   till grå svans på metaraden: en match om sex timmar behöver inte sin
+   bana läsbar på en meters håll, men den ska finnas utan att man
+   trycker. nowrap håller ihop raden så det är banan som ellipseras och
+   inte layouten som spricker. */
+.match.kompakt { padding: 7px 12px 8px; }
+.match.kompakt .team { font-size: 16px; }
+.match.kompakt .match-meta { flex-wrap: nowrap; margin-top: 3px; }
+.match.kompakt .match-meta-right { display: none; }
+
+.match.kompakt .match-court {
+  flex: 0 1 auto;
+  display: block;
+  margin-top: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.match-head .arena-link { cursor: pointer; }
-.match-head .arena-link:hover { text-decoration: underline; }
 
 /* lagnamn i matchkort är klickbara (snabbvy) — samma diskreta hover som
    plan-länken ovan, ingen extra visuell vikt förrän man interagerar */
@@ -2118,13 +2140,18 @@ input[type="search"]::-webkit-search-cancel-button {
 .teams { flex: 1; min-width: 0; }
 
 .team {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.team.us { font-weight: 600; color: var(--blue-deep); }
-.team.won { font-weight: 600; }
+.team.us { font-weight: 700; color: var(--blue-deep); }
+.team.won { font-weight: 700; }
 .team.won::after { content: " ✓"; color: var(--won); font-size: 11px; }
 
 .score {

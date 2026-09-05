@@ -66,7 +66,7 @@ import { initShare, buildExportPicker, openHeaderExportDialog } from "./ui/share
 import {
   initMatchUi, resetMatchUi, tickHeroCountdown, renderHero,
   openMatchDialog, openTeamQuickView, openArenaQuickView, openMatchLogDialog,
-  closeMatchDialog, countdownText,
+  closeMatchDialog, countdownText, uppdateraKortTäthet,
 } from "./ui/match-ui.js";
 import { initReveal } from "./ui/reveal.js";
 import {
@@ -2814,6 +2814,11 @@ HB.shortCat = shortCat;
     document.addEventListener("visibilitychange", tick);
     // Nedräkningen i heron tickar utan full omrendering.
     setInterval(tickHeroCountdown, 30000);
+    // Matchkortens täthet följer klockan, inte datan: ett kort som närmar
+    // sig sin starttid ska fällas ut även om ingen ny data kommit. Egen
+    // tickare i stället för en omritning — 600 kort per minut vore både
+    // dyrt och skulle slå sönder fokus i aktiva fält.
+    setInterval(uppdateraKortTäthet, 60000);
   }
 
   document.addEventListener("DOMContentLoaded", init);
