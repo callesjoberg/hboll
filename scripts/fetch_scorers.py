@@ -30,7 +30,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_cupmanager import api_call  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-CONC = 4
+# Mätt mot Cup Manager 2026-09-05 med 40 feed-anrop per nivå: CONC 4 ger
+# 30 matcher/s, 8 ger 52, 16 ger 90 — nästan linjärt, och svarstidens
+# median rör sig knappt (132 → 155 ms). Flaskhalsen är alltså vår egen
+# parallellitet, inte källan. 12 tar det mesta av vinsten och lämnar
+# marginal; en publik gratis-API ska inte köras i botten.
+CONC = 12
 # Tak per cup och körning. Första gången en stor cup byggs upp (Åhus har
 # 6382 matcher) ska den inte hålla CI-loopens femminuterstakt gisslan —
 # den betar av sig själv över några varv i stället.
@@ -89,7 +94,10 @@ def load_existing(path):
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return {"done": [], "players": [], "goals": {"total": 0, "named": 0}}
+        # Faller igenom till setdefault nedan i stället för att returnera
+        # direkt — annars saknar en ny cup fält som lagts till senare, och
+        # build() kraschar på första nyckeln den inte hittar.
+        doc = {}
     doc.setdefault("done", [])
     doc.setdefault("players", [])
     doc.setdefault("goals", {"total": 0, "named": 0})
