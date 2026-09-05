@@ -61,6 +61,10 @@ SPARSE_HOURS = 6                 # "vila"-kadens för cuper långt fram i tiden
 DORMANT_HOURS = 24               # ...och för en cup vi inte vet NÅGOT om (se should_refresh)
 STIRRING_HOURS = 48              # men ändrades datan såhär nyligen: följ den tätt igen
 
+# playing_now() nedan: hur nära dagens matcher CI-loopen ska hålla igång.
+PLAYING_BEFORE_HOURS = 1  # dra igång redan en timme före dagens första avspark
+PLAYING_AFTER_HOURS = 2   # ...och håll på två timmar efter den sista
+
 _ARCHIVE_INDEX = pathlib.Path(__file__).resolve().parent.parent / "data" / "archive" / "index.json"
 _index_cache = None  # laddas en gång per körning (samma index för alla cuper)
 
@@ -169,3 +173,21 @@ def should_refresh(existing_data, cup_id=None):
     if hours_since_last <= ACTIVE_WINDOW_AFTER_HOURS:
         return True  # nyss avslutad
     return any(abs(hours_since_last - cp) <= WINDOW_HOURS for cp in CHECKPOINTS_HOURS)
+
+
+def playing_now(existing_data, now_ms=None):
+    """Spelas det matcher i den här cupen just NU?
+
+    Skiljer sig från should_refresh(): den svarar på "är cupen igång"
+    (speldagar, dygn runt), medan den här svarar på "är det matchtid"
+    (kvällspasset, inte natten mellan). CI-loopen i
+    scripts/ci_update_loop.sh använder den för att bara mala vidare i
+    fem-minuterstakt när det faktiskt finns resultat att hämta."""
+    matches = (existing_data or {}).get("matches") or []
+    starts = [m.get("start") for m in matches if m.get("start")]
+    if not starts:
+        return False
+    now = time.time() * 1000 if now_ms is None else now_ms
+    tidigast = now - PLAYING_AFTER_HOURS * 3600000
+    senast = now + PLAYING_BEFORE_HOURS * 3600000
+    return any(tidigast <= start <= senast for start in starts)

@@ -3,15 +3,20 @@ name: Uppdatera cupdata
 on:
   workflow_dispatch:
   schedule:
-    # Var 20:e minut — men scripts/_freshness.py håller den EFFEKTIVA
-    # kadensen nere per cup: bara cuper inom/nära sitt eget kända
-    # matchfönster (73h innan start till 24h efter sista matchen) skrapas
-    # varje körning. Cuper långt fram i tiden kollas glest (~var 6:e
-    # timme, samma kadens som tidigare), avslutade cuper trappar av helt
-    # efter några uppföljningskontroller. Ingen extra kostnad att köra
-    # tätt: publika repon har obegränsade Actions-minuter, och de flesta
-    # körningarna gör inga nätverksanrop alls (should_refresh() säger nej
-    # innan skrapningen ens börjar).
+    # Var 20:e minut — men GitHub kör schemalagda jobb "best effort" och
+    # startar oss i praktiken bara var andra till var femte timme. Att be
+    # om tätare cron ger inte en enda extra körning; det är därför
+    # scripts/ci_update_loop.sh i stället låter EN körning stanna kvar och
+    # jobba i femminuterstakt så länge det spelas matcher.
+    #
+    # scripts/_freshness.py håller ändå den effektiva kadensen nere per
+    # cup: bara cuper inom/nära sitt eget kända matchfönster (73h innan
+    # start till 24h efter sista matchen) skrapas varje varv. Cuper långt
+    # fram i tiden kollas glest (~var 6:e timme), avslutade cuper trappar
+    # av helt efter några uppföljningskontroller. Ingen extra kostnad att
+    # köra tätt: publika repon har obegränsade Actions-minuter, och de
+    # flesta varven gör inga nätverksanrop alls (should_refresh() säger
+    # nej innan skrapningen ens börjar).
     - cron: "*/20 * * * *"
 
 concurrency:
@@ -29,50 +34,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Skrapa ProCup
-        run: python3 scripts/fetch_procup.py
-      - name: Skrapa Gothia Result Web-cuper (Partille m.fl.)
-        run: python3 scripts/fetch_gothia.py
-      - name: Snapshotta Cup Manager-cuperna
-        run: python3 scripts/fetch_cupmanager.py
-      - name: Bygg litet versionsindex för snapshots
-        run: python3 scripts/build_snapshot_index.py
-      - name: Bygg klubbkatalog (adresser, för Kartan på ProCup/Gothia-cuper)
-        run: python3 scripts/build_club_directory.py
-      - name: Arkivera årets resultat (för jämförelse mellan år)
-        run: python3 scripts/archive_results.py
-      - name: Bygg lagnamnsindex (låter Klubb/Lag bara hämta relevanta upplagor)
-        run: python3 scripts/build_team_index.py
-      - name: Bygg kartdata för välkomstskärmens bakgrundsanimation
-        run: python3 scripts/build_landing_map.py
-      - name: Bygg cupernas matchfönster (styr startcupen för nya besökare)
-        run: python3 scripts/build_cup_windows.py
-      - name: Committa om datan ändrats
-        # Skrapan skriver bara om filen när innehållet faktiskt ändrats.
-        run: |
-          git config user.name "procup-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add data/
-          if git diff --cached --quiet; then
-            echo "Ingen ändring — hoppar över commit."
-            exit 0
-          fi
-          git commit -m "Uppdatera cupdata"
-          # Race-härdad push: var-20-minanders-körningar (plus manuella
-          # pushar) kan hinna krocka. Försök integrera och pusha om,
-          # annars hoppa tyst över just den här publiceringen i stället
-          # för att fela jobbet — nästa körning tar det.
-          n=0
-          until git push; do
-            n=$((n+1))
-            if [ "$n" -ge 5 ]; then
-              echo "Push misslyckades efter $n försök."; exit 1
-            fi
-            echo "Push avvisad (kapplöpning) — försöker igen ($n)."
-            if ! git pull --rebase --autostash origin main; then
-              git rebase --abort 2>/dev/null || true
-              echo "Rebase-konflikt — hoppar över den här publiceringen (nästa körning fixar)."
-              exit 0
-            fi
-            sleep $(( (RANDOM % 4) + 2 ))
-          done
+      # Ett varv = hela pipelinen plus en commit. Loopen fortsätter i
+      # femminuterstakt så länge någon cup har matchtid, annars avslutas
+      # den efter första varvet precis som förut. Taket ligger under
+      # GitHubs sextimmarsgräns för ett jobb.
+      - name: Skrapa, bygg och publicera (loopar under matchtid)
+        timeout-minutes: 300
+        env:
+          LOOP_MAX_SECONDS: "16200"
+          LOOP_PERIOD_SECONDS: "300"
+        run: bash scripts/ci_update_loop.sh
