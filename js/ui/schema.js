@@ -152,14 +152,22 @@ function renderTimeline(main, list) {
     // inte i samma sekund som de börjar. Utan speltiden hoppade den förbi
     // hela blocket en minut efter avkast, och en match som pågick låg
     // plötsligt ovanför "nu".
+    // Rutan är t.ex. 40 minuter i Göteborg Cup, men SJÄLVA matchen är
+    // kortare — 2×15 med halvlek tar drygt trettio, resten är planbyte.
+    // Schemat säger bara rutans längd, aldrig speltiden, så "pågår" får
+    // avgöras av resultaten i stället för av klockan: så länge någon
+    // match i blocket saknar slutresultat spelas det. Är alla klara står
+    // vi i bytet före nästa avspark, och då hör "nu" hemma längre ner.
     const slutar = g.start + state.matchMinutes * 60000;
-    const nuHär = timed && !nowPlaced && gDay === today && slutar > now;
+    const framtida = g.start > now;
+    const alltKlart = g.items.every((m) => m.res && m.res.fin);
     // "Nu" ligger antingen i en LUCKA mellan två block eller MITT I ett.
     // En linje mellan blocken duger bara i det första fallet: ritad
     // ovanför ett block som redan spelar läses den som att 10:20-
     // matcherna inte börjat, fast klockan är 10:44. Pågår blocket märks
     // det därför upp självt i stället, och linjen uteblir.
-    const pågår = nuHär && g.start <= now;
+    const pågår = !framtida && slutar > now && !alltKlart;
+    const nuHär = timed && !nowPlaced && gDay === today && (pågår || framtida);
     if (nuHär) {
       nowPlaced = true;
       if (!pågår) {
@@ -177,9 +185,10 @@ function renderTimeline(main, list) {
       h("div", { class: "slot-matches" },
         // id="nowline" följer med hit så automatskrollen hittar rätt
         // ställe även när ingen linje ritats.
+        // Ingen sluttid här: den enda vi känner till är rutans, och den
+        // ligger några minuter efter slutsignalen.
         pågår ? h("div", { class: "slot-now", id: "nowline" },
-          "NU " + fmtTime.format(new Date(now)) +
-          " · pågår till " + fmtTime.format(new Date(slutar))) : null,
+          "NU " + fmtTime.format(new Date(now)) + " · pågår") : null,
         g.items.map(matchCard))));
   }
   main.append(wrap);
