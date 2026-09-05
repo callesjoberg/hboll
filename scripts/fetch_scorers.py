@@ -90,6 +90,23 @@ def match_feed(host, tid, match_id):
     return mål, disc
 
 
+def namn_nyckel(namn):
+    """Nyckel som slår ihop skrivvarianter av SAMMA namn i samma lag.
+
+    Sekretariatet skriver in namnet för hand vid varje match, så samma
+    spelare kan bli "Hedda Andersson" i en match och "Hedda Andersson " i
+    nästa, eller "Anai Castillo"/"Anai castillo". Mätt över 6 736 namn:
+    61 sådana par. Att slå ihop dem är säkert — det är samma sträng, samma
+    lag, samma cup.
+
+    Det som INTE görs här är att slå ihop över lag eller år. 1 326 av
+    namnen (20 %) finns i mer än ett lag redan inom årets cuper, och det
+    går inte att avgöra vilka som är samma barn som spelar upp en
+    åldersklass och vilka som är två olika barn med samma namn. Målen
+    räknas därför alltid per lag."""
+    return " ".join((namn or "").split()).casefold()
+
+
 def load_existing(path):
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
@@ -121,7 +138,7 @@ def build(cup, only_new=True):
         "discipline": []}
     klara = set(doc["done"])
     # (lag-id, namn) -> rad. Nummer kan byta mellan matcher; senaste vinner.
-    index = {(p["t"], p["n"]): p for p in doc["players"]}
+    index = {(p["t"], namn_nyckel(p["n"])): p for p in doc["players"]}
 
     att_hamta = [m for m in matches
                  if (m.get("res") or {}).get("fin") and m.get("id") not in klara]
@@ -159,10 +176,11 @@ def build(cup, only_new=True):
             lag_id = (lag or {}).get("id")
             if lag_id is None:
                 continue
-            nyckel = (lag_id, namn)
+            nyckel = (lag_id, namn_nyckel(namn))
             rad = index.get(nyckel)
             if rad is None:
-                rad = {"t": lag_id, "n": namn, "nr": nr, "g": 0, "m": 0}
+                rad = {"t": lag_id, "n": " ".join(namn.split()), "nr": nr,
+                       "g": 0, "m": 0}
                 index[nyckel] = rad
             if nr is not None:
                 rad["nr"] = nr
