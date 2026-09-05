@@ -1892,6 +1892,37 @@ input[type="search"]::-webkit-search-cancel-button {
   .bracket-table-row:has(+ .bracket-table-arena) > td { border-bottom: 0; }
 }
 
+/* Gemensamma motståndare — vad båda lagen gjort mot samma motstånd.
+   Två resultatkolumner i lagens ordning, hemmalaget först. */
+.gemensamma { margin-top: 14px; }
+.gem-not { margin: 2px 0 8px; font-size: 12px; }
+.gem-lista { display: grid; gap: 1px; }
+
+.gem-rad {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.gem-rad:nth-child(even) { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.gem-motst { min-width: 0; }
+.gem-motst .feed-team { display: block; margin-left: 0; }
+
+.gem-res {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: right;
+  color: var(--ink-soft);
+}
+.gem-res.vinst { color: var(--won); }
+.gem-res.forlust { color: var(--live); }
+
 /* Form i cupen: lag, V/O/F och mål gjorda–insläppta. */
 .form-block { margin-top: 12px; }
 .form-rad {

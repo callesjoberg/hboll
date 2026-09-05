@@ -326,6 +326,126 @@ function previousMeetingsBlock(m) {
       matchTimeLabel(pm, fmtDay) + ": " + pm.home.name + " " + (scoreText(pm.res) || "–") + " " + pm.away.name))));
 }
 
+// --- gemensamma motståndare -------------------------------------------
+// Inom en klass är gruppspelets grupper HELT frånkopplade: F16 i Göteborg
+// Cup har elva grupper och exakt elva komponenter i resultatgrafen. Två
+// lag ur olika grupper har alltså inte en enda gemensam motståndare i den
+// här cupens gruppspel, och deras måldifferenser går inte att jämföra.
+//
+// Bron finns någon annanstans: klubbarna möts i andra cuper och tidigare
+// upplagor. 15 av F16:s 20 klubbar spelar även Bohus Cup, 17–18 återkommer
+// i förra årets Göteborg Cup. Lagnamnsindexet (data/archive/team-index.json)
+// talar om exakt vilka upplagor som innehåller BÅDA lagen, så bara de
+// behöver laddas — inte hela arkivet.
+//
+// Ingen modell, ingen sannolikhet: bara matcher som faktiskt spelats.
+
+const GEM_MAX_UPPLAGOR = 6;
+
+function gemensamResultat(matcher, lagnamn, motståndare) {
+  for (const m of matcher) {
+    if (!m.res || !m.res.fin || m.res.wo) continue;
+    const hemma = m.home.name === lagnamn && m.away.name === motståndare;
+    const borta = m.away.name === lagnamn && m.home.name === motståndare;
+    if (!hemma && !borta) continue;
+    const våra = hemma ? m.res.hg : m.res.ag;
+    const deras = hemma ? m.res.ag : m.res.hg;
+    if (!Number.isFinite(våra) || !Number.isFinite(deras)) continue;
+    // 0–0 betyder i handboll så gott som alltid att klassen inte för
+    // resultat (de yngsta åldrarna, para-handbollen), inte att matchen
+    // slutade mållös. Att räkna den som en jämn match vore fel.
+    if (!våra && !deras) continue;
+    return { våra, deras, diff: våra - deras };
+  }
+  return null;
+}
+
+function motståndarna(matcher, lagnamn) {
+  const ut = new Set();
+  for (const m of matcher) {
+    if (!m.res || !m.res.fin || m.res.wo) continue;
+    if (m.home.name === lagnamn) ut.add(m.away.name);
+    else if (m.away.name === lagnamn) ut.add(m.home.name);
+  }
+  return ut;
+}
+
+function gemensammaBlock(m) {
+  const A = m.home && m.home.name, B = m.away && m.away.name;
+  if (!A || !B) return null;
+  const host = h("section", { class: "gemensamma" });
+  (async () => {
+    const källor = [];
+    // Den öppna cupen först — där finns gemensamma motståndare så fort
+    // slutspelet börjat koppla ihop grupperna.
+    källor.push({ etikett: cup().name, matcher: state.matches });
+
+    const index = await HB.api.fetchTeamIndex();
+    const kandidater = [];
+    // Bara jämförbara cuper. Åhus Beach är beachhandboll — 2×10 minuter
+    // på sand med helt andra målsiffror — och basket är förstås inte alls
+    // samma sak. Att blanda in dem hade sett ut som en jämförelse men
+    // varit brus.
+    const denna = cup();
+    const jämförbar = (c) => c && (c.sport || "handboll") === (denna.sport || "handboll") &&
+      !!c.beach === !!denna.beach;
+    for (const [cupId, år] of Object.entries(index || {})) {
+      if (!jämförbar(HB.allCups().find((c) => c.id === cupId))) continue;
+      for (const [edition, namn] of Object.entries(år || {})) {
+        if (cupId === state.cupId && edition === (cup().edition || "")) continue;
+        const set = new Set(namn);
+        if (set.has(A) && set.has(B)) kandidater.push({ cupId, edition });
+      }
+    }
+    kandidater.sort((x, y) => y.edition.localeCompare(x.edition));
+    for (const k of kandidater.slice(0, GEM_MAX_UPPLAGOR)) {
+      const doc = await HB.api.fetchArchiveEdition(k.cupId, k.edition).catch(() => null);
+      if (doc && doc.matches) {
+        const c = HB.allCups().find((x) => x.id === k.cupId);
+        källor.push({ etikett: ((c && c.name) || k.cupId) + " " + k.edition, matcher: doc.matches });
+      }
+    }
+
+    const rader = [];
+    let summaA = 0, summaB = 0, antal = 0;
+    for (const källa of källor) {
+      const gem = [...motståndarna(källa.matcher, A)]
+        .filter((namn) => namn !== B && motståndarna(källa.matcher, B).has(namn));
+      for (const motst of gem) {
+        const ra = gemensamResultat(källa.matcher, A, motst);
+        const rb = gemensamResultat(källa.matcher, B, motst);
+        if (!ra || !rb) continue;
+        rader.push({ källa: källa.etikett, motst, ra, rb });
+        summaA += ra.diff; summaB += rb.diff; antal++;
+      }
+    }
+    if (!host.isConnected) return;
+    if (!rader.length) {
+      host.replaceChildren(h("h4", null, "Gemensamma motståndare"),
+        h("p", { class: "muted" },
+          "Lagen har inte mött någon gemensam motståndare, varken i den här " +
+          "cupen eller i tidigare upplagor som båda spelat. Gruppspelets " +
+          "grupper möts aldrig, så deras siffror går inte att jämföra rakt av."));
+      return;
+    }
+    const tecken = (n) => (n > 0 ? "+" : "") + n;
+    host.replaceChildren(
+      h("h4", null, "Gemensamma motståndare"),
+      h("p", { class: "muted gem-not" },
+        "Riktiga matcher, ingen modell. " + antal +
+        (antal === 1 ? " gemensam motståndare" : " gemensamma motståndare") +
+        " · " + A + " " + tecken(summaA) + " mål, " + B + " " + tecken(summaB) + " mål."),
+      h("div", { class: "gem-lista" }, rader.map((r) => h("div", { class: "gem-rad" },
+        h("span", { class: "gem-motst" }, r.motst,
+          h("span", { class: "feed-team" }, r.källa)),
+        h("span", { class: "gem-res" + (r.ra.diff > 0 ? " vinst" : r.ra.diff < 0 ? " forlust" : "") },
+          r.ra.våra + "–" + r.ra.deras),
+        h("span", { class: "gem-res" + (r.rb.diff > 0 ? " vinst" : r.rb.diff < 0 ? " forlust" : "") },
+          r.rb.våra + "–" + r.rb.deras)))));
+  })();
+  return host;
+}
+
 // ETT ark för en match, med flikar. Tidigare fanns tre olika dialoger med
 // tre olika utseenden: matchen (full rubrik), laget (ingen rubrik alls, bara
 // ett statistikblock) och planen (egen rubrik plus en filterknapp). De nås
@@ -950,7 +1070,7 @@ export function openMatchSheet(m, förvaldFlik) {
         onclick: () => dlg.close(),
       }, "×")),
     matchSheetHeader(m),
-    playoffSourceGroupsBlock(m), previousMeetingsBlock(m),
+    playoffSourceGroupsBlock(m), previousMeetingsBlock(m), gemensammaBlock(m),
     tabbrad, kropp);
   rita();
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
