@@ -2041,6 +2041,32 @@ input[type="search"]::-webkit-search-cancel-button {
   margin: 14px 0;
 }
 
+/* Pågår blocket ritas ingen linje ovanför det (se renderTimeline) —
+   blocket självt märks upp: skenan tänds och matcherna får en rubrik som
+   också säger när rutan tar slut. Det är enda stället i schemat där den
+   inställda matchlängden syns. */
+.slot.now .rail {
+  border-right-color: var(--live);
+  color: var(--live);
+}
+
+.slot-now {
+  /* .slot-matches blir flerkolumnad på breda skärmar (se toppen av filen)
+     — rubriken ska ligga över hela blocket, inte dela rad med ett kort,
+     och align-self hindrar den från att sträckas till kortets höjd. */
+  grid-column: 1 / -1;
+  align-self: start;
+  justify-self: start;
+  background: var(--live);
+  color: #fff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  padding: 1px 8px;
+}
+
 .nowline span {
   position: absolute;
   top: -10px;

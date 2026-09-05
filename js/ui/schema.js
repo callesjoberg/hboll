@@ -153,22 +153,34 @@ function renderTimeline(main, list) {
     // hela blocket en minut efter avkast, och en match som pågick låg
     // plötsligt ovanför "nu".
     const slutar = g.start + state.matchMinutes * 60000;
-    if (timed && !nowPlaced && gDay === today && slutar > now) {
+    const nuHär = timed && !nowPlaced && gDay === today && slutar > now;
+    // "Nu" ligger antingen i en LUCKA mellan två block eller MITT I ett.
+    // En linje mellan blocken duger bara i det första fallet: ritad
+    // ovanför ett block som redan spelar läses den som att 10:20-
+    // matcherna inte börjat, fast klockan är 10:44. Pågår blocket märks
+    // det därför upp självt i stället, och linjen uteblir.
+    const pågår = nuHär && g.start <= now;
+    if (nuHär) {
       nowPlaced = true;
-      const pågår = g.start <= now;
-      wrap.append(h("div", { class: "nowline", id: "nowline" },
-        h("span", null,
-          "NU " + fmtTime.format(new Date(now)) +
-          (pågår
-            ? " · pågår, slutar " + fmtTime.format(new Date(slutar))
-            : " · nästa match " + countdownText(g.start)))));
+      if (!pågår) {
+        wrap.append(h("div", { class: "nowline", id: "nowline" },
+          h("span", null,
+            "NU " + fmtTime.format(new Date(now)) +
+            " · nästa match " + countdownText(g.start))));
+      }
     }
-    wrap.append(h("div", { class: "slot" },
+    wrap.append(h("div", { class: "slot" + (pågår ? " now" : "") },
       h("div", { class: "rail" },
         timed ? matchTimeLabel({ start: g.start }) : "Tid ej satt",
         timed && multiDay
           ? h("small", null, fmtDay.format(new Date(g.start))) : null),
-      h("div", { class: "slot-matches" }, g.items.map(matchCard))));
+      h("div", { class: "slot-matches" },
+        // id="nowline" följer med hit så automatskrollen hittar rätt
+        // ställe även när ingen linje ritats.
+        pågår ? h("div", { class: "slot-now", id: "nowline" },
+          "NU " + fmtTime.format(new Date(now)) +
+          " · pågår till " + fmtTime.format(new Date(slutar))) : null,
+        g.items.map(matchCard))));
   }
   main.append(wrap);
   // Nyast/kommande överst: bygg allt i den vanliga (äldst→nyast) ordningen
