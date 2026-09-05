@@ -1,7 +1,7 @@
 /* match-ui.js — hero, matchkort och matchdialoger. */
 
 import { h, $ } from "../dom.js";
-import { isLive, scoreText } from "../domain/match.js";
+import { isLive, scoreText, periodScores } from "../domain/match.js";
 import {
   hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock,
 } from "../time.js";
@@ -330,9 +330,23 @@ function matchSheetHeader(m) {
     h("div", { class: "match-sheet-score-row" },
       h("div", { class: "match-sheet-teams" }, sida(m.home), sida(m.away)),
       sc ? h("div", { class: "match-sheet-score" }, sc) : null),
+    periodRad(m.res),
     h("p", { class: "match-sheet-when" },
       [hasScheduledStart(m) ? matchTimeLabel(m, fmtDayLong) : "Tid ej satt",
         m.arena].filter(Boolean).join(" · ")));
+}
+
+// Två perioder är en handbollsmatch — då är första perioden helt enkelt
+// halvtidsställningen, och det är så man pratar om den. Fler perioder är
+// basket eller beachhandboll; där säger uppdelningen mer än en etikett.
+function periodRad(res) {
+  const perioder = periodScores(res);
+  if (!perioder.length) return null;
+  const delar = perioder.map((p) => p.h + "–" + p.a);
+  return h("p", { class: "match-sheet-periods" },
+    perioder.length === 2
+      ? "Halvtid " + delar[0]
+      : "Perioder " + delar.join(" · "));
 }
 
 function arenaTabBody(m, stäng) {

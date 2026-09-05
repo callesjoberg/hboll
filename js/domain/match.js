@@ -20,6 +20,25 @@ export function scoreText(res) {
   return res.fin ? "spelad" : null;
 }
 
+// Period-för-period ur Cup Managers periodScores. Fältet betyder olika
+// saker i olika cuper: oftast är enda "perioden" bara en kopia av
+// slutresultatet, listan padas gärna med tomma 0–0 på slutet, och i
+// cuper som avgörs på perioder (beachhandboll, basket) står hela
+// resultatet HÄR medan homeGoals/awayGoals är noll.
+//
+// Därför: klipp bort tomma perioder på slutet och lita bara på listan när
+// den har minst två perioder kvar. En ensam period säger inget utöver
+// slutresultatet, och en avslutande 0–0 går inte att skilja från en
+// period som aldrig rapporterats — bättre att utelämna den än att påstå
+// att andra halvlek slutade mållös.
+export function periodScores(res) {
+  const per = (res && res.per) || [];
+  let slut = per.length;
+  while (slut > 0 && !per[slut - 1].h && !per[slut - 1].a) slut--;
+  const delar = per.slice(0, slut);
+  return delar.length >= 2 ? delar : [];
+}
+
 export function clubOutcomeLetter(m, teamId) {
   if (!(m.res && m.res.fin) || m.res.wo) return null;
   if (!m.res.winner) return "O";

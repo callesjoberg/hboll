@@ -2929,6 +2929,13 @@ dialog.match-dialog {
   line-height: 1;
   color: var(--ink);
 }
+.match-sheet-periods {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
 .match-sheet-when {
   margin: 8px 0 0;
   color: var(--ink-soft);
