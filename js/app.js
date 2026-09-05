@@ -1297,9 +1297,49 @@ HB.shortCat = shortCat;
     return extra.length ? base.concat(extra) : base;
   }
 
+  // Slutspelsmatcher vars platshållare pekar på en grupp där klubben har
+  // ett lag. Laget är inte klart än — "2:an i Grupp K" kan bli vilket som
+  // helst av gruppens lag — men matchen är en av dem klubben kan hamna i.
+  // Utan detta ser morgondagen tom ut i ett klubbfiltrerat schema så länge
+  // gruppspelet pågår: av Göteborg Cups 296 slutspelsmatcher på söndagen
+  // hade 253 platshållarlag, och bara en enda av dem ett riktigt AHK-namn.
+  //
+  // Bara "N:an i Grupp M"-formen fångas. "Bästa N:an" (korsgruppswildcard)
+  // och "Vinn. <matchnr>" går inte att knyta till en grupp utan
+  // grupptabellerna, och de hör hemma i Slutspel-vyns prognos.
+  const PLACEHOLDER_GROUP = /\bi (Grupp\s+\S+)/;
+  const clubGroupCache = new WeakMap();
+
+  function clubGroups() {
+    let idx = clubGroupCache.get(state.matches);
+    if (idx) return idx;
+    idx = new Map();
+    for (const m of state.matches) {
+      if (m.divType !== "Conference" || !m.divName) continue;
+      if (!isClubMatch(m)) continue;
+      let set = idx.get(m.catName);
+      if (!set) idx.set(m.catName, (set = new Set()));
+      set.add(m.divName.trim());
+    }
+    clubGroupCache.set(state.matches, idx);
+    return idx;
+  }
+
+  function isClubGroupPlayoff(m) {
+    if (m.divType !== "Playoff") return false;
+    const egna = clubGroups().get(m.catName);
+    if (!egna || !egna.size) return false;
+    return [m.home, m.away].some((side) => {
+      const träff = PLACEHOLDER_GROUP.exec((side && side.name) || "");
+      return träff && egna.has(träff[1].trim());
+    });
+  }
+
   function scoped() {
     const pool = allActiveMatches();
-    return state.scope === "club" ? pool.filter(isClubMatch) : pool;
+    return state.scope === "club"
+      ? pool.filter((m) => isClubMatch(m) || isClubGroupPlayoff(m))
+      : pool;
   }
 
   // Har användaren gjort ett AKTIVT val av klass(er), lag och/eller en

@@ -2214,6 +2214,19 @@ input[type="search"]::-webkit-search-cancel-button {
   font-variant-numeric: tabular-nums;
 }
 
+/* Slutspelsmatch vars lag ännu avgörs av gruppspelet. */
+.prelim-badge {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink-soft) 16%, transparent);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .match-meta-right {
   margin-left: auto;
   display: flex;

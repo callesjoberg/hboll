@@ -8,6 +8,7 @@ import {
   hasScheduledStart, matchTimeLabel, fmtDay, fmtDayLong, fmtClock, fmtTime, dayKey,
 } from "../time.js";
 import { cohortKey, cohortLabel, shortCat } from "../domain/category.js";
+import { isPlaceholderTeam } from "../domain/placeholder.js";
 
 let state, cup, render, renderContent, saveSettings, markClubChosen;
 let renderFavoriteTeamList, isClubName, isClubMatch, isFavoriteTeam;
@@ -1033,6 +1034,12 @@ export function matchCard(m, spec = {}) {
     // filtrerat fram — de ska inte leda kortet.
     h("div", { class: "match-meta" },
       h("span", { class: "cat" }, shortCat(m.catName)),
+      // Slutspelsmatch där motståndaren (eller ens eget lag) ännu avgörs
+      // av gruppspelet. Utan märket ser "2:an i Grupp K" ut som ett
+      // lagnamn appen inte lyckats slå upp.
+      (isPlaceholderTeam(m.home) || isPlaceholderTeam(m.away))
+        ? h("span", { class: "prelim-badge", title: "Lagen avgörs av gruppspelet" },
+          "Lag ej klart") : null,
       kickoffEl(m),
       (m.edition || (state.years.size ? cup().edition : null))
         ? h("span", { class: "match-year-badge" }, m.edition || cup().edition) : null,
