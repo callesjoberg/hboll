@@ -3342,6 +3342,8 @@ dialog.match-dialog {
   text-overflow: ellipsis;
   cursor: pointer;
 }
+.match-sheet-tab.kort { flex: none; max-width: none; }
+
 .match-sheet-tab.on {
   color: var(--blue);
   border-bottom-color: var(--blue);

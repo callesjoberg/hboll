@@ -560,12 +560,19 @@ export function openMatchSheet(m, förvaldFlik) {
     { key: "away", label: m.away.name, body: () => teamStatBlock(m, m.away, "away") },
   ];
   if (m.arena) {
-    flikar.push({ key: "arena", label: m.arena, body: () => arenaTabBody(m, () => dlg.close()) });
+    // "Bana", inte hela bannamnet: appens huvudnavigering kallar det redan
+    // så, och namnet står i raden precis ovanför flikarna. Ett namn som
+    // "Prioritet Serneke Arena Serneke Arena A" åt upp hela flikraden och
+    // klippte "Mål" till "M…".
+    flikar.push({ key: "arena", label: "Bana", title: m.arena, kort: true,
+      body: () => arenaTabBody(m, () => dlg.close()) });
   }
   // Feeden finns bara hos Cup Manager, och bara för matcher som börjat.
   const harFeed = !cup().dataUrl && m.id &&
     (isLive(m, Date.now(), state.matchMinutes) || (m.res && m.res.fin));
-  if (harFeed) flikar.push({ key: "feed", label: "Mål", body: () => feedTabBody(m) });
+  if (harFeed) {
+    flikar.push({ key: "feed", label: "Mål", kort: true, body: () => feedTabBody(m) });
+  }
   // Är ett av lagen din klubb är det nästan alltid det du är ute efter.
   const klubbFlik = isClubName(m.home.name) ? "home"
     : isClubName(m.away.name) ? "away" : null;
@@ -581,9 +588,12 @@ export function openMatchSheet(m, förvaldFlik) {
   });
   const rita = () => {
     tabbrad.replaceChildren(...flikar.map((f) => h("button", {
-      class: "match-sheet-tab" + (f.key === aktiv ? " on" : ""),
+      // .kort: korta etiketter ska aldrig krympa. Lagnamnen får dela på
+      // det som blir över och klipps med ellips vid behov — båda står
+      // ändå i sin helhet i rubriken ovanför.
+      class: "match-sheet-tab" + (f.kort ? " kort" : "") + (f.key === aktiv ? " on" : ""),
       type: "button", role: "tab", "aria-selected": String(f.key === aktiv),
-      title: f.label,
+      title: f.title || f.label,
       onclick: () => { aktiv = f.key; rita(); },
     }, f.label)));
     const vald = flikar.find((f) => f.key === aktiv) || flikar[0];
