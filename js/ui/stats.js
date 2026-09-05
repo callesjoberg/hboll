@@ -3,7 +3,9 @@
 import { h, $ } from "../dom.js";
 import { attachAutocomplete, chip, withClearButton } from "./controls.js";
 import { buildPicker } from "./toolbar.js";
-import { matchCard, openPlayerSheet, openMatchSheet } from "./match-ui.js";
+import {
+  matchCard, openPlayerSheet, openMatchSheet, openRefereeSheet,
+} from "./match-ui.js";
 import { bracketBlock, drawBracketConnectors } from "./playoffs.js";
 import { countryDisplayName, renderMapView } from "./map.js";
 import { MULTI_COLOR_PALETTE } from "./palette.js";
@@ -2435,6 +2437,19 @@ function laddaLiveSkyttar(rita, doc) {
     .catch(() => {}))).then(rita);
 }
 
+// Skyttar, utvisningar och domare är tre olika listor, inte tre delar av
+// en. Staplade under varandra betydde det att man fick scrolla förbi
+// 1 918 spelare för att komma till domarna. Underflikar i stället, och
+// bara de som har data att visa.
+let skyttFlik = "skyttar";
+
+function skyttFlikar(doc) {
+  const flikar = [["skyttar", "Skyttar"]];
+  if ((doc && doc.discipline || []).length) flikar.push(["utvisningar", "Utvisningar"]);
+  if (state.matches.some((m) => m.refs && m.refs.length)) flikar.push(["domare", "Domare"]);
+  return flikar;
+}
+
 function renderScorersView(root) {
   // Sökrutan byggs EN gång och rörs aldrig av omritningen. Byggs den om
   // vid varje tangenttryck tappar den fokus och markörläge mitt i ordet
@@ -2448,8 +2463,10 @@ function renderScorersView(root) {
   });
   const lista = h("div", { class: "skytt-lista-box" });
   const topp = h("p", { class: "muted skytt-topp" });
+  const flikrad = h("div", { class: "skytt-flikar", role: "tablist" });
+  const verktyg = h("div", { class: "skytt-verktyg" }, sok);
   const box = h("div", { class: "skytt-box" },
-    topp, h("div", { class: "skytt-verktyg" }, sok), klassrad, lista);
+    flikrad, topp, verktyg, klassrad, lista);
   lista.append(h("p", { class: "muted" }, "Hämtar målskyttar …"));
   root.append(box);
 
@@ -2457,6 +2474,17 @@ function renderScorersView(root) {
     const idx = lagIndex();
     const rita = () => {
       if (!lista.isConnected) return;
+      const flikar = skyttFlikar(doc);
+      if (!flikar.some(([v]) => v === skyttFlik)) skyttFlik = flikar[0][0];
+      flikrad.replaceChildren(...flikar.map(([v, etikett]) => h("button", {
+        class: "chip" + (skyttFlik === v ? " on" : ""), type: "button", role: "tab",
+        "aria-selected": String(skyttFlik === v),
+        onclick: () => { skyttFlik = v; skyttVisade = SKYTT_STEG; rita(); },
+      }, etikett)));
+      // Sökrutan och klassfiltret hör till skytteligan. I de andra
+      // listorna vore de bara kontroller som inte gör något.
+      verktyg.hidden = skyttFlik !== "skyttar";
+      klassrad.hidden = skyttFlik !== "skyttar";
       skyttInnehall(doc, idx, rita, { topp, klassrad, lista });
     };
     rita();
@@ -2470,6 +2498,18 @@ function renderScorersView(root) {
 }
 
 function skyttInnehall(doc, idx, rita, el) {
+  if (skyttFlik === "utvisningar") {
+    el.topp.textContent = "";
+    el.klassrad.replaceChildren();
+    el.lista.replaceChildren(...disciplinLista(doc, true).filter(Boolean));
+    return;
+  }
+  if (skyttFlik === "domare") {
+    el.topp.textContent = "";
+    el.klassrad.replaceChildren();
+    el.lista.replaceChildren(...domarLista(doc, true).filter(Boolean));
+    return;
+  }
   if (!doc || !(doc.players || []).length) {
     el.topp.textContent = "";
     el.klassrad.replaceChildren();
@@ -2539,7 +2579,7 @@ function skyttInnehall(doc, idx, rita, el) {
       onclick: () => { skyttVisade += SKYTT_STEG; rita(); },
     }, "Visa fler (" + (träffar.length - visade.length) + " kvar)"));
   }
-  el.lista.replaceChildren(...noder, ...disciplinLista(doc), ...domarLista(doc));
+  el.lista.replaceChildren(...noder);
 }
 
 // Domarna i cupen: hur många matcher var och en dömt, hur många
@@ -2548,7 +2588,7 @@ function skyttInnehall(doc, idx, rita, el) {
 // snapshotten, utvisningarna i skyttedatabasen. Inga nya anrop.
 const DOMARE_TOPP = 15;
 
-function domarLista(doc) {
+function domarLista(doc, utanRubrik) {
   const disc = new Map();
   const fält = (doc && doc.disciplineFields) || [];
   const iAntal = fält.indexOf("penaltiesCount");
@@ -2583,7 +2623,7 @@ function domarLista(doc) {
   })();
 
   return [
-    h("h3", { class: "skytt-rubrik" }, "Domare"),
+    utanRubrik ? null : h("h3", { class: "skytt-rubrik" }, "Domare"),
     h("p", { class: "muted skytt-topp" },
       alla.length + " domare har dömt matcher i cupen." +
       (visaUtv ? " Snittet är " + clubMetricNumber.format(cupSnitt) +
@@ -2592,7 +2632,14 @@ function domarLista(doc) {
       h("div", { class: "skytt-rad" + (r.egna ? " ours" : "") },
         h("span", { class: "skytt-plats" }, String(i + 1)),
         h("span", { class: "skytt-mal" }, String(r.matcher)),
-        h("span", { class: "skytt-namn" }, r.namn,
+        h("span", {
+          class: "skytt-namn spelar-lank", role: "button", tabindex: "0",
+          title: "Visa " + r.namn + "s matcher",
+          onclick: () => openRefereeSheet(r.namn),
+          onkeydown: (e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openRefereeSheet(r.namn); }
+          },
+        }, r.namn,
           h("span", { class: "skytt-lag" },
             (r.egna ? r.egna + " av era matcher" : "inga av era matcher") +
             (visaUtv && r.mätta
@@ -2608,7 +2655,7 @@ function domarLista(doc) {
 // och Hällby inte alls, och då säger en tom lista bara emot sig själv.
 const DISC_TOPP = 10;
 
-function disciplinLista(doc) {
+function disciplinLista(doc, utanRubrik) {
   const rader = (doc && doc.discipline) || [];
   const fält = (doc && doc.disciplineFields) || [];
   const iAntal = fält.indexOf("penaltiesCount");
@@ -2623,7 +2670,7 @@ function disciplinLista(doc) {
     .slice(0, DISC_TOPP);
   if (!topp.length) return [];
   return [
-    h("h3", { class: "skytt-rubrik" }, "Flest utvisningar"),
+    utanRubrik ? null : h("h3", { class: "skytt-rubrik" }, "Flest utvisningar"),
     h("p", { class: "muted skytt-topp" },
       rader.length + " av cupens matcher har registrerade utvisningar eller kort."),
     h("div", { class: "skytt-lista-box" }, topp.map((r, i) => h("div", {

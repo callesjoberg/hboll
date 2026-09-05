@@ -1917,6 +1917,38 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .playoff-source-progress { margin: 2px 0 8px; font-size: 12px; }
 
+/* Domarens matchlista. */
+.domar-match {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.domar-match:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.domar-match.ours { background: color-mix(in srgb, var(--blue) 10%, transparent); }
+.domar-tid { color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.domar-lag { min-width: 0; }
+.domar-lag .feed-team { display: block; margin-left: 0; }
+.domar-res {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.domar-utv { color: var(--live); font-size: 12px; white-space: nowrap; }
+
+.skytt-flikar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
 .skytt-topp { margin: 0 0 10px; }
 .skytt-live-nyckel { color: var(--live); }
 .skytt-verktyg { margin-bottom: 8px; }

@@ -807,6 +807,91 @@ export function openPlayerSheet(namn, lagId) {
   return dlg;
 }
 
+// --- domarark ---------------------------------------------------------
+// Vilka matcher en domare dömt, med mål och utvisningar. Allt räknas ur
+// data som redan finns i webbläsaren: domarnamnen ligger i snapshotten
+// och utvisningarna i skyttedatabasen. Inga nya anrop.
+
+const DEC1 = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
+
+export function openRefereeSheet(namn) {
+  const matcher = state.matches
+    .filter((m) => (m.refs || []).includes(namn))
+    .sort((a, b) => a.start - b.start);
+
+  const kropp = h("div", { class: "match-sheet-body" },
+    h("p", { class: "muted" }, "Räknar ihop …"));
+  const dlg = h("dialog", { class: "match-dialog match-sheet" },
+    h("div", { class: "match-sheet-bar" },
+      h("button", { class: "match-sheet-back", type: "button", onclick: () => dlg.close() }, "Tillbaka"),
+      h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×")),
+    h("div", { class: "match-sheet-head" },
+      h("p", { class: "match-sheet-eyebrow" }, "Domare"),
+      h("div", { class: "match-sheet-score-row" },
+        h("div", { class: "match-sheet-teams" },
+          h("div", { class: "match-sheet-team us" },
+            h("span", { class: "match-sheet-team-name" }, namn))))),
+    kropp);
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener("close", () => dlg.remove());
+  document.body.append(dlg); showMatchDialog(dlg);
+
+  HB.api.fetchScorers(cup()).then((doc) => {
+    if (!dlg.isConnected) return;
+    const fält = (doc && doc.disciplineFields) || [];
+    const iAntal = fält.indexOf("penaltiesCount");
+    const iMin = fält.indexOf("penaltiesMinutes");
+    const iRött = fält.indexOf("redCards");
+    const iGult = fält.indexOf("yellowCards");
+    const granskade = new Set((doc && doc.done) || []);
+    const disc = new Map();
+    for (const d of (doc && doc.discipline) || []) disc.set(d.m, d);
+    const summa = (d, i) => (i < 0 || !d ? 0 : (d.h[i] || 0) + (d.a[i] || 0));
+
+    let mål = 0, spelade = 0, utv = 0, min = 0, rött = 0, gult = 0, mätta = 0;
+    for (const m of matcher) {
+      const r = m.res;
+      if (r && r.fin && !r.wo) { spelade++; mål += (r.hg || 0) + (r.ag || 0); }
+      if (!granskade.has(m.id)) continue;
+      mätta++;
+      const d = disc.get(m.id);
+      utv += summa(d, iAntal); min += summa(d, iMin);
+      rött += summa(d, iRött); gult += summa(d, iGult);
+    }
+    const snitt = (n, av) => (av ? DEC1.format(n / av) : "–");
+
+    kropp.replaceChildren(
+      h("p", { class: "muted" },
+        matcher.length + " matcher i " + cup().name +
+        (spelade ? " · " + mål + " mål (" + snitt(mål, spelade) + " per match)" : "") +
+        (mätta
+          ? " · " + utv + " utvisningar" + (min ? " (" + min + " min)" : "") +
+            " på " + mätta + " granskade matcher, " + snitt(utv, mätta) + " per match"
+          : "") +
+        (rött || gult ? " · " + rött + " röda, " + gult + " gula kort" : "")),
+      ...matcher.map((m) => {
+        const d = disc.get(m.id);
+        const u = summa(d, iAntal);
+        return h("div", {
+          class: "domar-match" + (isClubMatch(m) ? " ours" : ""),
+          role: "button", tabindex: "0",
+          onclick: () => { dlg.close(); openMatchDialog(m); },
+          onkeydown: (e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); dlg.close(); openMatchDialog(m); }
+          },
+        },
+        h("span", { class: "domar-tid" },
+          hasScheduledStart(m) ? matchTimeLabel(m, fmtDay) : "Tid ej satt"),
+        h("span", { class: "domar-lag" }, m.home.name + " – " + m.away.name,
+          h("span", { class: "feed-team" },
+            [shortCat(m.catName), m.divName].filter(Boolean).join(" · "))),
+        h("span", { class: "domar-res" }, scoreText(m.res) || "–"),
+        h("span", { class: "domar-utv" }, u ? u + " utv" : ""));
+      }));
+  });
+  return dlg;
+}
+
 export function openMatchSheet(m, förvaldFlik) {
   const flikar = [
     { key: "home", label: m.home.name, body: () => teamStatBlock(m, m.home, "home") },
