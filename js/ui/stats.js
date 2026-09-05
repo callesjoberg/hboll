@@ -2245,6 +2245,170 @@ function renderKalenderView(root) {
   root.append(h("p", { class: "muted gantt-hint" }, hint));
 }
 
+// --- skyttar ------------------------------------------------------------
+// Tvålagersmodell, samma som resultaten: CI bygger databasen över spelade
+// matcher (scripts/fetch_scorers.py), och enheten fyller på med mål ur
+// pågående matchers feed. Den som står vid planen ser alltså sitt lags
+// skytt räknas upp direkt, utan att CI hunnit köra.
+
+const SKYTT_STEG = 40;
+let skyttVisade = SKYTT_STEG;
+let skyttSok = "";
+let skyttKlass = "";     // "" = alla klasser
+let skyttLive = null;    // matchId -> [{lagId, namn, nr}] ur pågående matcher
+
+// Lag-id -> {namn, klass, klassId} ur den öppna cupens matcher. Skyttefilen
+// lagrar bara lag-id för att hålla sig liten.
+function lagIndex() {
+  const idx = new Map();
+  for (const m of state.matches) {
+    for (const sida of ["home", "away"]) {
+      const lag = m[sida];
+      if (lag && lag.id != null && !idx.has(lag.id)) {
+        idx.set(lag.id, { namn: lag.name, klass: m.catName, klassId: m.catId });
+      }
+    }
+  }
+  return idx;
+}
+
+// Slår ihop CI-databasen med målen från pågående matcher. Live-målen
+// räknas separat så raden kan visa att den tickar just nu.
+function skyttRader(doc, idx) {
+  const rader = new Map();
+  for (const p of (doc && doc.players) || []) {
+    const lag = idx.get(p.t);
+    rader.set(p.t + "|" + p.n, {
+      lagId: p.t, namn: p.n, nr: p.nr, mål: p.g, matcher: p.m, live: 0,
+      lagnamn: (lag && lag.namn) || "—", klass: (lag && lag.klass) || "",
+    });
+  }
+  for (const mål of Object.values(skyttLive || {})) {
+    for (const g of mål) {
+      const nyckel = g.lagId + "|" + g.namn;
+      let rad = rader.get(nyckel);
+      if (!rad) {
+        const lag = idx.get(g.lagId);
+        rad = { lagId: g.lagId, namn: g.namn, nr: g.nr, mål: 0, matcher: 0, live: 0,
+          lagnamn: (lag && lag.namn) || "—", klass: (lag && lag.klass) || "" };
+        rader.set(nyckel, rad);
+      }
+      rad.mål++;
+      rad.live++;
+      if (g.nr != null) rad.nr = g.nr;
+    }
+  }
+  return [...rader.values()].sort((a, b) => b.mål - a.mål ||
+    a.namn.localeCompare(b.namn, "sv"));
+}
+
+// Hämtar feeden för de matcher som pågår just nu och plockar ut målen.
+// Ett anrop per pågående match, en gång per öppning av vyn.
+function laddaLiveSkyttar(rita) {
+  if (skyttLive) return;
+  skyttLive = {};
+  const pågår = state.matches.filter((m) => m.res && m.res.live && !m.res.fin &&
+    m.start && Date.now() >= m.start);
+  if (!pågår.length) return;
+  Promise.all(pågår.map((m) => HB.api.fetchMatchFeed(cup(), m.id)
+    .then((feed) => {
+      const mål = ((feed && feed.events) || [])
+        .filter((e) => e.typ === "mal" && e.player)
+        .map((e) => ({
+          lagId: (e.side === "away" ? m.away : m.home).id,
+          namn: e.player, nr: e.nr,
+        }));
+      if (mål.length) skyttLive[m.id] = mål;
+    })
+    .catch(() => {}))).then(rita);
+}
+
+function renderScorersView(root) {
+  // Sökrutan byggs EN gång och rörs aldrig av omritningen. Byggs den om
+  // vid varje tangenttryck tappar den fokus och markörläge mitt i ordet
+  // — samma fälla som redan bitit i den här kodbasen.
+  const sok = h("input", {
+    class: "input", type: "search", value: skyttSok,
+    placeholder: "Sök spelare eller lag", "aria-label": "Sök spelare eller lag",
+  });
+  const klassrad = h("div", {
+    class: "skytt-klasser", role: "group", "aria-label": "Klass",
+  });
+  const lista = h("div", { class: "skytt-lista-box" });
+  const topp = h("p", { class: "muted skytt-topp" });
+  const box = h("div", { class: "skytt-box" },
+    topp, h("div", { class: "skytt-verktyg" }, sok), klassrad, lista);
+  lista.append(h("p", { class: "muted" }, "Hämtar målskyttar …"));
+  root.append(box);
+
+  HB.api.fetchScorers(cup()).then((doc) => {
+    const idx = lagIndex();
+    const rita = () => {
+      if (!lista.isConnected) return;
+      skyttInnehall(doc, idx, rita, { topp, klassrad, lista });
+    };
+    rita();
+    sok.addEventListener("input", () => {
+      skyttSok = sok.value;
+      skyttVisade = SKYTT_STEG;
+      rita();
+    });
+    laddaLiveSkyttar(rita);
+  });
+}
+
+function skyttInnehall(doc, idx, rita, el) {
+  if (!doc || !(doc.players || []).length) {
+    el.topp.textContent = "";
+    el.klassrad.replaceChildren();
+    el.lista.replaceChildren(h("p", { class: "muted" },
+      "Ingen målskyttestatistik för den här cupen än. Den byggs upp efter " +
+      "hand som matcher spelas färdigt."));
+    return;
+  }
+  const alla = skyttRader(doc, idx);
+  const klasser = [...new Set(alla.map((r) => r.klass).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "sv"));
+  const fråga = skyttSok.trim().toLowerCase();
+  const träffar = alla.filter((r) =>
+    (!skyttKlass || r.klass === skyttKlass) &&
+    (!fråga || r.namn.toLowerCase().includes(fråga) ||
+      r.lagnamn.toLowerCase().includes(fråga)));
+
+  el.topp.textContent = doc.goals
+    ? doc.goals.named + " av " + doc.goals.total + " mål i cupen har " +
+      "registrerad målskytt. Resten syns inte här."
+    : "";
+
+  el.klassrad.replaceChildren(
+    ...[["", "Alla klasser"], ...klasser.map((k) => [k, k])].map(([v, etikett]) =>
+      h("button", {
+        class: "chip small" + (skyttKlass === v ? " on" : ""), type: "button",
+        onclick: () => { skyttKlass = v; skyttVisade = SKYTT_STEG; rita(); },
+      }, etikett)));
+
+  const visade = träffar.slice(0, skyttVisade);
+  const noder = visade.map((r, i) => h("div", {
+    class: "skytt-rad" + (isClubName(r.lagnamn) ? " ours" : ""),
+  },
+  h("span", { class: "skytt-plats" }, String(i + 1)),
+  h("span", { class: "skytt-mal" + (r.live ? " live" : "") }, String(r.mål)),
+  h("span", { class: "skytt-namn" },
+    r.nr != null ? h("span", { class: "feed-nr" }, String(r.nr)) : null,
+    r.namn,
+    h("span", { class: "skytt-lag" }, r.lagnamn + (r.klass ? " · " + r.klass : ""))),
+  h("span", { class: "skytt-matcher" }, r.matcher ? r.matcher + " m" : "")));
+
+  if (!träffar.length) noder.push(h("p", { class: "muted" }, "Ingen träff."));
+  if (träffar.length > visade.length) {
+    noder.push(h("button", {
+      class: "btn small", type: "button",
+      onclick: () => { skyttVisade += SKYTT_STEG; rita(); },
+    }, "Visa fler (" + (träffar.length - visade.length) + " kvar)"));
+  }
+  el.lista.replaceChildren(...noder);
+}
+
 const STATS_TABS = [
   ["trend", "Trend", renderTrendView],
   ["vinnare", "Vinnare", renderVinnareView],
@@ -2254,6 +2418,7 @@ const STATS_TABS = [
   ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
   ["cuper", "Cuper", renderCupsOverviewView],
   ["historik", "Historik", renderHistoryView],
+  ["skyttar", "Skyttar", renderScorersView],
 ];
 
 export function renderStatsView(root) {

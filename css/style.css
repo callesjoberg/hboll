@@ -1861,6 +1861,64 @@ input[type="search"]::-webkit-search-cancel-button {
 .untimed-panel[open] .untimed-summary { border-bottom: 1px solid var(--line); }
 .untimed-panel-body { padding: 10px; }
 
+/* Skytteligan (Statistik → Skyttar). Läses som en resultatlista: platsen
+   och målen först, spelaren i mitten, laget som svans. */
+.skytt-topp { margin: 0 0 10px; }
+.skytt-verktyg { margin-bottom: 8px; }
+.skytt-verktyg .input { width: 100%; max-width: 340px; }
+
+.skytt-klasser {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.skytt-lista-box { display: grid; gap: 1px; }
+
+.skytt-rad {
+  display: grid;
+  grid-template-columns: 28px 34px 1fr auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+}
+
+.skytt-rad:nth-child(even) { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.skytt-rad.ours { background: color-mix(in srgb, var(--blue) 10%, transparent); }
+
+.skytt-plats {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 13px;
+  text-align: right;
+}
+
+.skytt-mal {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Raden tickar just nu — samma färg som LIVE på matchkorten. */
+.skytt-mal.live { color: var(--live); }
+
+.skytt-namn { min-width: 0; font-size: 14px; }
+.skytt-lag { display: block; color: var(--ink-soft); font-size: 12px; }
+
+.skytt-matcher {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* Matchhändelser — mål för mål med löpande ställning och målskytt.
    Läses uppifrån och ner som en live-feed, nyast överst. */
 .feed-list { display: grid; gap: 1px; }

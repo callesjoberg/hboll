@@ -587,6 +587,20 @@ window.HB = window.HB || {};
     return { start: normalizeStart(feed && feed.liveStartTime), events };
   }
 
+  // Den CI-byggda målskyttestatistiken (scripts/fetch_scorers.py). En
+  // aggregerad rad per spelare och lag; klassen härleds i klienten ur
+  // lag-id:t mot snapshottens matcher. Hämtas en gång per cup och sida.
+  const scorerCache = new Map();
+  function fetchScorers(cup) {
+    if (cup.dataUrl) return Promise.resolve(null); // ProCup/Gothia saknar feed
+    if (scorerCache.has(cup.id)) return scorerCache.get(cup.id);
+    const p = fetch("data/scorers-" + cup.id + ".json", {
+      headers: { accept: "application/json" },
+    }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    scorerCache.set(cup.id, p);
+    return p;
+  }
+
   // --- tabeller ---------------------------------------------------------
 
   // `cacheable` skickas in av app.js (som känner till matchresultaten) och
@@ -1054,7 +1068,8 @@ window.HB = window.HB || {};
   }
 
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
-             fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed, fetchTable,
+             fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed,
+             fetchScorers, fetchTable,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,

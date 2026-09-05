@@ -2012,8 +2012,12 @@ HB.shortCat = shortCat;
       vinnare: clubSupported, kalender: clubSupported,
       klubb: clubSupported, klubbjamforelse: clubSupported, cuper: clubSupported,
       historik: clubSupported,
+      // Målskyttar bygger på Cup Managers matchfeed. ProCup/Gothia har
+      // ingen, och deras cuper ska inte visa en flik som alltid är tom.
+      skyttar: !!(cup() && !cup().dataUrl),
     };
-    const statsSupported = trendSupported || mapSupported || clubSupported;
+    const statsSupported = trendSupported || mapSupported || clubSupported ||
+      state.statsSupport.skyttar;
     // Vänta tills BÅDA de asynkrona källorna (archiveIndex, mapCupStatus)
     // svarat innan ett direktlänkat view=stats/underflik nollställs — samma
     // "vänta tills vi vet säkert"-resonemang som Trend/Karta hade var för sig
