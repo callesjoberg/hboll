@@ -3990,10 +3990,7 @@ dialog.history-dialog {
   border-radius: calc(var(--radius) + 2px);
   padding: 14px 16px;
   overflow-x: auto;
-  /* visible i höjdled: layoutBracket flyttar rutor neråt med transform,
-     som inte växer innehållshöjden, och med hidden klipptes de nedersta
-     matcherna av. Bredden scrollar som förut. */
-  overflow-y: visible;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   box-shadow: 0 1px 2px rgba(22, 40, 63, 0.06);
   /* Flex-items krymper aldrig under sitt innehålls egen bredd som

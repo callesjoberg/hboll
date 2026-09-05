@@ -14,9 +14,9 @@
 // gammal, envis skalcache (nätverk-först räcker inte om ett enskilt
 // anrop råkar falla tillbaka).
 <<<<<<< HEAD
-const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 =======
-const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const CACHE_NAME = "hboll-shell-20260905zaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 >>>>>>> parent of 77d8ca9 (Låt koden äga slutspelsträdets placering, och rita om vid måttändring)
 const SHELL_FILES = [
   "./",

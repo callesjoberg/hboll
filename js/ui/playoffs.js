@@ -589,70 +589,9 @@ function bracketMatchBox(m, projMap, onClick, relevantIds) {
 // zoomOverride: historikens brackettrad har ingen egen zoomreglering
 // (renderas alltid utan CSS zoom) och ska inte påverkas av vad
 // användaren råkar ha ställt in på live-Slutspel-fliken.
-// Placera varje match mitt emellan sina matarmatcher. Kolumnerna staplas
-// annars uppifrån med jämna mellanrum, vilket bara råkar bli rätt i ett
-// perfekt halverande träd — och det här är inte ett sådant: en del lag
-// går direkt in i 1/8-final, så 1/16 och 1/8 kan ha lika många matcher.
-// Följden var att finalen hamnade långt ner i stället för mitt för sina
-// semifinaler, och samma sak en bit uppåt i varje omgång.
-function layoutBracket(bracketEl, div) {
-  const kolumner = [...bracketEl.querySelectorAll(".bracket-round")];
-  if (kolumner.length < 2) return;
-  const rutor = kolumner.map((k) => [...k.querySelectorAll("[data-match-id]")]);
-  if (rutor.some((rad) => !rad.length)) return;
-  // Nollställ ett tidigare pass så mätningen utgår från grundläget.
-  for (const rad of rutor) for (const el of rad) el.style.transform = "";
-
-  const matare = new Map(); // målmatch-id -> [matarelement]
-  for (const m of div.matches) {
-    if (m.nextWinnerId == null) continue;
-    const el = bracketEl.querySelector('[data-match-id="' + m.id + '"]');
-    if (!el) continue;
-    const nyckel = String(m.nextWinnerId);
-    if (!matare.has(nyckel)) matare.set(nyckel, []);
-    matare.get(nyckel).push(el);
-  }
-
-  const GAP = 12;
-  const mitt = (el) => el.offsetTop + el.offsetHeight / 2;
-  const plats = new Map(); // element -> mittpunkt efter flytt
-  for (const el of rutor[0]) plats.set(el, mitt(el));
-
-  let störstaBotten = 0;
-  for (let i = 1; i < rutor.length; i++) {
-    const rad = rutor[i];
-    const önskad = rad.map((el) => {
-      const centra = (matare.get(el.dataset.matchId) || [])
-        .map((x) => plats.get(x)).filter((v) => v != null);
-      return centra.length
-        ? centra.reduce((a, b) => a + b, 0) / centra.length
-        : mitt(el);
-    });
-    // Krockhantering: sopa uppifrån och tryck ner det som inte får plats.
-    let förraBotten = -Infinity;
-    for (let j = 0; j < rad.length; j++) {
-      const höjd = rad[j].offsetHeight;
-      const c = Math.max(önskad[j], förraBotten + GAP + höjd / 2);
-      önskad[j] = c;
-      förraBotten = c + höjd / 2;
-      plats.set(rad[j], c);
-      störstaBotten = Math.max(störstaBotten, förraBotten);
-    }
-    for (let j = 0; j < rad.length; j++) {
-      const flytt = önskad[j] - mitt(rad[j]);
-      rad[j].style.transform = Math.abs(flytt) < 0.5
-        ? "" : "translateY(" + flytt.toFixed(1) + "px)";
-    }
-  }
-  // transform påverkar inte layouthöjden — utan detta klipps de nedflyttade
-  // rutorna av trädets egen höjd.
-  bracketEl.style.minHeight = Math.ceil(störstaBotten + GAP) + "px";
-}
-
 export function drawBracketConnectors(boxEl, div, zoomOverride) {
   const bracketEl = boxEl.querySelector(".bracket");
   if (!bracketEl) return;
-  layoutBracket(bracketEl, div);
   const old = bracketEl.querySelector(".bracket-connectors");
   if (old) old.remove();
   // SVG:n hamnar SJÄLV inuti .bracket-row (samma element som får CSS
