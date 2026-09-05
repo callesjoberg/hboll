@@ -11,7 +11,7 @@ import { syncBottomStack } from "./sheets.js";
 import {
   catSortKey, cohortKey, cohortLabel,
 } from "../domain/category.js";
-import { clubOutcomeLetter, scoreText } from "../domain/match.js";
+import { clubOutcomeLetter, scoreText, isLive } from "../domain/match.js";
 import { isPlaceholderTeam } from "../domain/placeholder.js";
 import { matchesBooleanQuery } from "../filters.js";
 import {
@@ -2328,7 +2328,8 @@ const SKYTT_STEG = 40;
 let skyttVisade = SKYTT_STEG;
 let skyttSok = "";
 let skyttKlass = "";     // "" = alla klasser
-let skyttLive = null;    // matchId -> [{lagId, namn, nr}] ur pågående matcher
+let skyttLive = null;    // matchId -> [{lagId, namn, nr}] hämtat direkt
+let skyttLiveNyckel = "";// cup + matchmängd som skyttLive byggdes för
 
 // Lag-id -> {namn, klass, klassId} ur den öppna cupens matcher. Skyttefilen
 // lagrar bara lag-id för att hålla sig liten.
@@ -2390,13 +2391,38 @@ function skyttRader(doc, idx) {
 
 // Hämtar feeden för de matcher som pågår just nu och plockar ut målen.
 // Ett anrop per pågående match, en gång per öppning av vyn.
-function laddaLiveSkyttar(rita) {
-  if (skyttLive) return;
+// Hur många nyss avslutade matcher som får hämtas direkt. CI bygger
+// databasen var femte minut, så eftersläpningen är liten — taket finns
+// för att en hel speldags osparade matcher inte ska bli ett anropsregn
+// när någon öppnar fliken.
+const SKYTT_LIVE_MAX = 20;
+
+function laddaLiveSkyttar(rita, doc) {
+  // Nyckeln, inte bara "är den satt": vyn ritas ofta innan state.matches
+  // hunnit fyllas, och en enkel latch fastnade då på ett tomt resultat
+  // för resten av besöket — noll anrop trots att 92 färdigspelade matcher
+  // saknades i databasen. Nyckeln släpper igenom ett nytt försök så fort
+  // matchlistan faktiskt ändrats.
+  const nyckel = state.cupId + ":" + state.matches.length +
+    ":" + ((doc && doc.done) || []).length;
+  if (!state.matches.length || skyttLiveNyckel === nyckel) return;
+  skyttLiveNyckel = nyckel;
   skyttLive = {};
-  const pågår = state.matches.filter((m) => m.res && m.res.live && !m.res.fin &&
-    m.start && Date.now() >= m.start);
-  if (!pågår.length) return;
-  Promise.all(pågår.map((m) => HB.api.fetchMatchFeed(cup(), m.id)
+  // res.live är INTE att lita på: flaggan sätts vid avspark och släcks
+  // först när ett slutresultat skrivs in, vilket i många klasser aldrig
+  // sker. isLive väger in matchens verkliga fönster. Samma fälla lagades
+  // i matchkorten i förmiddags — det här stället missades då.
+  const klaraIDb = new Set((doc && doc.done) || []);
+  const kandidater = state.matches
+    .filter((m) => m.start && Date.now() >= m.start)
+    .filter((m) => isLive(m, Date.now(), state.matchMinutes) ||
+      // ...och matcher som spelats klart men ännu inte hunnit med i
+      // CI-databasen. Utan dem visar ligan färre mål än spelarkortet.
+      (m.res && m.res.fin && !klaraIDb.has(m.id)))
+    .sort((a, b) => b.start - a.start)
+    .slice(0, SKYTT_LIVE_MAX);
+  if (!kandidater.length) return;
+  Promise.all(kandidater.map((m) => HB.api.fetchMatchFeed(cup(), m.id)
     .then((feed) => {
       const mål = ((feed && feed.events) || [])
         .filter((e) => e.typ === "mal" && e.player)
@@ -2439,7 +2465,7 @@ function renderScorersView(root) {
       skyttVisade = SKYTT_STEG;
       rita();
     });
-    laddaLiveSkyttar(rita);
+    laddaLiveSkyttar(rita, doc);
   });
 }
 
@@ -2470,7 +2496,8 @@ function skyttInnehall(doc, idx, rita, el) {
     // Röd siffra behöver en förklaring där den kan uppstå — annars ser den
     // ut som en varning.
     liveRader ? h("span", { class: "skytt-live-nyckel" },
-      " Rött målantal = spelaren har gjort mål i en match som pågår just nu.") : null);
+      " Rött målantal = hämtat direkt från matchen, ännu inte i den sparade " +
+      "statistiken. Den byggs om var femte minut.") : null);
 
   el.klassrad.replaceChildren(
     ...[["", "Alla klasser"], ...klasser.map((k) => [k, k])].map(([v, etikett]) =>
@@ -2486,7 +2513,8 @@ function skyttInnehall(doc, idx, rita, el) {
   h("span", { class: "skytt-plats" }, String(i + 1)),
   h("span", {
     class: "skytt-mal" + (r.live ? " live" : ""),
-    ...(r.live ? { title: r.live + " av målen gjordes i en match som pågår nu" } : {}),
+    ...(r.live ? { title: r.live + " av målen är hämtade direkt från matchen " +
+      "och finns ännu inte i den sparade statistiken" } : {}),
   }, String(r.mål)),
   h("span", {
     class: "skytt-namn spelar-lank", role: "button", tabindex: "0",
