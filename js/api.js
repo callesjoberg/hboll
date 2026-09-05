@@ -181,7 +181,7 @@ window.HB = window.HB || {};
     return (
       "MatchWindow({limit:" + limit + ",offset:" + offset +
       ",tournamentId:" + cup.tournamentId + "})" +
-      "{matches:[{... on Match:{start:{},arena:" + ARENA_FIELDS + ",round:{}," +
+      "{matches:[{... on Match:{start:{},end:{},video:{},arena:" + ARENA_FIELDS + ",round:{}," +
       "away:{team:" + TEAM_FIELDS + "},division:{category:{},name:{}}," +
       "home:{team:" + TEAM_FIELDS + "},result:{}}}]}"
     );
@@ -318,9 +318,19 @@ window.HB = window.HB || {};
       const round = storeGet(store, e.round) || {};
       const result = normalizeResult(storeGet(store, e.result));
       const catId = refId(division.category);
+      // end: matchens FAKTISKA sluttid, alltså ren speltid inklusive
+      // halvlek (Göteborg Cup 30 min = 2×15). Schemarutan är längre —
+      // avtackning och uppställning inför nästa match ligger emellan.
+      // video: SolidSport-/Handbollplay-sändningen, finns inte överallt.
+      // Två hopp: Match.video pekar på en tunn wrapper vars eget href
+      // pekar på Video-entiteten (samma indirektion som klubbadressen).
+      const videoRef = storeGet(store, e.video) || {};
+      const video = storeGet(store, videoRef) || videoRef;
       matches.push({
         id: e.id,
         start: normalizeStart(e.start), // 0 = tid ej satt
+        end: normalizeStart(e.end),     // 0 = okänd
+        ...(video.externalLink ? { video: video.externalLink } : {}),
         arena: arena.completeName || arena.fieldName || "",
         divId: division.id || refId(e.division),
         divName: nameOf(division),
@@ -449,7 +459,7 @@ window.HB = window.HB || {};
   // enskilda Match({id})-anrop och den stora fönsterfrågan strukturellt
   // identiska så normalize() kan användas rakt av på båda.
   function singleMatchFields() {
-    return "{start:{},arena:" + ARENA_FIELDS + ",round:{},away:{team:" + TEAM_FIELDS + "}," +
+    return "{start:{},end:{},video:{},arena:" + ARENA_FIELDS + ",round:{},away:{team:" + TEAM_FIELDS + "}," +
       "division:{category:{},name:{}},home:{team:" + TEAM_FIELDS + "},result:{}}";
   }
 

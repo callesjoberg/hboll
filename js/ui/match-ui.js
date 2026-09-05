@@ -331,6 +331,7 @@ function matchSheetHeader(m) {
       h("div", { class: "match-sheet-teams" }, sida(m.home), sida(m.away)),
       sc ? h("div", { class: "match-sheet-score" }, sc) : null),
     periodRad(m.res),
+    videoLänk(m, { medText: true }),
     h("p", { class: "match-sheet-when" },
       [hasScheduledStart(m) ? matchTimeLabel(m, fmtDayLong) : "Tid ej satt",
         m.arena].filter(Boolean).join(" · ")));
@@ -557,6 +558,29 @@ export function openMatchDialog(m) {
 // leta. Kortet får därför en egen liten lucka mot den OFILTRERADE
 // listan: nästa tre matcher på samma bana samma dag.
 
+// Sändningen ligger hos SolidSport, som kör Handbollplay. Värdnamnet
+// visas i title:n så man vet vart länken bär innan man klickar.
+function videoVärd(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ""); }
+  catch { return "extern sida"; }
+}
+
+function videoLänk(m, spec = {}) {
+  if (!m.video) return null;
+  return h("a", {
+    class: "match-video" + (spec.medText ? " with-text" : ""),
+    href: m.video, target: "_blank", rel: "noopener noreferrer",
+    title: "Se matchen på " + videoVärd(m.video),
+    "aria-label": "Se matchen " + m.home.name + " mot " + m.away.name +
+      " på " + videoVärd(m.video),
+    // Kortet är i sig en knapp som öppnar matcharket — länken ska inte
+    // göra båda delarna.
+    onclick: (e) => e.stopPropagation(),
+    onkeydown: (e) => e.stopPropagation(),
+  }, h("span", { class: "match-video-play" }),
+  spec.medText ? h("span", null, "Se matchen") : null);
+}
+
 const NÄSTA_PÅ_BANAN = 3;
 // Vilka kort som står öppna. Modulnivå, inte state: rent UI-tillstånd
 // som ska överleva en omrendering men inte en omladdning.
@@ -671,7 +695,8 @@ export function matchCard(m, spec = {}) {
           onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") {
             e.preventDefault(); e.stopPropagation(); openArenaQuickView(m, m.arena);
           } },
-        }, m.arena) : h("span", { class: "arena" }, m.arena)),
+        }, m.arena) : h("span", { class: "arena" }, m.arena),
+      videoLänk(m)),
       weather ? h("span", { class: "weather", title: weather.temp + "°C" },
         weather.icon, weather.temp + "°") : null),
     h("div", { class: "match-body" }, h("div", { class: "teams" }, teamEl(m.home), teamEl(m.away)),

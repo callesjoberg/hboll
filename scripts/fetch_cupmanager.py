@@ -73,8 +73,17 @@ def match_query(tid, limit, offset):
     # -> Address (gata/ort/koordinater). Flera banor delar location: Åhus
     # Beach har 18 arenor men EN location, eftersom banorna ligger utspridda
     # på samma inhägnade område. Se arenas_from_store().
+    # end: matchens FAKTISKA sluttid, alltså ren speltid inklusive halvlek
+    # (Göteborg Cup 30 min = 2×15, Åhus beach 10, Hällby 25). Rutan i
+    # schemat är längre — 40 minuter i Göteborg Cup — eftersom avtackning
+    # och uppställning inför nästa match ligger emellan. Fältet fanns i
+    # API:t hela tiden men frågades aldrig efter; utan det fick appen gissa
+    # rutans längd ur avståndet mellan starttider (js/domain/match-length.js).
+    #
+    # video: SolidSport-/Handbollplay-sändningen för matchen. Bara en del
+    # matcher och en del cuper har någon.
     return (f"MatchWindow({{limit:{limit},offset:{offset},tournamentId:{tid}}})"
-            "{matches:[{... on Match:{start:{},round:{},roundRank:{},"
+            "{matches:[{... on Match:{start:{},end:{},video:{},round:{},roundRank:{},"
             "arena:{completeName:{},fieldName:{},"
             "location:{name:{},address:{street:{},city:{},lat:{},lng:{}}}},"
             "nextMatchWinner:{},nextMatchLoser:{},"
@@ -164,9 +173,11 @@ def normalize(store):
         category, rnd = get(division.get("category")), get(e.get("round"))
         rr = get(e.get("roundRank"))
         next_w, next_l = get(e.get("nextMatchWinner")), get(e.get("nextMatchLoser"))
-        matches.append({
+        match = {
             "id": e.get("id"),
             "start": e.get("start") or 0,
+            # Faktisk sluttid — ren speltid, inte schemarutan. 0 = okänd.
+            "end": e.get("end") or 0,
             "arena": arena.get("completeName") or arena.get("fieldName") or "",
             "divId": division.get("id") or ref_id(e.get("division")),
             "divName": name_of(division),
@@ -201,7 +212,14 @@ def normalize(store):
                      "club": get(get(away.get("team")).get("club")).get("name"),
                      "country": club_nation_code(away)},
             "res": norm_result(get(e.get("result"))),
-        })
+        }
+        # Videolänken finns bara för en del matcher. Utelämna nyckeln helt
+        # i stället för att skriva null på var och en: snapshotarna
+        # committas var femte minut under matchtid, så tomma fält kostar.
+        video = get(get(e.get("video"))).get("externalLink")
+        if video:
+            match["video"] = video
+        matches.append(match)
     matches.sort(key=lambda m: (m["start"], m["arena"]))
     return matches
 

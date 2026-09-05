@@ -1837,6 +1837,56 @@ input[type="search"]::-webkit-search-cancel-button {
 .untimed-panel[open] .untimed-summary { border-bottom: 1px solid var(--line); }
 .untimed-panel-body { padding: 10px; }
 
+/* Länk till matchsändningen (SolidSport/Handbollplay). På kortet bara en
+   spelknapp i huvudets högerkant; i matcharket samma knapp med text.
+   Medvetet INTE i livefärgen — röd betyder "spelas nu" i den här appen,
+   och en sändning finns kvar långt efter slutsignal. */
+.match-video {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  width: 21px;
+  height: 21px;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.match-video:hover,
+.match-video:focus-visible {
+  background: color-mix(in srgb, var(--blue) 26%, transparent);
+  outline: none;
+}
+
+.match-video-play {
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border-left: 7px solid currentColor;
+  border-top: 4.5px solid transparent;
+  border-bottom: 4.5px solid transparent;
+}
+
+.match-video.with-text {
+  /* fit-content + nowrap: knappen ska bli precis så bred som texten,
+     inte sträckas av arkets layout och radbryta "Se matchen". */
+  width: fit-content;
+  height: auto;
+  align-self: start;
+  white-space: nowrap;
+  margin-top: 10px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* "Nästa på banan" — utfällbar lucka mot den ofiltrerade listan, se
    banPanel i js/ui/match-ui.js. Ligger inuti matchkortet men ska läsas
    som en fotnot till det, inte som en del av matchen. */
