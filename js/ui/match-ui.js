@@ -388,6 +388,105 @@ function arenaTabBody(m, stäng) {
 // öppnas — ett anrop per match, och bara för den match man faktiskt
 // tittar på.
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function svgEl(namn, attr) {
+  const el = document.createElementNS(SVG_NS, namn);
+  for (const [k, v] of Object.entries(attr || {})) {
+    if (v !== null && v !== undefined) el.setAttribute(k, v);
+  }
+  return el;
+}
+
+// Målskillnaden över tid. Inte två kurvor med gjorda mål: det man vill se
+// på en match är VEM som ledde och hur mycket, och det är en enda linje
+// runt en nollinje. En jämn match hänger kvar vid mitten, en enkelriktad
+// drar iväg åt ett håll.
+//
+// x-axeln är riktig tid, inte målnummer — annars ser fyra mål på en minut
+// likadant ut som fyra mål på tio.
+function feedGraf(m, feed) {
+  const mål = (feed.events || []).filter((e) => e.typ === "mal");
+  if (mål.length < 4) return null; // för få punkter för att säga något
+
+  const B = 320;
+  const H = 84;
+  const t0 = feed.start || mål[0].at;
+  const spann = Math.max(mål[mål.length - 1].at - t0, 60000);
+  const maxDiff = Math.max(2, ...mål.map((e) => Math.abs(e.hg - e.ag)));
+  const x = (at) => Math.min(B, Math.max(0, ((at - t0) / spann) * B));
+  const y = (d) => H / 2 - (d / maxDiff) * (H / 2 - 6);
+
+  // Trappstegslinje: ställningen ändras i språng, inte glidande.
+  const punkter = [[0, 0], ...mål.map((e) => [x(e.at), e.hg - e.ag])];
+  let d = "M 0 " + y(0);
+  let förra = 0;
+  for (const [px, pd] of punkter) {
+    d += " L " + px.toFixed(1) + " " + y(förra).toFixed(1) +
+      " L " + px.toFixed(1) + " " + y(pd).toFixed(1);
+    förra = pd;
+  }
+  d += " L " + B + " " + y(förra).toFixed(1);
+
+  // Hemmalaget blått, borta grått — om inte ett av dem är din klubb, då
+  // får den blått oavsett sida.
+  const hemmaÄrVi = isClubName(m.home.name);
+  const bortaÄrVi = isClubName(m.away.name);
+  const uppFärg = bortaÄrVi && !hemmaÄrVi ? "var(--ink-soft)" : "var(--blue)";
+  const nerFärg = bortaÄrVi && !hemmaÄrVi ? "var(--blue)" : "var(--ink-soft)";
+
+  const svg = svgEl("svg", {
+    class: "feed-graf", viewBox: "0 0 " + B + " " + H,
+    role: "img", "aria-label": "Målskillnad över matchens gång",
+  });
+  // Två klippta ytor: en över nollinjen, en under, så färgen berättar
+  // vem som ledde utan att man behöver läsa en förklaring.
+  const yta = (färg, ovan) => {
+    const clip = "graf-" + (ovan ? "upp" : "ner") + "-" + m.id;
+    const def = svgEl("clipPath", { id: clip });
+    def.append(svgEl("rect", {
+      x: 0, y: ovan ? 0 : H / 2, width: B, height: H / 2,
+    }));
+    svg.append(def);
+    svg.append(svgEl("path", {
+      d: d + " L " + B + " " + (H / 2) + " L 0 " + (H / 2) + " Z",
+      fill: färg, "fill-opacity": "0.22", "clip-path": "url(#" + clip + ")",
+    }));
+  };
+  yta(uppFärg, true);
+  yta(nerFärg, false);
+  svg.append(svgEl("line", {
+    x1: 0, y1: H / 2, x2: B, y2: H / 2,
+    stroke: "var(--line)", "stroke-width": 1,
+  }));
+  // Periodbyten som lodräta streck — bara när sekretariatet delat matchen.
+  let sedd = mål[0].period;
+  for (const e of mål) {
+    if (e.period !== sedd) {
+      sedd = e.period;
+      svg.append(svgEl("line", {
+        x1: x(e.at), y1: 4, x2: x(e.at), y2: H - 4,
+        stroke: "var(--ink-soft)", "stroke-width": 1, "stroke-dasharray": "3 3",
+        "stroke-opacity": "0.6",
+      }));
+    }
+  }
+  svg.append(svgEl("path", {
+    d, fill: "none", stroke: "var(--ink)", "stroke-width": 1.6,
+    "stroke-linejoin": "round",
+  }));
+
+  const störst = mål.reduce((b, e) =>
+    Math.abs(e.hg - e.ag) > Math.abs(b.hg - b.ag) ? e : b, mål[0]);
+  const ledare = störst.hg > störst.ag ? m.home.name : m.away.name;
+  return h("div", { class: "feed-graf-box" }, svg,
+    h("p", { class: "muted feed-graf-note" },
+      Math.abs(störst.hg - störst.ag) === 0
+        ? "Jämnt hela vägen"
+        : "Största ledning " + Math.abs(störst.hg - störst.ag) +
+          " mål till " + ledare));
+}
+
 function feedRad(m, e) {
   const lag = e.side === "away" ? m.away : m.home;
   return h("div", { class: "feed-row " + (e.side === "away" ? "away" : "home") },
@@ -411,6 +510,8 @@ function feedNoder(m, feed) {
       "Inga registrerade händelser för den här matchen.")];
   }
   const noder = [];
+  const graf = feedGraf(m, feed);
+  if (graf) noder.push(graf);
   let sedd = null;
   // Nyast överst — det är den ordningen man läser en pågående match i.
   for (const e of [...mål].reverse()) {
