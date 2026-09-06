@@ -7,6 +7,10 @@ on:
         description: "Antal överlämningar i följd — sätts av loopen själv, lämna tom vid handstart"
         required: false
         default: "0"
+      max_seconds:
+        description: "Tak för loopen i sekunder. Bara för att prova överlämningen: sätt t.ex. 60 under matchtid så når första varvet taket direkt. Tom = 16200 (4 h 30 min)."
+        required: false
+        default: ""
   schedule:
     # Var 20:e minut — men GitHub kör schemalagda jobb "best effort" och
     # startar oss i praktiken bara var andra till var femte timme. Att be
@@ -49,7 +53,7 @@ jobs:
       - name: Skrapa, bygg och publicera (loopar under matchtid)
         timeout-minutes: 300
         env:
-          LOOP_MAX_SECONDS: "16200"
+          LOOP_MAX_SECONDS: ${{ inputs.max_seconds || '16200' }}
           LOOP_PERIOD_SECONDS: "300"
           LOOP_CHAIN: ${{ inputs.chain || '0' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
