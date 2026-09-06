@@ -135,7 +135,11 @@ function renderTimeline(main, list) {
         fmtDayLong.format(new Date(g.start))));
       prevGroupStart = null; // ny dag: räkna inte paus över dagsgränsen
     }
-    if (timed && state.breakMinutes > 0 && prevGroupStart != null) {
+    // Pausmarkeringen är till för att PLANERA — hinner vi äta innan
+    // nästa match? Mellan två redan spelade matcher är den bara brus:
+    // gårdagens lunch går inte att göra något åt. Visas därför bara när
+    // matchen efter luckan ännu inte börjat.
+    if (timed && state.breakMinutes > 0 && prevGroupStart != null && g.start > now) {
       // Ledig tid = tid till nästa match minus föregåendes speltid,
       // inte bara mellanrummet mellan två starttider.
       const rawGapMin = Math.round((g.start - prevGroupStart) / 60000);
