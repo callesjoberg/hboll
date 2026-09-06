@@ -718,8 +718,20 @@ function arenaTabBody(m, stäng) {
       class: "btn small", type: "button",
       onclick: () => { stäng(); filterByArena(arena); },
     }, "Filtrera schemat till " + arena),
-    h("div", { class: "arena-quick-list" },
-      matcher.map((x) => matchCard(x, { utanBanpanel: true, alltidFull: true }))));
+    // Tiden kommer normalt från tidsskenan i schemat, som inte finns här —
+    // utan den stod korten helt utan datum och klockslag. Bannamnet
+    // däremot upprepades på varje kort trots att hela listan är en enda
+    // bana, så det byts ut mot tiden.
+    h("div", { class: "arena-quick-list" }, matcher.map((x) => {
+      const kort = matchCard(x, {
+        utanBanpanel: true, alltidFull: true, utanBana: true,
+      });
+      const meta = kort.querySelector(".match-meta");
+      if (meta && hasScheduledStart(x)) {
+        meta.prepend(h("span", { class: "when" }, matchTimeLabel(x, fmtDay)));
+      }
+      return kort;
+    })));
 }
 
 // --- matchhändelser ---------------------------------------------------
@@ -1644,7 +1656,7 @@ export function matchCard(m, spec = {}) {
       // Rad 3: banan. Sist i DOM:en men egen rad i fullt läge och grå
       // svans på metaraden i tätt — ETT element, två lägen, så tätheten
       // kan växlas med enbart en klass.
-      m.arena ? h("span", {
+      (m.arena && !spec.utanBana) ? h("span", {
         class: "match-court arena-link", role: "button", tabindex: "0",
         title: "Visa alla matcher på " + m.arena,
         onclick: (e) => { e.stopPropagation(); openArenaQuickView(m, m.arena); },
