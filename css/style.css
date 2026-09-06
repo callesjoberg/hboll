@@ -4033,14 +4033,16 @@ dialog.history-dialog {
      (syntes bara som "bara första omgången, kan inte scrolla i sidled"). */
   min-width: 0;
   max-width: 100%;
-  cursor: grab;
 }
 
-/* En finger får fortsätta skrolla trädet/sidan. Två fingrar tas om hand av
-   setupBracketPan och ändrar trädets egen zoom i stället för webbsidans. */
-.bracket-box { touch-action: pan-x pan-y; }
-.bracket-box.pinching { user-select: none; }
-:root.bracket-pinching { overscroll-behavior: none; }
+/* Inga egna gester: webbläsaren äger både scroll och nypzoom över trädet,
+   precis som över resten av sidan. En egen pinch-hanterare gjorde CSS-zoom
+   och sidans scrollposition om vid varje bildruta, vilket kostade en full
+   omritning av trädet per fingerrörelse — märkbart trögt på mobil, och
+   nypzoom fungerade dessutom inte som någon annanstans i appen.
+   overscroll-behavior-x hindrar att en snabb sidledsdragning i trädet
+   råkar utlösa webbläsarens bakåtsvep. */
+.bracket-box { overscroll-behavior-x: contain; }
 
 .team-playoff-placement {
   margin: 2px 0 8px;
@@ -4053,11 +4055,6 @@ dialog.history-dialog {
 .playoff-placement-table tr.us td:first-child {
   box-shadow: inset 3px 0 0 var(--blue);
 }
-
-/* dra-för-att-panorera (js/app.js: setupBracketPan) — grabbing-markören och
-   avstängd textmarkering bara medan man faktiskt drar. */
-.bracket-box.panning { cursor: grabbing; user-select: none; }
-:root.bracket-panning { cursor: grabbing; }
 
 /* Ingen egen margin på divTabs — en asymmetrisk topp-/bottenmargin på ETT
    flex-item i .playoff-tabs-row (align-items:center) trycker isär dess

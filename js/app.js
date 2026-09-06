@@ -79,7 +79,7 @@ import {
 } from "./ui/schema.js";
 import {
   initPlayoffs, clearPlayoffCandidateTimers, renderTables, renderPlayoffs,
-  setupBracketPan, divisionsToShow, categoriesToShow, ensurePlayoffs,
+  divisionsToShow, categoriesToShow, ensurePlayoffs,
   ensureGroupTables, playoffPlacementForTeam, svOrdinal,
   getBracketSort, setBracketSort,
 } from "./ui/playoffs.js";
@@ -2803,7 +2803,6 @@ HB.shortCat = shortCat;
     $("#headerExportBtn").addEventListener("click", openHeaderExportDialog);
     $("#headerAboutBtn").addEventListener("click", () => HB.openWelcome());
     setupSettings();
-    setupBracketPan();
     setupFilterStripScrollMemory();
     setupResponsiveMenuLayout();
     setupMenuAutoCollapse();
