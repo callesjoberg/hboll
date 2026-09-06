@@ -282,10 +282,50 @@ const MALFORDELNING_TOPP = 6;
 
 function målfördelningBlock(team) {
   const host = h("div", { class: "malford" });
-  HB.api.fetchScorers(cup()).then((doc) => {
+  (async () => {
+    const doc = await HB.api.fetchScorers(cup());
     if (!host.isConnected || !doc) return;
-    const spelare = (doc.players || []).filter((p) => p.t === team.id)
-      .sort((a, b) => b.g - a.g);
+    // CI-databasen innehåller bara färdigbearbetade matcher. För EN lagruta
+    // är luckan liten och exakt känd — done-listan säger vilka matcher som
+    // räknats — så resten hämtas direkt ur feeden, precis som skytteligan
+    // gör. Ett lag spelar en handfull matcher i en cup, så det är noll till
+    // ett par anrop.
+    const räknade = new Set(doc.done || []);
+    const luckor = state.matches
+      .filter((x) => (x.home && x.home.id === team.id) || (x.away && x.away.id === team.id))
+      .filter((x) => x.res && (x.res.fin || isLive(x, Date.now(), state.matchMinutes)))
+      .filter((x) => !räknade.has(x.id))
+      .sort((a, b) => b.start - a.start)
+      .slice(0, 6);
+    const extra = new Map(); // namn -> {g, nr}
+    await Promise.all(luckor.map((x) => HB.api.fetchMatchFeed(cup(), x.id)
+      .then((feed) => {
+        for (const e of (feed && feed.events) || []) {
+          if (e.typ !== "mal" || !e.player) continue;
+          const lag = e.side === "away" ? x.away : x.home;
+          if (!lag || lag.id !== team.id) continue;
+          const rad = extra.get(e.player) || { g: 0, nr: e.nr };
+          rad.g++;
+          if (e.nr != null) rad.nr = e.nr;
+          extra.set(e.player, rad);
+        }
+      })
+      .catch(() => {})));
+    if (!host.isConnected) return;
+
+    const index = new Map();
+    for (const p of (doc.players || []).filter((p) => p.t === team.id)) {
+      index.set(p.n, { n: p.n, nr: p.nr, g: p.g, live: 0 });
+    }
+    for (const [namn, rad] of extra) {
+      const b = index.get(namn) || { n: namn, nr: rad.nr, g: 0, live: 0 };
+      b.g += rad.g;
+      b.live += rad.g;
+      if (rad.nr != null) b.nr = rad.nr;
+      index.set(namn, b);
+    }
+    const spelare = [...index.values()].sort((a, b) => b.g - a.g);
+    const färska = spelare.reduce((n, p) => n + p.live, 0);
     const totalt = spelare.reduce((n, p) => n + p.g, 0);
     if (totalt < 6 || spelare.length < 2) return; // för tunt för en fördelning
     const topp = spelare.slice(0, MALFORDELNING_TOPP);
@@ -298,7 +338,8 @@ function målfördelningBlock(team) {
       h("div", { class: "feed-mark" }, "Målfördelning"),
       h("p", { class: "muted malford-not" },
         spelare.length + " målskyttar på " + totalt + " mål · de tre främsta står för " +
-        andel(treBästa) + " %. Räknat på mål med registrerad skytt."),
+        andel(treBästa) + " %. Räknat på mål med registrerad skytt." +
+        (färska ? " " + färska + " av målen är hämtade direkt från matchen." : "")),
       h("div", { class: "malford-stapel" },
         ...topp.map((p, i) => h("span", {
           class: "malford-del d" + (i % 6),
@@ -314,13 +355,14 @@ function målfördelningBlock(team) {
           h("span", { class: "malford-prick d" + (i % 6) }),
           h("span", { class: "malford-namn" },
             p.nr != null ? h("span", { class: "feed-nr" }, String(p.nr)) : null, p.n),
-          h("span", { class: "malford-tal" }, p.g + " mål · " + andel(p.g) + " %"))),
+          h("span", { class: "malford-tal" + (p.live ? " live" : "") },
+            p.g + " mål · " + andel(p.g) + " %"))),
         övriga > 0 ? h("div", { class: "malford-rad" },
           h("span", { class: "malford-prick ovriga" }),
           h("span", { class: "malford-namn muted" },
             "Övriga " + (spelare.length - topp.length) + " skyttar"),
           h("span", { class: "malford-tal" }, övriga + " mål · " + andel(övriga) + " %")) : null));
-  }).catch(() => {});
+  })().catch(() => {});
   return host;
 }
 
