@@ -624,10 +624,22 @@ export function drawBracketConnectors(boxEl, div, zoomOverride) {
   svg.setAttribute("width", String(base.width));
   svg.setAttribute("height", String(base.height));
   svg.setAttribute("viewBox", "0 0 " + base.width + " " + base.height);
+  const ruta = (id) => (id == null ? null
+    : bracketEl.querySelector('[data-match-id="' + id + '"]'));
+  // matchnr -> den match i trädet vars platshållare väntar på den.
+  const väntarPå = new Map();
+  for (const x of div.matches) {
+    for (const sida of [x.home, x.away]) {
+      const träff = /^\s*vinn\.?\s*(\S+)/i.exec((sida && sida.name) || "");
+      if (träff && !väntarPå.has(träff[1])) väntarPå.set(träff[1], x.id);
+    }
+  }
   for (const m of div.matches) {
-    if (m.nextWinnerId == null) continue;
-    const src = bracketEl.querySelector('[data-match-id="' + m.id + '"]');
-    const dst = bracketEl.querySelector('[data-match-id="' + m.nextWinnerId + '"]');
+    const nästaId = nästaVinnarId(m, (id) => !!ruta(id),
+      (nr) => (väntarPå.has(nr) && ruta(väntarPå.get(nr)) ? väntarPå.get(nr) : null));
+    if (nästaId == null) continue;
+    const src = ruta(m.id);
+    const dst = ruta(nästaId);
     if (!src || !dst) continue;
     const sr = src.getBoundingClientRect(), dr = dst.getBoundingClientRect();
     const x1 = (sr.right - base.left) / zoom, y1 = (sr.top + sr.height / 2 - base.top) / zoom;
@@ -661,6 +673,27 @@ export function drawBracketConnectors(boxEl, div, zoomOverride) {
 //
 // Finalen (sist i listan) har ingen efterföljare och sorteras på tid som
 // förut; övriga omgångar följer den bakåt.
+// Vilken match vinnaren går vidare till. Livedatan och snapshotten är
+// inte alltid överens: i F16 Slutspel A pekar fyra av sex 1/16-matcher
+// enligt livestrukturen på matcher som inte finns i det ritade trädet,
+// medan snapshotten pekar på rätt 1/8-match. Följden var fyra kort utan
+// förbindelselinje trots att målmatchen syntes på skärmen.
+//
+// Regeln är därför inte "lita på den ena källan" utan "ta den som
+// faktiskt träffar" — finns målmatchen i trädet används den, annars
+// provas den andra källan.
+function nästaVinnarId(m, finns, viaMatchNr) {
+  const ur = state.matches.find((x) => x.id === m.id);
+  const kandidater = [m.nextWinnerId, ur && ur.nextWinnerId];
+  for (const id of kandidater) if (id != null && finns(id)) return id;
+  // Tredje källan: platshållartexten. Ett kort i nästa omgång som väntar
+  // på den här matchen skriver "Vinn. <matchnr>", och matchnumret finns
+  // på matchen själv. Det är samma koppling, uttryckt i text i stället
+  // för som id — och den stämmer även när båda id-källorna gör det inte.
+  const nr = m.matchNr || (ur && ur.matchNr);
+  return nr && viaMatchNr ? viaMatchNr(nr) : null;
+}
+
 function bracketRounds(div) {
   const rå = groupPlayoffRounds(div).map(([nyckel, ms]) => [nyckel, [...ms]]);
   // Slå ihop kolumner som visar SAMMA omgångsnamn. Den live-hämtade
@@ -686,8 +719,10 @@ function bracketRounds(div) {
     const nästa = new Map(rounds[i + 1][1].map((m, index) => [m.id, index]));
     rounds[i][1].sort((a, b) => {
       // Matcher utan känd målmatch läggs sist i stället för att blandas in.
-      const ia = nästa.has(a.nextWinnerId) ? nästa.get(a.nextWinnerId) : Infinity;
-      const ib = nästa.has(b.nextWinnerId) ? nästa.get(b.nextWinnerId) : Infinity;
+      const iNästa = (id) => nästa.has(id);
+      const na = nästaVinnarId(a, iNästa), nb = nästaVinnarId(b, iNästa);
+      const ia = na != null ? nästa.get(na) : Infinity;
+      const ib = nb != null ? nästa.get(nb) : Infinity;
       if (ia !== ib) return ia - ib;
       return (a.matchRank || 0) - (b.matchRank || 0) || tid(a, b);
     });
