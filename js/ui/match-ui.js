@@ -313,17 +313,44 @@ function ensureDialogTable(divId) {
   return dialogTableCache[divId];
 }
 
+// Tidigare möten — i den här cupen OCH i tidigare upplagor och andra
+// cuper som båda lagen spelat. Lagidentiteten är klubbnamn plus
+// lagsuffix, vilket är stabilt inom en klubb; klassen skrivs ut så man
+// själv ser om det var samma åldersgrupp.
+//
+// Truppöverlapp går INTE att räkna: API:t har inget truppregister
+// (Team.players svarar med NoSuchMethodException), och det enda
+// spelardata som finns är målskyttar. Mätt på 73 lagpar med samma klubb,
+// kön och födelseår är medianöverlappen bland skyttar 29 % — inte för att
+// lagen bytts ut, utan för att bara den som gör mål syns alls. En
+// procentsats om "samma laguppställning" hade därför varit fel.
 function previousMeetingsBlock(m) {
-  const a = m.home && m.home.id, b = m.away && m.away.id;
-  const meetings = (a == null || b == null) ? [] : state.matches.filter((pm) => {
-    if (pm.id === m.id || !pm.res || !pm.res.fin) return false;
-    const ph = pm.home && pm.home.id, pa = pm.away && pm.away.id;
-    return (ph === a && pa === b) || (ph === b && pa === a);
-  }).sort((x, y) => y.start - x.start);
-  if (!meetings.length) return null;
-  return h("div", { class: "prev-meetings" }, h("h4", null, "Tidigare möten"),
-    h("ul", { class: "prev-meetings-list" }, meetings.map((pm) => h("li", null,
-      matchTimeLabel(pm, fmtDay) + ": " + pm.home.name + " " + (scoreText(pm.res) || "–") + " " + pm.away.name))));
+  const A = m.home && m.home.name, B = m.away && m.away.name;
+  if (!A || !B) return null;
+  const klass = klassNyckel(m.catName);
+  const host = h("div", { class: "prev-meetings" });
+  (async () => {
+    const källor = await hämtaKällor(A, B);
+    const möten = [];
+    for (const källa of källor) {
+      for (const pm of källa.matcher) {
+        if (pm.id === m.id || !pm.res || !pm.res.fin) continue;
+        const par = (pm.home.name === A && pm.away.name === B) ||
+          (pm.home.name === B && pm.away.name === A);
+        if (!par || klassNyckel(pm.catName) !== klass) continue;
+        möten.push({ pm, källa: källa.etikett, nu: !!källa.nu });
+      }
+    }
+    if (!möten.length || !host.isConnected) return;
+    möten.sort((x, y) => y.pm.start - x.pm.start);
+    host.replaceChildren(h("h4", null, "Tidigare möten"),
+      h("ul", { class: "prev-meetings-list" }, möten.map(({ pm, källa, nu }) =>
+        h("li", null,
+          (nu ? matchTimeLabel(pm, fmtDay) : källa) + ": " +
+          pm.home.name + " " + (scoreText(pm.res) || "–") + " " + pm.away.name,
+          pm.catName ? h("span", { class: "feed-team" }, shortCat(pm.catName)) : null))));
+  })();
+  return host;
 }
 
 // --- gemensamma motståndare -------------------------------------------
@@ -342,9 +369,26 @@ function previousMeetingsBlock(m) {
 
 const GEM_MAX_UPPLAGOR = 6;
 
-function gemensamResultat(matcher, lagnamn, motståndare) {
+// Lagidentitet över cuper och år är klubbnamn PLUS klass. Bara namnet
+// räcker inte: "Alingsås HK 2" finns både som F16 och P16, och en
+// namnmatchning drog in ett pojkmöte från 2024 i en flickmatch 2026.
+//
+// Nyckeln är kön + FÖDELSEÅR, inte klassnamnet: en 2010:a heter F16 i år
+// och F14 för två år sedan, men födelseåret står kvar i klassnamnet.
+// Saknas årtal (t.ex. "Damjunior (födda 07-09)") används klassnamnet
+// självt, vilket är stabilt mellan upplagor.
+function klassNyckel(catName) {
+  const namn = (catName || "").trim();
+  if (!namn) return "";
+  const år = /född[ae]?\s*(\d{4})/i.exec(namn);
+  const kön = /^\s*([FPDH])/.exec(namn);
+  return år ? (kön ? kön[1] : "?") + år[1] : namn.toLowerCase();
+}
+
+function gemensamResultat(matcher, lagnamn, motståndare, klass) {
   for (const m of matcher) {
     if (!m.res || !m.res.fin || m.res.wo) continue;
+    if (klass && klassNyckel(m.catName) !== klass) continue;
     const hemma = m.home.name === lagnamn && m.away.name === motståndare;
     const borta = m.away.name === lagnamn && m.home.name === motståndare;
     if (!hemma && !borta) continue;
@@ -360,28 +404,29 @@ function gemensamResultat(matcher, lagnamn, motståndare) {
   return null;
 }
 
-function motståndarna(matcher, lagnamn) {
+function motståndarna(matcher, lagnamn, klass) {
   const ut = new Set();
   for (const m of matcher) {
     if (!m.res || !m.res.fin || m.res.wo) continue;
+    if (klass && klassNyckel(m.catName) !== klass) continue;
     if (m.home.name === lagnamn) ut.add(m.away.name);
     else if (m.away.name === lagnamn) ut.add(m.home.name);
   }
   return ut;
 }
 
-function gemensammaBlock(m) {
-  const A = m.home && m.home.name, B = m.away && m.away.name;
-  if (!A || !B) return null;
-  const host = h("section", { class: "gemensamma" });
-  (async () => {
-    const källor = [];
-    // Den öppna cupen först — där finns gemensamma motståndare så fort
-    // slutspelet börjat koppla ihop grupperna.
-    källor.push({ etikett: cup().name, matcher: state.matches });
+// Upplagor där BÅDA lagen finns, den öppna cupen först. Delas av
+// tidigare-möten och gemensamma motståndare — båda frågar historiken om
+// samma två lag, och lagnamnsindexet pekar ut exakt vilka filer som
+// behöver laddas.
+const källCache = new Map();
 
+function hämtaKällor(A, B) {
+  const nyckel = state.cupId + "|" + A + "|" + B;
+  if (källCache.has(nyckel)) return källCache.get(nyckel);
+  const p = (async () => {
+    const källor = [{ etikett: cup().name, matcher: state.matches, nu: true }];
     const index = await HB.api.fetchTeamIndex();
-    const kandidater = [];
     // Bara jämförbara cuper. Åhus Beach är beachhandboll — 2×10 minuter
     // på sand med helt andra målsiffror — och basket är förstås inte alls
     // samma sak. Att blanda in dem hade sett ut som en jämförelse men
@@ -389,10 +434,11 @@ function gemensammaBlock(m) {
     const denna = cup();
     const jämförbar = (c) => c && (c.sport || "handboll") === (denna.sport || "handboll") &&
       !!c.beach === !!denna.beach;
+    const kandidater = [];
     for (const [cupId, år] of Object.entries(index || {})) {
       if (!jämförbar(HB.allCups().find((c) => c.id === cupId))) continue;
       for (const [edition, namn] of Object.entries(år || {})) {
-        if (cupId === state.cupId && edition === (cup().edition || "")) continue;
+        if (cupId === state.cupId && edition === (denna.edition || "")) continue;
         const set = new Set(namn);
         if (set.has(A) && set.has(B)) kandidater.push({ cupId, edition });
       }
@@ -405,15 +451,27 @@ function gemensammaBlock(m) {
         källor.push({ etikett: ((c && c.name) || k.cupId) + " " + k.edition, matcher: doc.matches });
       }
     }
+    return källor;
+  })();
+  källCache.set(nyckel, p);
+  return p;
+}
 
+function gemensammaBlock(m) {
+  const A = m.home && m.home.name, B = m.away && m.away.name;
+  if (!A || !B) return null;
+  const host = h("section", { class: "gemensamma" });
+  (async () => {
+    const klass = klassNyckel(m.catName);
+    const källor = await hämtaKällor(A, B);
     const rader = [];
     let summaA = 0, summaB = 0, antal = 0;
     for (const källa of källor) {
-      const gem = [...motståndarna(källa.matcher, A)]
-        .filter((namn) => namn !== B && motståndarna(källa.matcher, B).has(namn));
-      for (const motst of gem) {
-        const ra = gemensamResultat(källa.matcher, A, motst);
-        const rb = gemensamResultat(källa.matcher, B, motst);
+      const bMotst = motståndarna(källa.matcher, B, klass);
+      for (const motst of motståndarna(källa.matcher, A, klass)) {
+        if (motst === B || !bMotst.has(motst)) continue;
+        const ra = gemensamResultat(källa.matcher, A, motst, klass);
+        const rb = gemensamResultat(källa.matcher, B, motst, klass);
         if (!ra || !rb) continue;
         rader.push({ källa: källa.etikett, motst, ra, rb });
         summaA += ra.diff; summaB += rb.diff; antal++;
