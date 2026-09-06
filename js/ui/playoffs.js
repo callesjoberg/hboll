@@ -574,105 +574,35 @@ function bracketMatchBox(m, projMap, onClick, relevantIds) {
       matchTimeLabel(m) + (m.arena ? " · " + m.arena : "")));
 }
 
-// Ritar linjer mellan en match och matchen dess vinnare går vidare till
-// (m.nextWinnerId) — en SVG-overlay i stället för en ren CSS-lösning,
-// eftersom nextWinnerId ger den FAKTISKA kopplingen (byes/ojämna
-// trädformer gör att man inte kan anta att match 0+1 i en omgång alltid
-// matar match 0 i nästa). Måste köras EFTER att .bracket-box:en är
-// inklistrad i det levande DOM-trädet, annars ger getBoundingClientRect()
-// meningslösa mått — anropas via requestAnimationFrame från renderPlayoffs.
-// Mjukt rundade hörn i stället för raka 90°-vinklar — samma tre-segments-
-// elbow som förut (rakt ut, rakt över, rakt in) men med en liten kurva i
-// svängarna, som i välgjorda bracket-visualiseringar. Om käll- och
-// målmatchen råkar ligga i exakt samma höjd blir det bara en rak linje.
+/* Trädets geometri räknas fram — den mäts inte.
 
-// zoomOverride: historikens brackettrad har ingen egen zoomreglering
-// (renderas alltid utan CSS zoom) och ska inte påverkas av vad
-// användaren råkar ha ställt in på live-Slutspel-fliken.
-export function drawBracketConnectors(boxEl, div, zoomOverride) {
-  const bracketEl = boxEl.querySelector(".bracket");
-  if (!bracketEl) return;
-  const old = bracketEl.querySelector(".bracket-connectors");
-  if (old) old.remove();
-  // SVG:n hamnar SJÄLV inuti .bracket-row (samma element som får CSS
-  // zoom:X) — webbläsaren skalar alltså SVG:ns egen box en gång TILL när
-  // den renderas, utöver den zoomning som redan syns i
-  // getBoundingClientRect(). Sätter man koordinater direkt i redan-
-  // zoomade skärmpixlar dubbel-skalas allt (stämmer bara vid 100 %,
-  // driftar isär i takt med zoomnivån) — dela bort zoom-faktorn för
-  // path-koordinaterna nedan så de är i samma "ozoomade" enheter som
-  // webbläsaren själv multiplicerar med zoom vid rendering.
-  //
-  // Bredd/höjd på SVG:n är ett SEPARAT problem: .bracket-box har
-  // overflow-x:auto (för att kunna scrolla breda träd i sidled i stället
-  // för att svälla hela sidan) — .bracket:s getBoundingClientRect()
-  // ger då bara den SYNLIGA (ev. scrollade) bredden, inte trädets
-  // fulla innehållsyta. Sätter man SVG:ns viewBox till den synliga
-  // bredden klipper SVG:n själv bort alla linjer som ligger bortom vad
-  // som råkar synas just nu (upptäckt 2026-07-19: linjerna "försvann"
-  // efter första omgången). scrollWidth/scrollHeight ger den fulla
-  // innehållsytan OCH är redan i lokala (ozoomade) enheter — behöver
-  // alltså inte delas med zoom, till skillnad från positionsmåtten.
-  const zoom = zoomOverride != null ? zoomOverride : (state.bracketZoom || 1);
-  const raw = bracketEl.getBoundingClientRect();
-  const base = {
-    left: raw.left, top: raw.top,
-    width: bracketEl.scrollWidth, height: bracketEl.scrollHeight,
-  };
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", "bracket-connectors");
-  svg.setAttribute("width", String(base.width));
-  svg.setAttribute("height", String(base.height));
-  svg.setAttribute("viewBox", "0 0 " + base.width + " " + base.height);
-  const ruta = (id) => (id == null ? null
-    : bracketEl.querySelector('[data-match-id="' + id + '"]'));
-  // matchnr -> den match i trädet vars platshållare väntar på den.
-  const väntarPå = new Map();
-  for (const x of div.matches) {
-    for (const sida of [x.home, x.away]) {
-      const träff = /^\s*vinn\.?\s*(\S+)/i.exec((sida && sida.name) || "");
-      if (träff && !väntarPå.has(träff[1])) väntarPå.set(träff[1], x.id);
-    }
-  }
-  for (const m of div.matches) {
-    const nästaId = nästaVinnarId(m, (id) => !!ruta(id),
-      (nr) => (väntarPå.has(nr) && ruta(väntarPå.get(nr)) ? väntarPå.get(nr) : null));
-    if (nästaId == null) continue;
-    const src = ruta(m.id);
-    const dst = ruta(nästaId);
-    if (!src || !dst) continue;
-    const sr = src.getBoundingClientRect(), dr = dst.getBoundingClientRect();
-    const x1 = (sr.right - base.left) / zoom, y1 = (sr.top + sr.height / 2 - base.top) / zoom;
-    const x2 = (dr.left - base.left) / zoom, y2 = (dr.top + dr.height / 2 - base.top) / zoom;
-    // Mjuk kurva i stället för knä. Alla knän mellan två omgångar hade
-    // sitt lodräta ben på SAMMA x (mitt emellan kolumnerna), så med många
-    // matcher lade de sig ovanpå varandra till en enda lodrät linje genom
-    // hela trädet — omöjlig att följa tillbaka till rätt match. En bezier
-    // har inget gemensamt lodrätt segment: varje väg är sin egen båge.
-    const midX = (x1 + x2) / 2;
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("class", "bracket-connector-line" +
-      (isClubMatch(m) ? " ours" : ""));
-    path.setAttribute("d", "M " + x1.toFixed(1) + " " + y1.toFixed(1) +
-      " C " + midX.toFixed(1) + " " + y1.toFixed(1) + ", " +
-      midX.toFixed(1) + " " + y2.toFixed(1) + ", " +
-      x2.toFixed(1) + " " + y2.toFixed(1));
-    // Låter kortet lysa upp sin egen väg vidare vid hover/fokus.
-    path.setAttribute("data-from", String(m.id));
-    svg.appendChild(path);
-  }
-  bracketEl.prepend(svg);
-}
+   Förr placerade CSS korten (flex + space-around) och en SVG-overlay
+   mätte upp deras rutor efteråt med getBoundingClientRect(). Två fel
+   följde av det. Kolumnerna visste ingenting om trädet i höjdled, så en
+   kvartsfinal låg sällan mitt emellan sina två åttondelsfinaler och
+   förbindelsen fick svepa förbi halva kolumnen — det som såg rörigt ut.
+   Och måtten var i skärmpixlar medan .bracket-row bär en CSS-zoom, så
+   varje zoomning drog isär linjer och kort.
 
-// Ordna varje omgång efter TRÄDET, inte efter klockan. Tidsordning var
-// den egentliga orsaken till att linjerna såg röriga ut: två matcher som
-// matar samma kvartsfinal kunde hamna i var sin ände av sin kolumn, och
-// då måste förbindelsen korsa hela trädet. Sorterar man i stället varje
-// omgång efter var dess MÅLMATCH ligger i nästa kolumn hamnar matarna
-// bredvid varandra och linjerna blir korta och parallella.
-//
-// Finalen (sist i listan) har ingen efterföljare och sorteras på tid som
-// förut; övriga omgångar följer den bakåt.
+   Nu får varje match en PLATS i trädet: ett heltal för de matcher som
+   ingen matar in i, och för alla andra mittpunkten mellan deras matare.
+   En match ligger alltså per konstruktion exakt mitt emellan de två den
+   väntar på. Platsen sätts som --plats på kortet och blir en
+   top-koordinat i CSS; linjerna ritas ur samma tal. Ingen mätning
+   betyder att en zoomning inte kan flytta dem i förhållande till korten
+   — hela trädet skalas som en bild.
+
+   Samma modell som cupmanagers eget slutspelsträd bygger på. */
+const KOL_BREDD = 176;   // px — en omgångs kolumn
+const KOL_KLYFTA = 56;   // px — luften mellan omgångarna, där knäna ritas
+const ETIKETT_H = 34;    // px — omgångsetiketten överst i varje kolumn
+const STEG_MIN = 104;    // px — minsta avstånd mellan två grannplatser
+
+// Uträknad layout per .bracket-box, så drawBracketConnectors slipper
+// räkna om trädet — och framför allt inte kan råka räkna fram en ANNAN
+// layout än den korten redan placerats efter.
+const layoutFörBox = new WeakMap();
+
 // Vilken match vinnaren går vidare till. Livedatan och snapshotten är
 // inte alltid överens: i F16 Slutspel A pekar fyra av sex 1/16-matcher
 // enligt livestrukturen på matcher som inte finns i det ritade trädet,
@@ -689,11 +619,159 @@ function nästaVinnarId(m, finns, viaMatchNr) {
   // Tredje källan: platshållartexten. Ett kort i nästa omgång som väntar
   // på den här matchen skriver "Vinn. <matchnr>", och matchnumret finns
   // på matchen själv. Det är samma koppling, uttryckt i text i stället
-  // för som id — och den stämmer även när båda id-källorna gör det inte.
+  // för som id — och den stämmer även när båda id-källorna inte gör det.
   const nr = m.matchNr || (ur && ur.matchNr);
   return nr && viaMatchNr ? viaMatchNr(nr) : null;
 }
 
+function bracketLayout(rounds, div) {
+  const rundFör = new Map();
+  const matchFör = new Map();
+  rounds.forEach(([, ms], r) => ms.forEach((m) => {
+    rundFör.set(m.id, r);
+    matchFör.set(m.id, m);
+  }));
+  const finns = (id) => rundFör.has(id);
+  // matchnr -> den match i trädet vars platshållare väntar på den.
+  const väntarPå = new Map();
+  for (const x of div.matches || []) {
+    for (const sida of [x.home, x.away]) {
+      const träff = /^\s*vinn\.?\s*(\S+)/i.exec((sida && sida.name) || "");
+      if (träff && !väntarPå.has(träff[1])) väntarPå.set(träff[1], x.id);
+    }
+  }
+  const viaNr = (nr) =>
+    (väntarPå.has(nr) && finns(väntarPå.get(nr)) ? väntarPå.get(nr) : null);
+
+  const nästa = new Map();   // match -> matchen dess vinnare går till
+  const matare = new Map();  // match -> matcherna som matar in i den
+  for (const [, ms] of rounds) {
+    for (const m of ms) {
+      const id = nästaVinnarId(m, finns, viaNr);
+      if (id == null || id === m.id) continue;
+      nästa.set(m.id, id);
+      if (!matare.has(id)) matare.set(id, []);
+      matare.get(id).push(m);
+    }
+  }
+
+  // Djupet först från finalen och bakåt. Matcher utan matare är trädets
+  // löv och får varsitt heltal uppifrån och ner i den ordning de nås —
+  // alltså grupperade under den match de matar. Alla andra hamnar mitt
+  // emellan sina matare. Det är hela layouten.
+  const plats = new Map();
+  const pågår = new Set();
+  let nästaLöv = 0;
+  const placera = (m) => {
+    if (plats.has(m.id)) return plats.get(m.id);
+    if (pågår.has(m.id)) return nästaLöv++; // ringskydd; ska inte inträffa
+    pågår.add(m.id);
+    const barn = matare.get(m.id) || [];
+    let p;
+    if (barn.length) {
+      const ps = barn.map(placera);
+      p = (Math.min(...ps) + Math.max(...ps)) / 2;
+    } else {
+      p = nästaLöv++;
+    }
+    pågår.delete(m.id);
+    plats.set(m.id, p);
+    return p;
+  };
+  // Sista omgången är rötterna; de tidigare hämtas in på vägen ner. Det
+  // som ändå blir kvar — en match vars vinnare inte går vidare någonstans
+  // i just det här trädet — får en egen plats sist.
+  for (let r = rounds.length - 1; r >= 0; r--) {
+    for (const m of rounds[r][1]) placera(m);
+  }
+
+  const kopplingar = [];
+  for (const [från, till] of nästa) {
+    if (!plats.has(från) || !plats.has(till)) continue;
+    kopplingar.push({ från, till, ours: isClubMatch(matchFör.get(från)) });
+  }
+  return { rounds, plats, rundFör, kopplingar, platser: Math.max(1, nästaLöv) };
+}
+
+// Ett knä med mjuka hörn: rakt ut ur kortet, lodrätt mitt i klyftan,
+// rakt in i nästa kort. Att alla knän mellan två omgångar delar samma
+// lodräta x var förr ett problem — då lade de sig ovanpå varandra till
+// en enda linje genom hela trädet. Med platserna ovan möts i stället
+// precis de två som ska mötas, i exakt den höjd deras målmatch ligger,
+// och de lodräta bitarna stöter ihop ände mot ände utan att överlappa.
+function knäBana(x1, y1, x2, y2) {
+  const n = (v) => v.toFixed(1);
+  if (Math.abs(y2 - y1) < 0.6) return "M " + n(x1) + " " + n(y1) + " H " + n(x2);
+  const xm = (x1 + x2) / 2;
+  const ner = y2 > y1 ? 1 : -1;
+  const r = Math.min(14, Math.abs(y2 - y1) / 2, Math.abs(xm - x1), Math.abs(x2 - xm));
+  return "M " + n(x1) + " " + n(y1) +
+    " H " + n(xm - r) +
+    " Q " + n(xm) + " " + n(y1) + " " + n(xm) + " " + n(y1 + ner * r) +
+    " V " + n(y2 - ner * r) +
+    " Q " + n(xm) + " " + n(y2) + " " + n(xm + r) + " " + n(y2) +
+    " H " + n(x2);
+}
+
+// zoomOverride: historikens brackettrad har ingen egen zoomreglering
+// (renderas alltid utan CSS zoom) och ska inte påverkas av vad
+// användaren råkar ha ställt in på live-Slutspel-fliken.
+export function drawBracketConnectors(boxEl, div, zoomOverride) {
+  const bracketEl = boxEl.querySelector(".bracket");
+  if (!bracketEl) return;
+  const layout = layoutFörBox.get(boxEl) || bracketLayout(bracketRounds(div), div);
+  const old = bracketEl.querySelector(".bracket-connectors");
+  if (old) old.remove();
+
+  // Enda mätningen i hela trädet, och den rör bara HÖJD: hur högt är det
+  // högsta kortet? Prognoskorten med utfällbara laglistor är högre än de
+  // spelade, och steget måste rymma det högsta för att inga kort ska
+  // överlappa. Linjernas läge påverkas inte av måttet — de räknas ur
+  // samma platser och samma steg som korten — så inte ens en felmätning
+  // kan lossa en linje från sitt kort.
+  const zoom = zoomOverride != null ? zoomOverride : (state.bracketZoom || 1);
+  let högsta = 0;
+  for (const kort of bracketEl.querySelectorAll(".bracket-match")) {
+    högsta = Math.max(högsta, kort.getBoundingClientRect().height / zoom);
+  }
+  const steg = Math.max(STEG_MIN, Math.round(högsta) + 24);
+  bracketEl.style.setProperty("--steg", steg + "px");
+
+  const kolumner = layout.rounds.length;
+  const bredd = kolumner * KOL_BREDD + Math.max(0, kolumner - 1) * KOL_KLYFTA;
+  const höjd = ETIKETT_H + layout.platser * steg;
+  const xKant = (id, höger) => {
+    const r = layout.rundFör.get(id) || 0;
+    return r * (KOL_BREDD + KOL_KLYFTA) + (höger ? KOL_BREDD : 0);
+  };
+  const y = (id) => ETIKETT_H + (layout.plats.get(id) + 0.5) * steg;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "bracket-connectors");
+  svg.setAttribute("width", String(bredd));
+  svg.setAttribute("height", String(höjd));
+  svg.setAttribute("viewBox", "0 0 " + bredd + " " + höjd);
+  for (const k of layout.kopplingar) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("class", "bracket-connector-line" + (k.ours ? " ours" : ""));
+    path.setAttribute("d", knäBana(xKant(k.från, true), y(k.från),
+      xKant(k.till, false), y(k.till)));
+    // Låter kortet lysa upp sin egen väg vidare vid hover/fokus.
+    path.setAttribute("data-from", String(k.från));
+    svg.appendChild(path);
+  }
+  bracketEl.prepend(svg);
+}
+
+// Ordna varje omgång efter TRÄDET, inte efter klockan. Tidsordning var
+// den egentliga orsaken till att linjerna såg röriga ut: två matcher som
+// matar samma kvartsfinal kunde hamna i var sin ände av sin kolumn, och
+// då måste förbindelsen korsa hela trädet. Sorterar man i stället varje
+// omgång efter var dess MÅLMATCH ligger i nästa kolumn hamnar matarna
+// bredvid varandra och linjerna blir korta och parallella.
+//
+// Finalen (sist i listan) har ingen efterföljare och sorteras på tid som
+// förut; övriga omgångar följer den bakåt.
 function bracketRounds(div) {
   const rå = groupPlayoffRounds(div).map(([nyckel, ms]) => [nyckel, [...ms]]);
   // Slå ihop kolumner som visar SAMMA omgångsnamn. Den live-hämtade
@@ -731,13 +809,27 @@ function bracketRounds(div) {
 }
 
 export function bracketBlock(div, projMap, matchOnClick, relevantIds) {
-  return h("section", { class: "bracket-box" },
-    h("h3", null, div.name),
-    h("div", { class: "bracket" },
-      bracketRounds(div).map(([, ms]) =>
-        h("div", { class: "bracket-round" },
-          h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
-          ms.map((m) => bracketMatchBox(m, projMap, matchOnClick, relevantIds))))));
+  const rounds = bracketRounds(div);
+  const layout = bracketLayout(rounds, div);
+  // Måtten lever i CSS-variabler i stället för i reglerna: korten placeras
+  // med calc() ur --plats och --steg, och drawBracketConnectors justerar
+  // --steg efter det högsta kortet utan att något behöver ritas om.
+  const bracket = h("div", {
+    class: "bracket",
+    style: "--kol:" + KOL_BREDD + "px; --klyfta:" + KOL_KLYFTA + "px; " +
+      "--etikett:" + ETIKETT_H + "px; --steg:" + STEG_MIN + "px; " +
+      "--platser:" + layout.platser,
+  }, rounds.map(([, ms]) =>
+    h("div", { class: "bracket-round" },
+      h("div", { class: "bracket-round-label" }, ms[0].roundName || ""),
+      ms.map((m) => {
+        const kort = bracketMatchBox(m, projMap, matchOnClick, relevantIds);
+        kort.style.setProperty("--plats", String(layout.plats.get(m.id) || 0));
+        return kort;
+      }))));
+  const box = h("section", { class: "bracket-box" }, h("h3", null, div.name), bracket);
+  layoutFörBox.set(box, layout);
+  return box;
 }
 
 function relevantPlayoffMatchIds(div, catId, edition) {
