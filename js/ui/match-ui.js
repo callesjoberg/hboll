@@ -271,6 +271,59 @@ function favoriteTeamToggle(team, catName) {
   return btn;
 }
 
+// Hur lagets mål fördelar sig mellan skyttarna. Ett lag där tre spelare
+// gör allt spelar annorlunda än ett där tolv delar på det, och det är
+// något man ser på läktaren men aldrig får svart på vitt.
+//
+// Räknas BARA på mål med registrerad skytt — i Göteborg Cup är det 74 %
+// av alla mål, i andra cuper mycket mindre. Andelarna gäller alltså den
+// kända delen, och det står i rutan.
+const MALFORDELNING_TOPP = 6;
+
+function målfördelningBlock(team) {
+  const host = h("div", { class: "malford" });
+  HB.api.fetchScorers(cup()).then((doc) => {
+    if (!host.isConnected || !doc) return;
+    const spelare = (doc.players || []).filter((p) => p.t === team.id)
+      .sort((a, b) => b.g - a.g);
+    const totalt = spelare.reduce((n, p) => n + p.g, 0);
+    if (totalt < 6 || spelare.length < 2) return; // för tunt för en fördelning
+    const topp = spelare.slice(0, MALFORDELNING_TOPP);
+    const övriga = totalt - topp.reduce((n, p) => n + p.g, 0);
+    // Hur koncentrerat? Andelen som de tre bästa står för är det mått man
+    // faktiskt pratar i: "de har en skyttedrottning" eller "de delar på det".
+    const treBästa = spelare.slice(0, 3).reduce((n, p) => n + p.g, 0);
+    const andel = (n) => Math.round((n / totalt) * 100);
+    host.replaceChildren(
+      h("div", { class: "feed-mark" }, "Målfördelning"),
+      h("p", { class: "muted malford-not" },
+        spelare.length + " målskyttar på " + totalt + " mål · de tre främsta står för " +
+        andel(treBästa) + " %. Räknat på mål med registrerad skytt."),
+      h("div", { class: "malford-stapel" },
+        ...topp.map((p, i) => h("span", {
+          class: "malford-del d" + (i % 6),
+          style: "flex:" + p.g,
+          title: p.n + " · " + p.g + " mål (" + andel(p.g) + " %)",
+        })),
+        övriga > 0 ? h("span", {
+          class: "malford-del ovriga", style: "flex:" + övriga,
+          title: "Övriga · " + övriga + " mål (" + andel(övriga) + " %)",
+        }) : null),
+      h("div", { class: "malford-lista" },
+        ...topp.map((p, i) => h("div", { class: "malford-rad" },
+          h("span", { class: "malford-prick d" + (i % 6) }),
+          h("span", { class: "malford-namn" },
+            p.nr != null ? h("span", { class: "feed-nr" }, String(p.nr)) : null, p.n),
+          h("span", { class: "malford-tal" }, p.g + " mål · " + andel(p.g) + " %"))),
+        övriga > 0 ? h("div", { class: "malford-rad" },
+          h("span", { class: "malford-prick ovriga" }),
+          h("span", { class: "malford-namn muted" },
+            "Övriga " + (spelare.length - topp.length) + " skyttar"),
+          h("span", { class: "malford-tal" }, övriga + " mål · " + andel(övriga) + " %")) : null));
+  }).catch(() => {});
+  return host;
+}
+
 function teamStatBlock(m, team, side) {
   const counts = teamMatchCounts(team.id);
   const statLine = h("p", { class: "muted team-stat-line" }, "Hämtar tabellplacering …");
@@ -291,7 +344,8 @@ function teamStatBlock(m, team, side) {
         onclick: () => gotoTeamMatches(team, "played") }, "Spelade matcher"),
       calUrl ? h("a", { class: "btn small", href: calUrl, rel: "noopener",
         title: "Öppnar din kalenderapp och prenumererar på lagets matcher — nya/ändrade tider uppdateras sen automatiskt (funkar bäst på mobil)." },
-      "📅 Prenumerera") : null, favoriteTeamToggle(team, m.catName)), rosterBlock(team, m.edition));
+      "📅 Prenumerera") : null, favoriteTeamToggle(team, m.catName)),
+    rosterBlock(team, m.edition), målfördelningBlock(team));
   if (!m.divId) { statLine.textContent = "Ingen tabell tillgänglig för den här klassen."; return box; }
   ensureDialogTable(m.divId).then((rows) => {
     if (!rows.length) { statLine.textContent = "Ingen tabell tillgänglig för den här gruppen."; return; }
@@ -587,12 +641,36 @@ function periodRad(m) {
       : "Perioder " + delar.join(" · "));
 }
 
+// Adress och kartlänk för en bana. Datan finns redan i snapshotten —
+// 30 av 30 banor i Göteborg Cup har gata, ort och koordinater — men
+// arenafliken visade den inte alls. Kartlänken går till Google Maps med
+// koordinater, vilket öppnar telefonens kartapp direkt.
+function arenaAdressBlock(arena) {
+  const geo = (HB.api.arenaGeo[state.cupId] || {})[arena];
+  if (!geo) return null;
+  const rader = [geo.venue && geo.venue !== arena ? geo.venue : null,
+    [geo.street, geo.city].filter(Boolean).join(", ")].filter(Boolean);
+  const url = geo.lat != null && geo.lng != null
+    ? "https://www.google.com/maps/search/?api=1&query=" + geo.lat + "," + geo.lng
+    : null;
+  if (!rader.length && !url) return null;
+  return h("p", { class: "arena-adress" },
+    h("span", { class: "arena-pin" }, "📍"),
+    rader.join(" · "),
+    url ? h("a", {
+      class: "btn small arena-karta", href: url,
+      target: "_blank", rel: "noopener noreferrer",
+      onclick: (e) => e.stopPropagation(),
+    }, "Öppna i kartan") : null);
+}
+
 function arenaTabBody(m, stäng) {
   const arena = m.arena;
   const matcher = state.matches
     .filter((x) => x.arena === arena)
     .sort((a, b) => a.start - b.start);
   return h("div", { class: "match-sheet-body" },
+    arenaAdressBlock(arena),
     h("p", { class: "muted" }, matcher.length + " matcher på " + arena),
     h("button", {
       class: "btn small", type: "button",
