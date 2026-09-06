@@ -1355,8 +1355,10 @@ export function openMatchLogDialog() {
     moreWrap.append(h("span", { class: "muted" }, "Visar " + shown + " av " + matches.length + " · "),
       h("button", { class: "btn small", type: "button", onclick: () => addRows(BATCH) },
         "Visa fler (" + remaining + " kvar)"),
-      remaining > BATCH ? h("button", { class: "btn small", type: "button",
-        onclick: () => addRows(matches.length) }, "Visa alla") : null);
+      // Spridd lista, inte "? ... : null": append() är inte h() och gör om
+      // ett null till texten "null" i sidan.
+      ...(remaining > BATCH ? [h("button", { class: "btn small", type: "button",
+        onclick: () => addRows(matches.length) }, "Visa alla")] : []));
   }
   dlg.append(
     h("button", { class: "dialog-x", type: "button", "aria-label": "Stäng", onclick: () => dlg.close() }, "×"),

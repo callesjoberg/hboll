@@ -2134,8 +2134,8 @@ function renderAretsMastare(root, rows) {
             "🥉" + (sharedBronze ? "*" : "")),
           h("span", { class: "rank-team" + (bronsFav ? " us" : "") }, brons.join(" · "))) : null);
     })),
-    hasSharedBronze ? h("p", { class: "muted shared-bronze-note" },
-      "* Delad tredjeplats – ingen bronsmatch spelades; båda semifinalförlorarna visas.") : null);
+    ...(hasSharedBronze ? [h("p", { class: "muted shared-bronze-note" },
+      "* Delad tredjeplats – ingen bronsmatch spelades; båda semifinalförlorarna visas.")] : []));
 }
 
 function renderVinnartoppen(root, rows) {
@@ -2535,9 +2535,9 @@ function skyttInnehall(doc, idx, rita, el) {
       : "",
     // Röd siffra behöver en förklaring där den kan uppstå — annars ser den
     // ut som en varning.
-    liveRader ? h("span", { class: "skytt-live-nyckel" },
+    ...(liveRader ? [h("span", { class: "skytt-live-nyckel" },
       " Rött målantal = hämtat direkt från matchen, ännu inte i den sparade " +
-      "statistiken. Den byggs om var femte minut.") : null);
+      "statistiken. Den byggs om var femte minut.")] : []));
 
   el.klassrad.replaceChildren(
     ...[["", "Alla klasser"], ...klasser.map((k) => [k, k])].map(([v, etikett]) =>

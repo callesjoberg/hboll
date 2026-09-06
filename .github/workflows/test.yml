@@ -16,3 +16,5 @@ jobs:
         run: node --test tests/domain.test.mjs tests/app-flows.test.mjs
       - name: Data-smoke
         run: node tests/data-correctness-smoke.mjs
+      - name: null får inte nå DOM-metoderna
+        run: node tests/dom-null-guard.mjs
