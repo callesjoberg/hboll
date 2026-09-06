@@ -1113,11 +1113,23 @@ HB.shortCat = shortCat;
   let liveFillNext = 0;
   let liveFillPause = LIVE_FILL_MS;
   let liveFillBusy = false;
+  let liveFillTimer = 0;
+
+  // Egen tidtagare, inte minuttickaren. Med bara tickaren gick var ANNAT
+  // varv förlorat: pausen räknas från när hämtningen blev klar, alltså
+  // alltid några hundra millisekunder EFTER tickarens nästa slag — grinden
+  // nedan stängde då, och nästa chans kom först en minut senare. Takten
+  // blev i praktiken två minuter mitt under en match.
+  function scheduleLiveFill() {
+    clearTimeout(liveFillTimer);
+    liveFillTimer = setTimeout(liveFill, Math.max(1000, liveFillNext - Date.now()));
+  }
 
   async function liveFill() {
     const c = cup();
     if (liveFillBusy || state.loading || !c || c.dataUrl) return;
-    if (Date.now() < liveFillNext) return;
+    if (document.visibilityState !== "visible") return; // väcks av visibilitychange
+    if (Date.now() < liveFillNext) { scheduleLiveFill(); return; }
     // Fråga bara om det användaren faktiskt tittar på: det egna urvalet om
     // ett filter är aktivt, annars klubbens matcher. Med ett anrop per
     // match är skillnaden avgörande — Alingsås matcher i Göteborg Cup ger
@@ -1137,17 +1149,33 @@ HB.shortCat = shortCat;
       ? liveGapMatches(state.matches.filter((m) => divisioner.has(m.divId)))
         .filter((m) => !valda.has(m.id))
       : [];
-    const kandidater = primära.concat(sekundära).slice(0, MAX_LIVE_MATCHER);
+    // Står ett matchark öppet är den matchen det enda användaren tittar
+    // på — den ska med även om den ligger utanför filtret och den ska gå
+    // först när taket slår till.
+    const ark = currentSheetContext();
+    const arkMatch = ark && ark.match
+      ? liveGapMatches(state.matches.filter((m) => m.id === ark.match.id))[0]
+      : null;
+    const kandidater = (arkMatch ? [arkMatch] : [])
+      .concat(primära.filter((m) => !arkMatch || m.id !== arkMatch.id))
+      .concat(sekundära.filter((m) => !arkMatch || m.id !== arkMatch.id))
+      .slice(0, MAX_LIVE_MATCHER);
     if (!kandidater.length) {
       liveFillNext = Date.now() + LIVE_FILL_MAX_MS;
+      scheduleLiveFill();
       return;
     }
     // Står en match mitt i sin ruta ska takten ligga kvar på en minut
     // även när varvet inte gav något nytt. Minuterna mellan två mål är
     // inte ett tecken på att inget händer — och att då trappa upp till
     // åtta minuter vore precis fel läge att sluta titta.
-    const spelasNu = kandidater.some((m) =>
-      Date.now() < m.start + state.matchMinutes * 60000);
+    // Rutans längd räcker inte som mått: en match som kastas av tio
+    // minuter sent pågår långt efter start + rutan, och just då vore det
+    // sämsta tänkbara läget att trappa ner till åtta minuter. isLive()
+    // känner den ärliga speltiden och sekretariatets liveflagga; rutan
+    // plus en kvart täcker de matcher som ännu inte fått någon flagga.
+    const spelasNu = kandidater.some((m) => isLive(m, Date.now(), state.matchMinutes) ||
+      Date.now() < m.start + (state.matchMinutes + 15) * 60000);
     const cupGen = cupGeneration;
     liveFillBusy = true;
     try {
@@ -1173,6 +1201,14 @@ HB.shortCat = shortCat;
         HB.api.writeCache(c, state.matches, state.loadedAt,
           HB.api.localDataTs[c.id] || 0);
         render();
+        // render() ritar bara sidan. Ett öppet matchark ligger i sitt eget
+        // topplager och höll förr kvar matchobjektet det öppnades med —
+        // därav att målen hängde efter tills sidan laddades om.
+        const öppet = currentSheetContext();
+        if (öppet && öppet.uppdatera) {
+          const nyMatch = färskById.get(öppet.match.id);
+          if (nyMatch && resultChanged(öppet.match, nyMatch)) öppet.uppdatera(nyMatch);
+        }
       }
       liveFillPause = (ändrade || spelasNu) ? LIVE_FILL_MS
         : Math.min(liveFillPause * 2, LIVE_FILL_MAX_MS);
@@ -1183,12 +1219,15 @@ HB.shortCat = shortCat;
     } finally {
       liveFillBusy = false;
       liveFillNext = Date.now() + liveFillPause;
+      scheduleLiveFill();
     }
   }
 
   // Exponerad för felsökning: HB.liveFill() i konsolen kör ett varv nu
   // i stället för att vänta ut minuttakten.
   HB.liveFill = liveFill;
+  // HB.öppetArk() ger det matchark som står öppet, inklusive uppdatera().
+  HB.öppetArk = currentSheetContext;
 
   function switchCup(id) {
     if (id === state.cupId) return;

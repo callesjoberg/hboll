@@ -1203,38 +1203,60 @@ export function openRefereeSheet(namn) {
 }
 
 export function openMatchSheet(m, förvaldFlik) {
-  const flikar = [
-    { key: "home", label: m.home.name, body: () => teamStatBlock(m, m.home, "home") },
-    { key: "away", label: m.away.name, body: () => teamStatBlock(m, m.away, "away") },
-  ];
-  if (m.arena) {
-    // "Bana", inte hela bannamnet: appens huvudnavigering kallar det redan
-    // så, och namnet står i raden precis ovanför flikarna. Ett namn som
-    // "Prioritet Serneke Arena Serneke Arena A" åt upp hela flikraden och
-    // klippte "Mål" till "M…".
-    flikar.push({ key: "arena", label: "Bana", title: m.arena, kort: true,
-      body: () => arenaTabBody(m, () => dlg.close()) });
-  }
-  // Feeden finns bara hos Cup Manager, och bara för matcher som börjat.
-  const harFeed = !cup().dataUrl && m.id &&
-    (isLive(m, Date.now(), state.matchMinutes) || (m.res && m.res.fin));
-  if (harFeed) {
-    flikar.push({ key: "feed", label: "Mål", kort: true, body: () => feedTabBody(m) });
-  }
+  // Matchen byts ut under arkets livstid: liveifyllnaden ersätter hela
+  // state.matches med nya objekt varje gång ett resultat ändras. Arket höll
+  // förr kvar objektet det öppnades med och stod därför still tills sidan
+  // laddades om. `aktuell` är därför det enda stället matchen läses ifrån,
+  // och uppdatera() byter ut den och ritar om.
+  let aktuell = m;
+
+  const byggFlikar = () => {
+    const flikar = [
+      { key: "home", label: aktuell.home.name,
+        body: () => teamStatBlock(aktuell, aktuell.home, "home") },
+      { key: "away", label: aktuell.away.name,
+        body: () => teamStatBlock(aktuell, aktuell.away, "away") },
+    ];
+    if (aktuell.arena) {
+      // "Bana", inte hela bannamnet: appens huvudnavigering kallar det redan
+      // så, och namnet står i raden precis ovanför flikarna. Ett namn som
+      // "Prioritet Serneke Arena Serneke Arena A" åt upp hela flikraden och
+      // klippte "Mål" till "M…".
+      flikar.push({ key: "arena", label: "Bana", title: aktuell.arena, kort: true,
+        body: () => arenaTabBody(aktuell, () => dlg.close()) });
+    }
+    // Feeden finns bara hos Cup Manager, och bara för matcher som börjat.
+    // Räknas om vid varje ritning: en match som startar medan arket står
+    // öppet ska få sin Mål-flik utan att arket behöver stängas.
+    if (harFeed()) {
+      flikar.push({ key: "feed", label: "Mål", kort: true,
+        body: () => feedTabBody(aktuell) });
+    }
+    return flikar;
+  };
+  const harFeed = () => !cup().dataUrl && aktuell.id &&
+    (isLive(aktuell, Date.now(), state.matchMinutes) || (aktuell.res && aktuell.res.fin));
   // Är ett av lagen din klubb är det nästan alltid det du är ute efter.
   const klubbFlik = isClubName(m.home.name) ? "home"
     : isClubName(m.away.name) ? "away" : null;
   // Pågår matchen är målen det man kom för.
-  const förval = harFeed && isLive(m, Date.now(), state.matchMinutes)
-    ? "feed" : (klubbFlik || "home");
-  let aktiv = flikar.some((f) => f.key === förvaldFlik) ? förvaldFlik : förval;
+  const förval = () => (harFeed() && isLive(aktuell, Date.now(), state.matchMinutes)
+    ? "feed" : (klubbFlik || "home"));
+  let aktiv = förvaldFlik || förval();
 
+  const huvud = h("div", { class: "match-sheet-top" });
   const kropp = h("div", { class: "match-sheet-tabbody" });
   const tabbrad = h("div", {
     class: "match-sheet-tabs", role: "tablist",
     "aria-label": "Lag och plan för matchen",
   });
+  const ritaHuvud = () => huvud.replaceChildren(...[
+    matchSheetHeader(aktuell), playoffSourceGroupsBlock(aktuell),
+    previousMeetingsBlock(aktuell), gemensammaBlock(aktuell),
+  ].filter(Boolean));
   const rita = () => {
+    const flikar = byggFlikar();
+    if (!flikar.some((f) => f.key === aktiv)) aktiv = förval();
     tabbrad.replaceChildren(...flikar.map((f) => h("button", {
       // .kort: korta etiketter ska aldrig krympa. Lagnamnen får dela på
       // det som blir över och klipps med ellips vid behov — båda står
@@ -1245,8 +1267,15 @@ export function openMatchSheet(m, förvaldFlik) {
       onclick: () => { aktiv = f.key; rita(); },
     }, f.label)));
     const vald = flikar.find((f) => f.key === aktiv) || flikar[0];
-    öppetArk = { match: m, flik: vald.key };
+    öppetArk = { match: aktuell, flik: vald.key, uppdatera };
     kropp.replaceChildren(vald.body());
+  };
+  // Anropas av liveifyllnaden i app.js när matchen fått ett nytt resultat.
+  const uppdatera = (ny) => {
+    if (!ny || !dlg.isConnected || ny.id !== aktuell.id) return;
+    aktuell = ny;
+    ritaHuvud();
+    rita();
   };
 
   const dlg = h("dialog", { class: "match-dialog match-sheet" },
@@ -1259,9 +1288,8 @@ export function openMatchSheet(m, förvaldFlik) {
         class: "dialog-x", type: "button", "aria-label": "Stäng",
         onclick: () => dlg.close(),
       }, "×")),
-    matchSheetHeader(m),
-    playoffSourceGroupsBlock(m), previousMeetingsBlock(m), gemensammaBlock(m),
-    tabbrad, kropp);
+    huvud, tabbrad, kropp);
+  ritaHuvud();
   rita();
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   dlg.addEventListener("close", () => { öppetArk = null; dlg.remove(); });
