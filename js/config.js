@@ -14,7 +14,7 @@ window.HB = window.HB || {};
 // Redigera inte för hand: den stod länge kvar på ett datum två veckor
 // bakåt just för att den var det enda stället som krävde ett eget
 // handgrepp.
-HB.VERSION = "20260906x";
+HB.VERSION = "20260906y";
 
 HB.CLUB = {
   name: "Alingsås HK",

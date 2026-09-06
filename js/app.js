@@ -2225,6 +2225,23 @@ HB.shortCat = shortCat;
       onclick: openMatchLogDialog,
     }, label));
     if (state.loading) el.append(" · kontrollerar gemensamt schema …");
+    renderFooterFreshness();
+  }
+
+  // Sidfotens färskhetslöfte gäller inte alla cuper lika. liveFill() hoppar
+  // över cuper som har en dataUrl — ProCup-cuperna, som skrapas server-side
+  // och inte går att fråga direkt från en webbläsare (inget CORS). För dem
+  // är centralt var femte minut hela sanningen, och en sidfot som lovade
+  // minutuppdateringar åt alla var alltså osann för sju av 34 cuper.
+  function renderFooterFreshness() {
+    const el = $("#footerFreshness");
+    if (!el) return;
+    const c = cup();
+    const centralt = "Data uppdateras centralt var femte minut under matchtid";
+    el.textContent = c && c.dataUrl
+      ? centralt + " · tider kan ändras."
+      : centralt + ", och resultat i matcher du följer hämtas direkt varje " +
+        "minut · tider kan ändras.";
   }
 
   // --- matchdialog: lagstatistik + snabblänkar --------------------------------

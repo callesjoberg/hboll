@@ -2,6 +2,11 @@ name: Uppdatera cupdata
 
 on:
   workflow_dispatch:
+    inputs:
+      chain:
+        description: "Antal överlämningar i följd — sätts av loopen själv, lämna tom vid handstart"
+        required: false
+        default: "0"
   schedule:
     # Var 20:e minut — men GitHub kör schemalagda jobb "best effort" och
     # startar oss i praktiken bara var andra till var femte timme. Att be
@@ -25,6 +30,9 @@ concurrency:
 
 permissions:
   contents: write
+  # actions: write krävs för att loopen ska kunna starta sin egen
+  # efterträdare när den nått taket (gh workflow run i ci_update_loop.sh).
+  actions: write
 
 jobs:
   fetch:
@@ -43,4 +51,6 @@ jobs:
         env:
           LOOP_MAX_SECONDS: "16200"
           LOOP_PERIOD_SECONDS: "300"
+          LOOP_CHAIN: ${{ inputs.chain || '0' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci_update_loop.sh
