@@ -662,7 +662,22 @@ export function drawBracketConnectors(boxEl, div, zoomOverride) {
 // Finalen (sist i listan) har ingen efterföljare och sorteras på tid som
 // förut; övriga omgångar följer den bakåt.
 function bracketRounds(div) {
-  const rounds = groupPlayoffRounds(div).map(([nyckel, ms]) => [nyckel, [...ms]]);
+  const rå = groupPlayoffRounds(div).map(([nyckel, ms]) => [nyckel, [...ms]]);
+  // Slå ihop kolumner som visar SAMMA omgångsnamn. Den live-hämtade
+  // slutspelsstrukturen kan ge två olika roundRank åt matcher som alla
+  // heter "1/16 Final" — snapshotten ger dem samma rank, men Playoff-
+  // frågan skiljer dem åt. Följden blev två kolumner med identisk etikett
+  // bredvid varandra, staplade i trappsteg, och matcher vars linjer såg
+  // ut att sakna mål. Två ranks med samma namn är samma omgång för den
+  // som läser trädet.
+  const rounds = [];
+  for (const post of rå) {
+    const namn = (post[1][0] && post[1][0].roundName) || "";
+    const förra = rounds[rounds.length - 1];
+    const förraNamn = förra && förra[1][0] && förra[1][0].roundName;
+    if (förra && namn && förraNamn === namn) förra[1].push(...post[1]);
+    else rounds.push(post);
+  }
   if (!rounds.length) return rounds;
   const tid = (a, b) => (state.playoffTimeOrder === "asc"
     ? a.start - b.start : b.start - a.start);
