@@ -760,11 +760,6 @@ header.top {
   color: var(--blue);
   border-bottom-color: var(--yellow);
 }
-.desktop-primary-filter.menu-on {
-  /* Filter öppnar en panel men flyttar inte användaren i navigationen.
-     Ikonens pil visar läget; ett flikstreck skulle signalera fel sak. */
-  border-bottom-color: transparent;
-}
 .desktop-primary-icon { display: grid; place-items: center; width: 19px; height: 19px; }
 .desktop-primary-icon .bottom-tab-icon-svg { width: 19px; height: 19px; }
 .desktop-filter-badge {
@@ -1104,28 +1099,6 @@ body.desktop-filter-open #desktopFilterHost { border-top: 1px solid var(--menu-l
 }
 
 @media (min-width: 701px) {
-  /* Huvudmenyns Filter-knapp öppnar redan själva panelen. I kompaktläget
-     behöver panelen därför bara visa de två vanligaste lägesvalen och en
-     enda väg vidare till de avancerade kontrollerna. */
-  .desktop-toolbar-compact {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .desktop-toolbar-compact > .toolbar-summary { order: 2; }
-  .desktop-toolbar-compact > .toolbar-body { display: contents; margin: 0; }
-  .desktop-toolbar-compact .filter-primary-row { order: 1; }
-  .desktop-toolbar-compact .filter-primary-row .filter-group { display: none; }
-  .desktop-toolbar-compact .filter-primary-row .row-sep { display: none; }
-  .desktop-toolbar-compact .tools-row { display: none; }
-  .desktop-toolbar-compact .toolbar-summary-label {
-    background: transparent;
-    border-style: dashed;
-    color: var(--ink-soft);
-  }
-  .toolbar-collapse.desktop-toolbar-compact[open] .toolbar-summary-label::after { transform: none; }
-  .desktop-advanced-open > .toolbar-summary { order: 0; }
   .desktop-toolbar-flat .toolbar-body { margin-top: 0; }
   .desktop-toolbar-flat .filter-primary-row { gap: 8px; }
   .desktop-toolbar-flat .filter-primary-row .search-wrap {
@@ -2739,27 +2712,6 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 .table-class-stats-body strong { color: var(--ink); }
 
-.table-group-tabs-wrap {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  margin: 0 0 10px;
-  background: var(--paper);
-}
-
-.table-group-tabs {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  gap: 4px;
-  padding: 0 0 8px;
-  scrollbar-width: none;
-}
-
-.table-group-tabs::-webkit-scrollbar { display: none; }
-
 .table-group-tab {
   position: relative;
   flex: 0 0 auto;
@@ -3095,14 +3047,6 @@ dialog input {
   padding: 7px 10px;
   font: inherit;
   color: var(--ink);
-}
-
-.dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
-
-.dialog-actions .primary {
-  background: var(--blue);
-  color: #fff;
-  border-color: var(--blue);
 }
 
 /* inställningar */
@@ -3664,14 +3608,6 @@ dialog.match-dialog {
 }
 
 .match-dialog-head .cat { font-weight: 600; color: var(--blue); }
-
-.match-dialog-score {
-  margin-left: auto;
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--ink);
-}
 
 /* snabbtitt på en banas matcher — listan scrollar för sig, så titel och
    "filtrera schemat"-knappen alltid syns kvar överst */
@@ -4383,15 +4319,6 @@ dialog.history-dialog {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.custom-cup {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-  padding: 4px 0;
 }
 
 /* admin-sidan */
@@ -5810,7 +5737,6 @@ button.welcome-cta-secondary {
   /* I remsläget visas BARA ikonerna. Resten av verktygsraden finns kvar i
      DOM:et (renderToolbar är orörd) men göms tills man trycker Mer. */
   body.filters-open:not(.filters-expanded) #toolbar .toolbar-summary,
-  body.filters-open:not(.filters-expanded) #toolbar .sheet-cup-btn,
   body.filters-open:not(.filters-expanded) #toolbar .row > *:not(.filter-group),
   body.filters-open:not(.filters-expanded) #toolbar .toolbar-body > *:not(.filter-primary-row) {
     display: none;
@@ -6092,27 +6018,6 @@ button.welcome-cta-secondary {
      blir bara datakällstexten, som inte behöver ta plats på en telefon. */
   body > footer { display: none; }
 
-  /* Cupknappen överst i filterarket, och urvalsgruppen under den. Båda är
-     menyrader i full bredd: etikett till vänster, aktuellt värde och en
-     chevron till höger. Som grå chips i en rad läste väljarna som INAKTIVA
-     knappar — en rad med tydlig avgränsare och pil läser som något man
-     trycker på. */
-  .sheet-cup-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    text-align: left;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 11px 12px;
-    font: inherit;
-    font-size: 15px;
-    color: var(--ink);
-    cursor: pointer;
-  }
-
   /* Samma textflikar som under Aktuellt: inga ikoner, pills eller pilar. */
   .filter-group .team-picker-dd > .team-picker-summary {
     display: flex;
@@ -6139,18 +6044,6 @@ button.welcome-cta-secondary {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .sheet-cup-btn { margin-bottom: 10px; }
-  .sheet-cup-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
-  .sheet-cup-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--ink-soft);
-  }
-  .sheet-cup-name { font-weight: 600; }
-  .sheet-cup-meta { font-size: 12px; color: var(--ink-soft); }
-  .sheet-cup-arrow { font-size: 22px; color: var(--ink-soft); }
-
   /* Cup, år, dagar, klasser och lag som en scrollbar textmeny på en rad. */
   .filter-group {
     display: flex;
