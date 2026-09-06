@@ -159,24 +159,53 @@
       return wrap;
     };
     // Sport styr bl.a. vilka cuper som visas ihop i sportväljaren i
-    // inställningar samt vilka Trend/Karta erbjuder att jämföra mot
-    // varandra (js/app.js) — select i stället för fritext så värdet alltid
-    // är ett av de två appen faktiskt känner igen.
+    // inställningar och vilka Trend/Karta erbjuder att jämföra mot
+    // varandra (js/app.js) — men framför allt POÄNGRÄKNINGEN: vinst ger
+    // 3 poäng i fotboll och innebandy mot 2 i handboll, och basket ger
+    // 1 poäng även för förlust (se js/domain/tables.js). Väljs fel sport
+    // blir alltså varje tabell i cupen fel.
+    //
+    // Listan hade länge bara handboll och fotboll, medan skarpa cups.json
+    // redan innehöll tre innebandycuper och tre basketcuper. De gick inte
+    // att lägga upp härifrån utan fick handredigeras i JSON, och en
+    // basketcup visade "Handboll" i väljaren.
+    const SPORTER = [
+      ["handboll", "Handboll"], ["fotboll", "Fotboll"],
+      ["innebandy", "Innebandy"], ["basket", "Basket"],
+    ];
     const sportField = () => {
       const wrap = document.createElement("label");
       wrap.className = "admin-field";
       wrap.append("Sport");
       const sel = document.createElement("select");
       sel.className = "select";
-      for (const [value, label] of [["handboll", "Handboll"], ["fotboll", "Fotboll"]]) {
+      const valda = cup.sport || "handboll";
+      // Ett okänt värde ur JSON ska synas som det är, inte tyst bytas mot
+      // handboll av att ingen option matchar.
+      const lista = SPORTER.some(([v]) => v === valda)
+        ? SPORTER : [...SPORTER, [valda, valda + " (okänd)"]];
+      for (const [value, label] of lista) {
         const opt = document.createElement("option");
         opt.value = value;
         opt.textContent = label;
-        if ((cup.sport || "handboll") === value) opt.selected = true;
+        if (valda === value) opt.selected = true;
         sel.append(opt);
       }
       sel.addEventListener("change", () => { cup.sport = sel.value; });
       wrap.append(sel);
+      return wrap;
+    };
+    // beach skiljer sandhandboll från inomhus. Utan flaggan blandas de i
+    // jämförelserna av gemensamma motståndare och i historiken, där en
+    // beachcup har helt andra resultatnivåer.
+    const beachField = () => {
+      const wrap = document.createElement("label");
+      wrap.className = "admin-field admin-field-check";
+      const inp = document.createElement("input");
+      inp.type = "checkbox";
+      inp.checked = !!cup.beach;
+      inp.addEventListener("change", () => { cup.beach = inp.checked; });
+      wrap.append(inp, "Beach (sand, inte inomhus)");
       return wrap;
     };
     const head = document.createElement("div");
@@ -215,7 +244,8 @@
       field("Turnerings-ID", "tournamentId", "8 siffror (Cup Manager)"),
       field("Datafil (ProCup)", "dataUrl", "data/….json"),
       field("Breddgrad (lat)", "lat", "t.ex. 55.9167", "number"),
-      field("Längdgrad (lon)", "lon", "t.ex. 14.2833", "number"));
+      field("Längdgrad (lon)", "lon", "t.ex. 14.2833", "number"),
+      beachField());
     row.append(head, grid);
     return row;
   }

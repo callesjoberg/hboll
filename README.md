@@ -1,13 +1,15 @@
-# Cupschema — Alingsås HK
+# Cupschema
 
-Spelschema, resultat och tabeller för Alingsås HK:s cuper, samlade på ett ställe.
-Inspirerad av [ahk-beach](https://martinwelen.github.io/ahk-beach/) men byggd för
-**flera cuper**, med smidigare kalender, filtrering och sortering.
+Spelschema, resultat, tabeller och slutspel för cuper, samlade på ett ställe.
+Började som en sida för Alingsås HK:s handbollscuper och täcker nu 34 cuper i
+**handboll, fotboll, innebandy och basket** — favoritklubben är valbar i
+inställningarna. Inspirerad av
+[ahk-beach](https://martinwelen.github.io/ahk-beach/) men byggd för **flera
+cuper**, med smidigare kalender, filtrering och sortering.
 
-Data hämtas live i webbläsaren från respektive cups öppna API på
-**cupmanager.net** — ingen server, inget byggsteg. Matcher sparas i
-`localStorage` och som CI-byggda snapshots i repot, så sidan slipper hämta om
-allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
+Ingen server, inget byggsteg. Data byggs centralt av CI till snapshots i repot
+och sparas i `localStorage` hos besökaren, så sidan slipper hämta om allt vid
+varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
 
 ## Funktioner
 
@@ -42,9 +44,11 @@ allt vid varje besök (se [Cachning](#cachning-och-uppdateringsfrekvens)).
   Kalkylark (.xlsx) eller CSV.
 - **Delbara länkar**: adressfältet speglar alltid aktuellt filter och
   sortering — kopiera länken och mottagaren får exakt samma vy.
-- **Central uppdatering** av pågående cuper utan att varje besökare belastar
-  arrangörens system. Klienten kontrollerar ett litet versionsindex och
-  laddar bara om en stor cupfil när den faktiskt har ändrats.
+- **Central uppdatering** av pågående cuper: CI bygger snapshotarna, och
+  klienten kontrollerar ett litet versionsindex och laddar bara om en stor
+  cupfil när den faktiskt har ändrats. Under matchtid gör klienten dessutom
+  egna, snålt begränsade anrop till källan för de matcher användaren tittar
+  på — se [Liveifyllnad](#liveifyllnad-under-matchtid).
 - **Installningar**: valfri favoritklubb och favoritlag (⭐ på matchkort,
   med autocomplete från cupens egna lagnamn — samma klubb heter ofta olika
   saker i olika cuper), ljust/mörkt/auto-tema, färgkodning av lag som heter
@@ -90,8 +94,10 @@ De flesta svenska handbollscuper kör Cup Manager. Så hittar du uppgifterna:
 
 **ProCup-cuper** (t.ex. Järnvägen Cup) saknar öppet API och CORS. De förhämtas
 i stället av `scripts/fetch_procup.py` till `data/`-katalogen — GitHub Actions
-(`.github/workflows/procup.yml`) kör kontrolljobbet var 20:e minut och
-committar när datan ändrats; cuper långt från sina speldagar hoppas över.
+(`.github/workflows/procup.yml`) kör kontrolljobbet på schema och committar
+när datan ändrats; under matchtid håller `scripts/ci_update_loop.sh` en
+körning vid liv i femminuterstakt. Cuper långt från sina speldagar hoppas
+över.
 Lägg till fler ProCup-turneringar i `TOURNAMENTS`-listan i
 skriptet (ev-numret syns i turneringens procup.se-URL) plus en post med
 `dataUrl` i `js/config.js`.
@@ -135,12 +141,14 @@ Tre lager, i den ordning sidan letar:
 2. **CI-byggda snapshots** i repot (`data/snapshot-<cupId>.json` för
    Cup Manager-cuper, `data/<cupId>.json` för ProCup-cuper). Genereras av
    `scripts/fetch_cupmanager.py` respektive `scripts/fetch_procup.py`, som
-   GitHub Actions kontrollerar var 20:e minut (`.github/workflows/procup.yml`,
-   kan även startas manuellt från admin-sidan). Gör att *förstabesöket* laddar
+   GitHub Actions kontrollerar på schema (`.github/workflows/procup.yml`, kan
+   även startas manuellt från admin-sidan), och var femte minut medan matcher
+   spelas. Gör att *förstabesöket* laddar
    direkt i stället för att vänta på Cup Manager-API:t (~15 s för Åhus
    6 000+ matcher).
-3. **Källsystemet** kontaktas bara av det centrala GitHub Actions-jobbet.
-   Besökarens knapp kontrollerar den senast publicerade gemensamma snapshotten.
+3. **Källsystemet** — kontaktas centralt av GitHub Actions-jobbet, och under
+   matchtid även av besökarens egen webbläsare för ett fåtal matcher (se
+   Liveifyllnad nedan).
 
 Hur ofta en cup hämtas om avgörs av matchernas tidsspann, inte ett fast
 intervall:
@@ -149,10 +157,31 @@ intervall:
 |---|---|
 | Avslutad (senaste matchen > 24 h bakåt) | Aldrig automatiskt |
 | Framtida (första matchen > 72 h fram) | Ungefär var 6:e timme |
-| Börjar inom 72 h eller pågår | Ungefär var 20:e minut centralt |
+| Börjar inom 72 h | Ungefär var 20:e minut centralt |
+| Matcher spelas just nu | Var femte minut centralt (`scripts/ci_update_loop.sh` håller en körning vid liv i stället för att förlita sig på cron) |
 
 Tryck **↻ Kontrollera senaste** för att läsa den senast centralt publicerade
-snapshotten. Knappen startar inte en egen hämtning från Cup Manager.
+snapshotten.
+
+### Liveifyllnad under matchtid
+
+Fem minuter är för trubbigt mitt i en match — ett mål ska synas nu, inte vid
+nästa CI-varv. Därför fyller klienten själv i luckan, men bara den:
+
+- Bara matcher som **har startat men saknar slutresultat**, och som ligger
+  inom tolv timmar bakåt. Avgjorda matcher frågas aldrig om igen.
+- Bara det **användaren tittar på**: det egna filtret eller klubbens matcher,
+  plus ospelade matcher i samma divisioner (annars skulle grupptabellen ligga
+  efter matchkorten), plus matchen i ett öppet matchark. Högst 40 per varv.
+- Bara medan **fliken är synlig**, i minuttakt, och takten trappas ner mot åtta
+  minuter så snart ett varv inte gav något nytt.
+- Bara för Cup Manager-cuper. ProCup-cuper hämtas enbart centralt.
+
+Det innebär att en besökare *gör* anrop till arrangörens system under matchtid.
+Det är ett medvetet val: en cup med tio pågående matcher och hundra tittare
+kostar källan några anrop i minuten, inte hundra — allt annat serveras
+fortfarande från de gemensamma snapshotarna. Se `liveFill()` i `js/app.js` och
+`js/domain/live-gap.js`.
 
 ## Tekniska noter
 

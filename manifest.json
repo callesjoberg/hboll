@@ -1,7 +1,7 @@
 {
-  "name": "Cupschema – Alingsås HK",
+  "name": "Cupschema",
   "short_name": "Cupschema",
-  "description": "Spelschema, resultat och tabeller för Alingsås HK:s cuper.",
+  "description": "Spelschema, resultat, tabeller och slutspel för cuper i handboll, fotboll, innebandy och basket. Välj din egen klubb.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -9,8 +9,23 @@
   "theme_color": "#16283f",
   "lang": "sv",
   "icons": [
-    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "assets/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
