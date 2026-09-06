@@ -21,6 +21,7 @@ Körs av GitHub Actions efter fetch_cupmanager.py. Ren stdlib."""
 
 import argparse
 import json
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -88,6 +89,18 @@ def match_feed(host, tid, match_id):
         if any(any(rad) for rad in rader.values()):
             disc = rader
     return mål, disc
+
+
+# Sekretariatet skriver namnet för hand, och någon enstaka gång hamnar
+# spelarens födelsedatum där med: "Hjalmar Oscarsson 20110801". Det är två
+# rader av 9 915 — alltså ingen konvention att bygga på, utan en
+# felskrivning. Och det är ett barns födelsedatum: det ska inte lagras i
+# ett publikt repo bara för att det råkat läcka ut i ett namnfält.
+_DATUM_I_NAMN = re.compile(r"\s*\b\d{6}(?:\d{2})?(?:-\d{4})?\b\s*$")
+
+
+def rensa_namn(namn):
+    return _DATUM_I_NAMN.sub("", (namn or "").strip()).strip()
 
 
 def namn_nyckel(namn):
@@ -175,6 +188,9 @@ def build(cup, only_new=True):
             lag = m.get("away") if side == "away" else m.get("home")
             lag_id = (lag or {}).get("id")
             if lag_id is None:
+                continue
+            namn = rensa_namn(namn)
+            if not namn:
                 continue
             nyckel = (lag_id, namn_nyckel(namn))
             rad = index.get(nyckel)
