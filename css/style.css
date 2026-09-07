@@ -6527,3 +6527,59 @@ button.welcome-cta-secondary {
     font-size: 16px;
   }
 }
+
+
+/* --- Årskullens resa (Klubb/lag) ------------------------------------------
+   En tidslinje, inte en tabell: åren är rubriker och lagen står under sitt
+   år. Klassnamnet står bredvid årtalet eftersom det är själva poängen att
+   det förskjuts — F10 år 2021, F15 år 2026 — medan årskullen står stilla. */
+.kull-resa { display: grid; gap: 10px; margin-top: 12px; }
+
+.kull-ar {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.kull-ar-huvud {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+
+.kull-ar-tal {
+  font: 700 20px/1 "Barlow Condensed", system-ui, sans-serif;
+  color: var(--blue);
+  font-variant-numeric: tabular-nums;
+}
+
+.kull-ar-klass { font-size: 12px; color: var(--ink-soft); min-width: 0; }
+
+.kull-rader { display: grid; gap: 4px; }
+
+.kull-rad {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+/* min-width: 0 på cellerna — utan den vägrar rutnätet krympa och långa
+   cup-/lagnamn trycker ut raden på en telefon. */
+.kull-cup { color: var(--ink); font-weight: 600; min-width: 0; }
+.kull-lag { color: var(--ink-soft); min-width: 0; }
+.kull-res { text-align: right; font-variant-numeric: tabular-nums; }
+.kull-res small { color: var(--ink-soft); }
+
+@media (max-width: 620px) {
+  /* Tre kolumner ryms inte: lagnamnet får en egen rad under cupen. */
+  .kull-rad { grid-template-columns: minmax(0, 1fr) auto; }
+  .kull-lag { grid-column: 1; grid-row: 2; }
+  .kull-res { grid-row: 1 / span 2; align-self: center; }
+}

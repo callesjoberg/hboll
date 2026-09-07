@@ -1247,6 +1247,151 @@ function computeClubRows(cupIds, teamQuery, selectedYears = state.clubYears) {
   return { pending, rows, loadedCount, totalCount };
 }
 
+/* Årskullens resa: samma klubb och samma årskull genom åren och cuperna.
+
+   Poängen är att klassETIKETTEN förskjuts medan årskullen står stilla —
+   flickor födda 2011 heter F10 år 2021, F11 år 2022 och F15 år 2026. Utan
+   en stabil identitet vore laget ett nytt lag varje år. parseCohort() i
+   domain/category.js läser årskullen ur fyra skrivsätt som förekommer i
+   skarp data och är just den identiteten.
+
+   Laddningen följer samma mönster som computeClubRows: lagnamnsindexet
+   avgör vilka upplagor som ens KAN innehålla klubben, och bara de hämtas —
+   annars vore en enda årskull en anledning att dra ner hela arkivet.
+
+   Resultat: en rad per upplaga, cup och lagnamn. rapporterat=false betyder
+   att klassen inte rapporterar resultat alls (de yngsta gör aldrig det),
+   vilket är en annan sak än att laget förlorade allt. */
+function computeCohortJourney(cupIds, teamQuery, kull) {
+  ensureTeamIndex();
+  /* Använder SAMMA årsfilter som resten av fliken (state.clubYears via
+     clubEditionsFor). Det är avsiktligt.
+
+     Första försöket lät resan hämta varje upplaga klubben någonsin
+     deltagit i, oberoende av filtret — omkring hundra filer och över
+     100 MB för att leta efter en enda årskull, och laddningen stannade.
+     Ett åldersfönster (födda+5 till +20) hjälpte inte: för en kull född
+     2011 ryms 310 av arkivets 353 upplagor ändå.
+
+     Med samma filter kostar resan exakt lika mycket som cuptabellen
+     bredvid, som redan är hämtad. Vill man se hela resan väljer man Alla
+     år i årsväljaren ovanför — samma knapp som styr allt annat i vyn. */
+  if (!state.teamIndex) {
+    let totalCount = 0;
+    for (const cupId of cupIds) totalCount += clubEditionsFor(cupId).length;
+    return { pending: true, rader: [], loadedCount: 0, totalCount };
+  }
+  let pending = false, loadedCount = 0, totalCount = 0;
+  const loadingNow = Object.values(state.yearMatches)
+    .filter((e) => e && e.status === "loading").length;
+  let slots = Math.max(0, CLUB_ARCHIVE_CONCURRENCY - loadingNow);
+  const rader = [];
+  for (const cupId of cupIds) {
+    const cupObj = HB.allCups().find((c) => c.id === cupId);
+    for (const em of clubEditionsFor(cupId)) {
+      totalCount++;
+      if (!editionMightMatch(cupId, em.edition, teamQuery)) { loadedCount++; continue; }
+      const yearKey = cupId + ":" + em.edition;
+      let ym = state.yearMatches[yearKey];
+      if (!ym && slots > 0) {
+        ensureYearMatches(em.edition, cupId);
+        slots--;
+        ym = state.yearMatches[yearKey];
+      }
+      if (!ym || ym.status === "loading") { pending = true; continue; }
+      loadedCount++;
+      if (ym.status !== "done") continue;
+
+      const perLag = new Map();
+      for (const m of ym.matches || []) {
+        if (cohortKey(m.catName || "") !== kull) continue;
+        for (const sida of [m.home, m.away]) {
+          if (!sida || !sida.name || !matchesBooleanQuery(sida.name.toLowerCase(), teamQuery)) continue;
+          const nyckel = sida.name;
+          let r = perLag.get(nyckel);
+          if (!r) {
+            r = { lag: sida.name, klass: m.catName || "", matcher: 0,
+              v: 0, o: 0, f: 0, gf: 0, ga: 0, spelade: 0 };
+            perLag.set(nyckel, r);
+          }
+          r.matcher++;
+          const res = m.res || {};
+          if (!res.fin || res.hg == null || res.ag == null) continue;
+          const hemma = sida === m.home;
+          const eget = hemma ? res.hg : res.ag, mot = hemma ? res.ag : res.hg;
+          r.spelade++; r.gf += eget; r.ga += mot;
+          if (eget > mot) r.v++; else if (eget < mot) r.f++; else r.o++;
+        }
+      }
+      for (const r of perLag.values()) {
+        rader.push({ ...r, edition: em.edition, cupId,
+          cupName: (cupObj && cupObj.name) || cupId,
+          // Ett lag som spelat men aldrig fått ett resultat inrapporterat
+          // hör till en klass som inte rapporterar — inte till ett lag som
+          // förlorade allt.
+          rapporterat: r.spelade > 0 });
+      }
+    }
+  }
+  rader.sort((a, b) => a.edition.localeCompare(b.edition) ||
+    a.cupName.localeCompare(b.cupName, "sv") || a.lag.localeCompare(b.lag, "sv"));
+  return { pending, rader, loadedCount, totalCount };
+}
+
+/* Årskullens resa, renderad år för år. Ordningen är stigande med flit:
+   det ÄR en resa, och den läses framåt. */
+function renderCohortJourney(root, cupIds, query, kull, etikett) {
+  const { pending, rader, loadedCount, totalCount } =
+    computeCohortJourney(cupIds, query, kull);
+  if (pending) root.append(archiveProgressBlock(loadedCount, totalCount));
+  if (!rader.length) {
+    if (pending) return;
+    root.append(h("p", { class: "muted" },
+      "Inga arkiverade matcher för " + etikett + "."));
+    return;
+  }
+
+  const år = [...new Set(rader.map((r) => r.edition))].sort();
+  const sum = (f) => rader.reduce((a, r) => a + f(r), 0);
+  const spelade = sum((r) => r.spelade);
+  root.append(h("p", { class: "muted" },
+    etikett + " · " + år.length + (år.length === 1 ? " år" : " år") + " (" +
+    år[0] + "–" + år[år.length - 1] + ") · " +
+    new Set(rader.map((r) => r.cupId)).size + " cuper · " +
+    rader.length + " lagdeltaganden · " + sum((r) => r.matcher) + " matcher" +
+    (spelade ? " · " + Math.round(100 * sum((r) => r.v) / spelade) + " % vinster" : "")));
+
+  const lista = h("div", { class: "kull-resa" });
+  for (const y of år) {
+    const iÅr = rader.filter((r) => r.edition === y);
+    // Klassens NAMN det året står ut: det är själva poängen att den
+    // förskjuts medan årskullen står stilla.
+    const klasser = [...new Set(iÅr.map((r) => r.klass))];
+    lista.append(h("div", { class: "kull-ar" },
+      h("div", { class: "kull-ar-huvud" },
+        h("span", { class: "kull-ar-tal" }, y),
+        h("span", { class: "kull-ar-klass" }, klasser.join(" · "))),
+      h("div", { class: "kull-rader" }, iÅr.map((r) => h("div", { class: "kull-rad" },
+        h("span", { class: "kull-cup" }, r.cupName),
+        h("span", { class: "kull-lag" }, r.lag),
+        h("span", { class: "kull-res" }, r.rapporterat
+          ? h("span", null,
+              h("strong", null, r.v + "V " + r.o + "O " + r.f + "F"),
+              h("small", null, " · " + r.matcher + " matcher · " +
+                r.gf + "–" + r.ga))
+          : h("small", { class: "muted" },
+              r.matcher + " matcher · resultat rapporteras inte i klassen"))))))); 
+  }
+  root.append(lista);
+
+  if (rader.some((r) => !r.rapporterat)) {
+    root.append(h("p", { class: "muted vinnare-kvotnot" },
+      "De yngsta klasserna rapporterar inga resultat — matcherna spelades, "
+      + "men inga siffror skrevs in. Det är alltså inte samma sak som att "
+      + "laget förlorade, och därför står det ingen nolla där."));
+  }
+}
+
 // Klubb/Lag-fliken, nedborrningsnivå 1 (en vald cup): samma matcher som
 // computeClubRows redan laddat via ensureYearMatches, men brutna ner per
 // KLASS i stället för aggregerade till en enda rad. "edition|id" som
@@ -1416,6 +1561,35 @@ function renderClubView(root) {
   const totalTeams = rows.reduce((s, r) => s + r.totalTeams, 0);
   const totalMatches = rows.reduce((s, r) => s + r.totalMatches, 0);
   const allClasses = new Set(rows.flatMap((r) => [...r.classes]));
+
+  /* Årskullar klubben haft lag i. Tas ur klasserna som redan hittats
+     ovan — ingen extra hämtning. Klasser utan läsbar årskull (seniorklass,
+     öppen klass, motionsklass, para) hoppas över: de HAR ingen årskull. */
+  const kullar = new Map();
+  for (const kl of allClasses) {
+    const k = cohortKey(kl);
+    if (k && !kullar.has(k)) kullar.set(k, cohortLabel(kl));
+  }
+  if (kullar.has(clubCohort) === false) clubCohort = "";
+  if (kullar.size) {
+    const sorterade = [...kullar.entries()]
+      .sort((a, b) => b[0].slice(1).localeCompare(a[0].slice(1)) ||
+        a[1].localeCompare(b[1], "sv"));   // yngst först
+    resultHost.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+      h("span", { class: "muted" }, "Följ en årskull:"),
+      h("div", { class: "vinnare-ar-scroll" },
+        chip("Alla", !clubCohort, () => { clubCohort = ""; renderContent(); }, "small"),
+        sorterade.map(([k, etikett]) => chip(etikett, clubCohort === k, () => {
+          clubCohort = clubCohort === k ? "" : k;
+          state.clubDrillCup = null; state.clubDrillClass = null;
+          renderContent();
+        }, "small")))));
+  }
+  if (clubCohort) {
+    renderCohortJourney(resultHost, cupIds, query, clubCohort,
+      kullar.get(clubCohort) || clubCohort);
+    return;
+  }
   const allYears = rows.flatMap((r) => r.years).sort();
   resultHost.append(h("p", { class: "muted" },
     (pending ? "Hittills: " : "") +
@@ -1749,6 +1923,7 @@ let cupsOverviewSort = { key: "cupName", dir: 1 };
 // förvalet visar allt. Väljaren finns för att 34 cuper i fyra sporter är
 // en lång lista att leta i.
 let cupsOverviewSport = "";
+let clubCohort = "";   // vald årskull i Klubb/lag, "" = ingen (visa cuptabellen)
 let cupsOverviewDetailSort = { key: "edition", dir: -1 };
 const cupsOverviewExpandedYears = new Set();
 const cupsOverviewEditionDetailCache = new Map();
