@@ -1,0 +1,50 @@
+name: Publicera data till R2
+
+# Egen workflow, avsiktligt skild från "Uppdatera cupdata": under
+# inflyttningen ska ett R2-prov aldrig kunna störa den pipeline som
+# faktiskt håller cupdatan färsk. När flytten är klar flyttar anropet in i
+# ci_update_loop.sh och den här får ligga kvar som handtag för att fylla på
+# bucketen på nytt.
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Begränsa till en eller flera filer, mellanslagsseparerat. Tomt = hela data/."
+        required: false
+        default: ""
+      dry_run:
+        description: "Räkna ut vad som skulle laddas upp utan att röra R2"
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: publish-r2
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installera boto3
+        run: pip install --quiet boto3
+      - name: Publicera
+        env:
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: cupschema-data
+          ONLY: ${{ inputs.only }}
+          DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          args=""
+          for f in $ONLY; do args="$args --only $f"; done
+          python3 scripts/publish_r2.py $DRY $args
