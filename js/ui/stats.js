@@ -282,23 +282,61 @@ const HISTORY_TABS = [
 // ändå bara täcker en enda cup — inte en meningsfull trendlinje.
 //
 // clubs (distinkta KLUBBAR, till skillnad från "teams" som räknar varje
-// åldersklass-lag för sig) bygger på ett rent klubbnamnsfält
-// (home/away.club) som tillkom senare — arkivfiler skrapade innan dess
-// saknar det och ger då 0, inte ett fel.
+// åldersklass-lag för sig) och countries (distinkta NATIONER) bygger på
+// fält som tillkom senare i skraparen — arkivfiler skrapade innan dess
+// saknar dem helt.
 const TREND_METRICS = [
   ["matches", "Matcher", "var(--blue)"],
   ["teams", "Lag i matcher", "var(--yellow)"],
   ["clubs", "Klubbar", "var(--orange)"],
+  ["countries", "Länder", "var(--live)"],
   ["classes", "Klasser", "var(--won)"],
   ["days", "Speldagar", "var(--purple)"],
 ];
+
+// Tomt betyder två helt olika saker för de två sena fälten. En SPELAD
+// upplaga kan omöjligt ha noll klubbar eller noll länder — där är tomt
+// "okänt", för året skrapades innan fältet fanns. En INSTÄLLD upplaga
+// (matches === 0) har däremot en äkta nolla.
+//
+// Skillnaden får bära hela vägen ut i gränssnittet: okänt blir null,
+// ritas som ett hål i kurvan och ett "–" i tabellen. Tidigare göms i
+// stället HELA måttet så fort ETT enda år saknade fältet, vilket dolde
+// klubbräkningen för t.ex. Potatiscupen (fyra av sju år) och Åhus Beach
+// (ett av elva) trots att alla de andra åren fanns.
+const OKÄNT_OM_TOMT = new Set(["clubs", "countries"]);
+const OKÄNT_TITEL = "Året skrapades innan klubb- och landsfälten fanns. " +
+  "Talet är okänt, inte noll — därför bryts kurvan här i stället för " +
+  "att falla till botten.";
 
 // På en preliminär upplaga är indexets `matches` alla matchobjekt,
 // inklusive sådana som ännu saknar speltid. I jämförelser är det antalet
 // faktiskt tidsatta matcher som motsvarar arrangörens publicerade schema.
 function archiveEditionMetric(e, key) {
   if (key === "matches" && e.preliminary && Number.isFinite(e.timed)) return e.timed;
+  if (OKÄNT_OM_TOMT.has(key) && (e.matches || 0) > 0 && !e[key]) return null;
   return e[key] || 0;
+}
+
+// Ett måtts kända punkter, med sitt index i editions-listan kvar — både
+// grafen (som ska hoppa över hålen) och förklaringen (som vill ha första
+// och sista KÄNDA året, inte första och sista året) behöver just detta.
+function kändaPunkter(editions, key) {
+  return editions
+    .map((e, i) => ({ e, i, v: archiveEditionMetric(e, key) }))
+    .filter((p) => p.v != null);
+}
+
+// Måttets startpunkt i förklaringsraden: första kända året från baslinjen
+// och framåt SOM HAR ETT VÄRDE. En inställd upplaga har en äkta nolla och
+// är därför en känd punkt — men "Klubbar: 0 → 71" med Potatiscupens
+// inställda 2020 som utgångspunkt säger ingenting, och en procentuell
+// förändring från noll går inte att räkna alls. Samma hållning som
+// trendBaselineIndex: onormalt små år får synas i kurvan utan att styra
+// jämförelsen.
+function startPunkt(punkter, baseIdx) {
+  return punkter.find((p) => p.i >= baseIdx && p.v > 0) ||
+    punkter.find((p) => p.v > 0) || punkter[0];
 }
 
 function archiveEditionMatchLabel(e) {
@@ -370,12 +408,16 @@ function buildTrendSvg(editions, baseIdx, metrics) {
   const n = editions.length;
   const x = (i) => padL + (n === 1 ? innerW / 2 : (innerW * i) / (n - 1));
   const series = metrics.map(([key, label, color]) => {
-    const base = editions[baseIdx][key] || 0;
     const raw = editions.map((e) => archiveEditionMetric(e, key));
-    const values = raw.map((v) => (base > 0 ? (v / base) * 100 : (v > 0 ? 100 : 0)));
+    // Baslinjeåret kan sakna just den här seriens tal — klubbar och länder
+    // skrapades in långt efter cupernas äldsta år. Ta då seriens EGET
+    // första kända år som dess 100 %-punkt i stället för att tappa kurvan.
+    const base = raw[baseIdx] || raw.find((v) => v) || 0;
+    const values = raw.map((v) => (v == null ? null
+      : base > 0 ? (v / base) * 100 : (v > 0 ? 100 : 0)));
     return { key, label, color, values, raw };
   });
-  const allVals = series.flatMap((s) => s.values);
+  const allVals = series.flatMap((s) => s.values).filter((v) => v != null);
   const maxV = Math.max(100, ...allVals) * 1.1;
   const y = (v) => padT + innerH - (v / (maxV || 1)) * innerH;
 
@@ -400,12 +442,27 @@ function buildTrendSvg(editions, baseIdx, metrics) {
   });
 
   for (const s of series) {
-    const poly = document.createElementNS(NS, "polyline");
-    poly.setAttribute("points", s.values.map((v, i) => x(i) + "," + y(v)).join(" "));
-    poly.setAttribute("class", "trend-line");
-    poly.setAttribute("style", "stroke:" + s.color);
-    svg.appendChild(poly);
+    // Ett okänt år ska bli ett HÅL i linjen, inte en punkt vid noll. En
+    // polyline kan inte hoppa över en punkt, så varje sammanhängande
+    // körning av kända år ritas som ett eget element.
+    let löpande = [];
+    const ritaSegment = () => {
+      if (löpande.length > 1) {
+        const poly = document.createElementNS(NS, "polyline");
+        poly.setAttribute("points", löpande.join(" "));
+        poly.setAttribute("class", "trend-line");
+        poly.setAttribute("style", "stroke:" + s.color);
+        svg.appendChild(poly);
+      }
+      löpande = [];
+    };
     s.values.forEach((v, i) => {
+      if (v == null) ritaSegment();
+      else löpande.push(x(i) + "," + y(v));
+    });
+    ritaSegment();
+    s.values.forEach((v, i) => {
+      if (v == null) return;
       const c = document.createElementNS(NS, "circle");
       c.setAttribute("cx", String(x(i))); c.setAttribute("cy", String(y(v))); c.setAttribute("r", "3.5");
       c.setAttribute("class", "trend-dot");
@@ -437,31 +494,40 @@ function trendClassOptions() {
 // ur index.json:s aggregat) och det filtrerade läget (omräknat från fulla
 // matchlistor) i renderTrendView, eftersom formen är identisk i båda fallen.
 function renderTrendChartBlock(root, editions, overrideYear) {
-  // "Klubbar" kräver att ALLA visade SPELADE år (matches > 0 — en
-  // inställd upplaga har äkta noll oavsett skrapstatus, se
-  // backfill_cupmanager_years.py) faktiskt skrapats med det rena
-  // klubbnamnsfältet (home/away.club, tillkom 2026-07-24) — annars skulle
-  // äldre, ännu inte omskrapade år visa en missvisande rak nedgång till 0
-  // i stället för "okänt". Göms helt tills historiken hunnit skrapas om
-  // (sker automatiskt i bakgrunden, se archive_results.py/build_index()).
+  // Klubbar och Länder göms bara när INGET av åren har talet — då finns
+  // det ingenting att visa. Enstaka luckor ritas som hål (se
+  // archiveEditionMetric); tidigare göms hela måttet så fort ett enda år
+  // saknade fältet, vilket dolde klubbräkningen för hela cuper som mest
+  // hade ett gammalt oskrapat år.
   const metrics = TREND_METRICS.filter(([key]) =>
-    key !== "clubs" || editions.every((e) => e.matches === 0 || (e[key] || 0) > 0));
+    !OKÄNT_OM_TOMT.has(key) || kändaPunkter(editions, key).some((p) => p.v > 0));
   const baseIdx = trendBaselineIndex(editions, overrideYear);
   const baseEd = editions[baseIdx];
   const lastEd = editions[editions.length - 1];
   const sourceSystems = [...new Set(editions.map((e) => e.sourceSystem).filter(Boolean))];
   const legend = h("div", { class: "trend-legend" },
     metrics.map(([key, label, color]) => {
-      const base = archiveEditionMetric(baseEd, key);
-      const last = archiveEditionMetric(lastEd, key);
-      const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
+      // Första och sista KÄNDA året, inte första och sista året: ett mått
+      // vars äldsta år saknas ska jämföra det den faktiskt vet något om,
+      // och säga vilket år den börjar räkna från.
+      const punkter = kändaPunkter(editions, key);
+      const start = startPunkt(punkter, baseIdx);
+      const slut = punkter[punkter.length - 1];
+      const pct = start.v > 0 ? Math.round(((slut.v - start.v) / start.v) * 100) : null;
       return h("div", { class: "trend-legend-item" },
         h("span", { class: "trend-swatch", style: "background:" + color }),
-        h("span", null, label + ": " + base + " → " + last),
-        pct == null || lastEd === baseEd ? null : h("span",
+        h("span", null, label + ": " + start.v + " → " + slut.v +
+          (start.e === baseEd ? "" : " (från " + start.e.edition + ")")),
+        pct == null || slut === start ? null : h("span",
           { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
           (pct > 0 ? "+" : "") + pct + " %"));
     }));
+  // Åren som saknar klubb-/landsräkning namnges i stället för att bara
+  // synas som ett hål man får gissa sig till.
+  const okändaÅr = editions
+    .filter((e) => (e.matches || 0) > 0 &&
+      metrics.some(([k]) => OKÄNT_OM_TOMT.has(k) && !e[k]))
+    .map((e) => e.edition);
   // Skriv bara ut corona-motiveringen när baslinjen faktiskt kommer från
   // auto-heuristiken — säger man "hoppas över ... troligen corona" om år
   // användaren själv aktivt valt bort (genom att peka på ett SENARE år)
@@ -487,6 +553,11 @@ function renderTrendChartBlock(root, editions, overrideYear) {
         ? " * " + editions.filter((e) => e.preliminary).map((e) => e.edition).join(", ") +
           " är inte spelad än: schemat fylls på löpande, så talen är preliminära " +
           "och ligger lågt jämfört med färdigspelade år."
+        : "") +
+      (okändaÅr.length
+        ? " Klubb- och landsräkning saknas för " + okändaÅr.join(", ") +
+          " — de åren skrapades innan fälten fanns, så kurvan bryts där i " +
+          "stället för att falla till noll."
         : "") +
       (sourceSystems.length
         ? " Historiken är sammanfogad över turneringssystem; källan för migrerade " +
@@ -602,8 +673,14 @@ function trendTable(editions, metrics) {
     }] : []),
     ...metrics.map(([key, label]) => ({
       key, label, defaultDir: -1,
-      get: (e) => archiveEditionMetric(e, key),
-      ...(key === "matches" ? { render: (e) => archiveEditionMatchLabel(e) } : {}),
+      // Okänt sorteras som -1 och hamnar därmed sist vid fallande
+      // sortering, i stället för att jämföras som strängen "null".
+      get: (e) => { const v = archiveEditionMetric(e, key); return v == null ? -1 : v; },
+      render: key === "matches" ? (e) => archiveEditionMatchLabel(e) : (e) => {
+        const v = archiveEditionMetric(e, key);
+        return v == null
+          ? h("span", { class: "muted", title: OKÄNT_TITEL }, "–") : String(v);
+      },
     })),
   ];
   return sortableTable(columns, editions, trendTableSort);
@@ -836,16 +913,23 @@ function renderTrendCompare(root, cupIds) {
   const legend = h("div", { class: "trend-legend" }, cupsData.map((c) => {
     const played = c.editions.filter((e) => e.matches > 0);
     const baseIdx = trendBaselineIndex(played);
-    const baseEd = played[baseIdx];
-    const lastEd = played[played.length - 1];
-    const base = baseEd[metricKey] || 0;
-    const last = lastEd[metricKey] || 0;
-    const pct = base > 0 ? Math.round(((last - base) / base) * 100) : null;
+    const punkter = kändaPunkter(played, metricKey);
+    // En cup kan mycket väl ha spelade år men inget enda med klubb- eller
+    // landsräkning. Säg det, i stället för att skriva ut "0 → 0".
+    if (!punkter.length) {
+      return h("div", { class: "trend-legend-item" },
+        h("span", { class: "trend-swatch", style: "background:" + c.color }),
+        h("span", { class: "muted" },
+          c.cupName + ": " + metricLabel.toLowerCase() + " saknas i arkivet"));
+    }
+    const start = startPunkt(punkter, baseIdx);
+    const slut = punkter[punkter.length - 1];
+    const pct = start.v > 0 ? Math.round(((slut.v - start.v) / start.v) * 100) : null;
     return h("div", { class: "trend-legend-item" },
       h("span", { class: "trend-swatch", style: "background:" + c.color }),
-      h("span", null, c.cupName + ": " + base + " (" + baseEd.edition + ") → " +
-        last + " (" + lastEd.edition + ")"),
-      pct == null || lastEd === baseEd ? null : h("span",
+      h("span", null, c.cupName + ": " + start.v + " (" + start.e.edition + ") → " +
+        slut.v + " (" + slut.e.edition + ")"),
+      pct == null || slut === start ? null : h("span",
         { class: "trend-delta" + (pct > 0 ? " up" : pct < 0 ? " down" : "") },
         (pct > 0 ? "+" : "") + pct + " %"));
   }));
@@ -866,12 +950,19 @@ function buildTrendCompareSvg(cupsData, metricKey) {
 
   const series = cupsData.map((c) => {
     const baseIdx = trendBaselineIndex(c.editions);
-    const base = c.editions[baseIdx][metricKey] || 0;
+    const rå = c.editions.map((e) => archiveEditionMetric(e, metricKey));
+    // Samma hållning som i enskild-cup-läget: okända år (klubbar/länder på
+    // ännu inte omskrapade upplagor) utelämnas helt i stället för att dras
+    // ned till noll, och en cup vars baslinjeår är okänt normeras mot sitt
+    // eget första kända år.
+    const base = rå[baseIdx] || rå.find((v) => v) || 0;
     const points = c.editions
-      .map((e) => ({
-        i: yearIndex.get(e.edition), edition: e.edition, raw: e[metricKey] || 0,
-        v: base > 0 ? ((e[metricKey] || 0) / base) * 100 : ((e[metricKey] || 0) > 0 ? 100 : 0),
+      .map((e, i) => ({
+        i: yearIndex.get(e.edition), edition: e.edition, raw: rå[i],
+        v: rå[i] == null ? null
+          : base > 0 ? (rå[i] / base) * 100 : (rå[i] > 0 ? 100 : 0),
       }))
+      .filter((pt) => pt.v != null)
       .sort((a, b) => a.i - b.i);
     return { cupName: c.cupName, color: c.color, points, baseEdition: c.editions[baseIdx].edition };
   });
@@ -939,11 +1030,16 @@ function buildTrendCompareSvg(cupsData, metricKey) {
 
 function trendCompareTable(cupsData, metricKey, metricLabel) {
   const rows = cupsData.flatMap((c) => c.editions.map((e) =>
-    ({ cupName: c.cupName, edition: e.edition, value: e[metricKey] || 0 })));
+    ({ cupName: c.cupName, edition: e.edition, value: archiveEditionMetric(e, metricKey) })));
   const columns = [
     { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
     { key: "edition", label: "År", align: "l", defaultDir: -1, get: (r) => r.edition },
-    { key: "value", label: metricLabel, defaultDir: -1, get: (r) => r.value },
+    {
+      key: "value", label: metricLabel, defaultDir: -1,
+      get: (r) => (r.value == null ? -1 : r.value),
+      render: (r) => (r.value == null
+        ? h("span", { class: "muted", title: OKÄNT_TITEL }, "–") : String(r.value)),
+    },
   ];
   return sortableTable(columns, rows, trendCompareTableSort);
 }
