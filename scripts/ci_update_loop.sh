@@ -104,7 +104,7 @@ till_r2() {
     echo "Inga R2-uppgifter — hoppar över uppladdningen."
     return 0
   fi
-  if ! python3 scripts/publish_r2.py; then
+  if ! python3 scripts/publish_r2.py --stamp; then
     echo "R2-uppladdningen misslyckades — data/ i repot gäller tills nästa varv."
   fi
 }

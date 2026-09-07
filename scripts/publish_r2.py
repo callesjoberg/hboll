@@ -32,6 +32,7 @@ import hashlib
 import json
 import mimetypes
 import os
+import time
 from pathlib import Path
 
 ROT = Path(__file__).resolve().parent.parent
@@ -109,6 +110,8 @@ def main() -> int:
                     help="räkna ut vad som skulle laddas upp, rör inte R2")
     ap.add_argument("--only", action="append", default=[],
                     help="begränsa till angivna filer (repo-relativa)")
+    ap.add_argument("--stamp", action="store_true",
+                    help="skriv data/r2-stamp.json med tidpunkt och körning")
     args = ap.parse_args()
 
     frysta = frysta_arkivfiler()
@@ -158,11 +161,32 @@ def main() -> int:
         config=Config(retries={"max_attempts": 5, "mode": "standard"}),
     )
 
+    def stämpla(uppladdade: int) -> None:
+        """Färskhetsmärke som BARA finns i R2, aldrig på disk eller i git.
+
+        Två syften. Det bevisar att skrivvägen fungerar vid varje varv —
+        cupdata ändras inte mellan speldagar, så annars vore uppladdningen
+        oprövad i dagar. Och det gör bucketens ålder mätbar utifrån:
+        curl https://data.cupschema.se/data/r2-stamp.json
+        """
+        if not args.stamp:
+            return
+        märke = json.dumps({
+            "ts": int(time.time() * 1000),
+            "run": os.environ.get("GITHUB_RUN_ID") or "lokal",
+            "sha": (os.environ.get("GITHUB_SHA") or "")[:7],
+            "uppladdade": uppladdade,
+        }, ensure_ascii=False).encode()
+        s3.put_object(Bucket=bucket, Key="data/r2-stamp.json", Body=märke,
+                      ContentType="application/json",
+                      CacheControl="public, max-age=30")
+
     fjärr = fjärr_etags(s3, bucket)
     att_göra = [(rel, *v) for rel, v in sorted(lokalt.items())
                 if fjärr.get(rel) != v[1]]
 
     if not att_göra:
+        stämpla(0)
         print(f"R2: allt är redan i fas ({len(lokalt)} filer kontrollerade).")
         return 0
 
@@ -175,6 +199,7 @@ def main() -> int:
                           ContentType=typ, CacheControl=cc)
         byte += f.stat().st_size
 
+    stämpla(len(att_göra))
     print(f"R2: {len(att_göra)} av {len(lokalt)} filer uppladdade "
           f"({byte / 1048576:.1f} MB).")
     for rel, _f, _s, cc in att_göra[:10]:
