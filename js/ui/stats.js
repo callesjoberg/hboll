@@ -2645,10 +2645,38 @@ function renderVinnartoppen(root, rows) {
      slår 248 på 2 741. Talen står i noten under listan, så det syns vad
      som sållats bort.
 
+     Gränsen MÅSTE följa urvalet. Den var först ett fast tal (100 spelade
+     matcher, 25 anmälda lag) kalibrerat för hela arkivet — men i ett
+     enskilt cup-år spelar ingen så mycket. Göteborg Cup 2026 föll till
+     två klubbar av tjugoen, Potatiscupen 2026 till en av fjorton, och en
+     topplista med två rader är ingen topplista.
+
+     Skala i stället mot vad en av de STÖRSTA deltagarna i just det här
+     urvalet faktiskt har: 90:e percentilen (inte max — då hade en enda
+     utstickare satt ribban för alla andra), och kräv en fjärdedel av
+     den. Det ger omkring 23 spelade matcher för ett enskilt cup-år och
+     omkring 240 för all handboll genom åren, utan att ett enda tal
+     behöver handskrivas per vy. Golvet är den punkt där kvoten slutar
+     betyda något alls oavsett urval.
+
      Antalskolumnen har ingen tröskel: där är talet självförklarande. */
-  const TRÖSKEL = { perlag: 25, matcher: 25, vinst: 100 };
-  const gräns = TRÖSKEL[vinnareToppSort.key] || 0;
+  const GOLV = { perlag: 5, matcher: 5, vinst: 20 };
+  const ANDEL_AV_P90 = 0.25;
   const räknar = vinnareToppSort.key === "vinst" ? "spelade" : "lag";
+  // Linjärt interpolerad percentil — listan är kort nog att en sortering
+  // per omritning inte märks, och en trasig percentil på små urval (där
+  // hela poängen ligger) vore värre än kostnaden.
+  const percentil = (tal, q) => {
+    if (!tal.length) return 0;
+    const v = tal.slice().sort((a, b) => a - b);
+    const i = (v.length - 1) * q;
+    const lo = Math.floor(i), hi = Math.min(lo + 1, v.length - 1);
+    return v[lo] + (v[hi] - v[lo]) * (i - lo);
+  };
+  const gräns = GOLV[vinnareToppSort.key]
+    ? Math.max(GOLV[vinnareToppSort.key], Math.round(ANDEL_AV_P90 *
+        percentil([...count.keys()].map((k) => anmälda(k)[räknar] || 0), 0.9)))
+    : 0;
   let bortsållade = 0;
   const ranked = [...count.entries()]
     .map(([club, n]) => [club, n, anmälda(club)])
@@ -2841,7 +2869,9 @@ function renderVinnartoppen(root, rows) {
       "Sorterat på den här kolumnen visas bara klubbar med minst " + gräns
       + (räknar === "spelade" ? " spelade matcher" : " anmälda lag")
       + " i urvalet — " + bortsållade + " klubbar är bortsållade. Utan den "
-      + "gränsen toppas listan av klubbar med ett enda försök."));
+      + "gränsen toppas listan av klubbar med ett enda försök. Gränsen "
+      + "följer urvalet: väljer du fler år eller fler cuper spelas det mer, "
+      + "och då krävs mer för att räknas."));
   }
   if (vinnareToppVisning !== "antal") {
     root.append(h("p", { class: "muted vinnare-kvotnot" }, RÅD));
