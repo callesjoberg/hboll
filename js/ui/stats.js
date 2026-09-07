@@ -1972,6 +1972,7 @@ let vinnareCup = null;         // vald cup (årets mästare)
 let vinnareYear = null;        // valt år (årets mästare)
 let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
 let vinnareToppMedals = { guld: true, silver: false, brons: false }; // medaljer som räknas i topplistan
+let vinnareToppAr = new Set(); // årsfilter (vinnartoppen); tom = alla år
 
 // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
 // klubbnamn (se normalize_club i archive_results.py); favoritklubben jämförs
@@ -2152,6 +2153,34 @@ function renderVinnartoppen(root, rows) {
   cupSel.addEventListener("change", () => { vinnareToppCup = cupSel.value; renderContent(); });
   root.append(h("div", { class: "row vinnare-controls" }, h("span", { class: "muted" }, "Cup:"), cupSel));
 
+  /* Årsfilter. Åren räknas fram ur det CUPVALDA urvalet, inte ur allt —
+     väljer man en cup som bara körts tre år ska bara de tre åren erbjudas.
+     Följden är att ett tidigare valt år kan försvinna när cupen byts, och
+     ett filter som pekar på ett år som inte finns hade gett en tom lista
+     medan raden såg ut att ha ett giltigt val. Sållas därför bort, samma
+     giltighetskoll som cupvalet gör ovan.
+
+     Tom mängd betyder alla år — det är chippet "Alla år" som visar det,
+     och det nollställer i stället för att vara ett eget läge. */
+  const cupRader = vinnareToppCup ? rows.filter((r) => r.cup === vinnareToppCup) : rows;
+  const år = [...new Set(cupRader.map((r) => r.ed).filter(Boolean))]
+    .sort((a, b) => b.localeCompare(a));          // nyast först
+  for (const valt of [...vinnareToppAr]) if (!år.includes(valt)) vinnareToppAr.delete(valt);
+  if (år.length > 1) {
+    const årRad = h("div", { class: "row vinnare-controls vinnare-ar" },
+      h("span", { class: "muted" }, "År:"),
+      h("div", { class: "vinnare-ar-scroll" },
+        chip("Alla år", vinnareToppAr.size === 0, () => {
+          vinnareToppAr.clear();
+          renderContent();
+        }, "small"),
+        år.map((a) => chip(a, vinnareToppAr.has(a), () => {
+          if (vinnareToppAr.has(a)) vinnareToppAr.delete(a); else vinnareToppAr.add(a);
+          renderContent();
+        }, "small"))));
+    root.append(årRad);
+  }
+
   // Samma medaljval som troféskåpet — ranka på guld, silver, brons eller totalt.
   root.append(h("div", { class: "row vinnare-controls" },
     h("div", { class: "seg", role: "group", "aria-label": "Medaljer" },
@@ -2161,7 +2190,8 @@ function renderVinnartoppen(root, rows) {
   const active = ["guld", "silver", "brons"].filter((t) => vinnareToppMedals[t]);
   const cntLabel = active.length === 1 ? " " + active[0] : " medaljer";
 
-  const scope = vinnareToppCup ? rows.filter((r) => r.cup === vinnareToppCup) : rows;
+  const scope = vinnareToppAr.size
+    ? cupRader.filter((r) => vinnareToppAr.has(r.ed)) : cupRader;
   const count = new Map();
   const add = (club) => { if (club) count.set(club, (count.get(club) || 0) + 1); };
   scope.forEach((r) => {
@@ -2171,7 +2201,11 @@ function renderVinnartoppen(root, rows) {
   });
   const ranked = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
   if (!ranked.length) {
-    root.append(h("p", { class: "muted" }, active.length ? "Inga mästare för den cupen ännu." : "Välj minst en medaljtyp ovan."));
+    root.append(h("p", { class: "muted" }, !active.length
+      ? "Välj minst en medaljtyp ovan."
+      : vinnareToppAr.size
+        ? "Inga mästare för valda år."
+        : "Inga mästare för den cupen ännu."));
     return;
   }
   // Tät rangordning (samma antal medaljer delar placering).
@@ -3080,7 +3114,7 @@ export function getStatsUrlFields() {
   return {
     kalenderYear,
     vinnareMode, vinnareQuery, vinnareMedals, vinnareCup, vinnareYear,
-    vinnareToppCup, vinnareToppMedals,
+    vinnareToppCup, vinnareToppMedals, vinnareToppAr,
     historyMode,
     browse: browseOpen || browseTarget,
   };
@@ -3096,6 +3130,7 @@ export function applyStatsUrlFields(patch) {
   if (patch.vinnareYear) vinnareYear = patch.vinnareYear;
   if ("vinnareToppCup" in patch) vinnareToppCup = patch.vinnareToppCup;
   if (patch.vinnareToppMedals) vinnareToppMedals = patch.vinnareToppMedals;
+  if (patch.vinnareToppAr) vinnareToppAr = new Set(patch.vinnareToppAr);
   if (patch.historyMode) historyMode = patch.historyMode;
   if (patch.browse) {
     browseTarget = patch.browse;
@@ -3112,6 +3147,7 @@ export function resetStatsUrlFields(defaults = defaultSubViewSnap()) {
   vinnareYear = defaults.vinnareYear;
   vinnareToppCup = defaults.vinnareToppCup;
   vinnareToppMedals = defaults.vinnareToppMedals;
+  vinnareToppAr = new Set(defaults.vinnareToppAr || []);
   historyMode = defaults.historyMode;
   clubQuerySeeded = false;
   browseTarget = null;

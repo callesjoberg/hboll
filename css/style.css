@@ -4968,6 +4968,30 @@ button.welcome-cta-secondary {
 /* ── Vinnare (Stats-underflik): troféskåp, årets mästare, vinnartoppen ── */
 .vinnare-body { margin-top: 4px; }
 .vinnare-controls { align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0 16px; }
+
+/* Årsraden i vinnartoppen. Arton år ryms inte på en telefonskärm, och att
+   låta dem radbrytas hade tryckt ned topplistan under vikningen. En egen
+   scrollremsa i stället — samma grepp som klassflikarna i skyttelistan.
+   Etiketten "År:" står kvar utanför remsan så den inte scrollar bort. */
+.vinnare-ar { flex-wrap: nowrap; }
+
+.vinnare-ar-scroll {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* Utan detta klipps chipsens fokusring och skugga mot remsans kant. */
+  padding: 3px 2px;
+  /* min-width: 0 — annars vägrar remsan krympa under sitt innehålls bredd
+     och tvingar hela raden bredare än skärmen (samma min-width:auto-fälla
+     som i matchkorten). */
+  min-width: 0;
+}
+
+.vinnare-ar-scroll::-webkit-scrollbar { display: none; }
+.vinnare-ar-scroll .chip { flex: none; }
 .trophy-hero { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin: 4px 0 18px; }
 .trophy-num { background: linear-gradient(160deg, var(--blue-deep), var(--blue)); color: #fff;
   border-radius: var(--radius); padding: 14px 22px; text-align: center; min-width: 118px; }

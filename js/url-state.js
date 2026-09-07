@@ -122,6 +122,8 @@ export function defaultSubViewSnap(now = new Date()) {
     vinnareCup: null,
     vinnareYear: null,
     vinnareToppCup: "",
+    // Tom mängd = alla år. Samma konvention som clubYears och trendCats.
+    vinnareToppAr: new Set(),
     vinnareToppMedals: { guld: true, silver: false, brons: false },
     historyMode: "compare",
     browse: null,
@@ -138,6 +140,7 @@ export function applySubViewPatch(snap, patch) {
   if (patch.playoffDivTab) out.playoffDivTab = { ...patch.playoffDivTab };
   if (patch.vinnareMedals) out.vinnareMedals = { ...patch.vinnareMedals };
   if (patch.vinnareToppMedals) out.vinnareToppMedals = { ...patch.vinnareToppMedals };
+  if (patch.vinnareToppAr) out.vinnareToppAr = new Set(patch.vinnareToppAr);
   if (patch.bracketSort) out.bracketSort = { ...patch.bracketSort };
   if (patch.browse) out.browse = { ...patch.browse };
   if (patch.compareNames) out.compareNames = [...patch.compareNames];
@@ -216,6 +219,9 @@ export function encodeSubViewParams(p, snap) {
       if (snap.vinnareYear) p.set("vyear", snap.vinnareYear);
     } else {
       if (snap.vinnareToppCup) p.set("vtcup", snap.vinnareToppCup);
+      if (snap.vinnareToppAr && snap.vinnareToppAr.size) {
+        p.set("vtar", [...snap.vinnareToppAr].sort().join(","));
+      }
       if (medalsToStr(snap.vinnareToppMedals) !== "guld") {
         p.set("vtmed", medalsToStr(snap.vinnareToppMedals));
       }
@@ -288,6 +294,12 @@ export function decodeSubViewParams(params) {
   if (params.get("vcup")) out.vinnareCup = params.get("vcup");
   if (params.get("vyear")) out.vinnareYear = params.get("vyear");
   if (params.has("vtcup")) out.vinnareToppCup = params.get("vtcup");
+  if (params.has("vtar")) {
+    // Bara fyrsiffriga årtal — en trasig länk ska ge alla år, inte ett
+    // filter som tyst döljer allt.
+    out.vinnareToppAr = new Set(params.get("vtar").split(",")
+      .map((x) => x.trim()).filter((x) => /^\d{4}$/.test(x)));
+  }
   if (params.has("vtmed")) out.vinnareToppMedals = strToMedals(params.get("vtmed"));
   if (["compare", "browse"].includes(params.get("hmode"))) out.historyMode = params.get("hmode");
   if (params.get("bcup") && params.get("bed")) {

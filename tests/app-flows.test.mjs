@@ -57,6 +57,7 @@ test("tom klubbsökning kan appliceras och Stats-sessionen återställas", () =>
     vinnareYear: defaults.vinnareYear,
     vinnareToppCup: defaults.vinnareToppCup,
     vinnareToppMedals: defaults.vinnareToppMedals,
+    vinnareToppAr: defaults.vinnareToppAr,
     historyMode: defaults.historyMode,
     browse: defaults.browse,
   });
@@ -179,6 +180,28 @@ test("tabeller och slutspel kräver klass, lag, plan eller sök — inte bara da
   assert.equal(hasFilterSelection({
     cats: new Set(), teams: new Set(), arena: "", q: "blå",
   }), true);
+});
+
+test("vinnartoppens årsfilter överlever en URL-rundresa", () => {
+  const med = applySubViewPatch(defaultSubViewSnap(NOW), {
+    view: "stats", statsView: "vinnare", vinnareMode: "topp",
+    vinnareToppAr: new Set(["2024", "2026"]),
+  });
+  const url = encodeSubViewParams(new URLSearchParams(), med);
+  assert.equal(url.get("vtar"), "2024,2026", "åren ska skrivas sorterade");
+
+  const tillbaka = decodeSubViewParams(url);
+  assert.deepEqual([...tillbaka.vinnareToppAr].sort(), ["2024", "2026"]);
+
+  // Tom mängd betyder alla år och ska inte skräpa ned adressfältet.
+  const utan = encodeSubViewParams(new URLSearchParams(), applySubViewPatch(
+    defaultSubViewSnap(NOW),
+    { view: "stats", statsView: "vinnare", vinnareMode: "topp" }));
+  assert.equal(utan.get("vtar"), null);
+
+  // En trasig länk ska ge alla år, inte ett filter som tyst döljer allt.
+  const skräp = decodeSubViewParams(new URLSearchParams("vm=topp&vtar=2024,abc,,99"));
+  assert.deepEqual([...skräp.vinnareToppAr], ["2024"]);
 });
 
 test("bakåt: psort, club och vm nollställs innan ny URL läses in", () => {
