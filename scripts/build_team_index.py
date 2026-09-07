@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # topplistans täljare (medaljer) kommer därifrån och nämnaren (anmälda lag)
 # härifrån, så minsta skillnad i hur "Alingsås HK 2" blir "Alingsås HK"
 # skulle ge en kvot som tyst räknar fel.
-from archive_results import normalize_club, is_placeholder_team  # noqa: E402
+from archive_results import _side, is_placeholder_team  # noqa: E402
 
 
 def build_team_index():
@@ -69,7 +69,7 @@ def build_team_index():
                     continue
                 names.add(namn)
                 if sida.get("id") is not None:
-                    lag[sida["id"]] = namn
+                    lag[sida["id"]] = sida
         by_cup.setdefault(cid, {})[edition] = sorted(names)
 
         # Räknas per LAG-ID, inte per lagnamn. Ett namn kan bäras av flera
@@ -78,10 +78,17 @@ def build_team_index():
         # klubb som döper alla sina lag lika fick kvoten 2,08 medaljer per
         # lag: omöjligt, eftersom ett lag kan vinna högst en medalj.
         klubbar = {}
-        for namn in lag.values():
-            if is_placeholder_team({"name": namn}):
+        for sida in lag.values():
+            if is_placeholder_team(sida):
                 continue
-            k = normalize_club(namn)
+            # _side() är EXAKT samma härledning som champions.json:s gc/sc/bc:
+            # den utgår från lagets club-fält och faller bara tillbaka på
+            # namnet. Att i stället normalisera namnet direkt gav en annan
+            # nyckel för lag med klassuffix — "Staffanstorps HK
+            # Beachhandboll P15 (f 2010)" blev en egen klubb i nämnaren men
+            # räknades till moderklubben i täljaren, och kvoten blev 3,00
+            # medaljer per lag.
+            _, k = _side(sida)
             if k:
                 klubbar[k] = klubbar.get(k, 0) + 1
         for k, antal in klubbar.items():

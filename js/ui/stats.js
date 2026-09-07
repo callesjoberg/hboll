@@ -1976,7 +1976,6 @@ let vinnareAr = new Set();     // årsfilter (troféskåpet); tom = alla år
 let vinnareToppAr = new Set(); // årsfilter (vinnartoppen); tom = alla år
 let vinnareToppPerLag = false; // ranka på medaljer per anmält lag i stället för antal
 let klubbAnmalningar = null;   // {klubb: {cup: {år: antal}}} när den hämtats
-const MIN_LAG_FOR_KVOT = 10;   // se kommentaren vid uträkningen nedan
 
 // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
 // klubbnamn (se normalize_club i archive_results.py); favoritklubben jämförs
@@ -2227,11 +2226,11 @@ function renderVinnartoppen(root, rows) {
      klubbnormalisering som champions.json — annars hade "Alingsås HK 2"
      kunnat räknas i nämnaren men inte i täljaren. */
   root.append(h("div", { class: "row vinnare-controls" },
-    h("div", { class: "seg", role: "group", "aria-label": "Rangordning" },
+    h("div", { class: "seg", role: "group", "aria-label": "Visning" },
       chip("Antal", !vinnareToppPerLag, () => {
         vinnareToppPerLag = false; renderContent();
       }),
-      chip("Per anmält lag", vinnareToppPerLag, () => {
+      chip("Visa per lag", vinnareToppPerLag, () => {
         vinnareToppPerLag = true;
         if (!klubbAnmalningar) {
           HB.api.fetchClubEntries().then((d) => { klubbAnmalningar = d || {}; renderContent(); });
@@ -2274,56 +2273,57 @@ function renderVinnartoppen(root, rows) {
     return n;
   };
 
-  let bortsållade = 0;
-  let ranked;
-  if (vinnareToppPerLag) {
-    ranked = [...count.entries()]
-      .map(([club, n]) => [club, n, anmälda(club)])
-      .filter(([, , lag]) => {
-        if (lag >= MIN_LAG_FOR_KVOT) return true;
-        bortsållade++;
-        return false;
-      })
-      .sort((a, b) => (b[1] / b[2]) - (a[1] / a[2]) ||
-        b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
-  } else {
-    ranked = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
-  }
+  /* Listan rankas ALLTID på antal medaljer. Kvoten visas bredvid, men styr
+     inte ordningen — och det är ett medvetet val efter att ha provat
+     motsatsen.
+
+     Att ranka på kvot ger inte den lista man föreställer sig. Sävehofs 248
+     medaljer kommer med 2 741 anmälda lag; per försök är de genomsnittliga
+     (0,09), medan Aranäs och Alingsås ligger på 0,12. Att justera för
+     storlek tar alltså bort precis det som placerar de stora klubbarna
+     högst — det är inte ett fel i måttet, det är vad datan säger.
+
+     Och toppen kapas då av klubbar med litet underlag: en klubb med sju
+     medaljer på tio försök slår 248 på 2 741. Tröskel, krympning mot
+     medelvärdet och normalisering mot chans (1/lag i klassen) provades
+     alla — ingen av dem löser att en basketcup delar ut tre medaljer på
+     åtta lag medan en handbollscup delar ut tre på fyrtio. Det är olika
+     tävlingar, inte olika skicklighet.
+
+     Kvar blir det som faktiskt upplyser: samma välkända lista, med
+     effektiviteten utskriven så att skillnaden mellan 248 av 2 741 och
+     129 av 1 107 syns. */
+  const ranked = [...count.entries()]
+    .map(([club, n]) => [club, n, anmälda(club)])
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
   if (!ranked.length) {
     root.append(h("p", { class: "muted" }, !active.length
       ? "Välj minst en medaljtyp ovan."
-      : vinnareToppPerLag && bortsållade
-        ? "Ingen klubb har " + MIN_LAG_FOR_KVOT + " anmälda lag i det här "
-          + "urvalet — välj fler år eller alla cuper för att jämföra per lag."
-        : vinnareToppPerLag && !klubbAnmalningar
-          ? "Hämtar anmälda lag …"
-          : vinnareToppAr.size
-            ? "Inga mästare för valda år."
-            : "Inga mästare för den cupen ännu."));
+      : vinnareToppAr.size
+        ? "Inga mästare för valda år."
+        : "Inga mästare för den cupen ännu."));
     return;
   }
   // Tät rangordning (samma antal medaljer delar placering).
   let rank = 0, prev = null;
   const withRank = ranked.map(([club, n, lag], i) => {
-    // Tät rangordning jämför det som listan RANKAS på — i kvotläget alltså
-    // kvoten, inte antalet. Annars hade två klubbar med samma kvot men
-    // olika antal medaljer felaktigt fått skilda placeringar.
-    const nyckel = vinnareToppPerLag ? (n / lag).toFixed(4) : n;
-    if (nyckel !== prev) { rank = i + 1; prev = nyckel; }
+    if (n !== prev) { rank = i + 1; prev = n; }
     return { club, n, lag, rank };
   });
   const fav = (state.favoriteClub || "").trim().toLowerCase();
   const board = h("div", { class: "board" });
   // Kvoten utan de råa talen vore ett påstående man inte kan granska —
   // "0,47" säger inget utan "248 av 532".
-  const kvotText = (e) => (e.n / e.lag).toFixed(2).replace(".", ",");
+  const kvotText = (e) => (e.lag
+    ? (e.n / e.lag).toFixed(2).replace(".", ",") : "–");
   withRank.slice(0, 25).forEach((e) => {
     board.append(h("div", { class: "brow" + (e.rank <= 3 ? " top3" : "") + (e.club.toLowerCase() === fav ? " us" : "") },
       h("span", { class: "brow-pos" }, String(e.rank)),
       h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
       vinnareToppPerLag
         ? h("span", { class: "brow-cnt" }, kvotText(e),
-            h("small", null, " per lag · " + e.n + " av " + e.lag))
+            h("small", null, e.lag ? " per lag · " + e.n + " av " + e.lag
+              : " · " + e.n + cntLabel + ", anmälda lag saknas"))
         : h("span", { class: "brow-cnt" }, String(e.n), h("small", null, cntLabel))));
   });
   root.append(board);
@@ -2335,7 +2335,8 @@ function renderVinnartoppen(root, rows) {
       h("span", { class: "brow-club" }, favRow.club),
       vinnareToppPerLag
         ? h("span", { class: "brow-cnt" }, kvotText(favRow),
-            h("small", null, " per lag · " + favRow.n + " av " + favRow.lag))
+            h("small", null, favRow.lag ? " per lag · " + favRow.n + " av " + favRow.lag
+              : " · " + favRow.n + cntLabel + ", anmälda lag saknas"))
         : h("span", { class: "brow-cnt" }, String(favRow.n), h("small", null, cntLabel))));
   }
 
@@ -2343,11 +2344,13 @@ function renderVinnartoppen(root, rows) {
   // topplista utan små klubbar ut som ett resultat i stället för ett urval.
   if (vinnareToppPerLag) {
     root.append(h("p", { class: "muted vinnare-kvotnot" },
-      "Medaljer delat med antal anmälda lag i samma urval. Klubbar med "
-      + "färre än " + MIN_LAG_FOR_KVOT + " anmälda lag visas inte"
-      + (bortsållade ? " (" + bortsållade + " st)" : "")
-      + " — med så få försök säger kvoten mer om slumpen än om laget. "
-      + "Anmälda lag räknas ur arkivet; spelarantal finns inte i datan."));
+      "Medaljer delat med antal anmälda lag i samma urval — cup- och "
+      + "årsfiltret räknas in i båda talen. Listan rankas fortfarande på "
+      + "antal medaljer: rankad på kvot toppas den av klubbar med litet "
+      + "underlag, och en basketcup delar ut tre medaljer på åtta lag där "
+      + "en handbollscup delar ut tre på fyrtio. Jämför därför helst inom "
+      + "en och samma cup. Anmälda lag räknas ur arkivet; spelarantal "
+      + "finns inte i datan för mer än tre av 34 cuper."));
   }
 }
 
