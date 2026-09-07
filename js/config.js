@@ -19,7 +19,12 @@ window.HB = window.HB || {};
 HB.DATA_BASE = "";
 
 HB.dataUrl = function (path) {
-  if (!HB.DATA_BASE) return path;
+  if (!HB.DATA_BASE || !path) return path;
+  // Redan absolut? Lämna orörd. Två skäl: snapshot-index.json bär sina egna
+  // url-fält och en cup kan ha en dataUrl som pekar utanför oss, och då ska
+  // basen inte klistras på. Gör också funktionen idempotent, så att ett
+  // anrop på en redan omskriven sökväg är ofarligt.
+  if (/^(https?:)?\/\//i.test(path)) return path;
   return HB.DATA_BASE.replace(/\/+$/, "") + "/" + String(path).replace(/^\/+/, "");
 };
 
@@ -31,7 +36,7 @@ HB.dataUrl = function (path) {
 // Redigera inte för hand: den stod länge kvar på ett datum två veckor
 // bakåt just för att den var det enda stället som krävde ett eget
 // handgrepp.
-HB.VERSION = "20260907c";
+HB.VERSION = "20260907g";
 
 HB.CLUB = {
   name: "Alingsås HK",

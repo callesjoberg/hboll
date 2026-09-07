@@ -85,7 +85,11 @@ window.HB = window.HB || {};
       return { unchanged: true, ts: sourceTs };
     }
 
-    const base = (entry && entry.url) || sharedSnapshotPath(cup);
+    // entry.url kommer UR datan (snapshot-index.json) och är relativ där —
+    // alltså måste den genom dataUrl() precis som de hårdkodade sökvägarna.
+    // Missades först, och syntes bara i ett skarpt prov mot R2: allt utom
+    // just snapshotfilen hämtades från rätt ursprung.
+    const base = HB.dataUrl((entry && entry.url) || sharedSnapshotPath(cup));
     const version = sourceTs || Math.floor(Date.now() / SNAPSHOT_BUCKET_MS);
     const requestUrl = versionedUrl(base, version);
     let pending = snapshotFilePromises.get(requestUrl);
@@ -1052,7 +1056,9 @@ window.HB = window.HB || {};
     try {
       // Ingen cache:"no-store" längre — en pågående upplaga får då åtminstone
       // webbläsarens vanliga (kortlivade) HTTP-cache under en session.
-      const r = await fetch(entry.file);
+      // Även archive/index.json bär relativa sökvägar i sitt file-fält,
+      // samma fälla som snapshot-index.json ovan.
+      const r = await fetch(HB.dataUrl(entry.file));
       if (!r.ok) return null;
       const data = await r.json();
       if (finished) archiveDbSet(dbKey, { ts: entry.ts, data });

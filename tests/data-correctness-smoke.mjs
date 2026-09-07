@@ -12,6 +12,18 @@ window.HB = { shortCat: (name) => name || "" };
 await import("../js/config.js");
 window.HB.shortCat = (name) => name || "";
 
+// Testet ska inte bero på vad DATA_BASE råkar stå på i config.js — den
+// sätts till datadomänen den dagen datan flyttar, och då skulle varje
+// URL-jämförelse nedan falla utan att något faktiskt vore fel.
+// Nolla den, och kontrollera i stället bägge lägena explicit.
+assert.equal(typeof HB.dataUrl, "function", "config.js ska exponera dataUrl");
+HB.DATA_BASE = "https://data.example/";
+assert.equal(HB.dataUrl("data/x.json"), "https://data.example/data/x.json");
+assert.equal(HB.dataUrl("https://annan.test/x.json"), "https://annan.test/x.json",
+  "absoluta URL:er ska lämnas orörda — snapshot-index.json bär egna url-fält");
+HB.DATA_BASE = "";
+assert.equal(HB.dataUrl("data/x.json"), "data/x.json");
+
 const storage = new Map();
 class StorageMock {
   getItem(key) { return storage.has(key) ? storage.get(key) : null; }
