@@ -61,8 +61,12 @@ def frysta_arkivfiler() -> set[str]:
     aktuella = {f"{c.get('id')}-{c.get('edition')}.json" for c in cups}
     frysta = set()
     for f in (DATA / "archive").glob("*.json"):
-        if f.name in ("index.json", "team-index.json"):
-            continue          # byggs om varje varv
+        # Härledda register, inte upplagor: de byggs om så fort arkivet
+        # ändras och får därför aldrig lång cache. club-entries.json fick
+        # först ett dygn med immutable, vilket hade låst en gammal nämnare
+        # i besökarens webbläsare utan ens en revalidering.
+        if f.name in ("index.json", "team-index.json", "club-entries.json"):
+            continue
         if f.name not in aktuella:
             frysta.add(f.name)
     return frysta
