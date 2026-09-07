@@ -91,7 +91,26 @@ hämta() {
   python3 scripts/build_cup_windows.py           || return 1
 }
 
+# Datan ska ligga i R2, för det är där klienten hämtar den. Uppladdningen
+# görs FÖRE committen: går den fel vill vi veta det direkt, och en commit
+# som inte har någon motsvarighet i R2 är värre än tvärtom — sajten skulle
+# då visa gammal data utan att något syns i loggen.
+#
+# Misslyckas den avbryts inte varvet. Snapshotarna i repot är kvar som
+# reserv, och nästa varv laddar upp samma filer igen — innehållsjämförelsen
+# gör att ett missat varv inte kostar något extra.
+till_r2() {
+  if [ -z "${R2_ACCOUNT_ID:-}" ] || [ -z "${R2_ACCESS_KEY_ID:-}" ]; then
+    echo "Inga R2-uppgifter — hoppar över uppladdningen."
+    return 0
+  fi
+  if ! python3 scripts/publish_r2.py; then
+    echo "R2-uppladdningen misslyckades — data/ i repot gäller tills nästa varv."
+  fi
+}
+
 publicera() {
+  till_r2
   git add data/
   if git diff --cached --quiet; then
     echo "Ingen ändring — hoppar över commit."

@@ -51,6 +51,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # boto3 för R2-uppladdningen i publicera(). Skraporna själva klarar
+      # sig på standardbiblioteket.
+      - name: Installera boto3
+        run: pip install --quiet boto3
       # Ett varv = hela pipelinen plus en commit. Loopen fortsätter i
       # femminuterstakt så länge någon cup har matchtid, annars avslutas
       # den efter första varvet precis som förut. Taket ligger under
@@ -63,4 +67,8 @@ jobs:
           LOOP_CHAIN: ${{ inputs.chain || '0' }}
           LOOP_SJALVTEST: ${{ inputs.sjalvtest && '1' || '0' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: cupschema-data
         run: bash scripts/ci_update_loop.sh
