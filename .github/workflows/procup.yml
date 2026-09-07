@@ -11,6 +11,11 @@ on:
         description: "Tak för loopen i sekunder. Bara för att prova överlämningen: sätt t.ex. 60 under matchtid så når första varvet taket direkt. Tom = 16200 (4 h 30 min)."
         required: false
         default: ""
+      sjalvtest:
+        description: "Prova BARA överlämningen och avsluta — skrapar ingenting. Svarar på om GITHUB_TOKEN får starta nästa körning. Kostar en extra körning."
+        type: boolean
+        required: false
+        default: false
   schedule:
     # Var 20:e minut — men GitHub kör schemalagda jobb "best effort" och
     # startar oss i praktiken bara var andra till var femte timme. Att be
@@ -56,5 +61,6 @@ jobs:
           LOOP_MAX_SECONDS: ${{ inputs.max_seconds || '16200' }}
           LOOP_PERIOD_SECONDS: "300"
           LOOP_CHAIN: ${{ inputs.chain || '0' }}
+          LOOP_SJALVTEST: ${{ inputs.sjalvtest && '1' || '0' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci_update_loop.sh

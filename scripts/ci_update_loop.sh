@@ -60,6 +60,24 @@ git config user.email "actions@users.noreply.github.com"
   fi
 }
 
+# Överlämningen ligger efter matchtidskontrollen i loopen — den kan alltså
+# bara ske en speldag, och går inte att prova en kväll utan matcher. Det
+# som faktiskt är osäkert är smalt: får GITHUB_TOKEN utlösa
+# workflow_dispatch hos oss? GitHub blockerar normalt token-utlösta
+# körningar för att förhindra oändliga kedjor, med workflow_dispatch som
+# dokumenterat undantag — men dokumentation är inte en mätning.
+#
+# LOOP_SJALVTEST=1 kör därför bara överlämningen och avslutar, utan att
+# skrapa något. Efterträdaren startar som vanligt, hittar ingen matchtid
+# och avslutar efter ett varv — provet kostar alltså en extra körning,
+# inte en kedja. Behåll den: behörigheten kan ändras av en policy eller en
+# repo-inställning utan att något annat märks.
+if [ "${LOOP_SJALVTEST:-0}" = "1" ]; then
+  echo "Självtest: provar bara överlämningen, skrapar ingenting."
+  överlämna
+  exit 0
+fi
+
 hämta() {
   python3 scripts/fetch_procup.py                || return 1
   python3 scripts/fetch_gothia.py                || return 1
