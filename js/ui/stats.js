@@ -2362,11 +2362,80 @@ function renderVinnartoppen(root, rows) {
     return h("span", { class: "brow-cnt" }, String(e.n), h("small", null, cntLabel));
   };
 
+  /* Raderna går att fälla ut och visa VAR medaljerna vunnits — år, cup,
+     klass, lag och valör. Det är skillnaden mellan "129 medaljer" och att
+     faktiskt kunna se att fyra av dem är P16-guld i Bohus Cup.
+
+     Datan finns redan i champions.json, samma rader som räknats ihop till
+     talet på raden; ingen ny hämtning behövs. Listan byggs först vid
+     utfällning — 25 klubbar med hundratals medaljer var vore hundratals
+     noder som ingen bett om. */
+  const medaljerFor = (klubb) => {
+    const ut = [];
+    for (const r of scope) {
+      if (vinnareToppMedals.guld && r.gc === klubb) ut.push({ r, v: "🥇", lag: r.g });
+      if (vinnareToppMedals.silver && r.sc === klubb) ut.push({ r, v: "🥈", lag: r.s });
+      if (vinnareToppMedals.brons) {
+        (r.bc || []).forEach((bc, i) => {
+          if (bc === klubb) ut.push({ r, v: "🥉", lag: (r.b || [])[i] });
+        });
+      }
+    }
+    // Nyast först, och inom samma år cup för cup — samma ordning som
+    // troféskåpet, så de två vyerna läses likadant.
+    return ut.sort((a, b) => b.r.ed.localeCompare(a.r.ed) ||
+      a.r.cupName.localeCompare(b.r.cupName, "sv") ||
+      a.r.cat.localeCompare(b.r.cat, "sv"));
+  };
+
   withRank.slice(0, 25).forEach((e) => {
-    board.append(h("div", { class: "brow" + (e.rank <= 3 ? " top3" : "") + (e.club.toLowerCase() === fav ? " us" : "") },
+    const detalj = h("div", { class: "brow-detalj", hidden: "" });
+    let byggd = false;
+    const rad = h("div", {
+      class: "brow brow-oppna" + (e.rank <= 3 ? " top3" : "") +
+        (e.club.toLowerCase() === fav ? " us" : ""),
+      role: "button", tabindex: "0", "aria-expanded": "false",
+      title: "Visa var medaljerna vunnits",
+    },
       h("span", { class: "brow-pos" }, String(e.rank)),
       h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
-      talet(e)));
+      talet(e));
+    const växla = () => {
+      if (!byggd) {
+        byggd = true;
+        const poster = medaljerFor(e.club);
+        // Tak med flit: Alingsås 129 medaljer utfällda betyder att man
+        // scrollar förbi dem alla för att nå nästa klubb i listan.
+        const TAK = 20;
+        const rita = (visa) => {
+          const nod = ({ r, v, lag }) => h("div", { class: "brow-medalj" },
+            h("span", { class: "brow-medalj-v" }, v),
+            h("span", { class: "brow-medalj-ar" }, r.ed),
+            h("span", { class: "brow-medalj-txt" },
+              h("strong", null, r.cat), " · ", r.cupName,
+              lag && lag !== e.club ? h("span", { class: "muted" }, " · " + lag) : null));
+          detalj.replaceChildren(...(poster.length
+            ? poster.slice(0, visa).map(nod)
+            : [h("p", { class: "muted" }, "Inga medaljer i urvalet.")]));
+          if (poster.length > visa) {
+            detalj.append(h("button", {
+              class: "btn small brow-medalj-fler", type: "button",
+              onclick: (ev) => { ev.stopPropagation(); rita(poster.length); },
+            }, "Visa alla " + poster.length));
+          }
+        };
+        rita(TAK);
+      }
+      const öppen = detalj.hidden;
+      detalj.hidden = !öppen;
+      rad.setAttribute("aria-expanded", String(öppen));
+      rad.classList.toggle("oppen", öppen);
+    };
+    rad.addEventListener("click", växla);
+    rad.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); växla(); }
+    });
+    board.append(rad, detalj);
   });
   root.append(board);
   // Ligger favoritklubben utanför topp 25 — visa dess placering separat sist.

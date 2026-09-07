@@ -5027,6 +5027,47 @@ button.welcome-cta-secondary {
 .brow-cnt { font: 700 18px/1 "Barlow Condensed", system-ui, sans-serif; color: var(--ink); font-variant-numeric: tabular-nums; }
 .brow-cnt small { font: 600 11px/1 "Barlow", system-ui; color: var(--ink-soft); }
 .brow.us { background: color-mix(in srgb, var(--blue) 12%, transparent); border-left: 3px solid var(--blue); }
+
+/* Utfällbar rad: var medaljerna vunnits. Pilen sitter efter klubbnamnet i
+   stället för i en egen kolumn — rutnätet är redan 40px/1fr/auto och en
+   fjärde kolumn hade tryckt ihop talet till höger på en telefon. */
+.brow-oppna { cursor: pointer; }
+.brow-oppna .brow-club::after {
+  content: " ›";
+  display: inline-block;
+  color: var(--ink-soft);
+  transition: transform 0.15s ease;
+}
+.brow-oppna.oppen .brow-club::after { transform: rotate(90deg); }
+.brow-oppna:hover { background: color-mix(in srgb, var(--blue) 6%, transparent); }
+.brow-oppna.us:hover { background: color-mix(in srgb, var(--blue) 16%, transparent); }
+
+.brow-detalj {
+  padding: 4px 14px 10px 54px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+}
+
+.brow-medalj {
+  display: grid;
+  grid-template-columns: 22px 42px 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.brow-medalj-ar {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* min-width: 0 — annars vägrar textkolumnen krympa och långa klassnamn
+   trycker ut hela raden på en telefon. */
+.brow-medalj-txt { min-width: 0; }
+.brow-medalj-txt strong { color: var(--ink); }
+.brow-medalj-fler { margin-top: 8px; }
 .brow.us .brow-club { color: var(--blue); font-weight: 700; }
 .brow-sep { border-top: 2px solid var(--ink-soft) !important; }
 @media (max-width: 560px) { .trophy-hero { grid-template-columns: 1fr; } }
