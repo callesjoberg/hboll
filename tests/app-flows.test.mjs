@@ -58,6 +58,7 @@ test("tom klubbsökning kan appliceras och Stats-sessionen återställas", () =>
     vinnareToppCup: defaults.vinnareToppCup,
     vinnareToppMedals: defaults.vinnareToppMedals,
     vinnareToppAr: defaults.vinnareToppAr,
+    vinnareAr: defaults.vinnareAr,
     historyMode: defaults.historyMode,
     browse: defaults.browse,
   });
@@ -202,6 +203,17 @@ test("vinnartoppens årsfilter överlever en URL-rundresa", () => {
   // En trasig länk ska ge alla år, inte ett filter som tyst döljer allt.
   const skräp = decodeSubViewParams(new URLSearchParams("vm=topp&vtar=2024,abc,,99"));
   assert.deepEqual([...skräp.vinnareToppAr], ["2024"]);
+});
+
+test("troféskåpets årsfilter överlever en URL-rundresa", () => {
+  const med = applySubViewPatch(defaultSubViewSnap(NOW), {
+    view: "stats", statsView: "vinnare", vinnareMode: "trofe",
+    vinnareQuery: "Alingsås HK", vinnareAr: new Set(["2019", "2026"]),
+  });
+  const url = encodeSubViewParams(new URLSearchParams(), med);
+  assert.equal(url.get("vyr"), "2019,2026");
+  assert.equal(url.get("vtar"), null, "troféskåpets år ska inte skrivas som vinnartoppens");
+  assert.deepEqual([...decodeSubViewParams(url).vinnareAr].sort(), ["2019", "2026"]);
 });
 
 test("bakåt: psort, club och vm nollställs innan ny URL läses in", () => {

@@ -1972,6 +1972,7 @@ let vinnareCup = null;         // vald cup (årets mästare)
 let vinnareYear = null;        // valt år (årets mästare)
 let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
 let vinnareToppMedals = { guld: true, silver: false, brons: false }; // medaljer som räknas i topplistan
+let vinnareAr = new Set();     // årsfilter (troféskåpet); tom = alla år
 let vinnareToppAr = new Set(); // årsfilter (vinnartoppen); tom = alla år
 
 // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
@@ -2035,13 +2036,36 @@ function renderTrofeskap(root, rows) {
   const matchC = (club, name) => !!q && (((club || "").toLowerCase().includes(q)) || ((name || "").toLowerCase().includes(q)));
   // Klubbens medaljer: guld = vann finalen, silver = förlorade finalen,
   // brons = förlorade semifinalen (eller vann bronsmatchen). Se champions.json.
-  const golds = q ? rows.filter((r) => matchC(r.gc, r.g)).map((r) => ({ r, medal: "guld", team: r.g, club: r.gc })) : [];
-  const silvers = q ? rows.filter((r) => matchC(r.sc, r.s)).map((r) => ({ r, medal: "silver", team: r.s, club: r.sc })) : [];
-  const bronzes = [];
+  let golds = q ? rows.filter((r) => matchC(r.gc, r.g)).map((r) => ({ r, medal: "guld", team: r.g, club: r.gc })) : [];
+  let silvers = q ? rows.filter((r) => matchC(r.sc, r.s)).map((r) => ({ r, medal: "silver", team: r.s, club: r.sc })) : [];
+  let bronzes = [];
   if (q) rows.forEach((r) => (r.bc || []).forEach((bc, i) => {
     const nm = (r.b || [])[i];
     if (matchC(bc, nm)) bronzes.push({ r, medal: "brons", team: nm, club: bc });
   }));
+  /* Årsfilter, av samma slag som i vinnartoppen. Åren räknas fram ur just
+     den här klubbens medaljer — inte ur alla cupers alla år — så listan blir
+     kort och innehåller bara år klubben faktiskt har något att visa.
+
+     Filtret läggs FÖRE medaljräknarna nedan med flit: annars hade chipsen
+     stått kvar på "Guld (32)" medan bara två kort visades. */
+  const alla = [...golds, ...silvers, ...bronzes];
+  const år = [...new Set(alla.map((x) => x.r.ed).filter(Boolean))]
+    .sort((a, b) => b.localeCompare(a));
+  for (const valt of [...vinnareAr]) if (!år.includes(valt)) vinnareAr.delete(valt);
+  if (q && år.length > 1) {
+    root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+      h("span", { class: "muted" }, "År:"),
+      h("div", { class: "vinnare-ar-scroll" },
+        chip("Alla år", vinnareAr.size === 0, () => { vinnareAr.clear(); renderContent(); }, "small"),
+        år.map((a) => chip(a, vinnareAr.has(a), () => {
+          if (vinnareAr.has(a)) vinnareAr.delete(a); else vinnareAr.add(a);
+          renderContent();
+        }, "small")))));
+  }
+  const iÅr = (lista) => (vinnareAr.size ? lista.filter((x) => vinnareAr.has(x.r.ed)) : lista);
+  golds = iÅr(golds); silvers = iÅr(silvers); bronzes = iÅr(bronzes);
+
   const total = golds.length + silvers.length + bronzes.length;
 
   // Toggla vilka medaljer som visas (guld på från start = klassiskt troféskåp).
@@ -3113,7 +3137,7 @@ export function getStatsTabs() {
 export function getStatsUrlFields() {
   return {
     kalenderYear,
-    vinnareMode, vinnareQuery, vinnareMedals, vinnareCup, vinnareYear,
+    vinnareMode, vinnareQuery, vinnareMedals, vinnareCup, vinnareYear, vinnareAr,
     vinnareToppCup, vinnareToppMedals, vinnareToppAr,
     historyMode,
     browse: browseOpen || browseTarget,
@@ -3126,6 +3150,7 @@ export function applyStatsUrlFields(patch) {
   if (patch.vinnareMode) vinnareMode = patch.vinnareMode;
   if ("vinnareQuery" in patch) vinnareQuery = patch.vinnareQuery;
   if (patch.vinnareMedals) vinnareMedals = patch.vinnareMedals;
+  if (patch.vinnareAr) vinnareAr = new Set(patch.vinnareAr);
   if (patch.vinnareCup) vinnareCup = patch.vinnareCup;
   if (patch.vinnareYear) vinnareYear = patch.vinnareYear;
   if ("vinnareToppCup" in patch) vinnareToppCup = patch.vinnareToppCup;
@@ -3143,6 +3168,7 @@ export function resetStatsUrlFields(defaults = defaultSubViewSnap()) {
   vinnareMode = defaults.vinnareMode;
   vinnareQuery = defaults.vinnareQuery;
   vinnareMedals = defaults.vinnareMedals;
+  vinnareAr = new Set(defaults.vinnareAr || []);
   vinnareCup = defaults.vinnareCup;
   vinnareYear = defaults.vinnareYear;
   vinnareToppCup = defaults.vinnareToppCup;

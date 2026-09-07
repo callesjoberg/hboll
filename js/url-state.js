@@ -121,8 +121,9 @@ export function defaultSubViewSnap(now = new Date()) {
     vinnareMedals: { guld: true, silver: false, brons: false },
     vinnareCup: null,
     vinnareYear: null,
-    vinnareToppCup: "",
     // Tom mängd = alla år. Samma konvention som clubYears och trendCats.
+    vinnareAr: new Set(),
+    vinnareToppCup: "",
     vinnareToppAr: new Set(),
     vinnareToppMedals: { guld: true, silver: false, brons: false },
     historyMode: "compare",
@@ -141,6 +142,7 @@ export function applySubViewPatch(snap, patch) {
   if (patch.vinnareMedals) out.vinnareMedals = { ...patch.vinnareMedals };
   if (patch.vinnareToppMedals) out.vinnareToppMedals = { ...patch.vinnareToppMedals };
   if (patch.vinnareToppAr) out.vinnareToppAr = new Set(patch.vinnareToppAr);
+  if (patch.vinnareAr) out.vinnareAr = new Set(patch.vinnareAr);
   if (patch.bracketSort) out.bracketSort = { ...patch.bracketSort };
   if (patch.browse) out.browse = { ...patch.browse };
   if (patch.compareNames) out.compareNames = [...patch.compareNames];
@@ -213,6 +215,9 @@ export function encodeSubViewParams(p, snap) {
     if (snap.vinnareMode && snap.vinnareMode !== "trofe") p.set("vm", snap.vinnareMode);
     if (snap.vinnareMode === "trofe") {
       if (snap.vinnareQuery !== null && snap.vinnareQuery !== undefined) p.set("vq", snap.vinnareQuery);
+      if (snap.vinnareAr && snap.vinnareAr.size) {
+        p.set("vyr", [...snap.vinnareAr].sort().join(","));
+      }
       if (medalsToStr(snap.vinnareMedals) !== "guld") p.set("vmed", medalsToStr(snap.vinnareMedals));
     } else if (snap.vinnareMode === "ar") {
       if (snap.vinnareCup) p.set("vcup", snap.vinnareCup);
@@ -291,6 +296,10 @@ export function decodeSubViewParams(params) {
   if (["trofe", "ar", "topp"].includes(params.get("vm"))) out.vinnareMode = params.get("vm");
   if (params.has("vq")) out.vinnareQuery = params.get("vq");
   if (params.has("vmed")) out.vinnareMedals = strToMedals(params.get("vmed"));
+  if (params.has("vyr")) {
+    out.vinnareAr = new Set(params.get("vyr").split(",")
+      .map((x) => x.trim()).filter((x) => /^\d{4}$/.test(x)));
+  }
   if (params.get("vcup")) out.vinnareCup = params.get("vcup");
   if (params.get("vyear")) out.vinnareYear = params.get("vyear");
   if (params.has("vtcup")) out.vinnareToppCup = params.get("vtcup");
