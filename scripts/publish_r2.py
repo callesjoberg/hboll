@@ -114,6 +114,10 @@ def main() -> int:
                     help="räkna ut vad som skulle laddas upp, rör inte R2")
     ap.add_argument("--only", action="append", default=[],
                     help="begränsa till angivna filer (repo-relativa)")
+    ap.add_argument("--force", action="store_true",
+                    help="ladda upp även oförändrade filer — behövs när "
+                         "Cache-Control ändrats, för innehållsjämförelsen "
+                         "ser bara innehållet och inte metadatan")
     ap.add_argument("--stamp", action="store_true",
                     help="skriv data/r2-stamp.json med tidpunkt och körning")
     args = ap.parse_args()
@@ -187,7 +191,7 @@ def main() -> int:
 
     fjärr = fjärr_etags(s3, bucket)
     att_göra = [(rel, *v) for rel, v in sorted(lokalt.items())
-                if fjärr.get(rel) != v[1]]
+                if args.force or fjärr.get(rel) != v[1]]
 
     if not att_göra:
         stämpla(0)

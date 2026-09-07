@@ -13,6 +13,11 @@ on:
         description: "Begränsa till en eller flera filer, mellanslagsseparerat. Tomt = hela data/."
         required: false
         default: ""
+      force:
+        description: "Ladda upp även oförändrade filer — behövs när Cache-Control ändrats, för innehållsjämförelsen ser bara innehållet"
+        type: boolean
+        required: false
+        default: false
       dry_run:
         description: "Räkna ut vad som skulle laddas upp utan att röra R2"
         type: boolean
@@ -44,7 +49,8 @@ jobs:
           R2_BUCKET: cupschema-data
           ONLY: ${{ inputs.only }}
           DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
         run: |
           args=""
           for f in $ONLY; do args="$args --only $f"; done
-          python3 scripts/publish_r2.py $DRY $args
+          python3 scripts/publish_r2.py $DRY $FORCE $args
