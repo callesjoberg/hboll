@@ -16,7 +16,7 @@ window.HB = window.HB || {};
 // ny, använd den — annars pekar just den filen fel den dag basen ändras.
 // Service workern rör inget av det här: den hoppar över både cross-origin
 // och allt med /data/ i sökvägen (se sw.js).
-HB.DATA_BASE = "";
+HB.DATA_BASE = "https://data.cupschema.se";
 
 HB.dataUrl = function (path) {
   if (!HB.DATA_BASE || !path) return path;
@@ -36,7 +36,7 @@ HB.dataUrl = function (path) {
 // Redigera inte för hand: den stod länge kvar på ett datum två veckor
 // bakåt just för att den var det enda stället som krävde ett eget
 // handgrepp.
-HB.VERSION = "20260907g";
+HB.VERSION = "20260907h";
 
 HB.CLUB = {
   name: "Alingsås HK",
