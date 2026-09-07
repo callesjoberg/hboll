@@ -1,0 +1,58 @@
+# Svarshuvuden för Cloudflare Pages. GitHub Pages kan inte sätta egna
+# huvuden alls och ignorerar den här filen, så den kan ligga i repot under
+# hela övergången utan att ändra något förrän Pages serverar sajten.
+#
+# Sökvägsmatchning bara — ingen frågesträng. Det är hela skälet till att
+# js och css INTE får lång livslängd nedan, se kommentaren där.
+
+/assets/*
+  Cache-Control: public, max-age=604800
+
+# Logotyper, ikoner och hjälpbilder byts sällan, och en vecka gammal
+# klubbvapen är ofarligt. Det är repots näst tyngsta katalog (7,6 MB) och
+# den enda där lång cachning är riskfri.
+
+/js/*
+  Cache-Control: public, max-age=600
+
+/css/*
+  Cache-Control: public, max-age=600
+
+# Samma tio minuter som GitHub Pages ger i dag — alltså ingen förändring.
+#
+# Frestelsen är att sätta ett år och immutable här, eftersom varje modul
+# hämtas med ?v=<nyckel> och en ny nyckel är en ny adress. Men sw.js
+# precachar SHELL_FILES med BARA sökvägar, utan nyckel (se listan där och
+# kommentaren om ignoreSearch). En nyinstallerad service worker skulle då
+# kunna få gammal kod ur webbläsarens HTTP-cache och spara den som sin nya
+# — och användaren sitter fast tills cachen går ut.
+#
+# Vinsten finns kvar att hämta, men den kräver att sw.js precachar
+# versionerade sökvägar först. Nyckeln finns redan i CACHE_NAME. Det är en
+# egen, försiktig ändring: fel i en service worker låser användare på
+# gammal kod, och det märks inte förrän någon rapporterar det.
+
+/sw.js
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache
+
+# Ingången och service workern måste alltid kontrolleras mot servern. Det
+# är index.html som bär de nya ?v=-nycklarna, och sw.js som avgör om en ny
+# version installeras över huvud taget. Cachas de går en driftsättning
+# inte fram.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Två huvuden som inte kan gå sönder. En riktig Content-Security-Policy
+# hör hemma här också, men den måste ta höjd för MapLibre från unpkg,
+# Google Fonts, Open-Meteo och det inbäddade felbanner-skriptet i
+# index.html — och en CSP som är fel tar ner sajten tyst i vissa
+# webbläsare. Den läggs till när den går att prova mot en riktig
+# Pages-deploy, inte på förhand.
