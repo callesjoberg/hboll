@@ -2598,6 +2598,40 @@ function renderVinnartoppen(root, rows) {
     if (vinnareToppMedals.silver) add(r.sc);
     if (vinnareToppMedals.brons) (r.bc || []).forEach(add);
   });
+  /* Medaljerna bakom en klubbs rad, för den utfällbara detaljraden.
+
+     Läser SAMMA scope som räkningen ovan — redan filtrerad på cup, sport
+     och år — så en utfälld rad omöjligen kan visa en medalj som inte
+     ingår i talet bredvid klubbnamnet. Bronsplatserna är en lista (två
+     bronslag i många cuper) och parallell med bc, så laget hämtas på
+     index och inte på namn.
+
+     Lagnamnet följer med: klubben är "Alingsås HK", men medaljen togs av
+     "Alingsås HK Blå", och det är det man vill se när man fäller ut. */
+  const MEDALJ_MÄRKE = { guld: "🥇", silver: "🥈", brons: "🥉" };
+  const medaljerFor = (klubb) => {
+    const ut = [];
+    for (const r of scope) {
+      if (vinnareToppMedals.guld && r.gc === klubb) {
+        ut.push({ r, v: MEDALJ_MÄRKE.guld, lag: r.g });
+      }
+      if (vinnareToppMedals.silver && r.sc === klubb) {
+        ut.push({ r, v: MEDALJ_MÄRKE.silver, lag: r.s });
+      }
+      if (vinnareToppMedals.brons) {
+        (r.bc || []).forEach((c, i) => {
+          if (c === klubb) ut.push({ r, v: MEDALJ_MÄRKE.brons, lag: (r.b || [])[i] });
+        });
+      }
+    }
+    // Nyast först — samma ordning som troféskåpet, så en klubbs medaljer
+    // läses likadant var man än möter dem.
+    return ut.sort((a, b) =>
+      b.r.ed.localeCompare(a.r.ed, "sv", { numeric: true }) ||
+      (a.r.cupName || "").localeCompare(b.r.cupName || "", "sv") ||
+      (a.r.cat || "").localeCompare(b.r.cat || "", "sv"));
+  };
+
   /* Nämnaren räknas i SAMMA urval som täljaren: är en cup eller vissa år
      valda ska bara de anmälningarna räknas, annars jämförs 2026 års
      medaljer med tjugo års lag.
