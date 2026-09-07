@@ -310,9 +310,16 @@ function buildPicker(opts) {
       },
     }, String(n))));
 
+  // opts.selected är Set-LIKNANDE, inte nödvändigtvis ett Set:
+  // buildYearPicker skickar in yearSelectionProxy, som bara lovar
+  // size/has/add/delete/clear. Håll dig till de fem — att sprida urvalet
+  // här sprängde hela verktygsraden i produktion ("Spread syntax requires
+  // iterable[Symbol.iterator] to be a function"), och eftersom
+  // renderToolbar bygger årsväljaren på varenda render slog det ut
+  // Schema, Tabeller och Slutspel på en gång.
   function syncSnabb() {
     if (!snabbRad) return;
-    const valda = [...opts.selected];
+    const antalValda = opts.selected.size;
     const nyaste = (n) => [...opts.items]
       .sort((a, b) => String(b.sortName).localeCompare(String(a.sortName), "sv"))
       .slice(0, n).map((it) => it.id);
@@ -321,7 +328,7 @@ function buildPicker(opts) {
       const mål = nyaste(n);
       // Markerad bara när urvalet är EXAKT de N nyaste — annars ser den ut
       // att vara ett läge man befinner sig i fast man valt något annat.
-      knapp.classList.toggle("on", valda.length === mål.length &&
+      knapp.classList.toggle("on", antalValda === mål.length &&
         mål.every((id) => opts.selected.has(id)));
     });
   }
@@ -539,6 +546,14 @@ function buildYearPicker(editions, currentEdition) {
     add: (id) => { if (id === currentEdition) state.includeCurrentYear = true; else state.years.add(id); },
     delete: (id) => { if (id === currentEdition) state.includeCurrentYear = false; else state.years.delete(id); },
     clear: () => { state.years.clear(); state.includeCurrentYear = false; },
+    // Gör efterliknandet fullständigt. Kommentaren ovan har alltid sagt
+    // "efterliknar ett Set", men utan iterator var det inte sant, och
+    // nästa Set-idiom i buildPicker (ett spread, ett for…of) hade blivit
+    // en ny krasch i stället för ett fel som märks direkt.
+    *[Symbol.iterator]() {
+      if (state.includeCurrentYear) yield currentEdition;
+      yield* state.years;
+    },
   };
   const items = [currentEdition, ...editions].map((y) => ({
     id: y, label: y, sortKey: -Number(y) || 0, sortName: y,
