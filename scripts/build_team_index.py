@@ -61,24 +61,42 @@ def build_team_index():
         if not cid or not edition:
             continue
         names = set()
-        lag = {}                      # lag-id -> lagnamn
+        lag = {}                      # lag-id -> sida (senast sedda)
+        matcher = {}                  # lag-id -> antal matcher
+        vinster = {}                  # lag-id -> vinster
+        spelade = {}                  # lag-id -> matcher med slutresultat
         for m in d.get("matches") or []:
-            for sida in (m.get("home") or {}, m.get("away") or {}):
+            h, a = m.get("home") or {}, m.get("away") or {}
+            for sida in (h, a):
                 namn = sida.get("name")
                 if not namn:
                     continue
                 names.add(namn)
                 if sida.get("id") is not None:
                     lag[sida["id"]] = sida
+                    matcher[sida["id"]] = matcher.get(sida["id"], 0) + 1
+            # Vinstandelen räknas bara på matcher med slutresultat. De
+            # yngsta klasserna rapporterar aldrig något (9 % av arkivets
+            # handbollsmatcher) — räknade som förluster hade de sänkt
+            # klubbar med många ungdomslag helt godtyckligt.
+            r = m.get("res") or {}
+            if not r.get("fin") or r.get("hg") is None or r.get("ag") is None:
+                continue
+            if h.get("id") is None or a.get("id") is None:
+                continue
+            for sida in (h, a):
+                spelade[sida["id"]] = spelade.get(sida["id"], 0) + 1
+            if r["hg"] > r["ag"]:
+                vinster[h["id"]] = vinster.get(h["id"], 0) + 1
+            elif r["hg"] < r["ag"]:
+                vinster[a["id"]] = vinster.get(a["id"], 0) + 1
         by_cup.setdefault(cid, {})[edition] = sorted(names)
 
-        # Räknas per LAG-ID, inte per lagnamn. Ett namn kan bäras av flera
-        # lag i olika klasser — Göteborg Cup 2026 har 328 unika lagnamn men
-        # 572 lag-id. Räknat på namn blev nämnaren 43 % för liten, och en
-        # klubb som döper alla sina lag lika fick kvoten 2,08 medaljer per
-        # lag: omöjligt, eftersom ett lag kan vinna högst en medalj.
+        # Fyra tal per klubb och upplaga: [lag, matcher, vinster, spelade].
+        # Kompakt array i stället för objekt — 2 500 klubbar × 353 upplagor
+        # gör nyckelnamnen till merparten av filen annars.
         klubbar = {}
-        for sida in lag.values():
+        for lid, sida in lag.items():
             if is_placeholder_team(sida):
                 continue
             # _side() är EXAKT samma härledning som champions.json:s gc/sc/bc:
@@ -89,10 +107,15 @@ def build_team_index():
             # räknades till moderklubben i täljaren, och kvoten blev 3,00
             # medaljer per lag.
             _, k = _side(sida)
-            if k:
-                klubbar[k] = klubbar.get(k, 0) + 1
-        for k, antal in klubbar.items():
-            anmalda.setdefault(k, {}).setdefault(cid, {})[edition] = antal
+            if not k:
+                continue
+            rad = klubbar.setdefault(k, [0, 0, 0, 0])
+            rad[0] += 1
+            rad[1] += matcher.get(lid, 0)
+            rad[2] += vinster.get(lid, 0)
+            rad[3] += spelade.get(lid, 0)
+        for k, rad in klubbar.items():
+            anmalda.setdefault(k, {}).setdefault(cid, {})[edition] = rad
     return by_cup, anmalda
 
 
@@ -150,8 +173,8 @@ def main():
     skriv_om_ändrad(ARCHIVE_DIR / "team-index.json", index,
                     f"{len(index)} cuper, {total_names} lagnamn")
 
-    total_lag = sum(n for cuper in anmalda.values()
-                    for eds in cuper.values() for n in eds.values())
+    total_lag = sum(rad[0] for cuper in anmalda.values()
+                    for eds in cuper.values() for rad in eds.values())
     skriv_om_ändrad(ARCHIVE_DIR / "club-entries.json", anmalda,
                     f"{len(anmalda)} klubbar, {total_lag} anmälda lag")
 
