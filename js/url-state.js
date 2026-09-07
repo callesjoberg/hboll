@@ -125,6 +125,8 @@ export function defaultSubViewSnap(now = new Date()) {
     vinnareAr: new Set(),
     vinnareToppCup: "",
     vinnareToppAr: new Set(),
+    // null = härled ur vald cup vid första ritningen (se renderVinnartoppen)
+    vinnareToppSport: null,
     vinnareToppMedals: { guld: true, silver: false, brons: false },
     historyMode: "compare",
     browse: null,
@@ -224,6 +226,11 @@ export function encodeSubViewParams(p, snap) {
       if (snap.vinnareYear) p.set("vyear", snap.vinnareYear);
     } else {
       if (snap.vinnareToppCup) p.set("vtcup", snap.vinnareToppCup);
+      // Tom sträng betyder "alla sporter" och är ett aktivt val — den måste
+      // därför skrivas ut, till skillnad från null som bara betyder "ej valt".
+      if (snap.vinnareToppSport !== null && snap.vinnareToppSport !== undefined) {
+        p.set("vtsport", snap.vinnareToppSport);
+      }
       if (snap.vinnareToppAr && snap.vinnareToppAr.size) {
         p.set("vtar", [...snap.vinnareToppAr].sort().join(","));
       }
@@ -303,6 +310,7 @@ export function decodeSubViewParams(params) {
   if (params.get("vcup")) out.vinnareCup = params.get("vcup");
   if (params.get("vyear")) out.vinnareYear = params.get("vyear");
   if (params.has("vtcup")) out.vinnareToppCup = params.get("vtcup");
+  if (params.has("vtsport")) out.vinnareToppSport = params.get("vtsport");
   if (params.has("vtar")) {
     // Bara fyrsiffriga årtal — en trasig länk ska ge alla år, inte ett
     // filter som tyst döljer allt.

@@ -59,6 +59,7 @@ test("tom klubbsökning kan appliceras och Stats-sessionen återställas", () =>
     vinnareToppMedals: defaults.vinnareToppMedals,
     vinnareToppAr: defaults.vinnareToppAr,
     vinnareAr: defaults.vinnareAr,
+    vinnareToppSport: defaults.vinnareToppSport,
     historyMode: defaults.historyMode,
     browse: defaults.browse,
   });
@@ -214,6 +215,26 @@ test("troféskåpets årsfilter överlever en URL-rundresa", () => {
   assert.equal(url.get("vyr"), "2019,2026");
   assert.equal(url.get("vtar"), null, "troféskåpets år ska inte skrivas som vinnartoppens");
   assert.deepEqual([...decodeSubViewParams(url).vinnareAr].sort(), ["2019", "2026"]);
+});
+
+test("vinnartoppens sportval skiljer 'ej valt' från 'alla sporter'", () => {
+  const snap = defaultSubViewSnap(NOW);
+  assert.equal(snap.vinnareToppSport, null, "ej valt = härleds ur cupen");
+
+  const utan = encodeSubViewParams(new URLSearchParams(), applySubViewPatch(snap,
+    { view: "stats", statsView: "vinnare", vinnareMode: "topp" }));
+  assert.equal(utan.get("vtsport"), null, "ej valt ska inte skräpa i adressen");
+
+  // Tom sträng är ett AKTIVT val ("alla sporter") och måste överleva en
+  // delad länk — annars faller mottagaren tillbaka på sin egen cups sport.
+  const alla = encodeSubViewParams(new URLSearchParams(), applySubViewPatch(snap,
+    { view: "stats", statsView: "vinnare", vinnareMode: "topp", vinnareToppSport: "" }));
+  assert.equal(alla.get("vtsport"), "");
+  assert.equal(decodeSubViewParams(alla).vinnareToppSport, "");
+
+  const basket = encodeSubViewParams(new URLSearchParams(), applySubViewPatch(snap,
+    { view: "stats", statsView: "vinnare", vinnareMode: "topp", vinnareToppSport: "basket" }));
+  assert.equal(decodeSubViewParams(basket).vinnareToppSport, "basket");
 });
 
 test("bakåt: psort, club och vm nollställs innan ny URL läses in", () => {

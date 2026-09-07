@@ -1974,7 +1974,8 @@ let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
 let vinnareToppMedals = { guld: true, silver: false, brons: false }; // medaljer som räknas i topplistan
 let vinnareAr = new Set();     // årsfilter (troféskåpet); tom = alla år
 let vinnareToppAr = new Set(); // årsfilter (vinnartoppen); tom = alla år
-let vinnareToppPerLag = false; // ranka på medaljer per anmält lag i stället för antal
+let vinnareToppPerLag = false; // visa medaljer per anmält lag bredvid antalet
+let vinnareToppSport = null;   // null = härled ur vald cup vid första ritningen
 let klubbAnmalningar = null;   // {klubb: {cup: {år: antal}}} när den hämtats
 
 // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
@@ -2166,6 +2167,36 @@ function renderAretsMastare(root, rows) {
 }
 
 function renderVinnartoppen(root, rows) {
+  /* Sporterna får inte blandas. En basketcup delar ut tre medaljer på åtta
+     lag där en handbollscup delar ut tre på fyrtio — en gemensam lista
+     jämför alltså inte klubbar utan tävlingsformer.
+
+     Förvalet är den sport cupen man tittar på tillhör, så listan aldrig
+     blandar av bara farten. "Alla sporter" finns kvar för den som medvetet
+     vill se allt. */
+  const sportFor = new Map(HB.allCups().map((c) => [c.id, c.sport || "handboll"]));
+  if (vinnareToppSport === null) vinnareToppSport = (cup() || {}).sport || "handboll";
+  const sporter = [...new Set(rows.map((r) => sportFor.get(r.cup) || "handboll"))]
+    .sort((a, b) => (SPORT_LABELS[a] || a).localeCompare(SPORT_LABELS[b] || b, "sv"));
+  if (vinnareToppSport && !sporter.includes(vinnareToppSport)) vinnareToppSport = "";
+  if (sporter.length > 1) {
+    root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+      h("span", { class: "muted" }, "Sport:"),
+      h("div", { class: "vinnare-ar-scroll" },
+        chip("Alla sporter", !vinnareToppSport, () => {
+          vinnareToppSport = ""; vinnareToppCup = ""; renderContent();
+        }, "small"),
+        sporter.map((sp) => chip(SPORT_LABELS[sp] || sp, vinnareToppSport === sp, () => {
+          vinnareToppSport = sp;
+          // Ett cupval från en annan sport hade annars gett en tom lista.
+          if (vinnareToppCup && sportFor.get(vinnareToppCup) !== sp) vinnareToppCup = "";
+          renderContent();
+        }, "small")))));
+  }
+  if (vinnareToppSport) {
+    rows = rows.filter((r) => (sportFor.get(r.cup) || "handboll") === vinnareToppSport);
+  }
+
   const cups = [...new Map(rows.map((r) => [r.cup, r.cupName])).entries()]
     .sort((a, b) => a[1].localeCompare(b[1], "sv"));
   // Ett cupfilter som inte finns i listan (t.ex. ett ?vtcup= för en cup
@@ -2265,6 +2296,10 @@ function renderVinnartoppen(root, rows) {
     let n = 0;
     for (const [cupId, år] of Object.entries(perCup)) {
       if (vinnareToppCup && cupId !== vinnareToppCup) continue;
+      // Nämnaren måste följa SAMMA sportfilter som täljaren. En klubb som
+      // spelar både handboll och basket fick annars sina basketlag
+      // inräknade i handbollskvoten, och såg sämre ut än den är.
+      if (vinnareToppSport && (sportFor.get(cupId) || "handboll") !== vinnareToppSport) continue;
       for (const [ed, antal] of Object.entries(år)) {
         if (vinnareToppAr.size && !vinnareToppAr.has(ed)) continue;
         n += antal;
@@ -3235,7 +3270,7 @@ export function getStatsUrlFields() {
   return {
     kalenderYear,
     vinnareMode, vinnareQuery, vinnareMedals, vinnareCup, vinnareYear, vinnareAr,
-    vinnareToppCup, vinnareToppMedals, vinnareToppAr,
+    vinnareToppCup, vinnareToppMedals, vinnareToppAr, vinnareToppSport,
     historyMode,
     browse: browseOpen || browseTarget,
   };
@@ -3253,6 +3288,7 @@ export function applyStatsUrlFields(patch) {
   if ("vinnareToppCup" in patch) vinnareToppCup = patch.vinnareToppCup;
   if (patch.vinnareToppMedals) vinnareToppMedals = patch.vinnareToppMedals;
   if (patch.vinnareToppAr) vinnareToppAr = new Set(patch.vinnareToppAr);
+  if ("vinnareToppSport" in patch) vinnareToppSport = patch.vinnareToppSport;
   if (patch.historyMode) historyMode = patch.historyMode;
   if (patch.browse) {
     browseTarget = patch.browse;
@@ -3271,6 +3307,7 @@ export function resetStatsUrlFields(defaults = defaultSubViewSnap()) {
   vinnareToppCup = defaults.vinnareToppCup;
   vinnareToppMedals = defaults.vinnareToppMedals;
   vinnareToppAr = new Set(defaults.vinnareToppAr || []);
+  vinnareToppSport = defaults.vinnareToppSport;
   historyMode = defaults.historyMode;
   clubQuerySeeded = false;
   browseTarget = null;
