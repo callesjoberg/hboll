@@ -86,8 +86,8 @@ window.HB = window.HB || {};
   // totalerna (se startMapAnimation/onCupChange).
   async function computeStats() {
     const [idxRes, cupsRes] = await Promise.allSettled([
-      fetch("data/archive/index.json").then((r) => (r.ok ? r.json() : {})),
-      fetch("data/cups.json").then((r) => (r.ok ? r.json() : { cups: [] })),
+      fetch(HB.dataUrl("data/archive/index.json")).then((r) => (r.ok ? r.json() : {})),
+      fetch(HB.dataUrl("data/cups.json")).then((r) => (r.ok ? r.json() : { cups: [] })),
     ]);
     const idx = idxRes.status === "fulfilled" ? idxRes.value : {};
     const cupInfo = {};
@@ -1238,7 +1238,7 @@ window.HB = window.HB || {};
         cupPickerBtn, cupDropup, playPauseBtn);
     }
 
-    fetch("data/landing-map.json")
+    fetch(HB.dataUrl("data/landing-map.json"))
       .then((r) => (r.ok ? r.json() : {}))
       .then((cupsData) => {
         landingData = cupsData || {};

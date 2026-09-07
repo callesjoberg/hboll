@@ -108,7 +108,11 @@ HB.shortCat = shortCat;
   }
 
   function calendarSubscribeUrl(team) {
-    return teamCalendarUrl(team, cup(), isClubName(team.name));
+    const url = teamCalendarUrl(team, cup(), isClubName(team.name));
+    // Domänmodulen lämnar den statiska ics-filen som relativ sökväg —
+    // den ligger bland datan och följer alltså med om datan flyttar.
+    // Kalendertjänsternas absoluta URL:er ska inte röras.
+    return url && url.startsWith("data/") ? HB.dataUrl(url) : url;
   }
 
   function calendarWebcalUrl(team) {
@@ -171,7 +175,7 @@ HB.shortCat = shortCat;
 
   async function loadClubLogoLibrary() {
     try {
-      const response = await fetch("data/club-logos.json", {
+      const response = await fetch(HB.dataUrl("data/club-logos.json"), {
         headers: { accept: "application/json" },
       });
       if (!response.ok) return;
@@ -2779,14 +2783,14 @@ HB.shortCat = shortCat;
     const params = new URLSearchParams(location.search);
     const urlCup = params.get("cup");
     const windowsPromise = (urlCup || savedCupId) ? null
-      : fetch("data/cup-windows.json?_=" + Date.now().toString(36))
+      : fetch(HB.dataUrl("data/cup-windows.json") + "?_=" + Date.now().toString(36))
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null); // utan filen: första cupen i listan, som förr
 
     // Skarp cuplista från data/cups.json (redigeras via admin.html);
     // HB.CUPS i config.js är reserv om filen saknas eller är trasig.
     try {
-      const r = await fetch("data/cups.json?_=" + Date.now().toString(36));
+      const r = await fetch(HB.dataUrl("data/cups.json") + "?_=" + Date.now().toString(36));
       if (r.ok) {
         const j = await r.json();
         if (Array.isArray(j.cups) && j.cups.length) HB.CUPS = j.cups;

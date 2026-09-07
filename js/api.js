@@ -50,7 +50,7 @@ window.HB = window.HB || {};
   // absorberas av GitHub Pages/CDN och leder aldrig till motsvarande antal
   // anrop mot Cup Manager.
   function sharedSnapshotPath(cup) {
-    return cup.dataUrl || ("data/snapshot-" + cup.id + ".json");
+    return HB.dataUrl(cup.dataUrl || ("data/snapshot-" + cup.id + ".json"));
   }
 
   function versionedUrl(base, version) {
@@ -62,7 +62,7 @@ window.HB = window.HB || {};
     const bucket = Math.floor(now / SNAPSHOT_BUCKET_MS);
     if (snapshotIndexPromise && snapshotIndexBucket === bucket) return snapshotIndexPromise;
     snapshotIndexBucket = bucket;
-    snapshotIndexPromise = fetch(versionedUrl("data/snapshot-index.json", bucket), {
+    snapshotIndexPromise = fetch(versionedUrl(HB.dataUrl("data/snapshot-index.json"), bucket), {
       headers: { accept: "application/json" }, cache: "default",
     }).then((r) => {
       if (!r.ok) throw new Error("HTTP " + r.status);
@@ -619,7 +619,7 @@ window.HB = window.HB || {};
   function fetchScorers(cup) {
     if (cup.dataUrl) return Promise.resolve(null); // ProCup/Gothia saknar feed
     if (scorerCache.has(cup.id)) return scorerCache.get(cup.id);
-    const p = fetch("data/scorers-" + cup.id + ".json", {
+    const p = fetch(HB.dataUrl("data/scorers-" + cup.id + ".json"), {
       headers: { accept: "application/json" },
     }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     scorerCache.set(cup.id, p);
@@ -943,7 +943,7 @@ window.HB = window.HB || {};
 
   function fetchArchiveIndex() {
     if (!archiveIndexPromise) {
-      archiveIndexPromise = fetch("data/archive/index.json", { cache: "no-store" })
+      archiveIndexPromise = fetch(HB.dataUrl("data/archive/index.json"), { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : {}))
         .catch(() => ({}));
     }
@@ -962,7 +962,7 @@ window.HB = window.HB || {};
 
   function fetchTeamIndex() {
     if (!teamIndexPromise) {
-      teamIndexPromise = fetch("data/archive/team-index.json")
+      teamIndexPromise = fetch(HB.dataUrl("data/archive/team-index.json"))
         .then((r) => (r.ok ? r.json() : {}))
         .catch(() => ({}));
     }
@@ -1070,7 +1070,7 @@ window.HB = window.HB || {};
 
   function fetchChampions() {
     if (!championsPromise) {
-      championsPromise = fetch("data/champions.json", { cache: "no-store" })
+      championsPromise = fetch(HB.dataUrl("data/champions.json"), { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : { rows: [] }))
         .catch(() => ({ rows: [] }));
     }
@@ -1085,7 +1085,7 @@ window.HB = window.HB || {};
 
   function fetchClubDirectory() {
     if (!clubDirectoryPromise) {
-      clubDirectoryPromise = fetch("data/club-directory.json", { cache: "no-store" })
+      clubDirectoryPromise = fetch(HB.dataUrl("data/club-directory.json"), { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : {}))
         .catch(() => ({}));
     }

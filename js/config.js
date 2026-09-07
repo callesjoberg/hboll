@@ -6,6 +6,23 @@
 
 window.HB = window.HB || {};
 
+// Var datan bor. Tom sträng = samma ursprung som sajten, precis som förut.
+// Sätts till t.ex. "https://data.cupschema.se" när snapshots och arkiv
+// flyttat till objektlagring — då slutar en datauppdatering vara en
+// ombyggnad av hela sajten, vilket är det som spränger byggkvoten under
+// matchtid (12 push/tim mot GitHub Pages tak på 10).
+//
+// ALLA datahämtningar i klienten går genom HB.dataUrl(). Lägger man till en
+// ny, använd den — annars pekar just den filen fel den dag basen ändras.
+// Service workern rör inget av det här: den hoppar över både cross-origin
+// och allt med /data/ i sökvägen (se sw.js).
+HB.DATA_BASE = "";
+
+HB.dataUrl = function (path) {
+  if (!HB.DATA_BASE) return path;
+  return HB.DATA_BASE.replace(/\/+$/, "") + "/" + String(path).replace(/^\/+/, "");
+};
+
 // Synligt versionsmärke (Inställningar, längst ned) och HB.VERSION i
 // konsolen. Finns för att kunna svara på "kör du senaste versionen?" —
 // en cachad service worker kan annars servera gammal kod hur länge som
@@ -14,7 +31,7 @@ window.HB = window.HB || {};
 // Redigera inte för hand: den stod länge kvar på ett datum två veckor
 // bakåt just för att den var det enda stället som krävde ett eget
 // handgrepp.
-HB.VERSION = "20260906y";
+HB.VERSION = "20260907c";
 
 HB.CLUB = {
   name: "Alingsås HK",

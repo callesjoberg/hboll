@@ -20,6 +20,8 @@ export function calendarSubscribeUrl(team, cup, isClubTeam) {
     return "https://" + cup.host + "/service/GetTeamCalendarService?teamId=" + team.id;
   }
   if (isClubTeam) {
+    // Relativ sökväg med flit: domänlagret ska inte känna till var datan
+    // serveras. Anroparen (calendarSubscribeUrl i app.js) sätter basen.
     return "data/ics/" + cup.id + "/" + slugifyTeamId(team.id) + ".ics";
   }
   return null;

@@ -6,6 +6,12 @@ import assert from "node:assert/strict";
 globalThis.window = globalThis;
 window.HB = { shortCat: (name) => name || "" };
 
+// config.js laddas på riktigt i stället för att härmas: den bär HB.dataUrl,
+// som varje hämtning i api.js går genom. En egen kopia av den funktionen
+// här hade kunnat drifta ifrån den skarpa utan att något test märkte det.
+await import("../js/config.js");
+window.HB.shortCat = (name) => name || "";
+
 const storage = new Map();
 class StorageMock {
   getItem(key) { return storage.has(key) ? storage.get(key) : null; }
