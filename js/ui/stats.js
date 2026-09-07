@@ -1996,7 +1996,8 @@ let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
 let vinnareToppMedals = { guld: true, silver: false, brons: false }; // medaljer som räknas i topplistan
 let vinnareAr = new Set();     // årsfilter (troféskåpet); tom = alla år
 let vinnareToppAr = new Set(); // årsfilter (vinnartoppen); tom = alla år
-let vinnareToppVisning = "antal"; // antal | perlag | matcher | vinst
+let vinnareToppVisning = "antal"; // antal | perlag | matcher | vinst (smal skärm)
+let vinnareToppSort = { key: "antal", dir: -1 }; // sorterad kolumn i topplistan
 let vinnareToppSport = null;   // null = härled ur vald cup vid första ritningen
 let klubbAnmalningar = null;   // {klubb: {cup: {år: antal}}} när den hämtats
 
@@ -2300,7 +2301,13 @@ function renderVinnartoppen(root, rows) {
     h("span", { class: "muted" }, "Visa:"),
     h("div", { class: "vinnare-ar-scroll" },
       VISNINGAR.map(([v, etikett]) => chip(etikett, vinnareToppVisning === v, () => {
-        vinnareToppVisning = v; renderContent();
+        // På smal skärm finns ingen rubrikrad att klicka i, så att välja
+        // mått sorterar också på det. Väljer man samma igen vänder
+        // ordningen, precis som ett rubrikklick på bred skärm.
+        if (vinnareToppVisning === v) vinnareToppSort.dir *= -1;
+        else vinnareToppSort = { key: v, dir: -1 };
+        vinnareToppVisning = v;
+        renderContent();
       }, "small")))));
 
   const active = ["guld", "silver", "brons"].filter((t) => vinnareToppMedals[t]);
@@ -2343,9 +2350,48 @@ function renderVinnartoppen(root, rows) {
     return ut;
   };
 
+  /* Sorterbara kolumner. Värdet för en klubb utan anmälningsdata är null,
+     inte noll: en klubb vars nämnare saknas ska hamna sist oavsett
+     riktning, inte överst när man sorterar stigande. */
+  const värde = (rad, key) => {
+    const [, n, m] = rad;
+    if (key === "antal") return n;
+    if (key === "perlag") return m.lag ? n / m.lag : null;
+    if (key === "matcher") return m.lag ? m.matcher / m.lag : null;
+    if (key === "vinst") return m.spelade ? m.vinster / m.spelade : null;
+    return n;
+  };
+  /* Tröskel — men bara när man sorterar på en KVOT.
+
+     Som förvald rangordning vore den fel: listan ska visa de klubbar man
+     känner igen. Men sorterar man på vinstprocent fylls den annars av
+     klubbar med en spelad match på 100 %, och sju medaljer på tio försök
+     slår 248 på 2 741. Talen står i noten under listan, så det syns vad
+     som sållats bort.
+
+     Antalskolumnen har ingen tröskel: där är talet självförklarande. */
+  const TRÖSKEL = { perlag: 25, matcher: 25, vinst: 100 };
+  const gräns = TRÖSKEL[vinnareToppSort.key] || 0;
+  const räknar = vinnareToppSort.key === "vinst" ? "spelade" : "lag";
+  let bortsållade = 0;
   const ranked = [...count.entries()]
     .map(([club, n]) => [club, n, anmälda(club)])
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
+    .filter(([, , m]) => {
+      if (!gräns) return true;
+      if ((m[räknar] || 0) >= gräns) return true;
+      bortsållade++;
+      return false;
+    })
+    .sort((a, b) => {
+      const x = värde(a, vinnareToppSort.key), y = värde(b, vinnareToppSort.key);
+      if (x === null && y === null) return a[0].localeCompare(b[0], "sv");
+      if (x === null) return 1;
+      if (y === null) return -1;
+      // Lika värde bryts på medaljantal, sedan namn — så ordningen är
+      // stabil och inte beroende av hur Map råkade räkna upp klubbarna.
+      return (y - x) * (vinnareToppSort.dir < 0 ? 1 : -1)
+        || b[1] - a[1] || a[0].localeCompare(b[0], "sv");
+    });
   if (!ranked.length) {
     root.append(h("p", { class: "muted" }, !active.length
       ? "Välj minst en medaljtyp ovan."
@@ -2356,8 +2402,13 @@ function renderVinnartoppen(root, rows) {
   }
   // Tät rangordning (samma antal medaljer delar placering).
   let rank = 0, prev = null;
-  const withRank = ranked.map(([club, n, m], i) => {
-    if (n !== prev) { rank = i + 1; prev = n; }
+  const withRank = ranked.map((rad, i) => {
+    const [club, n, m] = rad;
+    // Tät rangordning på DEN SORTERADE kolumnen — annars hade två klubbar
+    // med samma vinstprocent fått olika placering när man sorterar på den.
+    const v = värde(rad, vinnareToppSort.key);
+    const nyckel = v === null ? "–" : v.toFixed(6);
+    if (nyckel !== prev) { rank = i + 1; prev = nyckel; }
     return { club, n, m, rank };
   });
   const fav = (state.favoriteClub || "").trim().toLowerCase();
@@ -2396,11 +2447,26 @@ function renderVinnartoppen(root, rows) {
 
   // Kolumnrubriker behövs bara när kolumnerna faktiskt står bredvid
   // varandra; CSS döljer raden på smal skärm.
+  const sortera = (key) => {
+    // Samma kolumn igen vänder ordningen; en ny kolumn börjar med störst
+    // först, vilket är vad man vill se i en topplista.
+    if (vinnareToppSort.key === key) vinnareToppSort.dir *= -1;
+    else vinnareToppSort = { key, dir: -1 };
+    renderContent();
+  };
   board.append(h("div", { class: "brow brow-huvud" },
     h("span", { class: "brow-pos" }, "#"),
     h("span", { class: "brow-club" }, "Klubb"),
-    VISNINGAR.map(([v, etikett]) =>
-      h("span", { class: "brow-cnt brow-huvud-cell", "data-matt": v }, etikett))));
+    VISNINGAR.map(([v, etikett]) => {
+      const aktiv = vinnareToppSort.key === v;
+      return h("button", {
+        class: "brow-cnt brow-huvud-cell" + (aktiv ? " on" : ""),
+        "data-matt": v, type: "button",
+        "aria-sort": aktiv ? (vinnareToppSort.dir < 0 ? "descending" : "ascending") : "none",
+        title: "Sortera på " + etikett.toLowerCase(),
+        onclick: () => sortera(v),
+      }, etikett, aktiv ? (vinnareToppSort.dir < 0 ? " ▾" : " ▴") : "");
+    })));
 
   withRank.slice(0, 25).forEach((e) => {
     const detalj = h("div", { class: "brow-detalj", hidden: "" });
@@ -2412,7 +2478,8 @@ function renderVinnartoppen(root, rows) {
       title: "Visa var medaljerna vunnits",
     },
       h("span", { class: "brow-pos" }, String(e.rank)),
-      h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
+      h("span", { class: "brow-club" }, e.club,
+        e.rank === 1 && vinnareToppSort.key === "antal" ? " 🏆" : ""),
       talen(e));
     const växla = () => {
       if (!byggd) {
@@ -2467,12 +2534,13 @@ function renderVinnartoppen(root, rows) {
   const NOTER = {
     antal: "Rå medaljräkning. Mäter delvis klubbstorlek: den som anmäler "
       + "fyrtio lag har fyrtio chanser, den som anmäler fyra har fyra. "
-      + "Byt vy ovan för att se samma lista genom andra mått.",
+      + "Klicka en kolumnrubrik för att sortera på ett annat mått.",
     perlag: "Medaljer delat med antal anmälda lag. Varje anmält lag är en "
       + "chans till medalj, så det här är utdelningen per försök. Sävehofs "
       + "248 medaljer kommer med 2 741 lag; per försök ligger de under "
-      + "Aranäs och Alingsås. Listan rankas ändå på antal — rankad på kvot "
-      + "toppas den av klubbar med litet underlag.",
+      + "Aranäs och Alingsås. Sorterar du på kolumnen toppas listan av "
+      + "klubbar med litet underlag — sju medaljer på tio försök slår 248 "
+      + "på 2 741 — så läs den tillsammans med antalet bredvid.",
     matcher: "Hur många matcher klubbens lag spelar i snitt. Mäter DJUP: "
       + "ett lag som når finalen spelar ungefär åtta matcher, ett som åker "
       + "ut i gruppspelet fyra. Snittet över alla lag är 6,4. Måttet är "
@@ -2492,6 +2560,13 @@ function renderVinnartoppen(root, rows) {
     + "Jämför inom en och samma sport — en basketcup delar ut tre medaljer "
     + "på åtta lag där en handbollscup delar ut tre på fyrtio.";
   root.append(h("p", { class: "muted vinnare-kvotnot" }, NOTER[vinnareToppVisning] || ""));
+  if (gräns && bortsållade) {
+    root.append(h("p", { class: "muted vinnare-kvotnot" },
+      "Sorterat på den här kolumnen visas bara klubbar med minst " + gräns
+      + (räknar === "spelade" ? " spelade matcher" : " anmälda lag")
+      + " i urvalet — " + bortsållade + " klubbar är bortsållade. Utan den "
+      + "gränsen toppas listan av klubbar med ett enda försök."));
+  }
   if (vinnareToppVisning !== "antal") {
     root.append(h("p", { class: "muted vinnare-kvotnot" }, RÅD));
   }

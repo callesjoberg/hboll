@@ -5056,7 +5056,20 @@ button.welcome-cta-secondary {
     color: var(--ink-soft);
   }
   .brow-huvud .brow-pos, .brow-huvud .brow-club { color: var(--ink-soft); font-weight: 600; }
-  .brow-huvud-cell { font: inherit; color: var(--ink-soft); }
+  /* Rubrikerna är knappar: de sorterar. Ser ut som text tills man hovrar,
+     så raden inte blir en rad med knappar att läsa igenom. */
+  .brow-huvud-cell {
+    font: inherit;
+    color: var(--ink-soft);
+    background: none;
+    border: 0;
+    padding: 2px 0;
+    cursor: pointer;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .brow-huvud-cell:hover { color: var(--ink); }
+  .brow-huvud-cell.on { color: var(--blue); font-weight: 700; }
   /* Väljaren styr ingenting när allt syns ändå. */
   .vinnare-visning { display: none; }
 }
