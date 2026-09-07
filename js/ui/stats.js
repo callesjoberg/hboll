@@ -2,7 +2,7 @@
 
 import { h, $ } from "../dom.js";
 import { attachAutocomplete, chip, withClearButton } from "./controls.js";
-import { buildPicker } from "./toolbar.js";
+import { buildPicker, ÅRS_SORTERING } from "./toolbar.js";
 import {
   matchCard, openPlayerSheet, openMatchSheet, openRefereeSheet,
 } from "./match-ui.js";
@@ -1363,7 +1363,8 @@ function renderClubView(root) {
     emptyLabel: "Alla år",
     countLabel: (n) => (n === 1 ? "1 år" : n + " år"),
     searchPlaceholder: "Sök år …",
-    sortToggle: false,
+    sortOptions: ÅRS_SORTERING,
+    quickPicks: [1, 2, 3, 5],
     soloClickable: true,
     onChange: () => { state.clubDrillCup = null; state.clubDrillClass = null; renderContent(); },
   }) : null;
@@ -1448,7 +1449,10 @@ function renderClubView(root) {
     { key: "won", label: "Vinstandel", defaultDir: -1,
       get: (r) => (r.played ? r.won / r.played : -1),
       render: (r) => renderClubResult(r) },
-    { key: "gd", label: "Mål/match", defaultDir: -1,
+    // "Mål/match" läste alla som "mål per match" och undrade varför
+    // handbollslag gjorde 0,8 mål — talet är MÅLSKILLNADEN per match
+    // (9,2 gjorda minus 8,4 insläppta = +0,8). Rätt värde, fel namn.
+    { key: "gd", label: "Målskillnad/match", defaultDir: -1,
       get: (r) => (r.played ? (r.gf - r.ga) / r.played : -99),
       render: (r) => renderClubGoals(r) },
   ];
@@ -1637,7 +1641,8 @@ function renderClubCompareView(root) {
     emptyLabel: "Alla år",
     countLabel: (count) => count === 1 ? "1 år" : count + " år",
     searchPlaceholder: "Sök år …",
-    sortToggle: false,
+    sortOptions: ÅRS_SORTERING,
+    quickPicks: [1, 2, 3, 5],
     soloClickable: true,
     onChange: () => { state.compareExpanded = new Set(); renderContent(); },
   }) : null;

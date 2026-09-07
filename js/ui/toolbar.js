@@ -107,6 +107,13 @@ const PICKER_LAZY_MAX_RESULTS = 200; // tak även på TRÄFFARNA (bred sökning 
 // med direkt DOM-manipulation i stället för renderToolbar(), så att den kan
 // hållas öppen genom flera val utan att byggas om. items: [{id, label,
 // sortKey (numeriskt), sortName (för alfabetisk sortering)}].
+// Årsväljarnas sorteringslägen. Delas av alla tre årsväljare (toolbarens
+// årsfilter, Klubb/lag och Klubbjämförelse) så de beter sig likadant.
+export const ÅRS_SORTERING = [
+  ["ny", "Nyast först", (a, b) => b.dataset.name.localeCompare(a.dataset.name, "sv")],
+  ["gammal", "Äldst först", (a, b) => a.dataset.name.localeCompare(b.dataset.name, "sv")],
+];
+
 function buildPicker(opts) {
   // opts.icon: enskild emoji som mobilens filterremsa visar ovanför
   // etiketten (se .filter-group i style.css). Sätts som data-attribut i
@@ -140,25 +147,37 @@ function buildPicker(opts) {
   // cupväljarna på Karta/Trend) har bara namnsortering, ingen växlingsrad.
   // sortKey/catkey blir då aldrig meningsfullt ifyllt av anroparen, men
   // det spelar ingen roll eftersom "klass"-jämförelsen aldrig körs.
-  let sortMode = opts.sortToggle === false ? "namn" : "klass";
+  /* Sorteringslägen. Standard är klass/namn, men en väljare kan skicka
+     egna med opts.sortOptions — årsväljarna vill ha "nyast först" och
+     "äldst först", och "Sortera: klass" är meningslöst för ett årtal.
+     Varje läge är [nyckel, etikett, jämförare]. */
+  const SORT_STANDARD = [
+    ["klass", "Sortera: klass",
+      (a, b) => (+a.dataset.catkey - +b.dataset.catkey) ||
+        a.dataset.name.localeCompare(b.dataset.name, "sv")],
+    ["namn", "Sortera: namn",
+      (a, b) => a.dataset.name.localeCompare(b.dataset.name, "sv")],
+  ];
+  const sortLägen = opts.sortOptions || SORT_STANDARD;
+  let sortMode = opts.sortToggle === false && !opts.sortOptions
+    ? "namn" : sortLägen[0][0];
   const sortBtns = {};
   // selectedFirst: lyfter ikryssade rader överst. Körs BARA när panelen
   // öppnas (se toggle-lyssnaren nedan), aldrig vid ett enskilt klick —
   // annars hoppar raden man just kryssade i väg under fingret och nästa
   // klick landar på fel rad.
   const applySort = (selectedFirst) => {
-    const base = sortMode === "namn"
-      ? (a, b) => a.dataset.name.localeCompare(b.dataset.name, "sv")
-      : (a, b) => (+a.dataset.catkey - +b.dataset.catkey) ||
-          a.dataset.name.localeCompare(b.dataset.name, "sv");
+    const läge = sortLägen.find(([k]) => k === sortMode) || sortLägen[0];
+    const base = läge[2];
     const cmp = selectedFirst
       ? (a, b) => (opts.selected.has(b._id) ? 1 : 0) - (opts.selected.has(a._id) ? 1 : 0) || base(a, b)
       : base;
     [...list.children].sort(cmp).forEach((el) => list.append(el));
   };
   dd.addEventListener("toggle", () => { if (dd.open) applySort(true); });
-  const sortRow = opts.sortToggle === false ? null : h("div", { class: "team-picker-sort-row" },
-    ["klass", "namn"].map((key) => {
+  const visaSortRad = opts.sortOptions ? true : opts.sortToggle !== false;
+  const sortRow = !visaSortRad ? null : h("div", { class: "team-picker-sort-row" },
+    sortLägen.map(([key, etikett]) => {
       const b = h("button", {
         class: "chip small" + (key === sortMode ? " on" : ""),
         type: "button",
@@ -167,7 +186,7 @@ function buildPicker(opts) {
           Object.entries(sortBtns).forEach(([k, el]) => el.classList.toggle("on", k === key));
           applySort();
         },
-      }, "Sortera: " + (key === "namn" ? "namn" : "klass"));
+      }, etikett);
       sortBtns[key] = b;
       return b;
     }));
@@ -183,7 +202,7 @@ function buildPicker(opts) {
       onchange: (e) => {
         e.target.checked ? opts.selected.add(it.id) : opts.selected.delete(it.id);
         saveUi(); setSummary(); opts.onChange();
-        syncGenderBoxes();
+        syncGenderBoxes(); syncAllaBtn(); syncSnabb();
         if (lazy && !e.target.checked) renderLazyList(search.value); // en avkryssad rad ska försvinna om den inte längre matchar sökningen
       },
     });
@@ -204,6 +223,7 @@ function buildPicker(opts) {
             saveUi(); setSummary(); opts.onChange();
             if (lazy) renderLazyList(search.value);
             else for (const r of list.children) r._checkbox.checked = opts.selected.has(r._id);
+            syncAllaBtn();
           },
         }, it.label)
       : it.label;
@@ -230,7 +250,7 @@ function buildPicker(opts) {
     list.replaceChildren(...selectedItems.map(buildRow), ...matched.map(buildRow));
     lazyHint.hidden = !!(q || selectedItems.length);
     applySort();
-    syncGenderBoxes();
+    syncGenderBoxes(); syncAllaBtn(); syncSnabb();
   }
 
   const clearBtn = h("button", {
@@ -240,8 +260,77 @@ function buildPicker(opts) {
       saveUi(); setSummary(); opts.onChange();
       if (lazy) renderLazyList(search.value);
       else list.querySelectorAll("input").forEach((cb) => { cb.checked = false; });
+      syncAllaBtn(); syncSnabb();
     },
   }, "Rensa");
+
+  /* Motsvarigheten till Rensa: kryssa i allt. Bockar de just nu SYNLIGA
+     raderna, alltså det sökningen filtrerat fram — samma innebörd som
+     snabbvalen Flickor/Pojkar har. Utan sökning är det hela listan.
+
+     I det lata läget (lagväljaren, tusentals poster) listas bara redan
+     valda och sökträffar. "Alla" väljer då träffarna, inte hela registret
+     — annars hade ett tomt sökfält kunnat kryssa i tiotusen lag med ett
+     klick. Utan träffar finns inget att välja och knappen är avstängd.
+
+     Avstängd även när allt synligt redan är valt, så den inte ser ut att
+     göra något som den inte gör. */
+  const synligaRader = () => [...list.children].filter((row) => !row.hidden);
+  const allaBtn = h("button", {
+    class: "btn small", type: "button",
+    onclick: () => {
+      for (const row of synligaRader()) {
+        row._checkbox.checked = true;
+        opts.selected.add(row._id);
+      }
+      saveUi(); setSummary(); opts.onChange();
+      if (lazy) renderLazyList(search.value);
+      syncGenderBoxes(); syncAllaBtn(); syncSnabb();
+    },
+  }, "Alla");
+
+  /* Snabbval: "senaste 2 år" osv. Väljer de N nyaste posterna, alltså de
+     N högsta sortName — för fyrsiffriga årtal räcker en strängjämförelse.
+     Ersätter urvalet i stället för att lägga till: "senaste 3 år" ska
+     betyda just de tre, inte de tre plus vad som redan råkade vara valt. */
+  const snabbRad = !opts.quickPicks ? null : h("div", { class: "team-picker-sort-row" },
+    h("span", { class: "muted team-picker-snabb-etikett" }, "Senaste:"),
+    opts.quickPicks.map((n) => h("button", {
+      class: "chip small", type: "button",
+      onclick: () => {
+        const nyaste = [...opts.items]
+          .sort((a, b) => String(b.sortName).localeCompare(String(a.sortName), "sv"))
+          .slice(0, n).map((it) => it.id);
+        opts.selected.clear();
+        for (const id of nyaste) opts.selected.add(id);
+        saveUi(); setSummary(); opts.onChange();
+        if (lazy) renderLazyList(search.value);
+        else for (const r of list.children) r._checkbox.checked = opts.selected.has(r._id);
+        syncGenderBoxes(); syncAllaBtn(); syncSnabb();
+      },
+    }, String(n))));
+
+  function syncSnabb() {
+    if (!snabbRad) return;
+    const valda = [...opts.selected];
+    const nyaste = (n) => [...opts.items]
+      .sort((a, b) => String(b.sortName).localeCompare(String(a.sortName), "sv"))
+      .slice(0, n).map((it) => it.id);
+    opts.quickPicks.forEach((n, i) => {
+      const knapp = snabbRad.querySelectorAll("button")[i];
+      const mål = nyaste(n);
+      // Markerad bara när urvalet är EXAKT de N nyaste — annars ser den ut
+      // att vara ett läge man befinner sig i fast man valt något annat.
+      knapp.classList.toggle("on", valda.length === mål.length &&
+        mål.every((id) => opts.selected.has(id)));
+    });
+  }
+
+  function syncAllaBtn() {
+    const synliga = synligaRader();
+    allaBtn.disabled = !synliga.length ||
+      synliga.every((row) => opts.selected.has(row._id));
+  }
 
   // Snabbval Flickor/Pojkar (bara klassväljaren, se buildCatPicker): kryssar
   // eller kryssar ur ALLA just nu SYNLIGA (sökfiltrerade) klasser av det
@@ -276,6 +365,7 @@ function buildPicker(opts) {
               }
               saveUi(); setSummary(); opts.onChange();
               if (lazy) renderLazyList(search.value); else syncGenderBoxes();
+              syncAllaBtn();
             },
           }),
           label)));
@@ -295,13 +385,13 @@ function buildPicker(opts) {
     }
     const q = search.value;
     for (const item of list.children) item.hidden = !matchesBooleanQuery(item.dataset.search, q);
-    syncGenderBoxes();
+    syncGenderBoxes(); syncAllaBtn();
   });
-  syncGenderBoxes();
+  syncGenderBoxes(); syncAllaBtn(); syncSnabb();
 
   dd.append(summary, h("div", { class: "team-picker-panel" },
-    h("div", { class: "team-picker-search-row" }, withClearButton(search), clearBtn),
-    genderRow, sortRow, lazy ? lazyHint : null, list));
+    h("div", { class: "team-picker-search-row" }, withClearButton(search), allaBtn, clearBtn),
+    genderRow, snabbRad, sortRow, lazy ? lazyHint : null, list));
   return dd;
 }
 
@@ -471,6 +561,8 @@ function buildYearPicker(editions, currentEdition) {
       return String([...state.years][0] || "1 år");
     },
     searchPlaceholder: "Sök år …",
+    sortOptions: ÅRS_SORTERING,
+    quickPicks: [1, 2, 3, 5],
     onChange: () => {
       for (const y of state.years) ensureYearMatches(y);
       render();

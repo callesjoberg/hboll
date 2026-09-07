@@ -1206,6 +1206,13 @@ body.desktop-filter-open #desktopFilterHost { border-top: 1px solid var(--menu-l
   color: var(--ink);
 }
 
+.team-picker-snabb-etikett {
+  align-self: center;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .team-picker-sort-row { display: flex; gap: 6px; }
 
 /* Snabbval Flickor/Pojkar — bara klassväljaren (buildPicker med
