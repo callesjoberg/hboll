@@ -973,6 +973,21 @@ window.HB = window.HB || {};
     return teamIndexPromise;
   }
 
+  // {klubb: {cupId: {upplaga: antal anmälda lag}}} — nämnaren till
+  // vinnartoppens "per lag"-läge (scripts/build_team_index.py). Hämtas
+  // först när det läget slås på: 319 kB är billigt för den som vill se
+  // kvoten, men gratis för alla andra.
+  let clubEntriesPromise = null;
+
+  function fetchClubEntries() {
+    if (!clubEntriesPromise) {
+      clubEntriesPromise = fetch(HB.dataUrl("data/archive/club-entries.json"))
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}));
+    }
+    return clubEntriesPromise;
+  }
+
   // Minimal IndexedDB-wrapper — en enda "editions"-store, nyckel
   // "cupId:edition". Faller tyst tillbaka till "ingen cache" (null) om
   // IndexedDB saknas eller inte går att öppna (t.ex. privat läge i vissa
@@ -1100,7 +1115,7 @@ window.HB = window.HB || {};
 
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
              fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed,
-             fetchScorers, fetchTable,
+             fetchScorers, fetchTable, fetchClubEntries,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,

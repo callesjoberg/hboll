@@ -1974,6 +1974,9 @@ let vinnareToppCup = "";       // cupfilter (vinnartoppen); "" = alla cuper
 let vinnareToppMedals = { guld: true, silver: false, brons: false }; // medaljer som räknas i topplistan
 let vinnareAr = new Set();     // årsfilter (troféskåpet); tom = alla år
 let vinnareToppAr = new Set(); // årsfilter (vinnartoppen); tom = alla år
+let vinnareToppPerLag = false; // ranka på medaljer per anmält lag i stället för antal
+let klubbAnmalningar = null;   // {klubb: {cup: {år: antal}}} när den hämtats
+const MIN_LAG_FOR_KVOT = 10;   // se kommentaren vid uträkningen nedan
 
 // Tillhör lagnamnet/klubben favoritklubben? gc/sc/bc är redan normaliserade
 // klubbnamn (se normalize_club i archive_results.py); favoritklubben jämförs
@@ -2211,6 +2214,31 @@ function renderVinnartoppen(root, rows) {
       chip("🥇 Guld", vinnareToppMedals.guld, () => { vinnareToppMedals.guld = !vinnareToppMedals.guld; renderContent(); }),
       chip("🥈 Silver", vinnareToppMedals.silver, () => { vinnareToppMedals.silver = !vinnareToppMedals.silver; renderContent(); }),
       chip("🥉 Brons", vinnareToppMedals.brons, () => { vinnareToppMedals.brons = !vinnareToppMedals.brons; renderContent(); }))));
+  /* Rättvisejämförelse. En klubb som anmäler fyrtio lag har fyrtio chanser
+     till medalj; en som anmäler fyra har fyra. Rå medaljräkning mäter
+     därför delvis klubbstorlek. "Per lag" delar med antalet anmälda lag i
+     samma urval (cup och år räknas med), så jämförelsen blir per försök.
+
+     Per SPELARE vore ärligare men går inte: laguppställningar finns bara i
+     tre av 34 cuper. Per anmält lag är det bästa datan tillåter, och det
+     står i knappen så ingen tror att det är något annat.
+
+     Nämnaren kommer från data/archive/club-entries.json, byggd med SAMMA
+     klubbnormalisering som champions.json — annars hade "Alingsås HK 2"
+     kunnat räknas i nämnaren men inte i täljaren. */
+  root.append(h("div", { class: "row vinnare-controls" },
+    h("div", { class: "seg", role: "group", "aria-label": "Rangordning" },
+      chip("Antal", !vinnareToppPerLag, () => {
+        vinnareToppPerLag = false; renderContent();
+      }),
+      chip("Per anmält lag", vinnareToppPerLag, () => {
+        vinnareToppPerLag = true;
+        if (!klubbAnmalningar) {
+          HB.api.fetchClubEntries().then((d) => { klubbAnmalningar = d || {}; renderContent(); });
+        }
+        renderContent();
+      }))));
+
   const active = ["guld", "silver", "brons"].filter((t) => vinnareToppMedals[t]);
   const cntLabel = active.length === 1 ? " " + active[0] : " medaljer";
 
@@ -2223,28 +2251,80 @@ function renderVinnartoppen(root, rows) {
     if (vinnareToppMedals.silver) add(r.sc);
     if (vinnareToppMedals.brons) (r.bc || []).forEach(add);
   });
-  const ranked = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
+  /* Nämnaren räknas i SAMMA urval som täljaren: är en cup eller vissa år
+     valda ska bara de anmälningarna räknas, annars jämförs 2026 års
+     medaljer med tjugo års lag.
+
+     Tröskeln finns för att kvoten annars blir brus. 1 242 av de 2 484
+     klubbarna i registret har färre än fem anmälda lag totalt — en klubb
+     med ett lag och ett guld får kvoten 1,00 och toppar varje naiv lista
+     utan att säga något. Talet står i texten under listan, så läsaren ser
+     vad som sållats bort. */
+  const anmälda = (klubb) => {
+    const perCup = (klubbAnmalningar || {})[klubb];
+    if (!perCup) return 0;
+    let n = 0;
+    for (const [cupId, år] of Object.entries(perCup)) {
+      if (vinnareToppCup && cupId !== vinnareToppCup) continue;
+      for (const [ed, antal] of Object.entries(år)) {
+        if (vinnareToppAr.size && !vinnareToppAr.has(ed)) continue;
+        n += antal;
+      }
+    }
+    return n;
+  };
+
+  let bortsållade = 0;
+  let ranked;
+  if (vinnareToppPerLag) {
+    ranked = [...count.entries()]
+      .map(([club, n]) => [club, n, anmälda(club)])
+      .filter(([, , lag]) => {
+        if (lag >= MIN_LAG_FOR_KVOT) return true;
+        bortsållade++;
+        return false;
+      })
+      .sort((a, b) => (b[1] / b[2]) - (a[1] / a[2]) ||
+        b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
+  } else {
+    ranked = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "sv"));
+  }
   if (!ranked.length) {
     root.append(h("p", { class: "muted" }, !active.length
       ? "Välj minst en medaljtyp ovan."
-      : vinnareToppAr.size
-        ? "Inga mästare för valda år."
-        : "Inga mästare för den cupen ännu."));
+      : vinnareToppPerLag && bortsållade
+        ? "Ingen klubb har " + MIN_LAG_FOR_KVOT + " anmälda lag i det här "
+          + "urvalet — välj fler år eller alla cuper för att jämföra per lag."
+        : vinnareToppPerLag && !klubbAnmalningar
+          ? "Hämtar anmälda lag …"
+          : vinnareToppAr.size
+            ? "Inga mästare för valda år."
+            : "Inga mästare för den cupen ännu."));
     return;
   }
   // Tät rangordning (samma antal medaljer delar placering).
   let rank = 0, prev = null;
-  const withRank = ranked.map(([club, n], i) => {
-    if (n !== prev) { rank = i + 1; prev = n; }
-    return { club, n, rank };
+  const withRank = ranked.map(([club, n, lag], i) => {
+    // Tät rangordning jämför det som listan RANKAS på — i kvotläget alltså
+    // kvoten, inte antalet. Annars hade två klubbar med samma kvot men
+    // olika antal medaljer felaktigt fått skilda placeringar.
+    const nyckel = vinnareToppPerLag ? (n / lag).toFixed(4) : n;
+    if (nyckel !== prev) { rank = i + 1; prev = nyckel; }
+    return { club, n, lag, rank };
   });
   const fav = (state.favoriteClub || "").trim().toLowerCase();
   const board = h("div", { class: "board" });
+  // Kvoten utan de råa talen vore ett påstående man inte kan granska —
+  // "0,47" säger inget utan "248 av 532".
+  const kvotText = (e) => (e.n / e.lag).toFixed(2).replace(".", ",");
   withRank.slice(0, 25).forEach((e) => {
     board.append(h("div", { class: "brow" + (e.rank <= 3 ? " top3" : "") + (e.club.toLowerCase() === fav ? " us" : "") },
       h("span", { class: "brow-pos" }, String(e.rank)),
       h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
-      h("span", { class: "brow-cnt" }, String(e.n), h("small", null, cntLabel))));
+      vinnareToppPerLag
+        ? h("span", { class: "brow-cnt" }, kvotText(e),
+            h("small", null, " per lag · " + e.n + " av " + e.lag))
+        : h("span", { class: "brow-cnt" }, String(e.n), h("small", null, cntLabel))));
   });
   root.append(board);
   // Ligger favoritklubben utanför topp 25 — visa dess placering separat sist.
@@ -2253,7 +2333,21 @@ function renderVinnartoppen(root, rows) {
     board.append(h("div", { class: "brow us brow-sep" },
       h("span", { class: "brow-pos" }, String(favRow.rank)),
       h("span", { class: "brow-club" }, favRow.club),
-      h("span", { class: "brow-cnt" }, String(favRow.n), h("small", null, cntLabel))));
+      vinnareToppPerLag
+        ? h("span", { class: "brow-cnt" }, kvotText(favRow),
+            h("small", null, " per lag · " + favRow.n + " av " + favRow.lag))
+        : h("span", { class: "brow-cnt" }, String(favRow.n), h("small", null, cntLabel))));
+  }
+
+  // Vad som sållats bort ska stå under listan, inte gömmas. Annars ser en
+  // topplista utan små klubbar ut som ett resultat i stället för ett urval.
+  if (vinnareToppPerLag) {
+    root.append(h("p", { class: "muted vinnare-kvotnot" },
+      "Medaljer delat med antal anmälda lag i samma urval. Klubbar med "
+      + "färre än " + MIN_LAG_FOR_KVOT + " anmälda lag visas inte"
+      + (bortsållade ? " (" + bortsållade + " st)" : "")
+      + " — med så få försök säger kvoten mer om slumpen än om laget. "
+      + "Anmälda lag räknas ur arkivet; spelarantal finns inte i datan."));
   }
 }
 
