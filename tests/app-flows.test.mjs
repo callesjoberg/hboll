@@ -60,6 +60,7 @@ test("tom klubbsökning kan appliceras och Stats-sessionen återställas", () =>
     vinnareToppAr: defaults.vinnareToppAr,
     vinnareAr: defaults.vinnareAr,
     vinnareToppSport: defaults.vinnareToppSport,
+    cupsOverviewSport: defaults.cupsOverviewSport,
     historyMode: defaults.historyMode,
     browse: defaults.browse,
   });

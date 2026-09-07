@@ -127,6 +127,8 @@ export function defaultSubViewSnap(now = new Date()) {
     vinnareToppAr: new Set(),
     // null = härled ur vald cup vid första ritningen (se renderVinnartoppen)
     vinnareToppSport: null,
+    // "" = alla sporter; Cuper är en katalog och blandar utan att vilseleda
+    cupsOverviewSport: "",
     vinnareToppMedals: { guld: true, silver: false, brons: false },
     historyMode: "compare",
     browse: null,
@@ -211,6 +213,7 @@ export function encodeSubViewParams(p, snap) {
       ? [...snap.compareYears].join(",") : "all");
   } else if (sv === "cuper") {
     if (snap.statsCupDrill) p.set("cupDrill", snap.statsCupDrill);
+    if (snap.cupsOverviewSport) p.set("cusport", snap.cupsOverviewSport);
   } else if (sv === "kalender") {
     if (snap.kalenderYear) p.set("kyear", snap.kalenderYear);
   } else if (sv === "vinnare") {
@@ -311,6 +314,7 @@ export function decodeSubViewParams(params) {
   if (params.get("vyear")) out.vinnareYear = params.get("vyear");
   if (params.has("vtcup")) out.vinnareToppCup = params.get("vtcup");
   if (params.has("vtsport")) out.vinnareToppSport = params.get("vtsport");
+  if (params.has("cusport")) out.cupsOverviewSport = params.get("cusport");
   if (params.has("vtar")) {
     // Bara fyrsiffriga årtal — en trasig länk ska ge alla år, inte ett
     // filter som tyst döljer allt.

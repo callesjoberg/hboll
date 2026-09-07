@@ -5019,7 +5019,47 @@ button.welcome-cta-secondary {
 .rank-team.us { color: var(--blue); font-weight: 700; }
 .board { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
   overflow: hidden; box-shadow: var(--shadow); max-width: 460px; }
-.brow { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; padding: 10px 14px; }
+/* Vinnartoppens rader bär ALLA fyra måtten i DOM:en. Vilka som syns
+   avgörs av CSS, inte av js: på bred skärm står de som kolumner bredvid
+   varandra (att kunna jämföra dem mot varandra är hela poängen), på en
+   telefon visas ett i taget och Visa-knapparna väljer vilket. Att låta CSS
+   bestämma betyder att en storleksändring inte behöver rita om något, och
+   att en delad länk ser likadan ut oavsett skärm. */
+.brow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 14px; }
+
+/* Smal skärm: bara det valda måttet. data-visning sitter på .board.
+   Regeln ligger i en EGEN media-fråga i stället för att överstyras längre
+   ned — :not([data-matt]) gör den mer specifik än en enkel överstyrning,
+   och den vann då även på bred skärm så att bara medaljkolumnen syntes. */
+@media (max-width: 859px) {
+  .board[data-visning="antal"] .brow-cnt:not([data-matt="antal"]),
+  .board[data-visning="perlag"] .brow-cnt:not([data-matt="perlag"]),
+  .board[data-visning="matcher"] .brow-cnt:not([data-matt="matcher"]),
+  .board[data-visning="vinst"] .brow-cnt:not([data-matt="vinst"]) { display: none; }
+  .brow-huvud { display: none; }
+}
+
+@media (min-width: 860px) {
+  /* 460 px räcker för EN kolumn med tal, inte för fyra. Taket höjs bara
+     här — på smal skärm visas ett mått i taget och den smalare rutan är
+     rätt där. */
+  .board { max-width: 900px; }
+  .brow { grid-template-columns: 40px minmax(0, 1fr) repeat(4, minmax(112px, auto)); }
+  .brow-cnt { text-align: right; }
+  .brow-cnt small { display: block; margin-top: 2px; white-space: nowrap; }
+  .brow-huvud {
+    display: grid;
+    padding-bottom: 6px;
+    font: 600 11px/1.2 "Barlow", system-ui;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .brow-huvud .brow-pos, .brow-huvud .brow-club { color: var(--ink-soft); font-weight: 600; }
+  .brow-huvud-cell { font: inherit; color: var(--ink-soft); }
+  /* Väljaren styr ingenting när allt syns ändå. */
+  .vinnare-visning { display: none; }
+}
 .brow + .brow { border-top: 1px solid var(--line); }
 .brow-pos { font: 700 17px/1 "Barlow Condensed", system-ui, sans-serif; color: var(--ink-soft); text-align: center; }
 .brow.top3 .brow-pos { color: var(--yellow); }

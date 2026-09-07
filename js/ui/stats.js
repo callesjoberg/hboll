@@ -1739,6 +1739,11 @@ function clubCompareDetailBlock(row) {
 // per-upplaga-nyckeltal (matches/teams/classes/clubs/countries/days) räcker. Klick
 // på en rad borrar ner i den cupens egna år-för-år-historik.
 let cupsOverviewSort = { key: "cupName", dir: 1 };
+// "" = alla sporter. Till skillnad från vinnartoppen är blandningen här
+// inte vilseledande — Cuper är en katalog, inte en jämförelse — så
+// förvalet visar allt. Väljaren finns för att 34 cuper i fyra sporter är
+// en lång lista att leta i.
+let cupsOverviewSport = "";
 let cupsOverviewDetailSort = { key: "edition", dir: -1 };
 const cupsOverviewExpandedYears = new Set();
 const cupsOverviewEditionDetailCache = new Map();
@@ -1876,8 +1881,25 @@ function renderCupsOverviewView(root) {
     root.append(h("p", { class: "muted" }, "Ingen cup har ännu någon arkiverad historik."));
     return;
   }
+  const sporter = [...new Set(rows.map((r) => r.sport || "handboll"))]
+    .sort((a, b) => (SPORT_LABELS[a] || a).localeCompare(SPORT_LABELS[b] || b, "sv"));
+  if (cupsOverviewSport && !sporter.includes(cupsOverviewSport)) cupsOverviewSport = "";
+  if (sporter.length > 1) {
+    root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+      h("span", { class: "muted" }, "Sport:"),
+      h("div", { class: "vinnare-ar-scroll" },
+        chip("Alla sporter", !cupsOverviewSport, () => {
+          cupsOverviewSport = ""; renderContent();
+        }, "small"),
+        sporter.map((sp) => chip(SPORT_LABELS[sp] || sp, cupsOverviewSport === sp, () => {
+          cupsOverviewSport = sp; renderContent();
+        }, "small")))));
+  }
+  const visade = cupsOverviewSport
+    ? rows.filter((r) => (r.sport || "handboll") === cupsOverviewSport) : rows;
   root.append(h("p", { class: "muted" },
-    rows.length + " cuper · senaste upplagans nyckeltal — klicka en rad för år-för-år."));
+    visade.length + (cupsOverviewSport ? " " + (SPORT_LABELS[cupsOverviewSport] || "").toLowerCase() + "cuper" : " cuper")
+    + " · senaste upplagans nyckeltal — klicka en rad för år-för-år."));
   const columns = [
     { key: "cupName", label: "Cup", align: "l", defaultDir: 1, get: (r) => r.cupName },
     { key: "sport", label: "Sport", align: "l", defaultDir: 1, get: (r) => SPORT_LABELS[r.sport] || r.sport },
@@ -1895,7 +1917,7 @@ function renderCupsOverviewView(root) {
       get: (r) => r.latestCountries == null ? -1 : r.latestCountries,
       render: (r) => r.latestCountries == null ? "–" : String(r.latestCountries) },
   ];
-  root.append(sortableTable(columns, rows, cupsOverviewSort, null,
+  root.append(sortableTable(columns, visade, cupsOverviewSort, null,
     (r) => { state.statsCupDrill = r.cupId; renderContent(); }));
 }
 
@@ -2262,15 +2284,23 @@ function renderVinnartoppen(root, rows) {
     ["matcher", "Matcher/lag"],
     ["vinst", "Vinst%"],
   ];
-  root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+  /* På bred skärm står alla fyra måtten som kolumner bredvid varandra — att
+     kunna jämföra dem mot varandra är hela poängen med dem. På en telefon
+     ryms de inte, och då väljer man ett i taget med knapparna nedan (CSS
+     döljer det ena eller det andra, se .board i style.css).
+
+     Datan hämtas därför när vyn ritas i stället för vid knapptryck: på en
+     bred skärm finns inget knapptryck att vänta på. 528 kB en gång per
+     session, och den som aldrig öppnar vinnartoppen betalar fortfarande
+     ingenting. */
+  if (!klubbAnmalningar) {
+    HB.api.fetchClubEntries().then((d) => { klubbAnmalningar = d || {}; renderContent(); });
+  }
+  root.append(h("div", { class: "row vinnare-controls vinnare-ar vinnare-visning" },
     h("span", { class: "muted" }, "Visa:"),
     h("div", { class: "vinnare-ar-scroll" },
       VISNINGAR.map(([v, etikett]) => chip(etikett, vinnareToppVisning === v, () => {
-        vinnareToppVisning = v;
-        if (v !== "antal" && !klubbAnmalningar) {
-          HB.api.fetchClubEntries().then((d) => { klubbAnmalningar = d || {}; renderContent(); });
-        }
-        renderContent();
+        vinnareToppVisning = v; renderContent();
       }, "small")))));
 
   const active = ["guld", "silver", "brons"].filter((t) => vinnareToppMedals[t]);
@@ -2331,62 +2361,46 @@ function renderVinnartoppen(root, rows) {
     return { club, n, m, rank };
   });
   const fav = (state.favoriteClub || "").trim().toLowerCase();
-  const board = h("div", { class: "board" });
+  const board = h("div", { class: "board", "data-visning": vinnareToppVisning });
   // Kvoten utan de råa talen vore ett påstående man inte kan granska —
   // "0,47" säger inget utan "248 av 532".
   /* Ett tal per rad, valt av Visa-knapparna. Listan rankas alltid på antal
      medaljer — de andra måtten belyser samma lista, de ordnar den inte.
      Varför framgår av noten under listan. */
   const nf = (x) => x.toLocaleString("sv-SE");
-  const talet = (e) => {
+  const cell = (matt, huvud, liten) => h("span", {
+    class: "brow-cnt", "data-matt": matt,
+  }, huvud, liten ? h("small", null, liten) : null);
+
+  // Alla fyra måtten byggs alltid. CSS avgör om de visas sida vid sida
+  // (bred skärm) eller ett i taget (telefon) — då slipper vi rita om vid
+  // storleksändring, och en delad länk ser likadan ut oavsett skärm.
+  const talen = (e) => {
     const m = e.m || {};
-    if (vinnareToppVisning === "perlag") {
-      return m.lag
-        ? h("span", { class: "brow-cnt" }, (e.n / m.lag).toFixed(2).replace(".", ","),
-            h("small", null, " per lag · " + e.n + " av " + nf(m.lag)))
-        : h("span", { class: "brow-cnt" }, "–", h("small", null, " anmälda lag saknas"));
-    }
-    if (vinnareToppVisning === "matcher") {
-      return m.lag
-        ? h("span", { class: "brow-cnt" }, (m.matcher / m.lag).toFixed(1).replace(".", ","),
-            h("small", null, " matcher/lag · " + nf(m.matcher) + " på " + nf(m.lag)))
-        : h("span", { class: "brow-cnt" }, "–", h("small", null, " matchdata saknas"));
-    }
-    if (vinnareToppVisning === "vinst") {
-      return m.spelade
-        ? h("span", { class: "brow-cnt" },
-            (100 * m.vinster / m.spelade).toFixed(1).replace(".", ",") + " %",
-            h("small", null, " vinster · " + nf(m.vinster) + " av " + nf(m.spelade)))
-        : h("span", { class: "brow-cnt" }, "–", h("small", null, " resultat saknas"));
-    }
-    return h("span", { class: "brow-cnt" }, String(e.n), h("small", null, cntLabel));
+    return [
+      cell("antal", String(e.n), cntLabel),
+      m.lag
+        ? cell("perlag", (e.n / m.lag).toFixed(2).replace(".", ","),
+            " per lag · " + e.n + " av " + nf(m.lag))
+        : cell("perlag", "–", " anmälda lag saknas"),
+      m.lag
+        ? cell("matcher", (m.matcher / m.lag).toFixed(1).replace(".", ","),
+            " matcher/lag · " + nf(m.matcher) + " på " + nf(m.lag))
+        : cell("matcher", "–", " matchdata saknas"),
+      m.spelade
+        ? cell("vinst", (100 * m.vinster / m.spelade).toFixed(1).replace(".", ",") + " %",
+            " vinster · " + nf(m.vinster) + " av " + nf(m.spelade))
+        : cell("vinst", "–", " resultat saknas"),
+    ];
   };
 
-  /* Raderna går att fälla ut och visa VAR medaljerna vunnits — år, cup,
-     klass, lag och valör. Det är skillnaden mellan "129 medaljer" och att
-     faktiskt kunna se att fyra av dem är P16-guld i Bohus Cup.
-
-     Datan finns redan i champions.json, samma rader som räknats ihop till
-     talet på raden; ingen ny hämtning behövs. Listan byggs först vid
-     utfällning — 25 klubbar med hundratals medaljer var vore hundratals
-     noder som ingen bett om. */
-  const medaljerFor = (klubb) => {
-    const ut = [];
-    for (const r of scope) {
-      if (vinnareToppMedals.guld && r.gc === klubb) ut.push({ r, v: "🥇", lag: r.g });
-      if (vinnareToppMedals.silver && r.sc === klubb) ut.push({ r, v: "🥈", lag: r.s });
-      if (vinnareToppMedals.brons) {
-        (r.bc || []).forEach((bc, i) => {
-          if (bc === klubb) ut.push({ r, v: "🥉", lag: (r.b || [])[i] });
-        });
-      }
-    }
-    // Nyast först, och inom samma år cup för cup — samma ordning som
-    // troféskåpet, så de två vyerna läses likadant.
-    return ut.sort((a, b) => b.r.ed.localeCompare(a.r.ed) ||
-      a.r.cupName.localeCompare(b.r.cupName, "sv") ||
-      a.r.cat.localeCompare(b.r.cat, "sv"));
-  };
+  // Kolumnrubriker behövs bara när kolumnerna faktiskt står bredvid
+  // varandra; CSS döljer raden på smal skärm.
+  board.append(h("div", { class: "brow brow-huvud" },
+    h("span", { class: "brow-pos" }, "#"),
+    h("span", { class: "brow-club" }, "Klubb"),
+    VISNINGAR.map(([v, etikett]) =>
+      h("span", { class: "brow-cnt brow-huvud-cell", "data-matt": v }, etikett))));
 
   withRank.slice(0, 25).forEach((e) => {
     const detalj = h("div", { class: "brow-detalj", hidden: "" });
@@ -2399,7 +2413,7 @@ function renderVinnartoppen(root, rows) {
     },
       h("span", { class: "brow-pos" }, String(e.rank)),
       h("span", { class: "brow-club" }, e.club, e.rank === 1 ? " 🏆" : ""),
-      talet(e));
+      talen(e));
     const växla = () => {
       if (!byggd) {
         byggd = true;
@@ -2444,7 +2458,7 @@ function renderVinnartoppen(root, rows) {
     board.append(h("div", { class: "brow us brow-sep" },
       h("span", { class: "brow-pos" }, String(favRow.rank)),
       h("span", { class: "brow-club" }, favRow.club),
-      talet(favRow)));
+      talen(favRow)));
   }
 
   /* Förklaringen hör till måttet. Ett tal utan resonemang inbjuder till
@@ -3365,6 +3379,7 @@ export function getStatsUrlFields() {
     kalenderYear,
     vinnareMode, vinnareQuery, vinnareMedals, vinnareCup, vinnareYear, vinnareAr,
     vinnareToppCup, vinnareToppMedals, vinnareToppAr, vinnareToppSport,
+    cupsOverviewSport,
     historyMode,
     browse: browseOpen || browseTarget,
   };
@@ -3383,6 +3398,7 @@ export function applyStatsUrlFields(patch) {
   if (patch.vinnareToppMedals) vinnareToppMedals = patch.vinnareToppMedals;
   if (patch.vinnareToppAr) vinnareToppAr = new Set(patch.vinnareToppAr);
   if ("vinnareToppSport" in patch) vinnareToppSport = patch.vinnareToppSport;
+  if ("cupsOverviewSport" in patch) cupsOverviewSport = patch.cupsOverviewSport;
   if (patch.historyMode) historyMode = patch.historyMode;
   if (patch.browse) {
     browseTarget = patch.browse;
@@ -3402,6 +3418,7 @@ export function resetStatsUrlFields(defaults = defaultSubViewSnap()) {
   vinnareToppMedals = defaults.vinnareToppMedals;
   vinnareToppAr = new Set(defaults.vinnareToppAr || []);
   vinnareToppSport = defaults.vinnareToppSport;
+  cupsOverviewSport = defaults.cupsOverviewSport;
   historyMode = defaults.historyMode;
   clubQuerySeeded = false;
   browseTarget = null;
