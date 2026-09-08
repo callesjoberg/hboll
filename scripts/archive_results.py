@@ -109,6 +109,36 @@ def a_final_rank(div_name):
     return 0  # b/c/d/e/f …
 
 
+# ProCup lägger rundan i divName ("A-final", "B-semifinal:02") och lämnar
+# roundName tomt — tvärtom mot Cup Manager, som skriver roundName "Final"
+# med divName "A-Slutspel". Utan den här översättningen föll varenda
+# ProCup-match på `if not rn: continue` nedan, och alla fyra ProCup-cuperna
+# (Järnvägen, Aranäs, Katrineholm, Vikingaspelen) saknade därför medaljer
+# helt — nio år vardera, trots färdigspelade A-finaler i filerna.
+#
+# Löpnumret efter kolon är ProCups matchnumrering inom rundan
+# ("A-semifinal:01", "A-semifinal:02") och säger inget om vilken runda det
+# är. ProCup spelar ingen bronsmatch, så brons faller tillbaka på de två
+# semifinalförlorarna precis som för andra cuper utan bronsmatch.
+_PROCUP_RUNDA = {"final": "Final", "semifinal": "Semifinal"}
+
+
+def round_and_division(m):
+    """(roundName, divName) normaliserat över turneringssystemen."""
+    rn = (m.get("roundName") or "").strip()
+    div = m.get("divName") or ""
+    if rn:
+        return rn, div
+    s = re.sub(r":\d+$", "", div.strip()).lower()
+    träff = re.fullmatch(r"([a-f])-(final|semifinal)", s)
+    if träff:
+        # "A-Slutspel"/"B-Slutspel" är formen a_final_rank redan förstår.
+        return _PROCUP_RUNDA[träff.group(2)], träff.group(1).upper() + "-Slutspel"
+    if s in _PROCUP_RUNDA:
+        return _PROCUP_RUNDA[s], ""   # odelat slutspel, ingen A/B-uppdelning
+    return "", div
+
+
 def _win_lose(m):
     w = (m.get("res") or {}).get("winner")
     if w == "home":
@@ -129,10 +159,10 @@ def extract_champions(matches, cup_id, cup_name, edition):
     from collections import defaultdict
     by_cat = defaultdict(lambda: {"final": None, "final_rank": 0, "semis": [], "bronze": None})
     for m in matches:
-        rn = (m.get("roundName") or "").strip()
+        rn, div_name = round_and_division(m)
         if not rn:
             continue
-        rank = a_final_rank(m.get("divName"))
+        rank = a_final_rank(div_name)
         if rank == 0:                          # B-/C-slutspel eller gruppspel
             continue
         cat = m.get("catName") or ""
