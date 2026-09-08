@@ -40,7 +40,7 @@ BEGIN:VEVENT
 UID:match-10020@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T140000
 DTEND;TZID=Europe/Stockholm:20260920T143000
-SUMMARY:Växjö HF – Lödde Viking... (P12 (2014) Grupp 3)
+SUMMARY:Växjö HF – HK Ankaret 3 (P12 (2014) Grupp 3)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
 END:VEVENT

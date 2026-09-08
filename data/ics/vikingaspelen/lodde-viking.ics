@@ -661,12 +661,12 @@ LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
 END:VEVENT
 BEGIN:VEVENT
-UID:match-10005@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T100000
-DTEND;TZID=Europe/Stockholm:20260920T103000
-SUMMARY:Lödde Viking... – LUGI HF 1 (P12 (2014) Grupp 3)
+UID:match-10007@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T103000
+DTEND;TZID=Europe/Stockholm:20260920T110000
+SUMMARY:Anderstorp SK – Lödde Viking... (P12 (2014) Grupp 4)
 LOCATION:Korsbacka E\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
 UID:match-10009@vikingaspelen.hboll
@@ -693,12 +693,12 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
 END:VEVENT
 BEGIN:VEVENT
-UID:match-10012@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T120000
-DTEND;TZID=Europe/Stockholm:20260920T123000
-SUMMARY:Lödde Viking... – H43 Lund 2 (P12 (2014) Grupp 3)
-LOCATION:Korsbacka A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+UID:match-10015@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T123000
+DTEND;TZID=Europe/Stockholm:20260920T130000
+SUMMARY:Lödde Viking... – HK Ankaret 1 (P12 (2014) Grupp 4)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
 UID:match-10017@vikingaspelen.hboll
@@ -725,11 +725,11 @@ LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 2
 END:VEVENT
 BEGIN:VEVENT
-UID:match-10020@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T140000
-DTEND;TZID=Europe/Stockholm:20260920T143000
-SUMMARY:Växjö HF – Lödde Viking... (P12 (2014) Grupp 3)
-LOCATION:Korsbacka A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
+UID:match-10023@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T143000
+DTEND;TZID=Europe/Stockholm:20260920T150000
+SUMMARY:Lödde Viking... – Staffanstorp... (P12 (2014) Grupp 4)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
 END:VEVENT
 END:VCALENDAR

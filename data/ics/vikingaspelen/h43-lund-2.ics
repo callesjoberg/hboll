@@ -104,7 +104,7 @@ BEGIN:VEVENT
 UID:match-10012@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T120000
 DTEND;TZID=Europe/Stockholm:20260920T123000
-SUMMARY:Lödde Viking... – H43 Lund 2 (P12 (2014) Grupp 3)
+SUMMARY:HK Ankaret 3 – H43 Lund 2 (P12 (2014) Grupp 3)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
 END:VEVENT

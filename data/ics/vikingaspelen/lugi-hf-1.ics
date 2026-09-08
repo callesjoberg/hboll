@@ -184,7 +184,7 @@ BEGIN:VEVENT
 UID:match-10005@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T100000
 DTEND;TZID=Europe/Stockholm:20260920T103000
-SUMMARY:Lödde Viking... – LUGI HF 1 (P12 (2014) Grupp 3)
+SUMMARY:HK Ankaret 3 – LUGI HF 1 (P12 (2014) Grupp 3)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
 END:VEVENT

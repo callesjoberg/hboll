@@ -72,7 +72,7 @@ BEGIN:VEVENT
 UID:match-10015@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T123000
 DTEND;TZID=Europe/Stockholm:20260920T130000
-SUMMARY:Skurup Handboll – HK Ankaret 1 (P12 (2014) Grupp 4)
+SUMMARY:Lödde Viking... – HK Ankaret 1 (P12 (2014) Grupp 4)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
 END:VEVENT

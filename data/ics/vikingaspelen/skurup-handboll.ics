@@ -28,28 +28,4 @@ SUMMARY:Skurup Handboll – HK Ankaret 1 (P13 (2013) Grupp 2)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
 END:VEVENT
-BEGIN:VEVENT
-UID:match-10007@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T103000
-DTEND;TZID=Europe/Stockholm:20260920T110000
-SUMMARY:Anderstorp SK – Skurup Handboll (P12 (2014) Grupp 4)
-LOCATION:Korsbacka E\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
-END:VEVENT
-BEGIN:VEVENT
-UID:match-10015@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T123000
-DTEND;TZID=Europe/Stockholm:20260920T130000
-SUMMARY:Skurup Handboll – HK Ankaret 1 (P12 (2014) Grupp 4)
-LOCATION:Korsbacka E\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
-END:VEVENT
-BEGIN:VEVENT
-UID:match-10023@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T143000
-DTEND;TZID=Europe/Stockholm:20260920T150000
-SUMMARY:Skurup Handboll – Staffanstorp... (P12 (2014) Grupp 4)
-LOCATION:Korsbacka E\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
-END:VEVENT
 END:VCALENDAR
