@@ -174,7 +174,11 @@ function buildPicker(opts) {
       : base;
     [...list.children].sort(cmp).forEach((el) => list.append(el));
   };
-  dd.addEventListener("toggle", () => { if (dd.open) applySort(true); });
+  dd.addEventListener("toggle", () => {
+    if (!dd.open) return;
+    applySort(true);
+    hållInomSkärmen();
+  });
   const visaSortRad = opts.sortOptions ? true : opts.sortToggle !== false;
   const sortRow = !visaSortRad ? null : h("div", { class: "team-picker-sort-row" },
     sortLägen.map(([key, etikett]) => {
@@ -396,9 +400,63 @@ function buildPicker(opts) {
   });
   syncGenderBoxes(); syncAllaBtn(); syncSnabb();
 
-  dd.append(summary, h("div", { class: "team-picker-panel" },
+  /* Panelens bredd, och därmed hur många kolumner listan får plats med.
+
+     En 260px-panel med en enda kolumn var samma storlek oavsett om
+     väljaren hade sju dagar eller hundra lag — på en bred skärm en liten
+     scrollruta mitt i ett hav av tom yta. Bredden följer nu antalet
+     poster, och CSS:ens auto-fill fyller på med kolumner av sig själv.
+
+     Taket på tre kolumner är medvetet: en panel bredare än så blir en
+     rulle att läsa i sidled i stället för en lista, och den skulle
+     dessutom nå tvärs över skärmen på en laptop. Tio rader per kolumn
+     innan nästa läggs till håller panelen hög nog att kännas som en
+     lista, inte som ett rutnät.
+
+     opts.kolumnBredd: årsväljare och liknande korta etiketter behöver
+     inte 250px per kolumn — "2026" får plats på långt mindre, och då
+     ryms flera kolumner även i mobilarket. */
+  const kolBredd = opts.kolumnBredd || 250;
+  const kolumner = Math.min(3, Math.max(1, Math.ceil(opts.items.length / 10)));
+  /* Golvet är den gamla bredden. Panelen är inte bara listan: sökrutan,
+     Alla/Rensa, snabbvalen och sorteringsknapparna ligger ovanför och
+     behöver sin plats oavsett hur smala kolumnerna är. Utan golvet blev
+     årsväljaren 132px och klämde ihop allt det andra. */
+  const MIN_BREDD = 260;
+  const KLYFTA = 14, PADDING = 10, RAM = 1;
+  const panel = h("div", { class: "team-picker-panel" },
     h("div", { class: "team-picker-search-row" }, withClearButton(search), allaBtn, clearBtn),
-    genderRow, snabbRad, sortRow, lazy ? lazyHint : null, list));
+    genderRow, snabbRad, sortRow, lazy ? lazyHint : null, list);
+  panel.style.setProperty("--picker-kolbredd", kolBredd + "px");
+  panel.style.setProperty("--picker-bredd", Math.max(MIN_BREDD,
+    kolumner * kolBredd + (kolumner - 1) * KLYFTA + 2 * PADDING + 2 * RAM) + "px");
+
+  /* En bred panel under en knapp sticker ut genom skärmkanten:
+     position:absolute mäts mot summaryn, och max-width begränsar bredden,
+     inte positionen. Skjut in den i stället.
+
+     Första försöket var att hänga upp panelen i sin HÖGERkant när den
+     inte fick plats. Det duger bara när knappen sitter längst till höger
+     — en 800px-panel under en knapp mitt på en 1000px-skärm hamnade då
+     303px utanför VÄNSTER kant i stället. Klämning åt båda hållen är det
+     enda som håller oavsett var knappen råkar stå.
+
+     Bara på dator: i mobilarket är panelen portalerad till body i full
+     bredd och har ingen kant att skjuta på. */
+  const hållInomSkärmen = () => {
+    if (panel.classList.contains("picker-panel-portaled")) return;
+    panel.style.left = "";
+    const skärm = document.documentElement.clientWidth;
+    const r = panel.getBoundingClientRect();
+    const marginal = 8;
+    const önskad = Math.max(marginal,
+      Math.min(r.left, skärm - r.width - marginal));
+    if (Math.abs(önskad - r.left) > 1) {
+      panel.style.left = Math.round(önskad - r.left) + "px";
+    }
+  };
+
+  dd.append(summary, panel);
   return dd;
 }
 
@@ -578,6 +636,10 @@ function buildYearPicker(editions, currentEdition) {
     searchPlaceholder: "Sök år …",
     sortOptions: ÅRS_SORTERING,
     quickPicks: [1, 2, 3, 5],
+    // Ett årtal är fyra tecken — 250px per kolumn vore absurt. Med 110
+    // ryms tre kolumner även i mobilarket, och hela historiken syns utan
+    // att man scrollar i en tumsbred ruta.
+    kolumnBredd: 110,
     onChange: () => {
       for (const y of state.years) ensureYearMatches(y);
       render();

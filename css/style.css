@@ -1181,7 +1181,11 @@ body.desktop-filter-open #desktopFilterHost { border-top: 1px solid var(--menu-l
   z-index: 20;
   top: calc(100% + 6px);
   left: 0;
-  width: 260px;
+  /* Bredden sätts per väljare (--picker-bredd, se buildPicker): en lista
+     med sju dagar ska inte vara lika bred som en med hundra lag. 260px
+     kvar som reserv för paneler som inte är byggda av buildPicker, t.ex.
+     exportmenyn. */
+  width: var(--picker-bredd, 260px);
   max-width: calc(100vw - 40px);
   background: var(--card);
   border: 1px solid var(--line);
@@ -1233,13 +1237,25 @@ body.desktop-filter-open #desktopFilterHost { border-top: 1px solid var(--menu-l
 
 .team-picker-list {
   display: grid;
-  gap: 2px;
+  /* Flera kolumner när bredden räcker. auto-fill räknar själv ut hur många
+     som får plats, så samma regel duger åt både den breddsatta panelen på
+     dator och mobilens fullbreddsark — utan att någon av dem behöver veta
+     om den andra. min(100%, …) är spärren mot överflöd: är behållaren
+     smalare än en kolumnbredd blir kolumnen behållaren, inte tvärtom.
+     --picker-kolbredd sätts per väljare (se buildPicker) eftersom "2026"
+     och "Damjunior (födda 07-09)" inte behöver lika mycket plats. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--picker-kolbredd, 250px)), 1fr));
+  gap: 2px 14px;
   /* 260px rymde ~9 rader — för lite när en cup har 20 klasser eller 40 lag,
      och man fick scrolla i en liten ruta i stället för att se urvalet. Växer
      nu med fönstret men aldrig så att panelen går utanför skärmen. */
   max-height: min(58vh, 520px);
   overflow-y: auto;
 }
+
+/* Långa lagnamn får inte tvinga isär kolumnerna. */
+.team-picker-item-text,
+.team-picker-item > label { min-width: 0; }
 
 .team-picker-hint { margin: 4px 0; }
 

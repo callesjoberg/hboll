@@ -1606,6 +1606,10 @@ function renderClubView(root) {
     searchPlaceholder: "Sök år …",
     sortOptions: ÅRS_SORTERING,
     quickPicks: [1, 2, 3, 5],
+    // Ett årtal är fyra tecken — 250px per kolumn vore absurt. Med 110
+    // ryms tre kolumner även i mobilarket, och hela historiken syns utan
+    // att man scrollar i en tumsbred ruta.
+    kolumnBredd: 110,
     soloClickable: true,
     onChange: () => { state.clubDrillCup = null; state.clubDrillClass = null; renderContent(); },
   }) : null;
@@ -1913,6 +1917,10 @@ function renderClubCompareView(root) {
     searchPlaceholder: "Sök år …",
     sortOptions: ÅRS_SORTERING,
     quickPicks: [1, 2, 3, 5],
+    // Ett årtal är fyra tecken — 250px per kolumn vore absurt. Med 110
+    // ryms tre kolumner även i mobilarket, och hela historiken syns utan
+    // att man scrollar i en tumsbred ruta.
+    kolumnBredd: 110,
     soloClickable: true,
     onChange: () => { state.compareExpanded = new Set(); renderContent(); },
   }) : null;
