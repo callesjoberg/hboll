@@ -13,14 +13,6 @@ LOCATION:Korsbacka A1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
-UID:match-14003@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260912T090000
-DTEND;TZID=Europe/Stockholm:20260912T093000
-SUMMARY:IFK Malmö vit – Lödde Viking... (P8 (2018) Matcher)
-LOCATION:Korsbacka E2\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
-END:VEVENT
-BEGIN:VEVENT
 UID:match-12001@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260912T090000
 DTEND;TZID=Europe/Stockholm:20260912T093000
@@ -77,14 +69,6 @@ LOCATION:Korsbacka A1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
-UID:match-14012@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260912T102000
-DTEND;TZID=Europe/Stockholm:20260912T105000
-SUMMARY:LUGI HF 2 – Lödde Viking... (P8 (2018) Matcher)
-LOCATION:Korsbacka E1\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
-END:VEVENT
-BEGIN:VEVENT
 UID:match-12009@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260912T102000
 DTEND;TZID=Europe/Stockholm:20260912T105000
@@ -133,14 +117,6 @@ LOCATION:Korsbacka A2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
 END:VEVENT
 BEGIN:VEVENT
-UID:match-14019@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260912T112000
-DTEND;TZID=Europe/Stockholm:20260912T115000
-SUMMARY:Kävlinge HK ... – Lödde Viking... (P8 (2018) Matcher)
-LOCATION:Korsbacka E2\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
-END:VEVENT
-BEGIN:VEVENT
 UID:match-14020@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260912T114000
 DTEND;TZID=Europe/Stockholm:20260912T121000
@@ -187,14 +163,6 @@ DTEND;TZID=Europe/Stockholm:20260912T131000
 SUMMARY:Lödde Viking... – Ystad IF 3 (F9 (2017) Matcher)
 LOCATION:Korsbacka A1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F9 (2017) · Matcher
-END:VEVENT
-BEGIN:VEVENT
-UID:match-14027@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260912T124000
-DTEND;TZID=Europe/Stockholm:20260912T131000
-SUMMARY:Lödde Viking... – IFK Malmö svart (P8 (2018) Matcher)
-LOCATION:Korsbacka A2\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-4022@vikingaspelen.hboll
