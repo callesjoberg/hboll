@@ -5929,8 +5929,7 @@ button.welcome-cta-secondary {
   }
   body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
   body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile,
-  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile,
-  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-cup-tile {
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile {
     min-height: 40px;
     padding: 7px 12px 6px;
     align-items: center;
@@ -6265,8 +6264,7 @@ button.welcome-cta-secondary {
      Dessa regler kommer efter standardvärdena ovan för att inte övertrumkas. */
   body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
   body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile,
-  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile,
-  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-cup-tile {
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile {
     padding-top: 7px;
     padding-bottom: 6px;
   }
@@ -6299,8 +6297,7 @@ button.welcome-cta-secondary {
 
   body.filters-open:not(.filters-expanded) #toolbar .filter-group .team-picker-summary,
   body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-more-tile,
-  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile,
-  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-cup-tile {
+  body.filters-open:not(.filters-expanded) #toolbar .filter-group .filter-placeholder-tile {
     height: 40px;
     min-height: 40px;
   }

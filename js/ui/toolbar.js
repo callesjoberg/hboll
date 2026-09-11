@@ -35,17 +35,21 @@ export function initToolbar(deps) {
 // Cupen är det översta urvalet och ligger därför först i samma mobila
 // ikonremsa som år, dag, klass och lag. Själva listan återanvänder den
 // befintliga cupdialogen — då finns bara en cuplista att hålla i synk.
-function buildFilterCupTile() {
-  const c = cup();
-  return h("button", {
-    class: "filter-more-tile filter-cup-tile", type: "button", "data-icon": "🏆",
-    title: "Byt cup · " + c.name,
-    onclick: () => {
-      toggleFilterSheet(false);
-      $("#currentCupBtn").click();
-    },
-  }, h("span", { class: "picker-label" }, c.name));
-}
+/* Cupbrickan i filterremsan är borttagen 2026-09-11.
+
+   Den var en ren genväg — toggleFilterSheet(false) följt av ett klick på
+   sidhuvudets knapp — alltså samma dialog, men med bieffekten att den
+   stängde arket den själv satt i. Att trycka på en kontroll inuti en
+   panel och se panelen försvinna är inte begripligt.
+
+   Den hörde inte heller hemma bland de andra brickorna: de avgränsar vad
+   man ser INOM en cup, den lämnade cupen. Och remsan scrollar i sidled,
+   så den första platsen kostade — "Lag" låg utanför skärmkanten.
+
+   Cupen byts i sidhuvudet, som alltid syns ovanför remsan och redan har
+   en pil som visar att den öppnar något. Saknas schemat helt finns
+   dessutom en "Byt cup"-knapp i banderollen (se renderContent i app.js),
+   just där man behöver den. */
 
 function buildFilterScopeTile() {
   const clubMode = state.scope === "club";
@@ -678,7 +682,6 @@ function renderToolbar() {
     // som mest.
     if (sheetMode()) bar.append(h("div", { class: "row filter-primary-row" },
       h("div", { class: "filter-group" },
-        buildFilterCupTile(),
         buildFilterScopeTile(),
         buildDisabledFilterTile("År", "📆"),
         buildDisabledFilterTile("Dagar", "☀️"),
@@ -1011,16 +1014,15 @@ function renderToolbar() {
         onclick: clearViewFilters,
       }, "Rensa");
       row.append(h("div", { class: "filter-group" },
-        buildFilterCupTile(), buildFilterScopeTile(), ...urval, teamSlot,
+        buildFilterScopeTile(), ...urval, teamSlot,
         ...mobileViewTiles, rensaTile, expandFilterTile));
-    } else row.append(h("div", { class: "filter-group" }, buildFilterCupTile(), expandFilterTile));
+    } else row.append(h("div", { class: "filter-group" }, expandFilterTile));
     row.append(h("span", { class: "row-sep" }), statusSeg);
     body.append(row);
   } else {
     if (!isLocked) refreshTeamRow();
     body.append(h("div", { class: "row filter-primary-row" }, scopeSeg,
       h("div", { class: "filter-group" },
-        buildFilterCupTile(),
         buildFilterScopeTile(),
         (!isLocked && archiveYears.length) ? buildYearPicker(archiveYears, cup().edition) : null,
         isLocked ? null : teamSlot,
@@ -1123,7 +1125,6 @@ export {
   buildCatPicker,
   buildYearPicker,
   expandCohortSelection,
-  buildFilterCupTile,
   buildFilterScopeTile,
   buildDisabledFilterTile,
   buildFilterChoiceTile,
