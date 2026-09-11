@@ -300,6 +300,7 @@ export function closeFilterBackdrop() {
     const set = (namn, v) => root.style.setProperty(namn, Math.round(Math.max(0, v)) + "px");
     if (!sheetMode()) {
       set("--menuhost-h", 0); set("--topstack-h", 0); set("--topstack-bottom", 0);
+      set("--header-bottom", 0);
       return;
     }
     // Det ENDA som ligger kvar när sidan rullar är den tunna raden — menyn
@@ -322,6 +323,14 @@ export function closeFilterBackdrop() {
     };
     const host = $("#mobileMenuHost");
     set("--menuhost-h", host ? host.getBoundingClientRect().height : 0);
+
+    // Sidhuvudets underkant — den enda rad som cupvalsarket INTE lägger sig
+    // över. Cupvalet är ett byte av hela sammanhanget, inte ett filter i
+    // det nuvarande: menyraderna under huvudet hör till den cup man håller
+    // på att lämna, och att spara dem synliga men nedsläckta kostade 162px
+    // av 812 utan att ge något tillbaka. Huvudet får vara kvar, för det är
+    // det som säger vilken klubb och vilken cup man utgår från.
+    set("--header-bottom", synligBotten($("header.top")) || barH);
     const remsa = document.body.classList.contains("filters-expanded")
       ? 0 : synligBotten($("#toolbar"));
     set("--topstack-bottom", Math.max(barH, synligBotten(host), remsa));

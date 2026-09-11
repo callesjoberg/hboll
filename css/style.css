@@ -5534,12 +5534,19 @@ button.welcome-cta-secondary {
        även om sparad arkhöjd eller mobilens visual viewport mäts om. */
     z-index: 67;
   }
+  /* Cupvalet hänger från SIDHUVUDET, inte från menyn som alla andra ark.
+     Se --header-bottom i syncTopStack: menyraderna hör till den cup man
+     håller på att lämna, och de kostade 162px av 812 nedsläckta utan att
+     gå att använda. Arket har både kryss och bakgrundstäcke att stänga
+     med, så ingenting blir oåtkomligt. Mätt: 577 -> 739px, en fjärdedel
+     fler cuper synliga utan att scrolla. */
   .prototype-sheet[data-sheet-key="cup"] {
+    top: var(--header-bottom, var(--topstack-bottom, 0px));
     height: auto;
-    max-height: calc(100dvh - var(--topstack-bottom, 0px) - 12px);
+    max-height: calc(100dvh - var(--header-bottom, var(--topstack-bottom, 0px)) - 12px);
   }
   .prototype-sheet[data-sheet-key="cup"] .prototype-sheet-body {
-    max-height: calc(100dvh - var(--topstack-bottom, 0px) - 74px);
+    max-height: calc(100dvh - var(--header-bottom, var(--topstack-bottom, 0px)) - 74px);
   }
   /* Draghandtaget sitter vid arkets UNDERKANT — den kant som rör sig när man
      drar (se prototypeDialog i app.js). Rubrikraden behåller sin plats
