@@ -5369,7 +5369,13 @@ button.welcome-cta-secondary {
        skärmkanten med sina understa knappar utom räckhåll. Utan API:t (äldre
        webbläsare) faller den tillbaka på vh som förut. Minus stackens
        underkant, som arket hänger från. */
-    max-height: min(92dvh, calc(var(--vv-height, 100vh) - var(--topstack-bottom, 0px) - 12px));
+    /* --sheet-tak är användarens egen draghöjd (se attachSheetDrag). Den
+       går in som ETT av flera tak, aldrig som ett fast height — annars
+       öppnas en treradig väljare lika hög som en med fyrtio lag. Att
+       lägga den i samma min() som de andra taken betyder också att den
+       aldrig kan häva skyddet mot ett utfällt tangentbord nedan. */
+    max-height: min(var(--sheet-tak, 92dvh), 92dvh,
+                    calc(var(--vv-height, 100vh) - var(--topstack-bottom, 0px) - 12px));
     overflow-y: auto;
     overscroll-behavior: contain;
     border-radius: 0 0 18px 18px;

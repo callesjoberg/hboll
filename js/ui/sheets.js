@@ -582,10 +582,15 @@ export function closeFilterBackdrop() {
       const vh = window.innerHeight / 100;
       const raw = (startH + (e.clientY - startY)) / vh;
       const clamped = Math.min(SHEET_MAX_VH, Math.max(SHEET_MIN_VH, raw));
-      // Standardläget är auto-höjd (panelen följer innehållet). Ett manuellt
-      // drag får däremot vara ett uttryckligt önskemål och låser höjden tills
-      // nästa panel byggs om.
+      // Draget styr höjden direkt, så kanten följer fingret även när
+      // innehållet är kortare än man drar — och den höjden får stå kvar
+      // tills arket stängs. Att snäppa tillbaka till innehållet vid släpp
+      // var första försöket, men då växte arket under fingret och hoppade
+      // ihop i samma sekund man lyfte det, vilket bara såg trasigt ut.
+      // Taket får i stället verkan vid NÄSTA öppning, där problemet
+      // faktiskt satt: en treradig väljare som öppnades halvskärmshög.
       panel.style.height = clamped.toFixed(1) + "vh";
+      panel.style.setProperty("--sheet-tak", clamped.toFixed(1) + "vh");
       persist("hb:sheetVh", String(Math.round(clamped)));
     });
     const end = (e) => {
@@ -805,7 +810,14 @@ export function closeFilterBackdrop() {
         const head = ensureSheetHead(dd);
         const saved = savedSheetHeight();
         if (head && saved) {
-          dd.querySelector(".team-picker-panel").style.height = saved + "vh";
+          // TAK, inte höjd. Värdet är ett enda globalt önskemål som gäller
+          // ALLA ark, och sattes som style.height — då öppnades en väljare
+          // med tre klasser lika hög som den med fyrtio lag, med halva
+          // skärmen tom under listan. Som tak får ett långt urval den
+          // valda höjden medan ett kort bara tar den plats det behöver.
+          const panel = dd.querySelector(".team-picker-panel");
+          panel.style.height = "";
+          panel.style.setProperty("--sheet-tak", saved + "vh");
         }
         // Arket hänger från menyn och måste veta var den ligger PRECIS nu:
         // överst på sidan sitter den under sidhuvudet, nedscrollad mot
