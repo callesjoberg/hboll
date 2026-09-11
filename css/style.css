@@ -5383,7 +5383,12 @@ button.welcome-cta-secondary {
     padding: 0 14px max(16px, env(safe-area-inset-bottom)) 14px;
     box-shadow: 0 10px 30px rgba(10, 18, 30, 0.35);
     /* Innehållet ska växa nedåt från rubriken, inte spridas ut över hela
-       arkets höjd som grid-standarden gör när arket är högre än innehållet. */
+       arkets höjd som grid-standarden gör när arket är högre än innehållet.
+       Flex i stället för basregelns grid: det gör att handtaget kan skjutas
+       ned till underkanten med margin-top: auto (se nedan). Barnen staplas
+       likadant i båda. */
+    display: flex;
+    flex-direction: column;
     align-content: start;
     /* Över filterarket (65) OCH bottenraden (70): en picker öppnad inifrån
        filterarket måste lägga sig ovanpå det, annars hamnar den bakom och
@@ -5433,6 +5438,13 @@ button.welcome-cta-secondary {
     opacity: .5;
     margin-top: 6px;
     cursor: grab;
+    /* Ned till underkanten när arket är högre än sitt innehåll. position:
+       sticky ensamt räcker inte: har innehållet gott om plats behöver
+       inget klistras, och handtaget blev då stående mitt i den vita ytan
+       med arkets riktiga kant långt nedanför — man drog i ett streck som
+       inte satt på den kant som rörde sig. */
+    margin-top: auto;
+    flex: 0 0 auto;
     /* Utan detta tolkar webbläsaren dragningen som sidscroll och
        pointermove-händelserna uteblir helt. */
     touch-action: none;
@@ -5929,8 +5941,19 @@ button.welcome-cta-secondary {
   }
 
   /* Se picker-open i app.js: utan detta hamnar hela verktygsraden — och
-     därmed den öppna väljarpanelen — under väljarens eget bakgrundstäcke. */
-  body.picker-open #toolbar { z-index: 85; }
+     därmed den öppna väljarpanelen — under väljarens eget bakgrundstäcke.
+     position:relative måste stå med: z-index biter bara på en positionerad
+     låda, och i mobillayouten flyttas #toolbar in i flödet efter
+     mobilmenyn och är STATIC. Regeln var därmed verkningslös — remsan
+     släcktes ner medan menyn precis ovanför och arket precis under låg
+     kvar i fullt ljus, vilket läste som ett grått mellanrum mitt i.
+     relative flyttar inte raden en pixel.
+
+     !important krävs: body.filters-open #toolbar ovan sätter
+     position: static !important (remsan ska rulla med menyn), och
+     toggleFilterSheet skriver samma värde inline. En viktig regel i
+     stilmallen slår båda — en vanlig slår ingendera. */
+  body.picker-open #toolbar { position: relative !important; z-index: 85; }
   /* Menyraderna ska förbli synliga OCH klickbara medan en väljare är öppen,
      så man kan hoppa direkt mellan brickor eller byta vy. Lyftet måste ske
      på #mobileMenuHost och inte på raderna: sedan de flyttade in i hosten

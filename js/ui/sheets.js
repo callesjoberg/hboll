@@ -564,6 +564,24 @@ export function closeFilterBackdrop() {
     return head;
   }
 
+  // Hur högt arket FAKTISKT kan bli just nu, i pixlar — samma tak som
+  // CSS:en räknar fram i sin min() (se .picker-panel-portaled).
+  //
+  // Draget klampade tidigare mot SHEET_MAX_VH av LAYOUT-viewporten, alltså
+  // 92 % av innerHeight. Men CSS begränsar mot den SYNLIGA ytan minus
+  // menyns underkant, och med Safaris adressfält utfällt är det långt
+  // mindre än 92vh. Sista biten av draget gjorde då ingenting alls: man
+  // drog och drog och handtaget stod stilla, för arket hade redan nått
+  // sitt riktiga tak. Räkna mot samma tak här, så tar handtaget slut
+  // exakt när arket gör det.
+  function taketNu() {
+    const rot = getComputedStyle(document.documentElement);
+    const synlig = parseFloat(rot.getPropertyValue("--vv-height"));
+    const yta = Number.isFinite(synlig) && synlig > 0 ? synlig : window.innerHeight;
+    return Math.min(window.innerHeight * SHEET_MAX_VH / 100,
+                    yta - prototypeMenuStackBottom() - 12);
+  }
+
   // Dra handtaget för att välja höjd. Arket hänger från menyn, så NEDÅT =
   // högre ark: höjden räknas från startpunkten PLUS aktuell y. Höjden sparas
   // så nästa öppning (och nästa besök) behåller den man valt.
@@ -580,8 +598,9 @@ export function closeFilterBackdrop() {
     grip.addEventListener("pointermove", (e) => {
       if (!dragging) return;
       const vh = window.innerHeight / 100;
-      const raw = (startH + (e.clientY - startY)) / vh;
-      const clamped = Math.min(SHEET_MAX_VH, Math.max(SHEET_MIN_VH, raw));
+      const råPx = startH + (e.clientY - startY);
+      const px = Math.min(taketNu(), Math.max(SHEET_MIN_VH * vh, råPx));
+      const clamped = px / vh;
       // Draget styr höjden direkt, så kanten följer fingret även när
       // innehållet är kortare än man drar — och den höjden får stå kvar
       // tills arket stängs. Att snäppa tillbaka till innehållet vid släpp
@@ -766,7 +785,17 @@ export function closeFilterBackdrop() {
     // mycket lägre än så, och panelen växte då ut under skärmkanten med
     // sina översta knappar utom räckhåll. Publicera den synliga höjden så
     // CSS kan begränsa panelen mot den i stället.
-    document.documentElement.style.setProperty("--vv-height", Math.round(vv.height) + "px");
+    // Bara ett positivt värde får publiceras. Webbläsaren kan rapportera 0
+    // ett kort ögonblick (fliken i bakgrunden, panelen dold, mitt i en
+    // storleksändring) och det värdet blir sedan stående tills något
+    // annat råkar trigga en ny mätning. Taket nedan räknas som
+    // vv-height minus stackens underkant, så en nolla ger ett NEGATIVT
+    // tak — och arket kollapsar till noll pixlar, vilket gör varje
+    // filterväljare oanvändbar. Hellre gårdagens höjd än ingen alls.
+    const synligH = Math.round(vv.height);
+    if (synligH > 0) {
+      document.documentElement.style.setProperty("--vv-height", synligH + "px");
+    }
   }
 
   // Alla mått som beror på skärmens storlek, i ETT anrop. Bottenraden och
