@@ -46,10 +46,10 @@ DESCRIPTION:Vikingaspelen · P8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7004@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T094000
-DTEND;TZID=Europe/Stockholm:20260913T101000
+DTSTART;TZID=Europe/Stockholm:20260913T100000
+DTEND;TZID=Europe/Stockholm:20260913T103000
 SUMMARY:HK Björnen – IFK Malmö F Gul (F8 (2018) Matcher)
-LOCATION:Korsbacka E1\, Löddeköpinge
+LOCATION:Korsbacka E2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
@@ -62,8 +62,8 @@ DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7011@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T110000
-DTEND;TZID=Europe/Stockholm:20260913T113000
+DTSTART;TZID=Europe/Stockholm:20260913T114000
+DTEND;TZID=Europe/Stockholm:20260913T121000
 SUMMARY:Veberöds HK 2 – HK Björnen (F8 (2018) Matcher)
 LOCATION:Korsbacka E2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
@@ -78,18 +78,10 @@ DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7016@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T122000
-DTEND;TZID=Europe/Stockholm:20260913T125000
+DTSTART;TZID=Europe/Stockholm:20260913T130000
+DTEND;TZID=Europe/Stockholm:20260913T133000
 SUMMARY:HK Björnen – Kävlinge HK ... (F8 (2018) Matcher)
-LOCATION:Korsbacka E1\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
-END:VEVENT
-BEGIN:VEVENT
-UID:match-7022@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T134000
-DTEND;TZID=Europe/Stockholm:20260913T141000
-SUMMARY:HK Björnen – Lödde Viking... (F8 (2018) Matcher)
-LOCATION:Korsbacka E1\, Löddeköpinge
+LOCATION:Korsbacka A2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
@@ -99,6 +91,14 @@ DTEND;TZID=Europe/Stockholm:20260913T141000
 SUMMARY:Växjö HF 2 – HK Björnen (P11 (2015) Matcher)
 LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P11 (2015) · Matcher
+END:VEVENT
+BEGIN:VEVENT
+UID:match-7022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260913T142000
+DTEND;TZID=Europe/Stockholm:20260913T145000
+SUMMARY:HK Björnen – Lödde Viking... (F8 (2018) Matcher)
+LOCATION:Korsbacka A1\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-11036@vikingaspelen.hboll

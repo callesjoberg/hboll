@@ -38,32 +38,32 @@ DESCRIPTION:Vikingaspelen · P10 (2016) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7003@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T092000
-DTEND;TZID=Europe/Stockholm:20260913T095000
+DTSTART;TZID=Europe/Stockholm:20260913T100000
+DTEND;TZID=Europe/Stockholm:20260913T103000
 SUMMARY:Lödde Viking... – HK Ankaret Röd (F8 (2018) Matcher)
-LOCATION:Korsbacka E2\, Löddeköpinge
+LOCATION:Korsbacka E1\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7009@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T104000
-DTEND;TZID=Europe/Stockholm:20260913T111000
+DTSTART;TZID=Europe/Stockholm:20260913T112000
+DTEND;TZID=Europe/Stockholm:20260913T115000
 SUMMARY:HK Ankaret Röd – Veberöds HK 1 (F8 (2018) Matcher)
 LOCATION:Korsbacka E2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7015@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T120000
-DTEND;TZID=Europe/Stockholm:20260913T123000
+DTSTART;TZID=Europe/Stockholm:20260913T130000
+DTEND;TZID=Europe/Stockholm:20260913T133000
 SUMMARY:HK Ankaret Röd – IFK Malmö F ... (F8 (2018) Matcher)
 LOCATION:Korsbacka E2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
 END:VEVENT
 BEGIN:VEVENT
 UID:match-7023@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260913T134000
-DTEND;TZID=Europe/Stockholm:20260913T141000
+DTSTART;TZID=Europe/Stockholm:20260913T142000
+DTEND;TZID=Europe/Stockholm:20260913T145000
 SUMMARY:IFK Malmö F Gul – HK Ankaret Röd (F8 (2018) Matcher)
 LOCATION:Korsbacka E2\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F8 (2018) · Matcher
