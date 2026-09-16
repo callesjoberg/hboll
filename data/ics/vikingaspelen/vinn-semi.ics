@@ -22,8 +22,8 @@ DESCRIPTION:Vikingaspelen · P13 (2013) · B-final
 END:VEVENT
 BEGIN:VEVENT
 UID:match-3045@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T175500
-DTEND;TZID=Europe/Stockholm:20260919T182500
+DTSTART;TZID=Europe/Stockholm:20260919T180000
+DTEND;TZID=Europe/Stockholm:20260919T183000
 SUMMARY:Vinn.semi – Vinn.semi (F12 (2014) A-final)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-final
