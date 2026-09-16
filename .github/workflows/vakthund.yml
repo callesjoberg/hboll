@@ -1,0 +1,116 @@
+name: Vakthund — lossa fastnad cupdata-körning
+
+# Bakgrund: 13 september 2026 stod cupdatan stilla i 26 timmar mitt under
+# Göteborg Cups sista speldag. Ingen bugg i skraporna — en körning startad
+# kvällen innan fick aldrig någon runner:
+#
+#   The job has exceeded the maximum execution time
+#   while awaiting a runner for 24h0m0s
+#
+# Kötiden har en EGEN 24-timmarsgräns hos GitHub, skild från körtiden, så
+# timeout-minutes på jobbet hade inte hjälpt: det räknas först när jobbet
+# startat. Och eftersom loopen medvetet har cancel-in-progress: false (den
+# långkörande loopen får inte dödas av cron var 20:e minut) höll den
+# fastnade körningen hela concurrency-gruppen. Varje schemalagd körning
+# bakom den avbröts — 01:08, 06:15, 11:58, 15:57 — tills gruppen släppte
+# på kvällen.
+#
+# Vakthunden avbryter därför körningar som stått i kö onormalt länge, så
+# gruppen frigörs och nästa schemalagda körning kan ta platsen. Den rör
+# aldrig en körning som FAKTISKT jobbar (status queued/pending, inte
+# in_progress) — loopen ska få arbeta klart sina 4,5 timmar i fred.
+#
+# Egen concurrency-grupp: vakthunden får aldrig fastna bakom det den är
+# till för att lossa.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      minuter:
+        description: "Hur länge en körning får stå i kö innan den avbryts. Tomt = 25."
+        required: false
+        default: ""
+
+concurrency:
+  group: vakthund-cupdata
+  cancel-in-progress: false
+
+permissions:
+  actions: write
+
+jobs:
+  lossa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Avbryt körningar som stått i kö för länge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAK_MINUTER: ${{ inputs.minuter || '25' }}
+        run: |
+          set -euo pipefail
+          # Både queued och pending: en körning som väntar på en runner
+          # rapporteras som queued, en som hålls tillbaka av
+          # concurrency-gruppen som pending. Båda kan vara den som sitter
+          # fast, och båda ockuperar gruppen.
+          : > /tmp/koade.txt
+          for status in queued pending; do
+            gh api "repos/$REPO/actions/workflows/procup.yml/runs?status=$status&per_page=50" \
+              --jq '.workflow_runs[] | "\(.id) \(.created_at)"' >> /tmp/koade.txt || true
+          done
+
+          if [ ! -s /tmp/koade.txt ]; then
+            echo "Inget i kö. Allt är som det ska."
+            exit 0
+          fi
+
+          # Skriver ut ETT id per rad för de körningar som passerat taket,
+          # och en läsbar rad per körning till loggen.
+          python3 - "$TAK_MINUTER" > /tmp/avbryt.txt <<'PYEOF'
+          import datetime, sys
+          tak = int(sys.argv[1])
+          nu = datetime.datetime.now(datetime.timezone.utc)
+          for rad in open("/tmp/koade.txt"):
+              rad = rad.strip()
+              if not rad:
+                  continue
+              kid, skapad = rad.split()
+              minuter = (nu - datetime.datetime.fromisoformat(
+                  skapad.replace("Z", "+00:00"))).total_seconds() / 60
+              if minuter > tak:
+                  print(kid)
+                  print(f"kö {minuter:.0f} min (tak {tak}) — avbryts: {kid}", file=sys.stderr)
+              else:
+                  print(f"kö {minuter:.0f} min — inom taket, lämnas: {kid}", file=sys.stderr)
+          PYEOF
+
+          if [ ! -s /tmp/avbryt.txt ]; then
+            echo "Ingen körning har stått längre än $TAK_MINUTER minuter."
+            exit 0
+          fi
+
+          avbrutna=0
+          while read -r kid; do
+            [ -n "$kid" ] || continue
+            if gh api -X POST "repos/$REPO/actions/runs/$kid/cancel" >/dev/null 2>&1; then
+              echo "Avbröt $kid."
+              avbrutna=$((avbrutna + 1))
+            else
+              echo "Kunde inte avbryta $kid (den kan ha startat under tiden)."
+            fi
+          done < /tmp/avbryt.txt
+
+          # Starta loopen igen direkt i stället för att vänta på nästa cron.
+          # Cron är "best effort" och kan dröja timmar — det var just den
+          # långsamheten som gjorde avbrottet 13 september så långt. Med en
+          # egen start blir värsta fallet tröskeln plus någon minut.
+          if [ "$avbrutna" -gt 0 ]; then
+            if gh workflow run procup.yml --repo "$REPO" >/dev/null 2>&1; then
+              echo "Startade en ny cupdata-körning."
+            else
+              echo "Kunde inte starta om cupdata — nästa cron får ta det."
+            fi
+          fi
