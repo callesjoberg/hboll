@@ -5336,6 +5336,40 @@ button.welcome-cta-secondary {
    övriga förklaringar i dialogen, men på egen rad under kontrollerna. */
 .settings-hint { margin: 6px 0 0; font-size: 13px; max-width: 62ch; }
 
+/* Klasser-fliken: sammanfattningsraden under tabellen, och frågorna för de
+   cuper som aldrig skriver ut födelseår. Frågan är medvetet framträdande —
+   den är skillnaden mellan en ofullständig tabell och en komplett, och
+   användaren behöver bara svara en gång per cup. */
+.kull-sammanfattning {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.klass-fraga {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--yellow);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.klass-fraga > p { margin: 0 0 10px; font-size: 14px; }
+
+.klass-fraga-rad {
+  display: grid;
+  gap: 6px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.klass-fraga-rad:first-of-type { border-top: none; padding-top: 0; }
+
+.klass-fraga-cup { font-size: 13px; color: var(--ink-soft); }
+
+.klass-fraga-val { display: flex; flex-wrap: wrap; gap: 6px; }
+
 /* --- mobil: filterpanelerna som bottenark ------------------------------
    På smal skärm ligger panelen inte längre under sin knapp. En knapp långt
    till höger sköt ut hela panelen utanför skärmkanten (position:absolute

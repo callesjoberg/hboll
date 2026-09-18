@@ -2095,6 +2095,7 @@ HB.shortCat = shortCat;
       trend: trendSupported, karta: mapSupported,
       vinnare: clubSupported, kalender: clubSupported,
       klubb: clubSupported, klubbjamforelse: clubSupported, cuper: clubSupported,
+      klasser: clubSupported,
       historik: clubSupported,
       // Målskyttar bygger på Cup Managers matchfeed. ProCup/Gothia har
       // ingen, och deras cuper ska inte visa en flik som alltid är tom.

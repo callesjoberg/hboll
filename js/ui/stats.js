@@ -12,6 +12,7 @@ import { MULTI_COLOR_PALETTE } from "./palette.js";
 import { syncBottomStack } from "./sheets.js";
 import {
   catSortKey, cohortKey, cohortLabel,
+  parseCat, learnAgeOffset, cohortFor, COHORT_LABELS,
 } from "../domain/category.js";
 import { clubOutcomeLetter, scoreText, isLive } from "../domain/match.js";
 import { isPlaceholderTeam } from "../domain/placeholder.js";
@@ -3418,6 +3419,317 @@ function disciplinLista(doc, utanRubrik, ritaOm) {
   ];
 }
 
+
+/* --- Klasser: en årskull över flera cuper och år ------------------------
+
+   Svarar på "hur stor är pojkar födda 2015 i de här cuperna?" — lag och
+   matcher per cup och år, summerat, plus hur många lag den egna klubben
+   ställt upp med.
+
+   Det svåra är inte räkningen utan IDENTITETEN. En kull heter olika saker
+   i olika cuper och olika år: födda 2015 är P11 i en höstcup 2026 men P12
+   i en vårcup samma år. Klassnamnet duger alltså inte som nyckel, och en
+   säsongsregel duger inte heller — maj är jämnt delat mellan de två
+   konventionerna (se ageOffset i domain/category.js).
+
+   Tre steg, i fallande ordning av säkerhet:
+     1. Klassen skriver ut födelseåret -> används rakt av.
+     2. Cupen har någon gång skrivit ut det -> förskjutningen lärs ur
+        cupens EGEN data. Sjutton av trettiofyra cuper klarar det med full
+        inre konsekvens.
+     3. Ingetdera -> vi gissar INTE. Årets klasser visas och användaren
+        pekar ut rätt en gång. Svaret lär appen cupens förskjutning och
+        gäller sedan alla dess år: ett klick per cup, inte per år. */
+
+let klassCups = new Set();
+let klassYears = new Set();
+let klassKon = "P";
+let klassFodd = 0;
+let klassLärda = null;
+
+const KLASS_LÄRDA_NYCKEL = "hb:klassOffset";
+
+function klassLärdaOffset() {
+  if (klassLärda) return klassLärda;
+  klassLärda = new Map();
+  try {
+    const rå = JSON.parse(localStorage.getItem(KLASS_LÄRDA_NYCKEL) || "{}");
+    for (const [cup, off] of Object.entries(rå)) {
+      if (Number.isFinite(off)) klassLärda.set(cup, off);
+    }
+  } catch { /* trasig eller blockerad lagring — börja tom */ }
+  return klassLärda;
+}
+
+function klassLär(cupId, offset) {
+  const m = klassLärdaOffset();
+  m.set(cupId, offset);
+  try {
+    localStorage.setItem(KLASS_LÄRDA_NYCKEL, JSON.stringify(Object.fromEntries(m)));
+  } catch { /* privat läge: gäller då bara denna session */ }
+}
+
+/* Användarens svar går före det cupen själv avslöjat. null betyder "vet
+   inte" och ska leda till en fråga, aldrig till ett antagande. */
+function klassOffsetFör(cupId, prov) {
+  const lärd = klassLärdaOffset().get(cupId);
+  if (Number.isFinite(lärd)) return lärd;
+  return learnAgeOffset(prov);
+}
+
+/* Räknar en upplagas klasser. Lag räknas på lag-ID, inte namn: två klubbar
+   kan ha ett lag som heter "Vit", och samma lagnamn återkommer mellan
+   klasser. Det var precis den förväxlingen som gav orimliga tal i
+   medaljstatistiken i somras. */
+function klassUpplageStat(matches) {
+  const per = new Map();
+  for (const m of matches) {
+    const kat = m.catName;
+    if (!kat) continue;
+    let p = per.get(kat);
+    if (!p) { p = { lag: new Set(), matcher: 0, egna: new Set() }; per.set(kat, p); }
+    p.matcher++;
+    for (const sida of [m.home, m.away]) {
+      if (!sida || isPlaceholderTeam(sida)) continue;
+      const id = sida.id != null ? String(sida.id) : sida.name;
+      if (!id) continue;
+      p.lag.add(id);
+      if (isClubName(sida.name)) p.egna.add(id);
+    }
+  }
+  return per;
+}
+
+
+/* Alla upplagor i urvalet, som {cupId, edition}. Årsfiltret tomt = alla år
+   cupen har — samma innebörd som i Klubb/lag-fliken. */
+function klassUpplagor() {
+  const idx = state.archiveIndex || {};
+  const ut = [];
+  for (const cupId of klassCups) {
+    for (const e of ((idx[cupId] && idx[cupId].editions) || [])) {
+      if (!e.matches) continue;
+      if (klassYears.size && !klassYears.has(e.edition)) continue;
+      ut.push({ cupId, edition: e.edition });
+    }
+  }
+  return ut.sort((a, b) => a.cupId.localeCompare(b.cupId, "sv") ||
+    b.edition.localeCompare(a.edition, "sv", { numeric: true }));
+}
+
+function klassCupNamn(cupId) {
+  return (HB.allCups().find((c) => c.id === cupId) || {}).name || cupId;
+}
+
+function renderKlassView(root) {
+  const cupVal = trendCupOptions();
+  if (!cupVal.length) {
+    root.append(h("p", { class: "muted" }, "Ingen cup har arkiverad historik ännu."));
+    return;
+  }
+  /* Förval: favoritklubbens egna cuper är nästan alltid det man vill se,
+     och ett tomt urval hade bara visat en tom sida.
+
+     Åren förväljs också, och det är viktigare än det låter: "alla år" över
+     sex cuper är 48 upplagor och långt över hundra megabyte, startat i
+     samma stund som fliken öppnas. Tre år räcker för att se formen och
+     kostar en bråkdel — vill man ha hela historiken finns årsväljaren
+     ovanför, precis som i Klubb/lag. */
+  if (!klassCups.size) {
+    const egna = cupVal.filter((id) => clubEditionsFor(id, new Set()).length);
+    for (const id of (egna.length ? egna : cupVal).slice(0, 6)) klassCups.add(id);
+  }
+  if (!klassYears.size) {
+    for (const år of clubYearOptions().slice(0, 3)) klassYears.add(år);
+  }
+
+  root.append(h("div", { class: "row vinnare-controls" },
+    buildPicker({
+      items: cupVal.map((id) => ({ id, label: klassCupNamn(id), sortName: klassCupNamn(id) })),
+      selected: klassCups, emptyLabel: "Välj cuper",
+      countLabel: (n) => n + (n === 1 ? " cup" : " cuper"),
+      searchPlaceholder: "Sök cup …", sortToggle: false,
+      onChange: () => renderContent(),
+    }),
+    buildPicker({
+      items: clubYearOptions().map((y) => ({ id: y, label: y, sortName: y })),
+      selected: klassYears, emptyLabel: "Alla år",
+      countLabel: (n) => n + (n === 1 ? " år" : " år"),
+      searchPlaceholder: "Sök år …", sortOptions: ÅRS_SORTERING,
+      quickPicks: [1, 2, 3, 5], kolumnBredd: 110,
+      onChange: () => renderContent(),
+    })));
+
+  root.append(h("div", { class: "row vinnare-controls" },
+    h("span", { class: "muted" }, "Kön:"),
+    h("div", { class: "seg", role: "group", "aria-label": "Kön" },
+      ["P", "F"].map((g) => chip(COHORT_LABELS[g], klassKon === g, () => {
+        klassKon = g; klassFodd = 0; renderContent();
+      })))));
+
+  const upplagor = klassUpplagor();
+  if (!upplagor.length) {
+    root.append(h("p", { class: "muted" }, "Inga arkiverade år i urvalet."));
+    return;
+  }
+
+  // Hämtning, med samma tak på parallella hämtningar som Klubb/lag — en
+  // bred cupmarkering kan annars starta hundra samtidiga anrop.
+  let laddade = 0;
+  let luckor = 0;
+  let slots = Math.max(0, CLUB_ARCHIVE_CONCURRENCY - antalLaddande());
+  const klara = [];
+  for (const u of upplagor) {
+    const nyckel = u.cupId + ":" + u.edition;
+    let ym = state.yearMatches[nyckel];
+    if (!ym && slots > 0) { ensureYearMatches(u.edition, u.cupId); slots--; ym = state.yearMatches[nyckel]; }
+    if (!ym || ym.status === "loading") { luckor++; continue; }
+    laddade++;
+    if (ym.status === "done") klara.push({ ...u, matches: ym.matches });
+  }
+  if (luckor) root.append(archiveProgressBlock(laddade, upplagor.length));
+
+  // Förskjutning per cup, ur det som faktiskt är hämtat.
+  const provPerCup = new Map();
+  for (const k of klara) {
+    if (!provPerCup.has(k.cupId)) provPerCup.set(k.cupId, []);
+    const p = provPerCup.get(k.cupId);
+    for (const kat of new Set(k.matches.map((m) => m.catName).filter(Boolean))) {
+      p.push({ catName: kat, edition: k.edition });
+    }
+  }
+  const offsetPerCup = new Map();
+  for (const cupId of klassCups) offsetPerCup.set(cupId, klassOffsetFör(cupId, provPerCup.get(cupId) || []));
+
+  // Vilka kullar går att erbjuda? Bara de vi faktiskt kan peka ut.
+  const kullar = new Map();
+  for (const k of klara) {
+    const off = offsetPerCup.get(k.cupId);
+    for (const kat of new Set(k.matches.map((m) => m.catName).filter(Boolean))) {
+      const c = cohortFor(kat, k.edition, off);
+      if (c && c.g === klassKon) kullar.set(c.born, (kullar.get(c.born) || 0) + 1);
+    }
+  }
+  const årsval = [...kullar.keys()].sort((a, b) => b - a);
+  if (!årsval.length) {
+    if (!luckor) {
+      root.append(h("p", { class: "muted" },
+        "Ingen av de valda cuperna skriver ut födelseår, och ingen av dem har " +
+        "gjort det tidigare heller — då finns inget att räkna om ifrån. Välj " +
+        "med en cup som gör det, så kan du peka ut resten."));
+    }
+    return;
+  }
+  if (!klassFodd || !kullar.has(klassFodd)) klassFodd = årsval[0];
+
+  root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+    h("span", { class: "muted" }, "Födda:"),
+    h("div", { class: "vinnare-ar-scroll" },
+      årsval.map((år) => chip(String(år), klassFodd === år, () => {
+        klassFodd = år; renderContent();
+      }, "small")))));
+
+  klassTabell(root, klara, offsetPerCup, provPerCup);
+}
+
+
+function antalLaddande() {
+  return Object.values(state.yearMatches)
+    .filter((e) => e && e.status === "loading").length;
+}
+
+/* Tabellen, plus frågorna för de cuper vi inte kan lösa själva. */
+function klassTabell(root, klara, offsetPerCup, provPerCup) {
+  const rader = [];
+  const oklara = [];
+  for (const k of klara) {
+    const off = offsetPerCup.get(k.cupId);
+    const stat = klassUpplageStat(k.matches);
+    let träff = null;
+    for (const [kat, p] of stat) {
+      const c = cohortFor(kat, k.edition, off);
+      if (c && c.g === klassKon && c.born === klassFodd) {
+        träff = träff
+          ? { kat: träff.kat + ", " + kat, lag: träff.lag + p.lag.size,
+              matcher: träff.matcher + p.matcher, egna: träff.egna + p.egna.size }
+          : { kat, lag: p.lag.size, matcher: p.matcher, egna: p.egna.size };
+      }
+    }
+    if (träff) { rader.push({ ...k, ...träff }); continue; }
+    if (off == null) {
+      // Kandidater: årets klasser av rätt kön, med sina tal så man ser vad
+      // man väljer. Åldern avgör vilken som blir vilket födelseår.
+      const kand = [...stat.entries()]
+        .map(([kat, p]) => ({ kat, ålder: (parseCat(kat) || {}).age || 0,
+          kön: (parseCat(kat) || {}).g, lag: p.lag.size, matcher: p.matcher }))
+        .filter((x) => x.kön === klassKon && x.ålder)
+        .sort((a, b) => a.ålder - b.ålder);
+      if (kand.length) oklara.push({ ...k, kand });
+    }
+  }
+
+  if (rader.length) {
+    const kolumner = [
+      { key: "cup", label: "Cup", align: "l", defaultDir: 1,
+        get: (r) => klassCupNamn(r.cupId) },
+      { key: "edition", label: "År", align: "l", defaultDir: -1, get: (r) => r.edition },
+      { key: "kat", label: "Klass", align: "l", defaultDir: 1, get: (r) => r.kat },
+      { key: "lag", label: "Lag", defaultDir: -1, get: (r) => r.lag },
+      { key: "matcher", label: "Matcher", defaultDir: -1, get: (r) => r.matcher },
+      { key: "egna", label: state.favoriteClub || "Egna lag", defaultDir: -1,
+        get: (r) => r.egna,
+        render: (r) => (r.egna ? String(r.egna) : h("span", { class: "muted" }, "–")) },
+    ];
+    root.append(sortableTable(kolumner, rader, klassTabellSort));
+
+    const sum = rader.reduce((a, r) => ({
+      lag: a.lag + r.lag, matcher: a.matcher + r.matcher, egna: a.egna + r.egna,
+    }), { lag: 0, matcher: 0, egna: 0 });
+    const år = [...new Set(rader.map((r) => r.edition))].sort();
+    const cuper = new Set(rader.map((r) => r.cupId));
+    root.append(h("p", { class: "kull-sammanfattning" },
+      h("strong", null, (COHORT_LABELS[klassKon] || klassKon) + " " + klassFodd),
+      " · " + cuper.size + (cuper.size === 1 ? " cup" : " cuper") +
+      " · " + år.length + (år.length === 1 ? " år" : " år") +
+      (år.length > 1 ? " (" + år[0] + "–" + år[år.length - 1] + ")" : "") +
+      " · " + sum.lag + " lag · " + sum.matcher + " matcher" +
+      (sum.egna ? " · varav " + sum.egna + " lag från " + state.favoriteClub : "")));
+  } else {
+    root.append(h("p", { class: "muted" },
+      "Ingen av de lösta cuperna hade den kullen i urvalet."));
+  }
+
+  if (!oklara.length) return;
+  /* Frågan ställs per CUP, inte per år: svaret är ett faktum om cupens
+     klassnamngivning och gäller därför alla dess upplagor. Därför visas
+     bara ett år per cup här — det som har flest klasser att välja bland. */
+  const perCup = new Map();
+  for (const o of oklara) {
+    const f = perCup.get(o.cupId);
+    if (!f || o.kand.length > f.kand.length) perCup.set(o.cupId, o);
+  }
+  root.append(h("div", { class: "klass-fraga" },
+    h("p", null, h("strong", null, "Behöver en knuff."),
+      " De här cuperna skriver aldrig ut födelseår, så jag vet inte vad " +
+      "deras klasser motsvarar. Peka ut rätt klass en gång per cup — då " +
+      "räknar jag ut alla deras andra år själv."),
+    [...perCup.values()].map((o) => h("div", { class: "klass-fraga-rad" },
+      h("span", { class: "klass-fraga-cup" },
+        klassCupNamn(o.cupId) + " " + o.edition + ": vilken klass är " +
+        (COHORT_LABELS[klassKon] || "").toLowerCase() + " födda " + klassFodd + "?"),
+      h("div", { class: "klass-fraga-val" },
+        o.kand.map((k) => h("button", {
+          class: "chip small", type: "button",
+          title: k.lag + " lag, " + k.matcher + " matcher",
+          onclick: () => {
+            klassLär(o.cupId, Number(o.edition) - k.ålder - klassFodd);
+            renderContent();
+          },
+        }, k.kat.length > 22 ? k.kat.slice(0, 21) + "…" : k.kat)))))));
+}
+
+let klassTabellSort = { key: "edition", dir: -1 };
+
 const STATS_TABS = [
   ["trend", "Trend", renderTrendView],
   ["vinnare", "Vinnare", renderVinnareView],
@@ -3426,6 +3738,7 @@ const STATS_TABS = [
   ["klubb", "Klubb/lag", renderClubView],
   ["klubbjamforelse", "Klubbjämförelse", renderClubCompareView],
   ["cuper", "Cuper", renderCupsOverviewView],
+  ["klasser", "Klasser", renderKlassView],
   ["historik", "Historik", renderHistoryView],
   ["skyttar", "Skyttar & domare", renderScorersView],
 ];
@@ -3438,7 +3751,8 @@ export function renderStatsView(root) {
   // ensureCupClubGeo/fetchArchiveIndex). Anta då att allt är stött hellre
   // än att gömma hela vyn i onödan.
   const support = state.statsSupport ||
-    { trend: true, karta: true, vinnare: true, kalender: true, klubb: true, klubbjamforelse: true, cuper: true, historik: true };
+    { trend: true, karta: true, vinnare: true, kalender: true, klubb: true,
+      klubbjamforelse: true, cuper: true, klasser: true, historik: true };
   const visibleTabs = STATS_TABS.filter(([key]) => support[key]);
   // Den valda underfliken kan ha blivit ogiltig sen sist (t.ex. Karta
   // förlorade sitt stöd) — falla då tillbaka på den första som fortfarande

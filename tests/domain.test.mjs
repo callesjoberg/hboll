@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { dayKey, hasScheduledStart, matchTimeLabel } from "../js/time.js";
 import {
   parseCat, parseCohort, cohortKey, cohortLabel, shortCat, catSortKey,
+  ageOffset, learnAgeOffset, cohortFor,
 } from "../js/domain/category.js";
 import {
   slugifySv, slugifyTeamId, clubPatternFromName, isClubName,
@@ -483,4 +484,41 @@ test("slutspelsprognos: gruppklar, kandidater och platshållare", () => {
   const proj = buildPlayoffProjection(unfinished, gd, "handboll");
   assert.equal(proj.get(11).home.name, "A");
   assert.equal(proj.get(11).home.certain, true);
+});
+
+test("ageOffset läser förskjutningen ur en klass som skriver ut båda", () => {
+  // Göteborg Cup: F12 år 2026 är födda 2014 -> förskjutning 0
+  assert.equal(ageOffset("F12 (Flickor födda 2014)", "2026"), 0);
+  // Potatiscupen: Flickor 12 år 2024 är födda 2011 -> förskjutning 1
+  assert.equal(ageOffset("Flickor 12 (födda 2011)", "2024"), 1);
+  // utan födelseår går det inte
+  assert.equal(ageOffset("Pojkar 13", "2026"), null);
+});
+
+test("learnAgeOffset kräver att cupen är konsekvent med sig själv", () => {
+  const rena = [
+    { catName: "F12 (Flickor födda 2014)", edition: "2026" },
+    { catName: "P13 (Pojkar födda 2013)", edition: "2026" },
+    { catName: "F14 (Flickor födda 2011)", edition: "2025" },
+  ];
+  assert.equal(learnAgeOffset(rena), 0);
+
+  // Blandat underlag (som Bua/Norden/Select Cup) ska ge null, inte majoritet
+  const blandat = [
+    { catName: "F12 (Flickor födda 2014)", edition: "2026" },
+    { catName: "P13 (Pojkar födda 2012)", edition: "2026" },
+    { catName: "F10 (Flickor födda 2015)", edition: "2026" },
+  ];
+  assert.equal(learnAgeOffset(blandat), null);
+  assert.equal(learnAgeOffset([]), null);
+});
+
+test("cohortFor föredrar utskrivet födelseår framför omräkning", () => {
+  // utskrivet vinner även om förskjutningen skulle säga något annat
+  assert.deepEqual(cohortFor("F12 (Flickor födda 2014)", "2026", 5), { g: "F", born: 2014 });
+  // omräkning används bara när året saknas
+  assert.deepEqual(cohortFor("Pojkar 13", "2026", 0), { g: "P", born: 2013 });
+  assert.deepEqual(cohortFor("Pojkar 13", "2026", 1), { g: "P", born: 2012 });
+  // utan känd förskjutning gissar vi inte
+  assert.equal(cohortFor("Pojkar 13", "2026", null), null);
 });

@@ -46,6 +46,58 @@ export function cohortLabel(catName) {
   return c ? (COHORT_LABELS[c.g] || c.g) + " " + c.born : catName;
 }
 
+/* Åldersetiketten ("P13") går att räkna om till födelseår — men
+   förskjutningen skiljer sig MELLAN cuper. Göteborg Cups F12 år 2026 är
+   födda 2014; Potatiscupens F12 år 2024 är födda 2011.
+
+   En säsongsregel (vår/höst) räcker inte. Mätt över 902 klasser som
+   skriver ut både ålder och födelseår är hösten entydig, men MAJ är jämnt
+   delat: 107 klasser följer den ena konventionen och 102 den andra. Att
+   gissa där hade jämfört en kull med nästa och kallat det samma sak.
+
+   Förskjutningen lärs därför per cup ur cupens EGEN data: klasser som
+   råkar skriva ut båda avslöjar den. Inom en cup är den entydig — 100 %
+   för samtliga tolv cuper som går att kalibrera alls. Saknas underlag
+   returneras null, och då gissar vi inte utan frågar användaren. */
+export function ageOffset(catName, edition) {
+  const c = parseCohort(catName);
+  const p = parseCat(catName);
+  const år = Number(edition);
+  if (!c || !p || !p.age || !Number.isFinite(år)) return null;
+  return år - c.born - p.age;
+}
+
+/* Lär förskjutningen ur en cups klassnamn. prov: [{catName, edition}, …].
+   Kräver att minst 95 % av underlaget pekar åt samma håll — annars är
+   cupen inte konsekvent med sig själv och förtjänar ingen omräkning
+   (Bua, Norden och Select Cup ligger på 72, 67 respektive 18 %). */
+export function learnAgeOffset(prov) {
+  const räknare = new Map();
+  let n = 0;
+  for (const { catName, edition } of prov || []) {
+    const off = ageOffset(catName, edition);
+    if (off == null) continue;
+    räknare.set(off, (räknare.get(off) || 0) + 1);
+    n++;
+  }
+  if (!n) return null;
+  let bäst = null, antal = 0;
+  for (const [off, c] of räknare) if (c > antal) { bäst = off; antal = c; }
+  return antal / n >= 0.95 ? bäst : null;
+}
+
+/* Vilken kull en klass tillhör, givet cupens förskjutning. Står
+   födelseåret utskrivet används det rakt av — då behövs ingen omräkning
+   och ingen kalibrering. */
+export function cohortFor(catName, edition, offset) {
+  const stated = parseCohort(catName);
+  if (stated) return stated;
+  const p = parseCat(catName);
+  const år = Number(edition);
+  if (!p || !p.g || !p.age || offset == null || !Number.isFinite(år)) return null;
+  return { g: p.g, born: år - p.age - offset };
+}
+
 export function shortCat(catName) {
   const p = parseCat(catName);
   if (!p) return (catName || "").slice(0, 8);
