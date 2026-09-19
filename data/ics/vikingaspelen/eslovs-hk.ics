@@ -44,4 +44,12 @@ SUMMARY:Eslövs HK – LUGI HF 2 (F14 (2012) A-semifinal:01)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · A-semifinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-1037@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T190500
+DTEND;TZID=Europe/Stockholm:20260919T193500
+SUMMARY:Eslövs HK – LUGI HF 3 (F14 (2012) A-final)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · A-final
+END:VEVENT
 END:VCALENDAR
