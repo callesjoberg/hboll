@@ -3814,9 +3814,11 @@ function klassTabell(root, klara, offsetPerCup) {
   }
   root.append(h("div", { class: "klass-fraga" },
     h("p", null, h("strong", null, "Behöver en knuff."),
-      " De här cuperna skriver aldrig ut födelseår, så jag vet inte vad " +
-      "deras klasser motsvarar. Peka ut rätt klass en gång per cup — då " +
-      "räknar jag ut alla deras andra år själv."),
+      // "Aldrig" stämmer inte för alla: Bua skriver ut födelseåret ibland,
+      // men inte konsekvent nog att räkna om resten ifrån.
+      " De här cuperna skriver inte ut födelseår — eller gör det för " +
+      "ojämnt för att jag ska kunna räkna om deras klasser säkert. Peka ut " +
+      "rätt klass en gång per cup, så räknar jag ut alla deras andra år själv."),
     [...perCup.values()].map((o) => h("div", { class: "klass-fraga-rad" },
       h("span", { class: "klass-fraga-cup" },
         klassCupNamn(o.cupId) + " " + o.edition + ": vilken klass är " +
