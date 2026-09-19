@@ -5,14 +5,6 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Vikingaspelen
 BEGIN:VEVENT
-UID:match-3032@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T153000
-DTEND;TZID=Europe/Stockholm:20260919T160000
-SUMMARY:LUGI HF 1 – 2 an från Gr... (F12 (2014) A-8-dels:03)
-LOCATION:Korsbacka A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F12 (2014) · A-8-dels:03
-END:VEVENT
-BEGIN:VEVENT
 UID:match-2024@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T150500
 DTEND;TZID=Europe/Stockholm:20260920T153500

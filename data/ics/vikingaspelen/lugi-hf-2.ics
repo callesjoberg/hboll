@@ -181,6 +181,14 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3033@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:Kävlinge HK ... – LUGI HF 2 (F12 (2014) B-8-dels:03)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
 UID:match-1030@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T164000
 DTEND;TZID=Europe/Stockholm:20260919T171000

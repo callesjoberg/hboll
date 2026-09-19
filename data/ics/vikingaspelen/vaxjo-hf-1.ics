@@ -60,4 +60,12 @@ SUMMARY:Växjö HF 1 – H43 Lund 1 (F12 (2014) Grupp 3)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3032@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:LUGI HF 1 – Växjö HF 1 (F12 (2014) A-8-dels:03)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-8-dels:03
+END:VEVENT
 END:VCALENDAR

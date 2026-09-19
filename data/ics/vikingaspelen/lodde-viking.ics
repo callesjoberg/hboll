@@ -640,7 +640,7 @@ BEGIN:VEVENT
 UID:match-3040@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T163500
 DTEND;TZID=Europe/Stockholm:20260919T170500
-SUMMARY:1 an från Gr... – Lödde Viking... (F12 (2014) A-kvartsfinal:03)
+SUMMARY:H43 Lund 1 – Lödde Viking... (F12 (2014) A-kvartsfinal:03)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:03
 END:VEVENT

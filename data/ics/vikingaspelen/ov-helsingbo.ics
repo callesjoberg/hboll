@@ -56,7 +56,7 @@ BEGIN:VEVENT
 UID:match-3035@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T160000
 DTEND;TZID=Europe/Stockholm:20260919T163000
-SUMMARY:3 an från Gr... – OV Helsingbo... (F12 (2014) B-kvartsfinal:03)
+SUMMARY:Kävlinge HK ... – OV Helsingbo... (F12 (2014) B-kvartsfinal:03)
 LOCATION:Vikenhallen\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:03
 END:VEVENT
