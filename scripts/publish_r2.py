@@ -32,6 +32,7 @@ import hashlib
 import json
 import mimetypes
 import os
+import re
 import time
 from pathlib import Path
 
@@ -40,6 +41,12 @@ DATA = ROT / "data"
 CUPS = DATA / "cups.json"
 
 KORT_CACHE = "public, max-age=60"
+# Filer som bara får ligga i den PRIVATA hinken. Den saknar publik adress;
+# enda vägen ut är functions/api/privat, som kräver inloggning. Aktiveras
+# genom att R2_PRIVAT_BUCKET sätts — utan den beter sig skriptet som förut,
+# så ändringen kan driftsättas innan hinken finns.
+PRIVAT = re.compile(r"^data/scorers-[a-z0-9]+\.json$")
+PRIVAT_CACHE = "private, no-store"  # serverfunktionen sätter sina egna huvuden
 LANG_CACHE = "public, max-age=86400, immutable"
 
 TYPER = {".json": "application/json", ".ics": "text/calendar; charset=utf-8"}
@@ -119,28 +126,39 @@ def main() -> int:
                     help="ladda upp även oförändrade filer — behövs när "
                          "Cache-Control ändrats, för innehållsjämförelsen "
                          "ser bara innehållet och inte metadatan")
+    ap.add_argument("--hamta-privata", action="store_true",
+                    help="hämta de privata filerna till data/ och avsluta — "
+                         "skyttestatistiken byggs inkrementellt och behöver "
+                         "förra körningens fil, som inte längre finns i git")
+    ap.add_argument("--rensa-publika", action="store_true",
+                    help="radera privata filer ur den publika hinken")
     ap.add_argument("--stamp", action="store_true",
                     help="skriv data/r2-stamp.json med tidpunkt och körning")
     args = ap.parse_args()
 
+    privat_bucket = os.environ.get("R2_PRIVAT_BUCKET", "")
     frysta = frysta_arkivfiler()
-    filer = lokala_filer(args.only)
-    if not filer:
+    filer = [] if args.hamta_privata else lokala_filer(args.only)
+    if not filer and not (args.hamta_privata or args.rensa_publika):
         print("Inga filer att publicera.")
         return 0
 
     lokalt = {}
     for f in filer:
         rel = f.relative_to(ROT).as_posix()
-        lokalt[rel] = (f, md5(f), cache_for(rel, frysta))
+        privat = bool(privat_bucket) and bool(PRIVAT.match(rel))
+        lokalt[rel] = (f, md5(f), PRIVAT_CACHE if privat else cache_for(rel, frysta))
 
     if args.dry_run:
         kort = [v for v in lokalt.values() if v[2] == KORT_CACHE]
-        lang = [v for v in lokalt.values() if v[2] != KORT_CACHE]
+        lang = [v for v in lokalt.values() if v[2] == LANG_CACHE]
+        priv = [v for v in lokalt.values() if v[2] == PRIVAT_CACHE]
         mb = lambda vs: sum(v[0].stat().st_size for v in vs) / 1048576
         print(f"{len(lokalt)} filer, {mb(lokalt.values()):.1f} MB")
         print(f"  kort cache (60 s):    {len(kort):4} filer  {mb(kort):7.1f} MB")
         print(f"  lång cache (frysta):  {len(lang):4} filer  {mb(lang):7.1f} MB")
+        if priv:
+            print(f"  privat hink:          {len(priv):4} filer  {mb(priv):7.1f} MB")
         for rel, (f, summa, cc) in list(sorted(lokalt.items()))[:5]:
             print(f"  {rel}  md5={summa[:8]}…  {cc}")
         print("  … (dry-run: ingen kontakt med R2)")
@@ -190,9 +208,39 @@ def main() -> int:
                       ContentType="application/json",
                       CacheControl="public, max-age=30")
 
+    if args.hamta_privata:
+        if not privat_bucket:
+            print("R2_PRIVAT_BUCKET saknas — inget att hämta.")
+            return 0
+        hämtade = 0
+        for rel in fjärr_etags(s3, privat_bucket):
+            if not PRIVAT.match(rel):
+                continue
+            mål = ROT / rel
+            mål.parent.mkdir(parents=True, exist_ok=True)
+            s3.download_file(privat_bucket, rel, str(mål))
+            hämtade += 1
+        print(f"R2: {hämtade} privata filer hämtade från {privat_bucket}.")
+        return 0
+
     fjärr = fjärr_etags(s3, bucket)
+
+    if args.rensa_publika and privat_bucket:
+        # Bara det som faktiskt finns i den privata hinken raderas publikt.
+        # Då kan en körning aldrig lämna en fil utan någon kopia alls.
+        säkra = set(fjärr_etags(s3, privat_bucket))
+        bort = [k for k in fjärr if PRIVAT.match(k) and k in säkra]
+        for k in bort:
+            s3.delete_object(Bucket=bucket, Key=k)
+            fjärr.pop(k, None)
+        if bort:
+            print(f"R2: {len(bort)} privata filer raderade ur {bucket}.")
+
+    fjärr_privat = fjärr_etags(s3, privat_bucket) if privat_bucket else {}
+    def mål_för(rel):
+        return privat_bucket if (privat_bucket and PRIVAT.match(rel)) else bucket
     att_göra = [(rel, *v) for rel, v in sorted(lokalt.items())
-                if args.force or fjärr.get(rel) != v[1]]
+                if args.force or (fjärr_privat if mål_för(rel) != bucket else fjärr).get(rel) != v[1]]
 
     if not att_göra:
         stämpla(0)
@@ -204,7 +252,7 @@ def main() -> int:
         typ = TYPER.get(f.suffix) or mimetypes.guess_type(rel)[0] \
             or "application/octet-stream"
         with f.open("rb") as fp:
-            s3.put_object(Bucket=bucket, Key=rel, Body=fp,
+            s3.put_object(Bucket=mål_för(rel), Key=rel, Body=fp,
                           ContentType=typ, CacheControl=cc)
         byte += f.stat().st_size
 

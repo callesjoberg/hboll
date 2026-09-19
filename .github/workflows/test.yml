@@ -18,3 +18,11 @@ jobs:
         run: node tests/data-correctness-smoke.mjs
       - name: null får inte nå DOM-metoderna
         run: node tests/dom-null-guard.mjs
+      - name: Modulgrafen länkar (exporter och importer finns)
+        run: node tests/module-link.mjs
+      - name: Väljarnas urval rörs bara som Set-liknande
+        run: node tests/picker-selection-guard.mjs
+      # Den enda spärren som faktiskt skyddar datan — förfalskade, utgångna
+      # och främmande token ska avvisas, och serverfunktionen ska svara rätt.
+      - name: Serverns inloggningskontroll
+        run: node --test tests/server-auth.test.mjs

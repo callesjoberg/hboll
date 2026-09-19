@@ -18,6 +18,11 @@ on:
         type: boolean
         required: false
         default: false
+      rensa_publika:
+        description: "Radera privata filer (skyttestatistik) ur den publika hinken — bara de som redan finns i den privata"
+        type: boolean
+        required: false
+        default: false
       dry_run:
         description: "Räkna ut vad som skulle laddas upp utan att röra R2"
         type: boolean
@@ -47,10 +52,13 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: cupschema-data
+          # Tom tills den privata hinken finns — då beter sig allt som förut.
+          R2_PRIVAT_BUCKET: ${{ vars.R2_PRIVAT_BUCKET }}
           ONLY: ${{ inputs.only }}
           DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
           FORCE: ${{ inputs.force && '--force' || '' }}
+          RENSA: ${{ inputs.rensa_publika && '--rensa-publika' || '' }}
         run: |
           args=""
           for f in $ONLY; do args="$args --only $f"; done
-          python3 scripts/publish_r2.py $DRY $FORCE $args
+          python3 scripts/publish_r2.py $DRY $FORCE $RENSA $args
