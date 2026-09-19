@@ -132,6 +132,16 @@ export function defaultSubViewSnap(now = new Date()) {
     vinnareToppMedals: { guld: true, silver: false, brons: false },
     historyMode: "compare",
     browse: null,
+    // Klasser-fliken. Tomma mängder = förval (favoritklubbens cuper, se
+    // renderKlassView), 0 = ingen ålder/födelseår vald ännu.
+    klassCups: new Set(),
+    klassYears: new Set(),
+    klassLatest: true,
+    klassMode: "alder",
+    klassKon: "P",
+    klassBorn: 0,
+    klassAge: 0,
+    klassTaught: {},
   };
 }
 
@@ -150,6 +160,9 @@ export function applySubViewPatch(snap, patch) {
   if (patch.bracketSort) out.bracketSort = { ...patch.bracketSort };
   if (patch.browse) out.browse = { ...patch.browse };
   if (patch.compareNames) out.compareNames = [...patch.compareNames];
+  if (patch.klassCups) out.klassCups = new Set(patch.klassCups);
+  if (patch.klassYears) out.klassYears = new Set(patch.klassYears);
+  if (patch.klassTaught) out.klassTaught = { ...patch.klassTaught };
   return out;
 }
 
@@ -214,6 +227,21 @@ export function encodeSubViewParams(p, snap) {
   } else if (sv === "cuper") {
     if (snap.statsCupDrill) p.set("cupDrill", snap.statsCupDrill);
     if (snap.cupsOverviewSport) p.set("cusport", snap.cupsOverviewSport);
+  } else if (sv === "klasser") {
+    if (snap.klassCups && snap.klassCups.size) p.set("kcups", [...snap.klassCups].sort().join(","));
+    // Utan kyrs gäller "senaste upplagan per cup", som är förvalet.
+    if (snap.klassLatest === false) {
+      p.set("kyrs", snap.klassYears && snap.klassYears.size
+        ? [...snap.klassYears].sort().join(",") : "all");
+    }
+    if (snap.klassMode === "kull") p.set("kmode", "kull");
+    if (snap.klassKon === "F") p.set("kkon", "F");
+    if (snap.klassMode === "kull" && snap.klassBorn) p.set("kfodd", String(snap.klassBorn));
+    if (snap.klassMode !== "kull" && snap.klassAge) p.set("kald", String(snap.klassAge));
+    // Klasser som avsändaren själv pekat ut bor i avsändarens webbläsare.
+    // Utan dem i länken hade mottagaren fått frågor i stället för rader.
+    const lärda = Object.entries(snap.klassTaught || {});
+    if (lärda.length) p.set("klar", lärda.sort().map(([c, o]) => c + ":" + o).join(","));
   } else if (sv === "kalender") {
     if (snap.kalenderYear) p.set("kyear", snap.kalenderYear);
   } else if (sv === "vinnare") {
@@ -303,6 +331,27 @@ export function decodeSubViewParams(params) {
   }
   if (params.get("cupDrill")) out.statsCupDrill = params.get("cupDrill");
   if (params.get("kyear")) out.kalenderYear = params.get("kyear");
+  if (params.get("kcups")) out.klassCups = new Set(params.get("kcups").split(",").filter(Boolean));
+  if (params.has("kyrs")) {
+    out.klassLatest = false;
+    const yrs = params.get("kyrs");
+    out.klassYears = yrs === "all" ? new Set()
+      : new Set(yrs.split(",").filter((x) => /^\d{4}$/.test(x)));
+  }
+  if (params.get("kmode") === "kull") out.klassMode = "kull";
+  if (params.get("kkon") === "F") out.klassKon = "F";
+  if (/^\d{4}$/.test(params.get("kfodd") || "")) out.klassBorn = +params.get("kfodd");
+  if (/^\d{1,2}$/.test(params.get("kald") || "")) out.klassAge = +params.get("kald");
+  if (params.get("klar")) {
+    const lärda = {};
+    for (const par of params.get("klar").split(",")) {
+      const [cup, off] = par.split(":");
+      // Förskjutningen är i praktiken 0 eller 1; allt utanför ett litet
+      // intervall är en trasig länk, inte ett faktum om en cup.
+      if (cup && /^-?\d$/.test(off || "")) lärda[cup] = +off;
+    }
+    out.klassTaught = lärda;
+  }
   if (["trofe", "ar", "topp"].includes(params.get("vm"))) out.vinnareMode = params.get("vm");
   if (params.has("vq")) out.vinnareQuery = params.get("vq");
   if (params.has("vmed")) out.vinnareMedals = strToMedals(params.get("vmed"));

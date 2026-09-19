@@ -63,6 +63,16 @@ test("tom klubbsökning kan appliceras och Stats-sessionen återställas", () =>
     cupsOverviewSport: defaults.cupsOverviewSport,
     historyMode: defaults.historyMode,
     browse: defaults.browse,
+    // Återställningen ska nollställa Klasser-fliken helt, inklusive
+    // utpekningar som kom med en länk.
+    klassCups: defaults.klassCups,
+    klassYears: defaults.klassYears,
+    klassLatest: defaults.klassLatest,
+    klassMode: defaults.klassMode,
+    klassKon: defaults.klassKon,
+    klassBorn: defaults.klassBorn,
+    klassAge: defaults.klassAge,
+    klassTaught: defaults.klassTaught,
   });
 });
 
@@ -333,4 +343,53 @@ test("Bana/slutspel: splitRecentPlayedByCount visar fortfarande alla kommande", 
   const { visible, hiddenCount } = splitRecentPlayedByCount(upcoming, 2, 0);
   assert.equal(hiddenCount, 0);
   assert.equal(visible.length, 50);
+});
+
+test("Klasser-fliken överlever en tur genom adressen", () => {
+  const snap = applySubViewPatch(defaultSubViewSnap(NOW), {
+    view: "stats", statsView: "klasser",
+    klassCups: new Set(["potatis", "hellton", "skadevi"]),
+    klassLatest: true, klassMode: "kull", klassKon: "P", klassBorn: 2015,
+    klassTaught: { skadevi: 1 },
+  });
+  const p = encodeSubViewParams(new URLSearchParams(), snap);
+  assert.equal(p.get("kcups"), "hellton,potatis,skadevi");
+  assert.equal(p.get("kmode"), "kull");
+  assert.equal(p.get("kfodd"), "2015");
+  assert.equal(p.get("klar"), "skadevi:1");
+  // Förval skrivs inte ut: senaste per cup, pojkar.
+  assert.equal(p.has("kyrs"), false);
+  assert.equal(p.has("kkon"), false);
+
+  const tillbaka = decodeSubViewParams(p);
+  assert.deepEqual([...tillbaka.klassCups].sort(), ["hellton", "potatis", "skadevi"]);
+  assert.equal(tillbaka.klassMode, "kull");
+  assert.equal(tillbaka.klassBorn, 2015);
+  assert.deepEqual(tillbaka.klassTaught, { skadevi: 1 });
+});
+
+test("Klasser: valda år, flickor och åldersläge", () => {
+  const snap = applySubViewPatch(defaultSubViewSnap(NOW), {
+    view: "stats", statsView: "klasser",
+    klassLatest: false, klassYears: new Set(["2026", "2025"]),
+    klassMode: "alder", klassKon: "F", klassAge: 11,
+  });
+  const p = encodeSubViewParams(new URLSearchParams(), snap);
+  assert.equal(p.get("kyrs"), "2025,2026");
+  assert.equal(p.get("kkon"), "F");
+  assert.equal(p.get("kald"), "11");
+  assert.equal(p.has("kfodd"), false);
+  const tillbaka = decodeSubViewParams(p);
+  assert.equal(tillbaka.klassLatest, false);
+  assert.equal(tillbaka.klassAge, 11);
+  assert.equal(tillbaka.klassKon, "F");
+});
+
+test("Klasser: trasiga värden i en länk ignoreras i stället för att filtrera bort allt", () => {
+  const ut = decodeSubViewParams(new URLSearchParams(
+    "kfodd=15&kald=abc&kyrs=2026,x,99&klar=skadevi:9x,potatis:1"));
+  assert.equal(ut.klassBorn, undefined);
+  assert.equal(ut.klassAge, undefined);
+  assert.deepEqual([...ut.klassYears], ["2026"]);
+  assert.deepEqual(ut.klassTaught, { potatis: 1 });
 });

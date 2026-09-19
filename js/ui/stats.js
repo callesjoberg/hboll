@@ -3492,9 +3492,16 @@ function klassLär(cupId, offset) {
    arkivet) klarade då 95 %-kravet och räknades om fel. */
 let klassFörskjutning = null;
 
-/* Användarens svar går före arkivets. null betyder "vet inte" och ska leda
+/* Utpekningar som kom med en delad länk. Hålls isär från användarens egna
+   (klassLärda) och sparas aldrig: annars hade avsändarens svar följt med
+   ut i mottagarens lagring nästa gång mottagaren själv pekade ut en cup. */
+let klassLänkade = new Map();
+
+/* Länkens svar går först — länken ska visa det avsändaren såg — sedan
+   användarens egna, sedan arkivets. null betyder "vet inte" och ska leda
    till en fråga, aldrig till ett antagande. */
 function klassOffsetFör(cupId) {
+  if (klassLänkade.has(cupId)) return klassLänkade.get(cupId);
   const lärd = klassLärdaOffset().get(cupId);
   if (Number.isFinite(lärd)) return lärd;
   const off = (klassFörskjutning || {})[cupId];
@@ -3668,7 +3675,11 @@ function renderKlassView(root) {
       return;
     }
     // Förval: den ålder som finns i flest upplagor — mest att jämföra.
-    if (!klassÅlder || !åldrar.has(klassÅlder)) {
+    // Ett valt värde (t.ex. ur en delad länk) får bara ersättas när ALLA
+    // upplagor är hämtade. Annars hade en länk till P11 tyst bytts mot en
+    // annan ålder bara för att P11:s upplagor inte hunnit laddas än — och
+    // sedan stannat där.
+    if (!klassÅlder || (!luckor && !åldrar.has(klassÅlder))) {
       klassÅlder = lista.reduce((b, a) => (åldrar.get(a) > åldrar.get(b) ? a : b), lista[0]);
     }
     root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
@@ -3700,7 +3711,7 @@ function renderKlassView(root) {
     }
     return;
   }
-  if (!klassFodd || !kullar.has(klassFodd)) klassFodd = årsval[0];
+  if (!klassFodd || (!luckor && !kullar.has(klassFodd))) klassFodd = årsval[0];
 
   root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
     h("span", { class: "muted" }, "Födda:"),
@@ -3746,16 +3757,17 @@ function klassTabell(root, klara, offsetPerCup) {
     }
     if (träff) { rader.push({ ...k, ...träff }); continue; }
     if (ålderLäge) { saknas.push(k); continue; }
-    if (off == null) {
-      // Kandidater: årets klasser av rätt kön, med sina tal så man ser vad
-      // man väljer. Åldern avgör vilken som blir vilket födelseår.
-      const kand = [...stat.entries()]
-        .map(([kat, p]) => ({ kat, ålder: (parseCat(kat) || {}).age || 0,
-          kön: (parseCat(kat) || {}).g, lag: p.lag.size, matcher: p.matcher }))
-        .filter((x) => x.kön === klassKon && x.ålder)
-        .sort((a, b) => a.ålder - b.ålder);
-      if (kand.length) oklara.push({ ...k, kand });
-    }
+    // Löst cup men ingen klass för kullen: säg det, i stället för att cupen
+    // bara försvinner ur tabellen utan förklaring.
+    if (off != null) { saknas.push(k); continue; }
+    // Kandidater: årets klasser av rätt kön, med sina tal så man ser vad
+    // man väljer. Åldern avgör vilken som blir vilket födelseår.
+    const kand = [...stat.entries()]
+      .map(([kat, p]) => ({ kat, ålder: (parseCat(kat) || {}).age || 0,
+        kön: (parseCat(kat) || {}).g, lag: p.lag.size, matcher: p.matcher }))
+      .filter((x) => x.kön === klassKon && x.ålder)
+      .sort((a, b) => a.ålder - b.ålder);
+    if (kand.length) oklara.push({ ...k, kand });
   }
 
   if (rader.length) {
@@ -3799,8 +3811,9 @@ function klassTabell(root, klara, offsetPerCup) {
   if (saknas.length) {
     // Att en cup SAKNAR klassen är också ett svar när man jämför cuper.
     root.append(h("p", { class: "muted" },
-      "Ingen " + klassKon + klassÅlder + " i: " +
-      saknas.map((k) => klassCupNamn(k.cupId) + " " + k.edition).join(", ") + "."));
+      (ålderLäge ? "Ingen " + klassKon + klassÅlder
+        : "Inga " + (COHORT_LABELS[klassKon] || "").toLowerCase() + " födda " + klassFodd) +
+      " i: " + saknas.map((k) => klassCupNamn(k.cupId) + " " + k.edition).join(", ") + "."));
   }
 
   if (!oklara.length) return;
@@ -4225,6 +4238,12 @@ export function getStatsUrlFields() {
     cupsOverviewSport,
     historyMode,
     browse: browseOpen || browseTarget,
+    klassCups, klassYears, klassLatest: klassSenaste, klassMode: klassLäge,
+    klassKon, klassBorn: klassFodd, klassAge: klassÅlder,
+    // Bara utpekningar för cuper som faktiskt är valda — resten hör inte
+    // till den här vyn och skulle bara göra länken längre.
+    klassTaught: Object.fromEntries([...klassLärdaOffset(), ...klassLänkade]
+      .filter(([cup]) => klassCups.has(cup))),
   };
 }
 
@@ -4247,6 +4266,14 @@ export function applyStatsUrlFields(patch) {
     browseTarget = patch.browse;
     historyMode = "browse";
   }
+  if (patch.klassCups) klassCups = new Set(patch.klassCups);
+  if (patch.klassYears) klassYears = new Set(patch.klassYears);
+  if ("klassLatest" in patch) klassSenaste = patch.klassLatest;
+  if (patch.klassMode) klassLäge = patch.klassMode;
+  if (patch.klassKon) klassKon = patch.klassKon;
+  if (patch.klassBorn) klassFodd = patch.klassBorn;
+  if (patch.klassAge) klassÅlder = patch.klassAge;
+  if (patch.klassTaught) klassLänkade = new Map(Object.entries(patch.klassTaught));
 }
 
 export function resetStatsUrlFields(defaults = defaultSubViewSnap()) {
@@ -4266,4 +4293,12 @@ export function resetStatsUrlFields(defaults = defaultSubViewSnap()) {
   clubQuerySeeded = false;
   browseTarget = null;
   browseOpen = null;
+  klassCups = new Set(defaults.klassCups || []);
+  klassYears = new Set(defaults.klassYears || []);
+  klassSenaste = defaults.klassLatest !== false;
+  klassLäge = defaults.klassMode || "alder";
+  klassKon = defaults.klassKon || "P";
+  klassFodd = defaults.klassBorn || 0;
+  klassÅlder = defaults.klassAge || 0;
+  klassLänkade = new Map(Object.entries(defaults.klassTaught || {}));
 }
