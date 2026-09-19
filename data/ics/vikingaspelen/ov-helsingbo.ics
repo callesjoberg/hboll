@@ -77,6 +77,14 @@ LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-semifinal:01
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3045@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T180000
+DTEND;TZID=Europe/Stockholm:20260919T183000
+SUMMARY:OV Helsingbo... – H43 Lund 1 (F12 (2014) A-final)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-final
+END:VEVENT
+BEGIN:VEVENT
 UID:match-3046@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T180500
 DTEND;TZID=Europe/Stockholm:20260919T183500
