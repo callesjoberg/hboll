@@ -149,6 +149,14 @@ LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 2
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:LUGI HF 3 – HK Ankaret röd (F12 (2014) B-kvartsfinal:01)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
 UID:match-1027@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T153500
 DTEND;TZID=Europe/Stockholm:20260919T160500

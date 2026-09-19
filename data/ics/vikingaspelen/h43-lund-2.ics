@@ -93,6 +93,14 @@ LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 2
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3031@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T150000
+DTEND;TZID=Europe/Stockholm:20260919T153000
+SUMMARY:IK Sund – H43 Lund 2 (F12 (2014) B-8-dels:08)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:08
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10004@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T100000
 DTEND;TZID=Europe/Stockholm:20260920T103000

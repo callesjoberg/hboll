@@ -32,7 +32,7 @@ BEGIN:VEVENT
 UID:match-3031@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T150000
 DTEND;TZID=Europe/Stockholm:20260919T153000
-SUMMARY:IK Sund – 4 an från Gr... (F12 (2014) B-8-dels:08)
+SUMMARY:IK Sund – H43 Lund 2 (F12 (2014) B-8-dels:08)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:08
 END:VEVENT
