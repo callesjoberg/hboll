@@ -36,4 +36,12 @@ SUMMARY:Eslövs HK – HK Ankaret (F14 (2012) A-kvartsfinal:01)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · A-kvartsfinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-1034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T175000
+DTEND;TZID=Europe/Stockholm:20260919T182000
+SUMMARY:Eslövs HK – Vinn.kvart   2 (F14 (2012) A-semifinal:01)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · A-semifinal:01
+END:VEVENT
 END:VCALENDAR
