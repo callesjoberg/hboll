@@ -218,7 +218,7 @@ def write_if_changed(path, data):
         try:
             old = json.loads(path.read_text(encoding="utf-8"))
             if all(old.get(k) == data.get(k) for k in
-                   ("matches", "tables", "playoffs", "rosters")):
+                   ("matches", "tables", "playoffs")):
                 return False
         except Exception:
             pass
@@ -369,11 +369,15 @@ def main():
             "ts": data.get("ts"), "matches": matches,
         }
         # Valfria fält som bara vissa skrapor bygger (tables: alla dataUrl-
-        # cuper, playoffs/rosters: bara Gothia hittills) — kopieras rakt av
-        # om de finns, i stället för att hårdkodas ett i taget och tyst
-        # tappas bort när en ny läggs till (hände playoffs/rosters innan
-        # den här kommentaren skrevs).
-        for key in ("tables", "playoffs", "rosters"):
+        # cuper, playoffs: bara Gothia hittills) — kopieras rakt av om de
+        # finns, i stället för att hårdkodas ett i taget och tyst tappas
+        # bort när en ny läggs till (hände playoffs innan den här
+        # kommentaren skrevs).
+        #
+        # rosters kopieras INTE längre. Trupperna ligger i egna filer,
+        # data/rosters-<cup>-<år>.json, som bara lämnas ut till inloggade;
+        # att kopiera in dem här hade lagt tillbaka dem i en publik fil.
+        for key in ("tables", "playoffs"):
             if key in data:
                 out[key] = data[key]
         dest = ARCHIVE_DIR / f"{cup['id']}-{edition}.json"

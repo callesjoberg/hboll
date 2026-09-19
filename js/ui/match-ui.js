@@ -229,18 +229,29 @@ function showMatchDialog(dlg) {
   dlg.showModal();
 }
 
+// Trupplistan hämtas separat — den ligger i en egen fil, bakom inloggning
+// när den är aktiv — så rutan fylls när svaret kommer, på samma sätt som
+// målfördelningen nedan.
 function rosterBlock(team, edition) {
   if (!cup().hasRosters) return null;
-  const players = rosterFor(team, edition);
-  if (!players.length) return null;
-  const sorted = [...players].sort((a, b) =>
-    (a.shirtNr == null ? 999 : a.shirtNr) - (b.shirtNr == null ? 999 : b.shirtNr));
-  return h("div", { class: "team-roster" }, h("h4", null, "Trupp"),
-    h("ul", { class: "team-roster-list" }, sorted.map((p) => h("li", null,
-      h("span", { class: "roster-nr" }, p.shirtNr != null ? String(p.shirtNr) : "–"),
-      h("span", { class: "roster-name" }, p.name),
-      p.position ? h("span", { class: "roster-pos" }, p.position) : null,
-      p.goals ? h("span", { class: "roster-goals" }, p.goals + " mål") : null))));
+  const host = h("div", { class: "team-roster" });
+  rosterFor(team, edition).then((players) => {
+    if (!host.isConnected) return;
+    if (players && players.låst) {
+      host.replaceChildren(låstRuta(players.låst, "Trupplistan"));
+      return;
+    }
+    if (!players || !players.length) return;
+    const sorted = [...players].sort((a, b) =>
+      (a.shirtNr == null ? 999 : a.shirtNr) - (b.shirtNr == null ? 999 : b.shirtNr));
+    host.replaceChildren(h("h4", null, "Trupp"),
+      h("ul", { class: "team-roster-list" }, sorted.map((p) => h("li", null,
+        h("span", { class: "roster-nr" }, p.shirtNr != null ? String(p.shirtNr) : "–"),
+        h("span", { class: "roster-name" }, p.name),
+        p.position ? h("span", { class: "roster-pos" }, p.position) : null,
+        p.goals ? h("span", { class: "roster-goals" }, p.goals + " mål") : null))));
+  }).catch(() => {});
+  return host;
 }
 
 function favoriteTeamToggle(team, catName) {

@@ -17,6 +17,9 @@ export function tillåtetUrsprung(ursprung) {
 /* Vilken nivå varje skyddad fil kräver. Det här är raden som ändras när
    betalningen kommer: scorers går då från "inloggad" till "full". */
 export function kravFör(fil) {
+  // Målskyttar per spelare, och trupplistor med namn, tröjnummer och
+  // position — båda uppgifter om namngivna spelare, de flesta barn.
   if (/^scorers-[a-z0-9]+\.json$/.test(fil)) return "inloggad";
+  if (/^rosters-[a-z0-9]+-\d{4}\.json$/.test(fil)) return "inloggad";
   return null; // okänd fil: finns inte
 }

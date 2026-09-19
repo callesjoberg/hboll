@@ -108,7 +108,6 @@ window.HB = window.HB || {};
     if (cup.dataUrl) {
       localTables[cup.id] = j.tables || {};
       localPlayoffs[cup.id] = j.playoffs || {};
-      localRosters[cup.id] = j.rosters || {};
     }
     localDataTs[cup.id] = Number(j.ts) || 0;
     const hasClubs = Object.prototype.hasOwnProperty.call(j, "clubs");
@@ -446,7 +445,6 @@ window.HB = window.HB || {};
 
   const localTables = {};   // cupId -> {divId: rows}
   const localPlayoffs = {}; // cupId -> {catId: [{id, name, matches}]} (bara cuper som har det, se cup.hasPlayoffs)
-  const localRosters = {};  // cupId -> {teamId: [{name, shirtNr, position, goals}]} (bara Gothia-cuper hittills)
   const localDataTs = {};   // cupId -> när skrapan senast kördes
 
   async function fetchLocal(cup) {
@@ -457,16 +455,8 @@ window.HB = window.HB || {};
     const j = await r.json();
     localTables[cup.id] = j.tables || {};
     localPlayoffs[cup.id] = j.playoffs || {};
-    localRosters[cup.id] = j.rosters || {};
     localDataTs[cup.id] = j.ts || 0;
     return j.matches || [];
-  }
-
-  // Truppdata finns bara för dataUrl-cuper vars skrapa faktiskt bygger den
-  // (Partille/Gothia, se scripts/fetch_gothia.py) — [] annars, tyst.
-  function fetchRoster(cup, teamId) {
-    if (!cup.dataUrl) return [];
-    return (localRosters[cup.id] || {})[teamId] || [];
   }
 
   function snapshotTable(cup, divisionId) {
@@ -634,11 +624,12 @@ window.HB = window.HB || {};
   //   { låst: nivå }    — nivån som krävs; vyerna visar "logga in" eller
   //                       "ingår i full statistik" i stället för datan
   //   null              — ingen data finns (ProCup/Gothia, eller nätfel)
-  const scorerCache = new Map();
-  function fetchScorers(cup) {
-    if (cup.dataUrl) return Promise.resolve(null); // ProCup/Gothia saknar feed
-    if (scorerCache.has(cup.id)) return scorerCache.get(cup.id);
-    const fil = "scorers-" + cup.id + ".json";
+  //
+  // Samma väg för ALL spärrad data (målskyttar och trupplistor), så att de
+  // aldrig kan behandlas olika. Cachad per fil och sida.
+  const skyddadCache = new Map();
+  function hämtaSkyddad(fil) {
+    if (skyddadCache.has(fil)) return skyddadCache.get(fil);
     const p = !(HB.auth && HB.auth.aktiv)
       ? fetch(HB.dataUrl("data/" + fil), { headers: { accept: "application/json" } })
         .then((r) => (r.ok ? r.json() : null)).catch(() => null)
@@ -651,11 +642,21 @@ window.HB = window.HB || {};
             return r.ok ? r.json() : null;
           });
       }).catch(() => null);
-    scorerCache.set(cup.id, p);
+    skyddadCache.set(fil, p);
     return p;
   }
+  function fetchScorers(cup) {
+    if (cup.dataUrl) return Promise.resolve(null); // ProCup/Gothia saknar feed
+    return hämtaSkyddad("scorers-" + cup.id + ".json");
+  }
+  // Trupplistor för en cup och upplaga: {lagId: [{name, shirtNr, position,
+  // goals}]}, eller {låst: nivå}, eller null när cupen saknar trupper.
+  function fetchRosters(cup, edition) {
+    if (!cup.hasRosters) return Promise.resolve(null);
+    return hämtaSkyddad("rosters-" + cup.id + "-" + (edition || cup.edition) + ".json");
+  }
   // Ny inloggning eller utloggning gör varje cachat svar inaktuellt.
-  function glömSkyddat() { scorerCache.clear(); }
+  function glömSkyddat() { skyddadCache.clear(); }
 
   // --- tabeller ---------------------------------------------------------
 
@@ -1155,7 +1156,7 @@ window.HB = window.HB || {};
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
              fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed,
              fetchScorers, glömSkyddat, fetchTable, fetchClubEntries, fetchAgeOffsets,
-             fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
+             fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRosters,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,
              invalidateSubCaches,

@@ -323,7 +323,6 @@ HB.shortCat = shortCat;
     // huvudgränssnittet, bara via Historik-modalen.
     includeCurrentYear: true,
     yearMatches: {},         // "cupId:edition" -> {status, matches} (session, sparas ej)
-    yearRosters: {},         // "cupId:edition" -> {teamId: [{name,shirtNr,position,goals}]} (session, sparas ej)
     archiveEditions: {},     // cupId -> {status, editions: [årtal, nyast först]} (session, sparas ej)
     // Hela data/archive/index.json (cupId -> {cupName, editions:[{edition,
     // matches,teams,classes,days,...}]}), laddas EN gång vid appstart (se
@@ -1346,7 +1345,6 @@ HB.shortCat = shortCat;
     HB.api.fetchArchiveEdition(cupId, edition).then((data) => {
       const matches = ((data && data.matches) || []).map((m) => ({ ...m, edition }));
       state.yearMatches[key] = { status: "done", matches };
-      state.yearRosters[key] = (data && data.rosters) || {};
       scheduleArchiveRender();
     }).catch(() => {
       state.yearMatches[key] = { status: "error", matches: [] };
@@ -1354,15 +1352,16 @@ HB.shortCat = shortCat;
     });
   }
 
-  // Truppdata för ETT lag — antingen innevarande år (via HB.api.fetchRoster,
-  // ur den redan hämtade dataUrl-filen) eller ett arkiverat år (ur
-  // state.yearRosters, se ensureYearMatches). `edition` kommer från
-  // matchens .edition-fält (odefinierad = innevarande år, se allActiveMatches).
-  function rosterFor(team, edition) {
-    if (!cup().hasRosters) return [];
-    if (!edition) return HB.api.fetchRoster(cup(), team.id);
-    const yr = state.yearRosters[state.cupId + ":" + edition];
-    return (yr && yr[team.id]) || [];
+  // Trupplistan för ETT lag. Trupperna ligger i en egen fil per cup och
+  // upplaga (HB.api.fetchRosters), bakom inloggning när den är aktiv —
+  // inte längre inbäddade i schema- och arkivfilerna, som är publika.
+  // `edition` kommer från matchens .edition-fält (odefinierad = årets cup).
+  // Svaret är en lista, eller {låst: nivå} när trupperna är spärrade.
+  async function rosterFor(team, edition) {
+    const doc = await HB.api.fetchRosters(cup(), edition);
+    if (!doc) return [];
+    if (doc.låst) return doc;
+    return doc[team.id] || [];
   }
 
   // Innevarande års live-matcher (state.matches) PLUS matcherna från varje

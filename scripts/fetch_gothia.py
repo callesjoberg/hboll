@@ -297,7 +297,7 @@ def scrape(cup_id, edition_name):
 
     all_matches.sort(key=lambda m: (m["start"], m["arena"]))
     return {"ts": int(time.time() * 1000), "matches": all_matches,
-            "tables": all_tables, "playoffs": all_playoffs, "rosters": all_rosters}
+            "tables": all_tables, "playoffs": all_playoffs}, all_rosters
 
 
 def main():
@@ -316,14 +316,27 @@ def main():
             print(f"{fname}: utanför sitt aktiva fönster — hoppar över skrapningen (se _freshness.py)")
             continue
         try:
-            data = scrape(gothia_cup_id, edition_name)
+            data, trupper = scrape(gothia_cup_id, edition_name)
         except Exception as e:
             print(f"{cup_key} ({fname}): HOPPAR ÖVER ({e})")
             continue
+        # Trupperna — namn, tröjnummer och position för tiotusentals spelare,
+        # de flesta barn — ligger i en EGEN fil. Schemafilen är publik;
+        # truppfilen går till den privata hinken och lämnas bara ut till
+        # inloggade (se functions/api/privat och scripts/publish_r2.py).
+        # En fil per cup och upplaga, så samma fil tjänar både årets cup och
+        # arkivet. Tom trupp skrivs inte: en misslyckad skrapning ska inte
+        # radera en känd trupplista.
+        if trupper:
+            tfil = out_dir / f"rosters-{cup_key}-{edition_name}.json"
+            text = json.dumps(trupper, ensure_ascii=False)
+            if not tfil.exists() or tfil.read_text(encoding="utf-8") != text:
+                tfil.write_text(text, encoding="utf-8")
+                print(f"skrev {tfil.name} ({len(trupper)} lag med trupp)")
         # Skriv bara om innehållet (utom tidsstämpeln) ändrats, så att
         # CI-jobbet kan committa på "git diff" rakt av.
         if (old and old.get("matches") == data["matches"] and old.get("tables") == data["tables"] and
-                old.get("playoffs") == data["playoffs"] and old.get("rosters") == data["rosters"]):
+                old.get("playoffs") == data["playoffs"]):
             print(f"{path}: oförändrad — skriver inte om")
             continue
         ok, reason = check_plausible(old, data)

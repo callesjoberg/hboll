@@ -45,7 +45,7 @@ KORT_CACHE = "public, max-age=60"
 # enda vägen ut är functions/api/privat, som kräver inloggning. Aktiveras
 # genom att R2_PRIVAT_BUCKET sätts — utan den beter sig skriptet som förut,
 # så ändringen kan driftsättas innan hinken finns.
-PRIVAT = re.compile(r"^data/scorers-[a-z0-9]+\.json$")
+PRIVAT = re.compile(r"^data/(scorers-[a-z0-9]+|rosters-[a-z0-9]+-\d{4})\.json$")
 PRIVAT_CACHE = "private, no-store"  # serverfunktionen sätter sina egna huvuden
 LANG_CACHE = "public, max-age=86400, immutable"
 
