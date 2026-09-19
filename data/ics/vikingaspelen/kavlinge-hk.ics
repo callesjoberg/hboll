@@ -485,6 +485,14 @@ LOCATION:Vikenhallen\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:03
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3041@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T170000
+DTEND;TZID=Europe/Stockholm:20260919T173000
+SUMMARY:Kävlinge HK ... – HK Ankaret svart (F12 (2014) B-kvartsfinal:02)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:02
+END:VEVENT
+BEGIN:VEVENT
 UID:match-2000@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T090000
 DTEND;TZID=Europe/Stockholm:20260920T093000
