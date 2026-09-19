@@ -570,6 +570,8 @@ export function initNav(deps) {
           render();
         } else $("#settingsBtn").click();
       }, "settings"),
+      ...(HB.auth && HB.auth.aktiv ? [action(HB.auth.inloggad() ? "Logga ut" : "Logga in",
+        () => leaveSettingsThen(() => (HB.auth.inloggad() ? HB.auth.loggaUt() : HB.auth.loggaIn())))] : []),
       action("Hjälp", () => leaveSettingsThen(() => {
         closePrototypeDialogs();
         $("#helpBtn").click();

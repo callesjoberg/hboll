@@ -122,3 +122,12 @@ test("serverfunktionen: rätt statuskod i varje läge", async () => {
     globalThis.fetch = orgFetch;
   }
 });
+
+test("klientens och serverns publishable key är samma", async () => {
+  const { readFileSync } = await import("node:fs");
+  const klient = /HB\.CLERK_PUBLISHABLE_KEY\s*=\s*"([^"]*)"/.exec(readFileSync("js/config.js", "utf8"));
+  const { CLERK_PUBLISHABLE_KEY } = await import("../server/config.js");
+  assert.ok(klient, "js/config.js saknar HB.CLERK_PUBLISHABLE_KEY");
+  assert.equal(klient[1], CLERK_PUBLISHABLE_KEY,
+    "js/config.js och server/config.js har olika nycklar — servern skulle avvisa varje inloggning");
+});

@@ -5778,7 +5778,8 @@ button.welcome-cta-secondary {
      visas bara i bottenraden på mobil. */
   #viewTabs { display: none; }
   #settingsBtn { display: none; }
-  #currentCupBtn, #headerExportBtn, #headerAboutBtn, #helpBtn, #refreshBtn { display: none; }
+  #currentCupBtn, #headerExportBtn, #headerAboutBtn, #helpBtn, #refreshBtn,
+  #authBtn, #authKonto { display: none; }
   .header-context { flex: 0 1 auto; }
 
   #currentViewBar:not([hidden]),
@@ -6666,3 +6667,22 @@ button.welcome-cta-secondary {
   .kull-lag { grid-column: 1; grid-row: 2; }
   .kull-res { grid-row: 1 / span 2; align-self: center; }
 }
+
+/* Spärrad data: samma ruta överallt (låstRuta i js/ui/controls.js). */
+.last-ruta {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.last-ruta p { margin: 0; font-size: 14px; }
+.auth-konto { display: inline-flex; align-items: center; }
+/* Egen display slår annars webbläsarens [hidden] — samma fälla som
+   .team-picker-item[hidden] ovan. */
+.auth-konto[hidden], #authBtn[hidden] { display: none; }

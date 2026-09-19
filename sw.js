@@ -13,13 +13,14 @@
 // ett ANNAT namn, så ett nytt namn är det enda som garanterat tömmer en
 // gammal, envis skalcache (nätverk-först räcker inte om ett enskilt
 // anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-20260919h";
+const CACHE_NAME = "hboll-shell-20260919i";
 const SHELL_FILES = [
   "./",
   "./index.html",
   "./hjalp.html",
   "./css/style.css",
   "./js/config.js",
+  "./js/auth.js",
   "./js/api.js",
   "./js/ics.js",
   "./js/export.js",

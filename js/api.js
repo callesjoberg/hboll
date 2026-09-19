@@ -585,6 +585,13 @@ window.HB = window.HB || {};
     const entiteter = Object.values(r.responses || {})
       .map((v) => v && v.entity).filter((e) => e && typeof e === "object");
     const feed = entiteter.find((e) => e.__typename === "MatchFeed");
+    /* Spelarnamnen hämtas här direkt från Cup Managers öppna API, så de
+       går inte att SKYDDA — bara att inte visa. Det görs just här, på det
+       enda ställe där namnen kommer in i appen: matchrutan, målfördelningen
+       och skytteligans liveuppdatering läser alla härifrån, och en framtida
+       vy kan därför inte glömma spärren. Ställningen och målgrafen är
+       lagnivå och följer med som vanligt. */
+    const namnSynliga = !HB.auth || HB.auth.harTillgång("spelardata");
     const events = entiteter
       .filter((e) => FEED_TYPES.includes(e.__typename))
       .map((e) => ({
@@ -592,8 +599,8 @@ window.HB = window.HB || {};
           : e.__typename === "MatchStart" ? "start"
             : e.__typename === "MatchStop" ? "stopp" : "annat",
         side: e.side || null,
-        player: e.playerName || null,
-        nr: Number.isFinite(e.playerNr) ? e.playerNr : null,
+        player: namnSynliga ? (e.playerName || null) : null,
+        nr: namnSynliga && Number.isFinite(e.playerNr) ? e.playerNr : null,
         hg: e.homeScore, ag: e.awayScore,
         period: e.period || 0,
         at: normalizeStart(e.absoluteTime),
@@ -613,22 +620,42 @@ window.HB = window.HB || {};
     return {
       start: normalizeStart(feed && feed.liveStartTime), events,
       stats: stat ? { home: sida(stat.home), away: sida(stat.away) } : null,
+      namnDolda: !namnSynliga,
     };
   }
 
   // Den CI-byggda målskyttestatistiken (scripts/fetch_scorers.py). En
   // aggregerad rad per spelare och lag; klassen härleds i klienten ur
   // lag-id:t mot snapshottens matcher. Hämtas en gång per cup och sida.
+  //
+  // Med inloggningen aktiv (HB.auth.aktiv) ligger filen bakom servern och
+  // kräver en sessionstoken. Svaret är då ett av:
+  //   doc               — inloggad med rätt nivå
+  //   { låst: nivå }    — nivån som krävs; vyerna visar "logga in" eller
+  //                       "ingår i full statistik" i stället för datan
+  //   null              — ingen data finns (ProCup/Gothia, eller nätfel)
   const scorerCache = new Map();
   function fetchScorers(cup) {
     if (cup.dataUrl) return Promise.resolve(null); // ProCup/Gothia saknar feed
     if (scorerCache.has(cup.id)) return scorerCache.get(cup.id);
-    const p = fetch(HB.dataUrl("data/scorers-" + cup.id + ".json"), {
-      headers: { accept: "application/json" },
-    }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const fil = "scorers-" + cup.id + ".json";
+    const p = !(HB.auth && HB.auth.aktiv)
+      ? fetch(HB.dataUrl("data/" + fil), { headers: { accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      : HB.auth.token().then((token) => {
+        if (!token) return { låst: "inloggad" };
+        return fetch(HB.privatUrl(fil), { headers: { authorization: "Bearer " + token } })
+          .then((r) => {
+            if (r.status === 401) return { låst: "inloggad" };
+            if (r.status === 403) return { låst: "full" };
+            return r.ok ? r.json() : null;
+          });
+      }).catch(() => null);
     scorerCache.set(cup.id, p);
     return p;
   }
+  // Ny inloggning eller utloggning gör varje cachat svar inaktuellt.
+  function glömSkyddat() { scorerCache.clear(); }
 
   // --- tabeller ---------------------------------------------------------
 
@@ -1127,7 +1154,7 @@ window.HB = window.HB || {};
 
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
              fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed,
-             fetchScorers, fetchTable, fetchClubEntries, fetchAgeOffsets,
+             fetchScorers, glömSkyddat, fetchTable, fetchClubEntries, fetchAgeOffsets,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,

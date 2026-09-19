@@ -1,6 +1,7 @@
 /* match-ui.js — hero, matchkort och matchdialoger. */
 
 import { h, $ } from "../dom.js";
+import { låstRuta } from "./controls.js";
 import {
   isLive, scoreText, periodScores, matchStart, matchEnd, kickoffDrift, livePeriod,
 } from "../domain/match.js";
@@ -285,6 +286,7 @@ function målfördelningBlock(team) {
   (async () => {
     const doc = await HB.api.fetchScorers(cup());
     if (!host.isConnected || !doc) return;
+    if (doc.låst) { host.replaceChildren(låstRuta(doc.låst, "Målfördelningen per spelare")); return; }
     // CI-databasen innehåller bara färdigbearbetade matcher. För EN lagruta
     // är luckan liten och exakt känd — done-listan säger vilka matcher som
     // räknats — så resten hämtas direkt ur feeden, precis som skytteligan
@@ -972,7 +974,11 @@ function feedNoder(m, feed, rita, skyttDoc) {
   const noder = [];
   const graf = feedGraf(m, feed);
   if (graf) noder.push(graf);
-  noder.push(h("div", { class: "feed-sorts", role: "group", "aria-label": "Sortera" },
+  // Utan namn (se namnDolda i fetchMatchFeed) betyder sortering per
+  // spelare ingenting — alla mål vore "utan skytt". Då visas bara tidslinjen.
+  const dolda = !!(feed && feed.namnDolda);
+  if (dolda) feedSort = "tid";
+  if (!dolda) noder.push(h("div", { class: "feed-sorts", role: "group", "aria-label": "Sortera" },
     FEED_SORTS.map(([v, etikett]) => h("button", {
       class: "chip small" + (feedSort === v ? " on" : ""), type: "button",
       onclick: () => { feedSort = v; rita(); },
@@ -1003,6 +1009,10 @@ function feedNoder(m, feed, rita, skyttDoc) {
 
   const disc = feedDisciplin(m, feed, skyttDoc);
   if (disc) noder.push(disc);
+  if (dolda) {
+    noder.push(låstRuta(HB.auth.krav.spelardata, "Målskyttarna"));
+    return noder;
+  }
   const skyttar = mål.filter((e) => e.player).length;
   noder.push(h("p", { class: "muted feed-note" },
     skyttar === mål.length

@@ -1,7 +1,7 @@
 /* stats.js — Stats-vyer och deras URL-sessionstillstånd. */
 
 import { h, $ } from "../dom.js";
-import { attachAutocomplete, chip, withClearButton } from "./controls.js";
+import { attachAutocomplete, chip, withClearButton, låstRuta } from "./controls.js";
 import { levandeVäljare, ÅRS_SORTERING } from "./toolbar.js";
 import {
   matchCard, openPlayerSheet, openMatchSheet, openRefereeSheet,
@@ -3193,6 +3193,12 @@ function renderScorersView(root) {
   root.append(box);
 
   HB.api.fetchScorers(cup()).then((doc) => {
+    if (doc && doc.låst) {
+      // Hela vyn är spelardata; utan tillgång finns inget att filtrera.
+      flikrad.hidden = true; verktyg.hidden = true; klassrad.hidden = true;
+      lista.replaceChildren(låstRuta(doc.låst, "Skytteligan och spelarstatistiken"));
+      return;
+    }
     const idx = lagIndex();
     const rita = () => {
       if (!lista.isConnected) return;

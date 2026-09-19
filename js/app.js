@@ -738,6 +738,47 @@ HB.shortCat = shortCat;
     };
   }
 
+  /* Inloggning (js/auth.js). Clerk laddas i bakgrunden efter att appen
+     ritats — den är stor och schemat ska aldrig vänta på den. När
+     inloggningsläget ändras är varje cachat skyddat svar inaktuellt, och
+     appen ritas om så att spärrade rutor byts mot data eller tvärtom.
+     Null-kollen: en gammal cachad index.html kan sakna knapparna. */
+  function syncInloggning() {
+    const knapp = $("#authBtn"), konto = $("#authKonto");
+    if (!knapp || !konto || !HB.auth) return;
+    const aktiv = HB.auth.aktiv && HB.auth.redo;
+    const inne = aktiv && HB.auth.inloggad();
+    knapp.hidden = !aktiv || inne;
+    konto.hidden = !inne;
+    if (inne && !konto.dataset.monterad) {
+      HB.auth.monteraKonto(konto);
+      konto.dataset.monterad = "1";
+    }
+  }
+
+  function setupInloggning() {
+    if (!HB.auth || !HB.auth.aktiv) return;
+    const knapp = $("#authBtn");
+    if (knapp) knapp.addEventListener("click", () => HB.auth.loggaIn());
+    // Clerk meddelar vid många sorters ändringar, inte bara in- och
+    // utloggning. Rita om och glöm skyddad data bara när nivån eller
+    // användaren faktiskt bytts — annars hade skyttedatan hämtats om vid
+    // varje intern uppdatering.
+    let senast = null;
+    HB.auth.vidÄndring(() => {
+      const nu = HB.auth.nivå() + "|" + (HB.auth.användare() || "");
+      syncInloggning();
+      if (nu === senast) return;
+      const förstaGången = senast === null;
+      senast = nu;
+      if (förstaGången && nu.startsWith("anonym")) return; // inget att rita om
+      HB.api.glömSkyddat();
+      render();
+    });
+    // Efter första ritningen, inte före.
+    setTimeout(() => HB.auth.starta(), 0);
+  }
+
   function syncSubViewUrl(p) {
     encodeSubViewParams(p, subViewSnap());
   }
@@ -2824,6 +2865,7 @@ HB.shortCat = shortCat;
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
     $("#headerExportBtn").addEventListener("click", openHeaderExportDialog);
     $("#headerAboutBtn").addEventListener("click", () => HB.openWelcome());
+    setupInloggning();
     setupSettings();
     setupFilterStripScrollMemory();
     setupResponsiveMenuLayout();

@@ -18,6 +18,19 @@ window.HB = window.HB || {};
 // och allt med /data/ i sökvägen (se sw.js).
 HB.DATA_BASE = "https://data.cupschema.se";
 
+// Inloggning (se js/auth.js). Publik nyckel — den ska ligga här. Måste
+// vara densamma som i server/config.js; tests/server-auth.test.mjs vaktar
+// det. Tom = inloggningen avstängd och skyttedatan hämtas öppet som förut.
+HB.CLERK_PUBLISHABLE_KEY = "";
+
+// Skyddad data ligger bakom functions/api/privat på sajtens eget ursprung.
+// Lokalt finns ingen sådan funktion, så där frågas den riktiga sajten —
+// funktionen tillåter localhost via CORS, men kräver ändå en giltig token.
+HB.privatUrl = function (fil) {
+  const bas = location.hostname === "localhost" ? "https://cupschema.se" : "";
+  return bas + "/api/privat/" + fil;
+};
+
 HB.dataUrl = function (path) {
   if (!HB.DATA_BASE || !path) return path;
   // Redan absolut? Lämna orörd. Två skäl: snapshot-index.json bär sina egna
@@ -36,7 +49,7 @@ HB.dataUrl = function (path) {
 // Redigera inte för hand: den stod länge kvar på ett datum två veckor
 // bakåt just för att den var det enda stället som krävde ett eget
 // handgrepp.
-HB.VERSION = "20260919h";
+HB.VERSION = "20260919i";
 
 HB.CLUB = {
   name: "Alingsås HK",

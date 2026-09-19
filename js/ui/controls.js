@@ -18,6 +18,20 @@ export function chip(label, active, onClick, cls) {
 // rensning så befintliga lyssnare/filter reagerar som om användaren
 // själv raderat texten — onClear (valfritt) för extra städning
 // (t.ex. att stänga en öppen autocomplete-lista).
+/* Rutan som står där spärrad data annars hade visats. En enda komponent,
+   så att "logga in" och — när betalningen kommer — "ingår i full
+   statistik" ser likadana ut överallt. Knappen finns bara när det räcker
+   att logga in; för full statistik finns ännu inget att köpa. */
+export function låstRuta(nivå, vad) {
+  const full = nivå === "full";
+  return h("div", { class: "last-ruta" },
+    h("p", null, "🔒 ", h("strong", null, vad),
+      full ? " ingår i full statistik." : " visas för inloggade."),
+    full ? null : h("button", {
+      class: "btn", type: "button", onclick: () => HB.auth.loggaIn(),
+    }, "Logga in"));
+}
+
 export function withClearButton(input, onClear) {
   return h("div", { class: "search-wrap" }, input,
     h("button", {
