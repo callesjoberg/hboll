@@ -3532,15 +3532,15 @@ function renderKlassView(root) {
 
      Åren förväljs också, och det är viktigare än det låter: "alla år" över
      sex cuper är 48 upplagor och långt över hundra megabyte, startat i
-     samma stund som fliken öppnas. Tre år räcker för att se formen och
-     kostar en bråkdel — vill man ha hela historiken finns årsväljaren
-     ovanför, precis som i Klubb/lag. */
+     samma stund som fliken öppnas. Förvalet är bara det senaste året —
+     sex upplagor, snabbt att hämta, och det man oftast undrar över. Fler
+     år lägger man själv till i årsväljaren ovanför när de är intressanta. */
   if (!klassCups.size) {
     const egna = cupVal.filter((id) => clubEditionsFor(id, new Set()).length);
     for (const id of (egna.length ? egna : cupVal).slice(0, 6)) klassCups.add(id);
   }
   if (!klassYears.size) {
-    for (const år of clubYearOptions().slice(0, 3)) klassYears.add(år);
+    for (const år of clubYearOptions().slice(0, 1)) klassYears.add(år);
   }
 
   root.append(h("div", { class: "row vinnare-controls" },
@@ -3554,7 +3554,9 @@ function renderKlassView(root) {
     buildPicker({
       items: clubYearOptions().map((y) => ({ id: y, label: y, sortName: y })),
       selected: klassYears, emptyLabel: "Alla år",
-      countLabel: (n) => n + (n === 1 ? " år" : " år"),
+      // Ett enda år visas som årtalet, precis som i verktygsradens
+      // årsväljare — "1 år" säger inte vilket år man tittar på.
+      countLabel: (n) => (n === 1 ? String([...klassYears][0]) : n + " år"),
       searchPlaceholder: "Sök år …", sortOptions: ÅRS_SORTERING,
       quickPicks: [1, 2, 3, 5], kolumnBredd: 110,
       onChange: () => renderContent(),
