@@ -104,7 +104,7 @@ BEGIN:VEVENT
 UID:match-3044@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T173500
 DTEND;TZID=Europe/Stockholm:20260919T180500
-SUMMARY:HK Ankaret röd – Vinn.kvart   2 (F12 (2014) B-semifinal:01)
+SUMMARY:HK Ankaret röd – HK Ankaret svart (F12 (2014) B-semifinal:01)
 LOCATION:Vikenhallen\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-semifinal:01
 END:VEVENT
