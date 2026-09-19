@@ -461,6 +461,45 @@ function buildPicker(opts) {
   };
 
   dd.append(summary, panel);
+  // För levandeVäljare nedan: bringar etikett och kryssrutor i fas med
+  // urvalet om något annat än väljaren själv har ändrat det.
+  dd._synka = () => {
+    setSummary();
+    if (lazy) renderLazyList(search.value);
+    else for (const r of list.children) r._checkbox.checked = opts.selected.has(r._id);
+    syncGenderBoxes(); syncAllaBtn(); syncSnabb();
+  };
+  return dd;
+}
+
+/* Väljare som överlever att vyn runt dem ritas om.
+
+   Statistikvyerna ritas om i sin helhet med renderContent() — både när ett
+   val ändras och när en arkivupplaga laddats klart i bakgrunden. En väljare
+   byggd av den vyn återskapades därmed STÄNGD efter varje enskilt kryss: man
+   fick öppna den igen för varje cup man ville lägga till. Värre: när en
+   upplaga laddades klart stängdes den även mitt i ett val man inte rört.
+
+   Här återanvänds samma <details>-nod så länge alternativen och urvalet är
+   desamma. Samma nod behåller sitt open-läge när den sätts in igen, och i
+   mobilarket även sin portalerade panel, som är knuten till just den noden.
+   Byts alternativen (en ny cup i arkivet) eller urvalets Set (återställning
+   från en länk) byggs den om, för då stämmer den gamla inte längre.
+
+   Förutsätter att opts.onChange och etiketterna läser modul- eller
+   state-värden, inte variabler som bara gällde vid första ritningen — det
+   gör alla nuvarande anropare. */
+const levande = new Map();
+
+function levandeVäljare(nyckel, opts) {
+  const signatur = opts.items.map((it) => it.id).join("\u0001");
+  const sparad = levande.get(nyckel);
+  if (sparad && sparad.signatur === signatur && sparad.selected === opts.selected) {
+    sparad.dd._synka();
+    return sparad.dd;
+  }
+  const dd = buildPicker(opts);
+  levande.set(nyckel, { dd, signatur, selected: opts.selected });
   return dd;
 }
 
@@ -1120,6 +1159,7 @@ export {
   PICKER_LAZY_DEBOUNCE_MS,
   PICKER_LAZY_MAX_RESULTS,
   buildPicker,
+  levandeVäljare,
   buildTeamPicker,
   buildDayPicker,
   buildCatPicker,

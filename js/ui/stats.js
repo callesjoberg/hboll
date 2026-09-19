@@ -2,7 +2,7 @@
 
 import { h, $ } from "../dom.js";
 import { attachAutocomplete, chip, withClearButton } from "./controls.js";
-import { buildPicker, ÅRS_SORTERING } from "./toolbar.js";
+import { levandeVäljare, ÅRS_SORTERING } from "./toolbar.js";
 import {
   matchCard, openPlayerSheet, openMatchSheet, openRefereeSheet,
 } from "./match-ui.js";
@@ -752,7 +752,7 @@ function renderTrendView(root) {
   for (const id of [...state.exploreCupIds]) if (!cupOptions.includes(id)) state.exploreCupIds.delete(id);
   if (!state.exploreCupIds.size) state.exploreCupIds.add(state.cupId);
 
-  const cupPicker = buildPicker({
+  const cupPicker = levandeVäljare("trend-cuper", {
     items: cupOptions.map((id) => {
       const c = HB.allCups().find((x) => x.id === id);
       const name = (c && c.name) || id;
@@ -770,7 +770,7 @@ function renderTrendView(root) {
   const selectedCupIds = [...state.exploreCupIds];
   const showClassPicker = selectedCupIds.length === 1;
   const classOptions = showClassPicker ? trendClassOptions() : [];
-  const classPicker = classOptions.length ? buildPicker({
+  const classPicker = classOptions.length ? levandeVäljare("trend-klasser", {
     items: classOptions.map((name) => ({
       id: name, label: name, sortKey: catSortKey(name), sortName: name,
     })),
@@ -1599,7 +1599,7 @@ function renderClubView(root) {
   // (t.ex. en klass utan träffar) med ett annat, så nollställ den precis
   // som vid en ny sökterm.
   const yearOptions = clubYearOptions();
-  const yearPicker = yearOptions.length > 1 ? buildPicker({
+  const yearPicker = yearOptions.length > 1 ? levandeVäljare("klubb-år", {
     items: yearOptions.map((y) => ({ id: y, label: y, sortKey: 0, sortName: y })),
     selected: state.clubYears,
     emptyLabel: "Alla år",
@@ -1910,7 +1910,7 @@ function renderClubCompareView(root) {
     if (e.key === "Enter") { e.preventDefault(); addName(input.value); }
   });
   const yearOptions = clubYearOptions();
-  const yearPicker = yearOptions.length > 1 ? buildPicker({
+  const yearPicker = yearOptions.length > 1 ? levandeVäljare("jamfor-år", {
     items: yearOptions.map((year) => ({ id: year, label: year, sortKey: 0, sortName: year })),
     selected: state.compareYears,
     emptyLabel: "Alla år",
@@ -3589,7 +3589,7 @@ function renderKlassView(root) {
   }
 
   root.append(h("div", { class: "row vinnare-controls" },
-    buildPicker({
+    levandeVäljare("klass-cuper", {
       items: cupVal.map((id) => ({ id, label: klassCupNamn(id), sortName: klassCupNamn(id) })),
       selected: klassCups, emptyLabel: "Välj cuper",
       countLabel: (n) => n + (n === 1 ? " cup" : " cuper"),
@@ -3599,7 +3599,7 @@ function renderKlassView(root) {
     h("div", { class: "seg", role: "group", "aria-label": "Vilka upplagor" },
       chip("Senaste per cup", klassSenaste, () => { klassSenaste = true; renderContent(); }),
       chip("Välj år", !klassSenaste, () => { klassSenaste = false; renderContent(); })),
-    klassSenaste ? null : buildPicker({
+    klassSenaste ? null : levandeVäljare("klass-år", {
       items: clubYearOptions().map((y) => ({ id: y, label: y, sortName: y })),
       selected: klassYears, emptyLabel: "Alla år",
       // Ett enda år visas som årtalet, precis som i verktygsradens

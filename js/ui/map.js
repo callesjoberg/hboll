@@ -9,15 +9,16 @@ import {
 import { isPlaceholderTeam } from "../domain/placeholder.js";
 import { ensureMapLibre } from "./maplibre.js";
 import { MAP_SHARED_COLOR, MAP_CUP_COLORS, MULTI_COLOR_PALETTE } from "./palette.js";
+import { levandeVäljare } from "./toolbar.js";
 
 let HB, state, cup, saveUi, render, renderContent, renderToolbar;
-let buildPicker, chip, withClearButton, scheduleArchiveRender, ensureYearMatches;
+let chip, withClearButton, scheduleArchiveRender, ensureYearMatches;
 let slugifySv, isClubName, isFavoriteTeam, renderTabs;
 
 export function initMap(deps) {
   ({
     HB, state, cup, saveUi, render, renderContent, renderToolbar,
-    buildPicker, chip, withClearButton, scheduleArchiveRender, ensureYearMatches,
+    chip, withClearButton, scheduleArchiveRender, ensureYearMatches,
     slugifySv, isClubName, isFavoriteTeam, renderTabs,
   } = deps);
 }
@@ -347,7 +348,7 @@ export function renderMapView(root) {
   // ingen ytterligare giltighetskoll behövs här.
   if (!state.exploreCupIds.size) state.exploreCupIds.add(state.cupId);
 
-  const cupPicker = buildPicker({
+  const cupPicker = levandeVäljare("karta-cuper", {
     items: mapCupOptions.map((c) => ({ id: c.id, label: c.name, sortKey: 0, sortName: c.name })),
     selected: state.exploreCupIds,
     emptyLabel: "Välj cup(er)",
