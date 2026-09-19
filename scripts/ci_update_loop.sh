@@ -87,6 +87,8 @@ hämta() {
   python3 scripts/build_club_directory.py        || return 1
   python3 scripts/archive_results.py             || return 1
   python3 scripts/build_team_index.py            || return 1
+  # Node, inte Python: samma tolkning av klassnamn som appen, se skriptet.
+  node scripts/build_age_offsets.mjs             || return 1
   python3 scripts/build_landing_map.py           || return 1
   python3 scripts/build_cup_windows.py           || return 1
 }

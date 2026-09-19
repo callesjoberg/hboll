@@ -65,7 +65,8 @@ def frysta_arkivfiler() -> set[str]:
         # ändras och får därför aldrig lång cache. club-entries.json fick
         # först ett dygn med immutable, vilket hade låst en gammal nämnare
         # i besökarens webbläsare utan ens en revalidering.
-        if f.name in ("index.json", "team-index.json", "club-entries.json"):
+        if f.name in ("index.json", "team-index.json", "club-entries.json",
+                      "age-offsets.json"):
             continue
         if f.name not in aktuella:
             frysta.add(f.name)

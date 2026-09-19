@@ -979,6 +979,18 @@ window.HB = window.HB || {};
   // kvoten, men gratis för alla andra.
   let clubEntriesPromise = null;
 
+  // Förskjutning mellan klassnummer och födelseår per cup, lärd ur hela
+  // arkivet i CI (scripts/build_age_offsets.mjs). Liten fil.
+  let ageOffsetsPromise = null;
+  function fetchAgeOffsets() {
+    if (!ageOffsetsPromise) {
+      ageOffsetsPromise = fetch(HB.dataUrl("data/archive/age-offsets.json"))
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}));
+    }
+    return ageOffsetsPromise;
+  }
+
   function fetchClubEntries() {
     if (!clubEntriesPromise) {
       clubEntriesPromise = fetch(HB.dataUrl("data/archive/club-entries.json"))
@@ -1115,7 +1127,7 @@ window.HB = window.HB || {};
 
   HB.api = { call, refId, nameOf, storeGet, fetchSharedSnapshot,
              fetchMatches, fetchIncremental, fetchMatchesByIds, fetchMatchFeed,
-             fetchScorers, fetchTable, fetchClubEntries,
+             fetchScorers, fetchTable, fetchClubEntries, fetchAgeOffsets,
              fetchPlayoffs, fetchGroupDivisions, fetchPreviousMeetings, fetchRoster,
              snapshotTable, snapshotPlayoffs,
              readCache, writeCache, localDataTs, clubGeo, arenaGeo,

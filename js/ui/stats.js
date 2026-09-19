@@ -12,7 +12,7 @@ import { MULTI_COLOR_PALETTE } from "./palette.js";
 import { syncBottomStack } from "./sheets.js";
 import {
   catSortKey, cohortKey, cohortLabel,
-  parseCat, learnAgeOffset, cohortFor, COHORT_LABELS,
+  parseCat, cohortFor, COHORT_LABELS,
 } from "../domain/category.js";
 import { clubOutcomeLetter, scoreText, isLive } from "../domain/match.js";
 import { isPlaceholderTeam } from "../domain/placeholder.js";
@@ -3446,6 +3446,22 @@ let klassYears = new Set();
 let klassKon = "P";
 let klassFodd = 0;
 let klassLärda = null;
+/* Två sätt att läsa samma data, båda efterfrågade:
+     "alder" — jämför en åldersklass (P11) mellan cuper: hur stor är den
+               här och där, är någon cup mer intressant än en annan?
+     "kull"  — följ samma barn (födda 2015) genom åren.
+   Klassnumret är SÄSONGSÅLDER, inte kalenderålder: Hellton november 2025
+   och Potatiscupen april 2026 kallar båda födda 2015 för "Pojkar 10",
+   eftersom en vårcup hör till säsongen som började hösten innan. Numret
+   betyder alltså samma sak i alla cuper inom en säsong, och åldersläget
+   kan läsa det rakt av — utan kalibrering, även i cuper som aldrig
+   skriver ut födelseår. */
+let klassLäge = "alder";
+let klassÅlder = 0;
+/* Varje cups senast SPELADE upplaga, i stället för ett gemensamt årtal.
+   Utan det blandades säsonger: Hellton 2026 är publicerad men ospelad i
+   september, och stod då bredvid en redan spelad vårcup samma år. */
+let klassSenaste = true;
 
 const KLASS_LÄRDA_NYCKEL = "hb:klassOffset";
 
@@ -3469,12 +3485,20 @@ function klassLär(cupId, offset) {
   } catch { /* privat läge: gäller då bara denna session */ }
 }
 
-/* Användarens svar går före det cupen själv avslöjat. null betyder "vet
-   inte" och ska leda till en fråga, aldrig till ett antagande. */
-function klassOffsetFör(cupId, prov) {
+/* Förskjutningar lärda ur HELA arkivet i CI (scripts/build_age_offsets.mjs).
+   De lärdes först här i webbläsaren ur de upplagor som råkade vara
+   hämtade — men med ett år per cup blev underlaget en enda upplaga, och en
+   enda upplaga ser nästan alltid konsekvent ut. Bua (72 % över hela
+   arkivet) klarade då 95 %-kravet och räknades om fel. */
+let klassFörskjutning = null;
+
+/* Användarens svar går före arkivets. null betyder "vet inte" och ska leda
+   till en fråga, aldrig till ett antagande. */
+function klassOffsetFör(cupId) {
   const lärd = klassLärdaOffset().get(cupId);
   if (Number.isFinite(lärd)) return lärd;
-  return learnAgeOffset(prov);
+  const off = (klassFörskjutning || {})[cupId];
+  return Number.isFinite(off) ? off : null;
 }
 
 /* Räknar en upplagas klasser. Lag räknas på lag-ID, inte namn: två klubbar
@@ -3507,14 +3531,35 @@ function klassUpplagor() {
   const idx = state.archiveIndex || {};
   const ut = [];
   for (const cupId of klassCups) {
-    for (const e of ((idx[cupId] && idx[cupId].editions) || [])) {
-      if (!e.matches) continue;
+    const eds = ((idx[cupId] && idx[cupId].editions) || []).filter((e) => e.matches);
+    if (klassSenaste) {
+      // Senast spelade; har cupen aldrig spelats klart tas den senaste
+      // publicerade, hellre än att cupen försvinner ur jämförelsen.
+      const sorterade = eds.slice().sort((a, b) =>
+        b.edition.localeCompare(a.edition, "sv", { numeric: true }));
+      const e = sorterade.find((x) => x.finished > 0) || sorterade[0];
+      if (e) ut.push({ cupId, edition: e.edition, ospelad: !e.finished });
+      continue;
+    }
+    for (const e of eds) {
       if (klassYears.size && !klassYears.has(e.edition)) continue;
-      ut.push({ cupId, edition: e.edition });
+      ut.push({ cupId, edition: e.edition, ospelad: !e.finished });
     }
   }
   return ut.sort((a, b) => a.cupId.localeCompare(b.cupId, "sv") ||
     b.edition.localeCompare(a.edition, "sv", { numeric: true }));
+}
+
+/* En klass åldersnummer. Står det i namnet används det rakt av — det är
+   säsongsåldern och betyder samma sak i alla cuper. Står bara födelseåret
+   där räknas det om med cupens förskjutning, och utan känd förskjutning
+   ger vi upp hellre än att gissa. */
+function klassÅlderFör(kat, edition, off) {
+  const p = parseCat(kat);
+  if (p && p.age) return p.age;
+  const c = cohortFor(kat, edition, off);
+  if (c && off != null) return Number(edition) - c.born - off;
+  return null;
 }
 
 function klassCupNamn(cupId) {
@@ -3551,7 +3596,10 @@ function renderKlassView(root) {
       searchPlaceholder: "Sök cup …", sortToggle: false,
       onChange: () => renderContent(),
     }),
-    buildPicker({
+    h("div", { class: "seg", role: "group", "aria-label": "Vilka upplagor" },
+      chip("Senaste per cup", klassSenaste, () => { klassSenaste = true; renderContent(); }),
+      chip("Välj år", !klassSenaste, () => { klassSenaste = false; renderContent(); })),
+    klassSenaste ? null : buildPicker({
       items: clubYearOptions().map((y) => ({ id: y, label: y, sortName: y })),
       selected: klassYears, emptyLabel: "Alla år",
       // Ett enda år visas som årtalet, precis som i verktygsradens
@@ -3563,10 +3611,12 @@ function renderKlassView(root) {
     })));
 
   root.append(h("div", { class: "row vinnare-controls" },
-    h("span", { class: "muted" }, "Kön:"),
+    h("div", { class: "seg", role: "group", "aria-label": "Jämför" },
+      chip("Åldersklass", klassLäge === "alder", () => { klassLäge = "alder"; renderContent(); }),
+      chip("Födelseår", klassLäge === "kull", () => { klassLäge = "kull"; renderContent(); })),
     h("div", { class: "seg", role: "group", "aria-label": "Kön" },
       ["P", "F"].map((g) => chip(COHORT_LABELS[g], klassKon === g, () => {
-        klassKon = g; klassFodd = 0; renderContent();
+        klassKon = g; klassFodd = 0; klassÅlder = 0; renderContent();
       })))));
 
   const upplagor = klassUpplagor();
@@ -3591,17 +3641,45 @@ function renderKlassView(root) {
   }
   if (luckor) root.append(archiveProgressBlock(laddade, upplagor.length));
 
-  // Förskjutning per cup, ur det som faktiskt är hämtat.
-  const provPerCup = new Map();
-  for (const k of klara) {
-    if (!provPerCup.has(k.cupId)) provPerCup.set(k.cupId, []);
-    const p = provPerCup.get(k.cupId);
-    for (const kat of new Set(k.matches.map((m) => m.catName).filter(Boolean))) {
-      p.push({ catName: kat, edition: k.edition });
-    }
+  if (!klassFörskjutning) {
+    HB.api.fetchAgeOffsets().then((d) => { klassFörskjutning = d || {}; renderContent(); });
+    return;
   }
   const offsetPerCup = new Map();
-  for (const cupId of klassCups) offsetPerCup.set(cupId, klassOffsetFör(cupId, provPerCup.get(cupId) || []));
+  for (const cupId of klassCups) offsetPerCup.set(cupId, klassOffsetFör(cupId));
+
+  if (klassLäge === "alder") {
+    // Åldrar som finns i urvalet, räknat i hur många upplagor de förekommer.
+    const åldrar = new Map();
+    for (const k of klara) {
+      const off = offsetPerCup.get(k.cupId);
+      const här = new Set();
+      for (const kat of new Set(k.matches.map((m) => m.catName).filter(Boolean))) {
+        const p = parseCat(kat);
+        const a = klassÅlderFör(kat, k.edition, off);
+        if (p && p.g === klassKon && a) här.add(a);
+      }
+      for (const a of här) åldrar.set(a, (åldrar.get(a) || 0) + 1);
+    }
+    const lista = [...åldrar.keys()].sort((a, b) => a - b);
+    if (!lista.length) {
+      if (!luckor) root.append(h("p", { class: "muted" },
+        "Inga " + COHORT_LABELS[klassKon].toLowerCase() + "klasser med åldersnummer i urvalet."));
+      return;
+    }
+    // Förval: den ålder som finns i flest upplagor — mest att jämföra.
+    if (!klassÅlder || !åldrar.has(klassÅlder)) {
+      klassÅlder = lista.reduce((b, a) => (åldrar.get(a) > åldrar.get(b) ? a : b), lista[0]);
+    }
+    root.append(h("div", { class: "row vinnare-controls vinnare-ar" },
+      h("span", { class: "muted" }, "Ålder:"),
+      h("div", { class: "vinnare-ar-scroll" },
+        lista.map((a) => chip(klassKon + a, klassÅlder === a, () => {
+          klassÅlder = a; renderContent();
+        }, "small")))));
+    klassTabell(root, klara, offsetPerCup);
+    return;
+  }
 
   // Vilka kullar går att erbjuda? Bara de vi faktiskt kan peka ut.
   const kullar = new Map();
@@ -3631,7 +3709,7 @@ function renderKlassView(root) {
         klassFodd = år; renderContent();
       }, "small")))));
 
-  klassTabell(root, klara, offsetPerCup, provPerCup);
+  klassTabell(root, klara, offsetPerCup);
 }
 
 
@@ -3641,16 +3719,25 @@ function antalLaddande() {
 }
 
 /* Tabellen, plus frågorna för de cuper vi inte kan lösa själva. */
-function klassTabell(root, klara, offsetPerCup, provPerCup) {
+function klassTabell(root, klara, offsetPerCup) {
+  const ålderLäge = klassLäge === "alder";
+  const passar = (kat, edition, off) => {
+    if (ålderLäge) {
+      const p = parseCat(kat);
+      return !!p && p.g === klassKon && klassÅlderFör(kat, edition, off) === klassÅlder;
+    }
+    const c = cohortFor(kat, edition, off);
+    return !!c && c.g === klassKon && c.born === klassFodd;
+  };
   const rader = [];
   const oklara = [];
+  const saknas = [];
   for (const k of klara) {
     const off = offsetPerCup.get(k.cupId);
     const stat = klassUpplageStat(k.matches);
     let träff = null;
     for (const [kat, p] of stat) {
-      const c = cohortFor(kat, k.edition, off);
-      if (c && c.g === klassKon && c.born === klassFodd) {
+      if (passar(kat, k.edition, off)) {
         träff = träff
           ? { kat: träff.kat + ", " + kat, lag: träff.lag + p.lag.size,
               matcher: träff.matcher + p.matcher, egna: träff.egna + p.egna.size }
@@ -3658,6 +3745,7 @@ function klassTabell(root, klara, offsetPerCup, provPerCup) {
       }
     }
     if (träff) { rader.push({ ...k, ...träff }); continue; }
+    if (ålderLäge) { saknas.push(k); continue; }
     if (off == null) {
       // Kandidater: årets klasser av rätt kön, med sina tal så man ser vad
       // man väljer. Åldern avgör vilken som blir vilket födelseår.
@@ -3674,7 +3762,12 @@ function klassTabell(root, klara, offsetPerCup, provPerCup) {
     const kolumner = [
       { key: "cup", label: "Cup", align: "l", defaultDir: 1,
         get: (r) => klassCupNamn(r.cupId) },
-      { key: "edition", label: "År", align: "l", defaultDir: -1, get: (r) => r.edition },
+      { key: "edition", label: "År", align: "l", defaultDir: -1, get: (r) => r.edition,
+        // Ospelad = publicerat schema men ännu inga resultat. Lagen är
+        // anmälda och värda att se, men de ska inte läsas som ett utfall.
+        render: (r) => (r.ospelad
+          ? [r.edition, h("span", { class: "muted", title: "Schemat är publicerat men cupen är inte spelad än" }, " · ej spelad")]
+          : r.edition) },
       { key: "kat", label: "Klass", align: "l", defaultDir: 1, get: (r) => r.kat },
       { key: "lag", label: "Lag", defaultDir: -1, get: (r) => r.lag },
       { key: "matcher", label: "Matcher", defaultDir: -1, get: (r) => r.matcher },
@@ -3690,15 +3783,24 @@ function klassTabell(root, klara, offsetPerCup, provPerCup) {
     const år = [...new Set(rader.map((r) => r.edition))].sort();
     const cuper = new Set(rader.map((r) => r.cupId));
     root.append(h("p", { class: "kull-sammanfattning" },
-      h("strong", null, (COHORT_LABELS[klassKon] || klassKon) + " " + klassFodd),
+      h("strong", null, (COHORT_LABELS[klassKon] || klassKon) + " " +
+        (ålderLäge ? klassÅlder : "födda " + klassFodd)),
       " · " + cuper.size + (cuper.size === 1 ? " cup" : " cuper") +
       " · " + år.length + (år.length === 1 ? " år" : " år") +
       (år.length > 1 ? " (" + år[0] + "–" + år[år.length - 1] + ")" : "") +
       " · " + sum.lag + " lag · " + sum.matcher + " matcher" +
       (sum.egna ? " · varav " + sum.egna + " lag från " + state.favoriteClub : "")));
   } else {
+    root.append(h("p", { class: "muted" }, ålderLäge
+      ? "Ingen av cuperna hade den åldersklassen i urvalet."
+      : "Ingen av de lösta cuperna hade den kullen i urvalet."));
+  }
+
+  if (saknas.length) {
+    // Att en cup SAKNAR klassen är också ett svar när man jämför cuper.
     root.append(h("p", { class: "muted" },
-      "Ingen av de lösta cuperna hade den kullen i urvalet."));
+      "Ingen " + klassKon + klassÅlder + " i: " +
+      saknas.map((k) => klassCupNamn(k.cupId) + " " + k.edition).join(", ") + "."));
   }
 
   if (!oklara.length) return;
