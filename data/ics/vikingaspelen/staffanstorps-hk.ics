@@ -61,6 +61,14 @@ LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 1
 END:VEVENT
 BEGIN:VEVENT
+UID:match-9019@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T151500
+DTEND;TZID=Europe/Stockholm:20260919T154500
+SUMMARY:Staffanstorps HK – HK Björnen (P13 (2013) B-kvartsfinal:01)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
 UID:match-8003@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T093000
 DTEND;TZID=Europe/Stockholm:20260920T100000

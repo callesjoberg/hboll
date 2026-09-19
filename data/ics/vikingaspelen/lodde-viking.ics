@@ -613,6 +613,22 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · A-kvartsfinal:03
 END:VEVENT
 BEGIN:VEVENT
+UID:match-9020@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T154500
+DTEND;TZID=Europe/Stockholm:20260919T161500
+SUMMARY:Lödde Viking... – Kävlinge HK (P13 (2013) A-kvartsfinal:04)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
+UID:match-3036@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T160500
+DTEND;TZID=Europe/Stockholm:20260919T163500
+SUMMARY:Lödde Viking... – Vinn.1/8   8 (F12 (2014) A-kvartsfinal:04)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10001@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T090000
 DTEND;TZID=Europe/Stockholm:20260920T093000

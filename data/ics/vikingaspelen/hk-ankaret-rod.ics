@@ -93,6 +93,14 @@ LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3034@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:3 an från Gr... – HK Ankaret röd (F12 (2014) B-kvartsfinal:01)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:01
+END:VEVENT
+BEGIN:VEVENT
 UID:match-8001@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T090000
 DTEND;TZID=Europe/Stockholm:20260920T093000
