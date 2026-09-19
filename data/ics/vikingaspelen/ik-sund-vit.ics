@@ -36,4 +36,12 @@ SUMMARY:IK Sund blå – IK Sund vit (P13 (2013) A-kvartsfinal:01)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · A-kvartsfinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-9022@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T162500
+DTEND;TZID=Europe/Stockholm:20260919T165500
+SUMMARY:IK Sund vit – Vinslövs HK (P13 (2013) A-semifinal:01)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · A-semifinal:01
+END:VEVENT
 END:VCALENDAR
