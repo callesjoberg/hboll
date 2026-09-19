@@ -661,6 +661,14 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · B-semifinal:02
 END:VEVENT
 BEGIN:VEVENT
+UID:match-1036@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T182500
+DTEND;TZID=Europe/Stockholm:20260919T185500
+SUMMARY:Dalby GIF – Lödde Viking... (F14 (2012) B-final)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-final
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10001@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T090000
 DTEND;TZID=Europe/Stockholm:20260920T093000
