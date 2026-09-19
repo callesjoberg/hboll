@@ -68,4 +68,12 @@ SUMMARY:Hässleholms ... – IFK Kristianstad (F14 (2012) A-kvartsfinal:04)
 LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · A-kvartsfinal:04
 END:VEVENT
+BEGIN:VEVENT
+UID:match-1033@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T171500
+DTEND;TZID=Europe/Stockholm:20260919T174500
+SUMMARY:Hässleholms ... – Vinn.kvart   4 (F14 (2012) B-semifinal:02)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-semifinal:02
+END:VEVENT
 END:VCALENDAR
