@@ -68,4 +68,12 @@ SUMMARY:IFK Malmö 2 – Växjö HF 2 (F12 (2014) A-8-dels:08)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-8-dels:08
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3036@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T160500
+DTEND;TZID=Europe/Stockholm:20260919T163500
+SUMMARY:Lödde Viking... – Växjö HF 2 (F12 (2014) A-kvartsfinal:04)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:04
+END:VEVENT
 END:VCALENDAR
