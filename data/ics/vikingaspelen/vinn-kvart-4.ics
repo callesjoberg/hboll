@@ -13,14 +13,6 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · A-semifinal:02
 END:VEVENT
 BEGIN:VEVENT
-UID:match-3046@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T180500
-DTEND;TZID=Europe/Stockholm:20260919T183500
-SUMMARY:OV Helsingbo... – Vinn.kvart   4 (F12 (2014) B-semifinal:02)
-LOCATION:Vikenhallen\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F12 (2014) · B-semifinal:02
-END:VEVENT
-BEGIN:VEVENT
 UID:match-10032@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T171500
 DTEND;TZID=Europe/Stockholm:20260920T174500

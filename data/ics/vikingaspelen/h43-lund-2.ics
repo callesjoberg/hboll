@@ -109,6 +109,14 @@ LOCATION:Vikenhallen\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:04
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3046@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T180500
+DTEND;TZID=Europe/Stockholm:20260919T183500
+SUMMARY:OV Helsingbo... – H43 Lund 2 (F12 (2014) B-semifinal:02)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10004@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T100000
 DTEND;TZID=Europe/Stockholm:20260920T103000
