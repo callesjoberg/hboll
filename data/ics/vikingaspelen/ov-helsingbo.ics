@@ -68,4 +68,12 @@ SUMMARY:IFK Malmö 1 – OV Helsingbo... (F12 (2014) A-kvartsfinal:01)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3046@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T180500
+DTEND;TZID=Europe/Stockholm:20260919T183500
+SUMMARY:OV Helsingbo... – Vinn.kvart   4 (F12 (2014) B-semifinal:02)
+LOCATION:Vikenhallen\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-semifinal:02
+END:VEVENT
 END:VCALENDAR

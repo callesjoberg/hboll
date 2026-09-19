@@ -32,7 +32,7 @@ BEGIN:VEVENT
 UID:match-3046@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T180500
 DTEND;TZID=Europe/Stockholm:20260919T183500
-SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (F12 (2014) B-semifinal:02)
+SUMMARY:OV Helsingbo... – Vinn.kvart   4 (F12 (2014) B-semifinal:02)
 LOCATION:Vikenhallen\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-semifinal:02
 END:VEVENT
