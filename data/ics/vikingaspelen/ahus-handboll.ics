@@ -29,6 +29,14 @@ LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · Grupp 2
 END:VEVENT
 BEGIN:VEVENT
+UID:match-9024@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T165500
+DTEND;TZID=Europe/Stockholm:20260919T172500
+SUMMARY:Åhus Handboll – Vinn.kvart   4 (P13 (2013) A-semifinal:02)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · A-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
 UID:match-8006@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T103000
 DTEND;TZID=Europe/Stockholm:20260920T110000

@@ -13,22 +13,6 @@ LOCATION:Vikenhallen\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:03
 END:VEVENT
 BEGIN:VEVENT
-UID:match-1029@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T161000
-DTEND;TZID=Europe/Stockholm:20260919T164000
-SUMMARY:3 an från Gr... – HF Karlskron... (F14 (2012) B-kvartsfinal:04)
-LOCATION:Tolvåker B\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:04
-END:VEVENT
-BEGIN:VEVENT
-UID:match-9023@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T162500
-DTEND;TZID=Europe/Stockholm:20260919T165500
-SUMMARY:Vinn.kvart   1 – 3 an från Gr... (P13 (2013) B-semifinal:01)
-LOCATION:Nyvångsskolan\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P13 (2013) · B-semifinal:01
-END:VEVENT
-BEGIN:VEVENT
 UID:match-10024@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T150500
 DTEND;TZID=Europe/Stockholm:20260920T153500

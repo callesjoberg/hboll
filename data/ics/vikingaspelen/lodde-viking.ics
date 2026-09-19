@@ -629,6 +629,14 @@ LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:04
 END:VEVENT
 BEGIN:VEVENT
+UID:match-1029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T161000
+DTEND;TZID=Europe/Stockholm:20260919T164000
+SUMMARY:Lödde Viking... – HF Karlskron... (F14 (2012) B-kvartsfinal:04)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:04
+END:VEVENT
+BEGIN:VEVENT
 UID:match-3040@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T163500
 DTEND;TZID=Europe/Stockholm:20260919T170500
