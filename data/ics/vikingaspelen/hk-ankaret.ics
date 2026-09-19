@@ -28,4 +28,12 @@ SUMMARY:HK Ankaret – Kävlinge HK (F14 (2012) Grupp 2)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 2
 END:VEVENT
+BEGIN:VEVENT
+UID:match-1026@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153500
+DTEND;TZID=Europe/Stockholm:20260919T160500
+SUMMARY:Eslövs HK – HK Ankaret (F14 (2012) A-kvartsfinal:01)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · A-kvartsfinal:01
+END:VEVENT
 END:VCALENDAR

@@ -13,14 +13,6 @@ LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:08
 END:VEVENT
 BEGIN:VEVENT
-UID:match-1024@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T150500
-DTEND;TZID=Europe/Stockholm:20260919T153500
-SUMMARY:Dalby GIF – 4 an från Gr... (F14 (2012) B-kvartsfinal:01)
-LOCATION:Tolvåker A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:01
-END:VEVENT
-BEGIN:VEVENT
 UID:match-3033@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T153000
 DTEND;TZID=Europe/Stockholm:20260919T160000
