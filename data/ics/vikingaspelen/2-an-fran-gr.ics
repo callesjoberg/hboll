@@ -8,7 +8,7 @@ BEGIN:VEVENT
 UID:match-3030@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T150000
 DTEND;TZID=Europe/Stockholm:20260919T153000
-SUMMARY:2 an från Gr... – 2 an från Gr... (F12 (2014) A-8-dels:08)
+SUMMARY:IFK Malmö 2 – 2 an från Gr... (F12 (2014) A-8-dels:08)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-8-dels:08
 END:VEVENT
@@ -24,7 +24,7 @@ BEGIN:VEVENT
 UID:match-3032@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T153000
 DTEND;TZID=Europe/Stockholm:20260919T160000
-SUMMARY:1 an från Gr... – 2 an från Gr... (F12 (2014) A-8-dels:03)
+SUMMARY:LUGI HF 1 – 2 an från Gr... (F12 (2014) A-8-dels:03)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · A-8-dels:03
 END:VEVENT

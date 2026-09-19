@@ -453,6 +453,14 @@ LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 3
 END:VEVENT
 BEGIN:VEVENT
+UID:match-3033@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153000
+DTEND;TZID=Europe/Stockholm:20260919T160000
+SUMMARY:Kävlinge HK ... – 4 an från Gr... (F12 (2014) B-8-dels:03)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · B-8-dels:03
+END:VEVENT
+BEGIN:VEVENT
 UID:match-2000@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T090000
 DTEND;TZID=Europe/Stockholm:20260920T093000
