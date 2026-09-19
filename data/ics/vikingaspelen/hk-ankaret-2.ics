@@ -69,6 +69,14 @@ LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · B-kvartsfinal:04
 END:VEVENT
 BEGIN:VEVENT
+UID:match-9025@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T165500
+DTEND;TZID=Europe/Stockholm:20260919T172500
+SUMMARY:Ljunghusens HK – HK Ankaret 2 (P13 (2013) B-semifinal:02)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · B-semifinal:02
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10003@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T093000
 DTEND;TZID=Europe/Stockholm:20260920T100000
