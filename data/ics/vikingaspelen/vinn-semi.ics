@@ -8,7 +8,7 @@ BEGIN:VEVENT
 UID:match-9026@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260919T174000
 DTEND;TZID=Europe/Stockholm:20260919T181000
-SUMMARY:Vinn.semi – Vinn.semi (P13 (2013) A-final)
+SUMMARY:Vinslövs HK – Vinn.semi (P13 (2013) A-final)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · A-final
 END:VEVENT
