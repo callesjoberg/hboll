@@ -605,6 +605,14 @@ LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · Grupp 4
 END:VEVENT
 BEGIN:VEVENT
+UID:match-1027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T153500
+DTEND;TZID=Europe/Stockholm:20260919T160500
+SUMMARY:1 an från Gr... – Lödde Viking... (F14 (2012) A-kvartsfinal:03)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F14 (2012) · A-kvartsfinal:03
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10001@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T090000
 DTEND;TZID=Europe/Stockholm:20260920T093000
