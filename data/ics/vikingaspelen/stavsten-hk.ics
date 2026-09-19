@@ -28,4 +28,12 @@ SUMMARY:HK Ankaret svart – Stavsten HK (F12 (2014) Grupp 5)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F12 (2014) · Grupp 5
 END:VEVENT
+BEGIN:VEVENT
+UID:match-3039@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T163500
+DTEND;TZID=Europe/Stockholm:20260919T170500
+SUMMARY:Vinn.1/8   3 – Stavsten HK (F12 (2014) A-kvartsfinal:02)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F12 (2014) · A-kvartsfinal:02
+END:VEVENT
 END:VCALENDAR

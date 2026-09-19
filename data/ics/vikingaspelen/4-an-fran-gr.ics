@@ -29,14 +29,6 @@ LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F14 (2012) · B-kvartsfinal:02
 END:VEVENT
 BEGIN:VEVENT
-UID:match-3041@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260919T170000
-DTEND;TZID=Europe/Stockholm:20260919T173000
-SUMMARY:Vinn.1/8   3 – 4 an från Gr... (F12 (2014) B-kvartsfinal:02)
-LOCATION:Vikenhallen\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F12 (2014) · B-kvartsfinal:02
-END:VEVENT
-BEGIN:VEVENT
 UID:match-10024@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T150500
 DTEND;TZID=Europe/Stockholm:20260920T153500
