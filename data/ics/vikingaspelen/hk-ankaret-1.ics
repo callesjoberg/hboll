@@ -69,6 +69,14 @@ LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P13 (2013) · B-semifinal:01
 END:VEVENT
 BEGIN:VEVENT
+UID:match-9027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260919T174000
+DTEND;TZID=Europe/Stockholm:20260919T181000
+SUMMARY:HK Ankaret 1 – Vinn.semi (P13 (2013) B-final)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P13 (2013) · B-final
+END:VEVENT
+BEGIN:VEVENT
 UID:match-10006@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T103000
 DTEND;TZID=Europe/Stockholm:20260920T110000
