@@ -116,4 +116,12 @@ SUMMARY:Staffanstorps HK – LUGI HF 13 (P14 (2012) B-semifinal:02)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · B-semifinal:02
 END:VEVENT
+BEGIN:VEVENT
+UID:match-8036@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T182500
+DTEND;TZID=Europe/Stockholm:20260920T185500
+SUMMARY:IFK Kristian... – Staffanstorps HK (P14 (2012) B-final)
+LOCATION:Tolvåker A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · B-final
+END:VEVENT
 END:VCALENDAR

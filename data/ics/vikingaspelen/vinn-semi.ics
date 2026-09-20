@@ -5,26 +5,10 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Vikingaspelen
 BEGIN:VEVENT
-UID:match-10036@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T182500
-DTEND;TZID=Europe/Stockholm:20260920T185500
-SUMMARY:Vinn.semi – Vinn.semi (P12 (2014) B-final)
-LOCATION:Korsbacka A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · B-final
-END:VEVENT
-BEGIN:VEVENT
-UID:match-8036@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T182500
-DTEND;TZID=Europe/Stockholm:20260920T185500
-SUMMARY:Vinn.semi – Vinn.semi (P14 (2012) B-final)
-LOCATION:Tolvåker A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P14 (2012) · B-final
-END:VEVENT
-BEGIN:VEVENT
 UID:match-2036@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T183000
 DTEND;TZID=Europe/Stockholm:20260920T190000
-SUMMARY:Vinn.semi – Vinn.semi (F13 (2013) A-final)
+SUMMARY:Höörs HK H 65 – Vinn.semi (F13 (2013) A-final)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · A-final
 END:VEVENT
@@ -32,7 +16,7 @@ BEGIN:VEVENT
 UID:match-2037@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T183000
 DTEND;TZID=Europe/Stockholm:20260920T190000
-SUMMARY:Vinn.semi – Vinn.semi (F13 (2013) B-final)
+SUMMARY:LUGI HF A – Vinn.semi (F13 (2013) B-final)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · B-final
 END:VEVENT
