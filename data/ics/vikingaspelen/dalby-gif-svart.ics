@@ -60,4 +60,12 @@ SUMMARY:Dalby GIF svart – Hässleholms HF (P14 (2012) Grupp 3)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · Grupp 3
 END:VEVENT
+BEGIN:VEVENT
+UID:match-8031@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T164000
+DTEND;TZID=Europe/Stockholm:20260920T171000
+SUMMARY:Dalby GIF svart – 2 an från Gr... (P14 (2012) A-kvartsfinal:02)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · A-kvartsfinal:02
+END:VEVENT
 END:VCALENDAR

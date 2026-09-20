@@ -52,4 +52,12 @@ SUMMARY:Växjö HF – OV Helsingborg 1 (F13 (2013) Grupp 4)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 4
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10030@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T164000
+DTEND;TZID=Europe/Stockholm:20260920T171000
+SUMMARY:1 an från Gr... – Växjö HF (P12 (2014) A-kvartsfinal:04)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:04
+END:VEVENT
 END:VCALENDAR

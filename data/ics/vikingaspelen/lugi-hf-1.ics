@@ -220,4 +220,12 @@ SUMMARY:LUGI HF 1 – H43 Lund 2 (P12 (2014) Grupp 3)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 3
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – LUGI HF 1 (P12 (2014) B-kvartsfinal:04)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:04
+END:VEVENT
 END:VCALENDAR
