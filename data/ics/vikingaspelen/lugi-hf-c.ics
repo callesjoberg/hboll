@@ -72,7 +72,7 @@ BEGIN:VEVENT
 UID:match-2033@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T171500
 DTEND;TZID=Europe/Stockholm:20260920T174500
-SUMMARY:Vinn.kvart   1 – LUGI HF C (F13 (2013) B-semifinal:01)
+SUMMARY:LUGI HF A – LUGI HF C (F13 (2013) B-semifinal:01)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · B-semifinal:01
 END:VEVENT

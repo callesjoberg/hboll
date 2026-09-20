@@ -68,4 +68,12 @@ SUMMARY:Dalby GIF blå – LUGI HF 12 (P14 (2012) A-kvartsfinal:03)
 LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · A-kvartsfinal:03
 END:VEVENT
+BEGIN:VEVENT
+UID:match-8035@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T175000
+DTEND;TZID=Europe/Stockholm:20260920T182000
+SUMMARY:Dalby GIF blå – Vinn.kvart   4 (P14 (2012) A-semifinal:02)
+LOCATION:Tolvåker B\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P14 (2012) · A-semifinal:02
+END:VEVENT
 END:VCALENDAR
