@@ -156,4 +156,12 @@ SUMMARY:Lödde Viking... – KFUM Lundagård (P12 (2014) Grupp 1)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 1
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10027@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T153500
+DTEND;TZID=Europe/Stockholm:20260920T160500
+SUMMARY:1 an från Gr... – KFUM Lundagård (P12 (2014) A-kvartsfinal:03)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:03
+END:VEVENT
 END:VCALENDAR

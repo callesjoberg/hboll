@@ -16,17 +16,9 @@ BEGIN:VEVENT
 UID:match-10026@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T153500
 DTEND;TZID=Europe/Stockholm:20260920T160500
-SUMMARY:1 an från Gr... – 2 an från Gr... (P12 (2014) A-kvartsfinal:01)
+SUMMARY:LUGI HF 2 – 2 an från Gr... (P12 (2014) A-kvartsfinal:01)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:01
-END:VEVENT
-BEGIN:VEVENT
-UID:match-10027@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T153500
-DTEND;TZID=Europe/Stockholm:20260920T160500
-SUMMARY:1 an från Gr... – 2 an från Gr... (P12 (2014) A-kvartsfinal:03)
-LOCATION:Korsbacka E\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:03
 END:VEVENT
 BEGIN:VEVENT
 UID:match-2026@vikingaspelen.hboll
@@ -40,17 +32,9 @@ BEGIN:VEVENT
 UID:match-8026@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T153500
 DTEND;TZID=Europe/Stockholm:20260920T160500
-SUMMARY:1 an från Gr... – 2 an från Gr... (P14 (2012) A-kvartsfinal:01)
+SUMMARY:IFK Malmö Svart – 2 an från Gr... (P14 (2012) A-kvartsfinal:01)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · A-kvartsfinal:01
-END:VEVENT
-BEGIN:VEVENT
-UID:match-8027@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T153500
-DTEND;TZID=Europe/Stockholm:20260920T160500
-SUMMARY:1 an från Gr... – 2 an från Gr... (P14 (2012) A-kvartsfinal:03)
-LOCATION:Tolvåker B\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P14 (2012) · A-kvartsfinal:03
 END:VEVENT
 BEGIN:VEVENT
 UID:match-2028@vikingaspelen.hboll
