@@ -292,4 +292,12 @@ SUMMARY:Staffanstorp... – HK Ankaret 3 (P12 (2014) B-kvartsfinal:04)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:04
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10032@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T171500
+DTEND;TZID=Europe/Stockholm:20260920T174500
+SUMMARY:Staffanstorp... – Vinn.kvart   4 (P12 (2014) B-semifinal:02)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · B-semifinal:02
+END:VEVENT
 END:VCALENDAR

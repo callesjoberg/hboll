@@ -5,14 +5,6 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Vikingaspelen
 BEGIN:VEVENT
-UID:match-10032@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T171500
-DTEND;TZID=Europe/Stockholm:20260920T174500
-SUMMARY:Vinn.kvart   3 – Vinn.kvart   4 (P12 (2014) B-semifinal:02)
-LOCATION:Korsbacka A\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · P12 (2014) · B-semifinal:02
-END:VEVENT
-BEGIN:VEVENT
 UID:match-8032@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T171500
 DTEND;TZID=Europe/Stockholm:20260920T174500
