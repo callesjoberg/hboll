@@ -6686,3 +6686,104 @@ button.welcome-cta-secondary {
 /* Egen display slår annars webbläsarens [hidden] — samma fälla som
    .team-picker-item[hidden] ovan. */
 .auth-konto[hidden], #authBtn[hidden] { display: none; }
+
+/* Matchloggen som tidslinje: lagen på var sin sida om en skena, tid och
+   ställning på motsatt sida om målet. Byggd för att fungera utan
+   målskyttenamn — då står lagnamnet i kortet och kronologin är intakt. */
+.tidslinje { display: grid; gap: 2px; margin-top: 10px; }
+
+/* Klistrad: i en lång tidslinje — och särskilt i de cuper som aldrig
+   registrerar målskyttar — är sidan enda ledtråden om vilket lag som
+   gjorde målet. Då måste rubriken finnas kvar när man scrollar. */
+.tl-lagrad {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 6px 0;
+  background: var(--card);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.tl-lagrad span:last-child { text-align: right; }
+
+.tl-rad {
+  display: grid;
+  /* Skenan i mitten är smal och fast; sidorna delar lika, så kortens
+     innerkant hamnar på samma avstånd oavsett hur långt namnet är. */
+  grid-template-columns: 1fr 26px 1fr;
+  align-items: center;
+}
+
+/* Sidan utan innehåll ska inte krympa bort — kolumnerna måste vara lika
+   breda för att skenan ska stå rakt hela vägen ned. */
+.tl-sida { min-width: 0; }
+.tl-rad.home .tl-sida:first-child { justify-items: end; text-align: right; }
+.tl-rad.away .tl-sida:last-child { text-align: left; }
+.tl-rad.home .tl-sida:last-child { text-align: left; }
+.tl-rad.away .tl-sida:first-child { text-align: right; }
+
+.tl-kort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 13px;
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blue) 24%, transparent);
+}
+.tl-rad.away .tl-kort {
+  background: color-mix(in srgb, var(--purple) 12%, transparent);
+  border-color: color-mix(in srgb, var(--purple) 24%, transparent);
+}
+.tl-lag { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tl-meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.tl-klocka { font-variant-numeric: tabular-nums; }
+.tl-stallning {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Skenan ritas av raderna själva, så den blir exakt lika lång som listan
+   utan att någon höjd behöver räknas ut. */
+.tl-skena {
+  position: relative;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+}
+.tl-skena::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--line);
+}
+.tl-prick {
+  position: relative;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 3px var(--card);
+}
+.tl-rad.away .tl-prick { background: var(--purple); }
+/* Spelarknappen bär med sig lagnamnet i andra vyer; i tidslinjen säger
+   sidan redan vilket lag det är, och namnet skulle bara upprepas. */
+.tl-kort .feed-team { display: none; }
+.tl-mal { font-weight: 600; }

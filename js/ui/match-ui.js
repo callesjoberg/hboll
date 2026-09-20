@@ -867,17 +867,41 @@ function spelarKnapp(namn, lag, nr) {
   namn, h("span", { class: "feed-team" }, lag.name));
 }
 
-function feedRad(m, e) {
-  const lag = e.side === "away" ? m.away : m.home;
-  return h("div", { class: "feed-row " + (e.side === "away" ? "away" : "home") },
-    h("span", { class: "feed-time" }, e.at ? fmtTime.format(new Date(e.at)) : "–"),
-    h("span", { class: "feed-score" }, e.hg + "–" + e.ag),
-    h("span", { class: "feed-who" },
-      // Ungefär hälften av målen saknar registrerad skytt. Då är laget
-      // det enda vi vet, och det är bättre än en tom rad.
-      e.player
-        ? spelarKnapp(e.player, lag, e.nr)
-        : h("span", { class: "feed-team only" }, lag.name)));
+// Speltiden, som man läser en matchlogg i: 30:56, inte klockslaget 19:43.
+// Saknas den (vissa sekretariat registrerar bara ställningen) faller raden
+// tillbaka på klockslaget, som alltid finns.
+function speltid(sek) {
+  if (!Number.isFinite(sek)) return null;
+  return String(Math.floor(sek / 60)).padStart(2, "0") + ":" +
+    String(sek % 60).padStart(2, "0");
+}
+
+/* En rad i tidslinjen: hemmalaget till vänster, bortalaget till höger, och
+   tid och ställning på motsatt sida om skenan i mitten. Formen svarar på
+   "när drog de ifrån?" utan att man behöver läsa siffror i en kolumn.
+
+   Den är byggd för att fungera UTAN namn. Två tredjedelar av cuperna
+   registrerar aldrig målskyttar — Åhus och Örebro har noll — och för
+   utloggade döljs de även där de finns. Då står lagnamnet i kortet, och
+   tidslinjen är fortfarande en fullgod målkronologi. */
+function tidslinjeRad(m, e) {
+  const borta = e.side === "away";
+  const lag = borta ? m.away : m.home;
+  // Utan namn står bara "Mål" i kortet. Lagnamnet skulle upprepas på var
+  // enda rad — trettioen gånger i en vanlig match — och sidan, färgen och
+  // rubrikraden säger redan vilket lag det är.
+  const kort = h("div", { class: "tl-kort" },
+    e.player
+      ? spelarKnapp(e.player, lag, e.nr)
+      : h("span", { class: "tl-mal" }, "Mål"));
+  const meta = h("div", { class: "tl-meta" },
+    h("span", { class: "tl-klocka" },
+      speltid(e.sek) || (e.at ? fmtTime.format(new Date(e.at)) : "–")),
+    h("span", { class: "tl-stallning" }, e.hg + "–" + e.ag));
+  return h("div", { class: "tl-rad " + (borta ? "away" : "home") },
+    h("div", { class: "tl-sida" }, borta ? meta : kort),
+    h("div", { class: "tl-skena" }, h("span", { class: "tl-prick" })),
+    h("div", { class: "tl-sida" }, borta ? kort : meta));
 }
 
 // Tid = händelseordning, Mål och Namn = samma lista aggregerad per
@@ -996,16 +1020,21 @@ function feedNoder(m, feed, rita, skyttDoc) {
     }, etikett))));
 
   if (feedSort === "tid") {
+    const rader = [];
     let sedd = null;
     // Nyast överst — det är den ordningen man läser en pågående match i.
     for (const e of [...mål].reverse()) {
       if (sedd !== null && e.period !== sedd) {
-        noder.push(h("div", { class: "feed-mark" },
+        rader.push(h("div", { class: "feed-mark" },
           sedd === 1 ? "Andra halvlek" : svOrdinal(sedd + 1) + " perioden"));
       }
       sedd = e.period;
-      noder.push(feedRad(m, e));
+      rader.push(tidslinjeRad(m, e));
     }
+    noder.push(h("div", { class: "tidslinje" },
+      h("div", { class: "tl-lagrad" },
+        h("span", null, m.home && m.home.name), h("span", null, m.away && m.away.name)),
+      ...rader));
   } else {
     const rader = feedPerSpelare(m, mål);
     rader.sort(feedSort === "mal"

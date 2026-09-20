@@ -592,6 +592,9 @@ window.HB = window.HB || {};
         player: namnSynliga ? (e.playerName || null) : null,
         nr: namnSynliga && Number.isFinite(e.playerNr) ? e.playerNr : null,
         hg: e.homeScore, ag: e.awayScore,
+        // Speltid i sekunder från matchstart (API:t ger millisekunder).
+        // Det är den klocka man läser en matchlogg i — 30:56, inte 19:43.
+        sek: Number.isFinite(e.relativeTime) ? Math.round(e.relativeTime / 1000) : null,
         period: e.period || 0,
         at: normalizeStart(e.absoluteTime),
       }))
