@@ -5,14 +5,6 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Vikingaspelen
 BEGIN:VEVENT
-UID:match-2025@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T150500
-DTEND;TZID=Europe/Stockholm:20260920T153500
-SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:02)
-LOCATION:Nyvångsskolan\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:02
-END:VEVENT
-BEGIN:VEVENT
 UID:match-10028@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T161000
 DTEND;TZID=Europe/Stockholm:20260920T164000
@@ -32,7 +24,7 @@ BEGIN:VEVENT
 UID:match-2031@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T164000
 DTEND;TZID=Europe/Stockholm:20260920T171000
-SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:04)
+SUMMARY:Skurups Handboll – 4 an från Gr... (F13 (2013) B-kvartsfinal:04)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:04
 END:VEVENT

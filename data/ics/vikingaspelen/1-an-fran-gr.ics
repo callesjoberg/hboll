@@ -8,7 +8,7 @@ BEGIN:VEVENT
 UID:match-2028@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T161000
 DTEND;TZID=Europe/Stockholm:20260920T164000
-SUMMARY:1 an från Gr... – 2 an från Gr... (F13 (2013) A-kvartsfinal:02)
+SUMMARY:1 an från Gr... – OV Helsingborg 1 (F13 (2013) A-kvartsfinal:02)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · A-kvartsfinal:02
 END:VEVENT
@@ -19,14 +19,6 @@ DTEND;TZID=Europe/Stockholm:20260920T171000
 SUMMARY:1 an från Gr... – Växjö HF (P12 (2014) A-kvartsfinal:04)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:04
-END:VEVENT
-BEGIN:VEVENT
-UID:match-2030@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T164000
-DTEND;TZID=Europe/Stockholm:20260920T171000
-SUMMARY:1 an från Gr... – 2 an från Gr... (F13 (2013) A-kvartsfinal:04)
-LOCATION:Lödde IH\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F13 (2013) · A-kvartsfinal:04
 END:VEVENT
 BEGIN:VEVENT
 UID:match-8030@vikingaspelen.hboll

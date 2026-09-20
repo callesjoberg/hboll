@@ -8,7 +8,7 @@ BEGIN:VEVENT
 UID:match-2025@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T150500
 DTEND;TZID=Europe/Stockholm:20260920T153500
-SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:02)
+SUMMARY:3 an från Gr... – HK Malmö 2 (F13 (2013) B-kvartsfinal:02)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:02
 END:VEVENT
@@ -27,13 +27,5 @@ DTEND;TZID=Europe/Stockholm:20260920T164000
 SUMMARY:3 an från Gr... – HK Ankaret svart (P14 (2012) B-kvartsfinal:04)
 LOCATION:Tolvåker B\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · B-kvartsfinal:04
-END:VEVENT
-BEGIN:VEVENT
-UID:match-2031@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T164000
-DTEND;TZID=Europe/Stockholm:20260920T171000
-SUMMARY:3 an från Gr... – 4 an från Gr... (F13 (2013) B-kvartsfinal:04)
-LOCATION:Nyvångsskolan\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:04
 END:VEVENT
 END:VCALENDAR
