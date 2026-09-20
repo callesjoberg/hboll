@@ -28,4 +28,12 @@ SUMMARY:HK Svalöv – LUGI HF A (F13 (2013) Grupp 1)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 1
 END:VEVENT
+BEGIN:VEVENT
+UID:match-2029@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T161000
+DTEND;TZID=Europe/Stockholm:20260920T164000
+SUMMARY:3 an från Gr... – HK Svalöv (F13 (2013) B-kvartsfinal:03)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-kvartsfinal:03
+END:VEVENT
 END:VCALENDAR
