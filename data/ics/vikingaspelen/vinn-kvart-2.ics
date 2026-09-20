@@ -13,14 +13,6 @@ LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · B-semifinal:01
 END:VEVENT
 BEGIN:VEVENT
-UID:match-2032@vikingaspelen.hboll
-DTSTART;TZID=Europe/Stockholm:20260920T171500
-DTEND;TZID=Europe/Stockholm:20260920T174500
-SUMMARY:HF Limhamn – Vinn.kvart   2 (F13 (2013) A-semifinal:01)
-LOCATION:Lödde IH\, Löddeköpinge
-DESCRIPTION:Vikingaspelen · F13 (2013) · A-semifinal:01
-END:VEVENT
-BEGIN:VEVENT
 UID:match-8033@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T171500
 DTEND;TZID=Europe/Stockholm:20260920T174500

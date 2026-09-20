@@ -604,4 +604,12 @@ SUMMARY:Kävlinge HK – Vinn.kvart   2 (P12 (2014) B-semifinal:01)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · B-semifinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-2035@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T174500
+DTEND;TZID=Europe/Stockholm:20260920T181500
+SUMMARY:Kävlinge HK – Vinn.kvart   4 (F13 (2013) B-semifinal:02)
+LOCATION:Nyvångsskolan\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · B-semifinal:02
+END:VEVENT
 END:VCALENDAR
