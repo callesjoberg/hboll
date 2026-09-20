@@ -224,7 +224,7 @@ BEGIN:VEVENT
 UID:match-10028@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T161000
 DTEND;TZID=Europe/Stockholm:20260920T164000
-SUMMARY:LUGI HF 1 – 4 an från Gr... (P12 (2014) B-kvartsfinal:02)
+SUMMARY:LUGI HF 1 – Staffanstorp... (P12 (2014) B-kvartsfinal:02)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · B-kvartsfinal:02
 END:VEVENT

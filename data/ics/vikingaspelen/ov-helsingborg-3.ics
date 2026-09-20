@@ -28,4 +28,12 @@ SUMMARY:LUGI HF C – OV Helsingborg 3 (F13 (2013) Grupp 3)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · Grupp 3
 END:VEVENT
+BEGIN:VEVENT
+UID:match-2030@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T164000
+DTEND;TZID=Europe/Stockholm:20260920T171000
+SUMMARY:Växjö HF – OV Helsingborg 3 (F13 (2013) A-kvartsfinal:04)
+LOCATION:Lödde IH\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · F13 (2013) · A-kvartsfinal:04
+END:VEVENT
 END:VCALENDAR

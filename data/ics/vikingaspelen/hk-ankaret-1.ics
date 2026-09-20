@@ -100,4 +100,12 @@ SUMMARY:HK Ankaret 1 – Anderstorp SK (P12 (2014) Grupp 4)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · Grupp 4
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10030@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T164000
+DTEND;TZID=Europe/Stockholm:20260920T171000
+SUMMARY:HK Ankaret 1 – Växjö HF (P12 (2014) A-kvartsfinal:04)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:04
+END:VEVENT
 END:VCALENDAR

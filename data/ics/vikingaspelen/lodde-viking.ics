@@ -788,4 +788,12 @@ SUMMARY:IFK Malmö Svart – Lödde Viking... (P14 (2012) A-kvartsfinal:01)
 LOCATION:Tolvåker A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P14 (2012) · A-kvartsfinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10031@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T164000
+DTEND;TZID=Europe/Stockholm:20260920T171000
+SUMMARY:H43 Lund 2 – Lödde Viking... (P12 (2014) A-kvartsfinal:02)
+LOCATION:Korsbacka E\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · A-kvartsfinal:02
+END:VEVENT
 END:VCALENDAR

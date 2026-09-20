@@ -32,7 +32,7 @@ BEGIN:VEVENT
 UID:match-2028@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T161000
 DTEND;TZID=Europe/Stockholm:20260920T164000
-SUMMARY:1 an från Gr... – OV Helsingborg 1 (F13 (2013) A-kvartsfinal:02)
+SUMMARY:Höörs HK H 65 – OV Helsingborg 1 (F13 (2013) A-kvartsfinal:02)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · A-kvartsfinal:02
 END:VEVENT
