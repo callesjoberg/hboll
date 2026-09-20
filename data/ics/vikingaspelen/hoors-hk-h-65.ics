@@ -48,7 +48,7 @@ BEGIN:VEVENT
 UID:match-2036@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T183000
 DTEND;TZID=Europe/Stockholm:20260920T190000
-SUMMARY:Höörs HK H 65 – Vinn.semi (F13 (2013) A-final)
+SUMMARY:Höörs HK H 65 – Lödde Viking... (F13 (2013) A-final)
 LOCATION:Lödde IH\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · A-final
 END:VEVENT

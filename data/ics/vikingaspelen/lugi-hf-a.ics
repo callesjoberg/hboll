@@ -80,7 +80,7 @@ BEGIN:VEVENT
 UID:match-2037@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T183000
 DTEND;TZID=Europe/Stockholm:20260920T190000
-SUMMARY:LUGI HF A – Vinn.semi (F13 (2013) B-final)
+SUMMARY:LUGI HF A – Kävlinge HK (F13 (2013) B-final)
 LOCATION:Nyvångsskolan\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · F13 (2013) · B-final
 END:VEVENT
