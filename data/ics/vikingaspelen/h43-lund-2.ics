@@ -156,4 +156,12 @@ SUMMARY:HK Ankaret 2 – H43 Lund 2 (P12 (2014) A-semifinal:01)
 LOCATION:Korsbacka E\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · A-semifinal:01
 END:VEVENT
+BEGIN:VEVENT
+UID:match-10037@vikingaspelen.hboll
+DTSTART;TZID=Europe/Stockholm:20260920T190500
+DTEND;TZID=Europe/Stockholm:20260920T193500
+SUMMARY:H43 Lund 2 – HK Ankaret 1 (P12 (2014) A-final)
+LOCATION:Korsbacka A\, Löddeköpinge
+DESCRIPTION:Vikingaspelen · P12 (2014) · A-final
+END:VEVENT
 END:VCALENDAR

@@ -120,7 +120,7 @@ BEGIN:VEVENT
 UID:match-10037@vikingaspelen.hboll
 DTSTART;TZID=Europe/Stockholm:20260920T190500
 DTEND;TZID=Europe/Stockholm:20260920T193500
-SUMMARY:Vinn.semi – HK Ankaret 1 (P12 (2014) A-final)
+SUMMARY:H43 Lund 2 – HK Ankaret 1 (P12 (2014) A-final)
 LOCATION:Korsbacka A\, Löddeköpinge
 DESCRIPTION:Vikingaspelen · P12 (2014) · A-final
 END:VEVENT
