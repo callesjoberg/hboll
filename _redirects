@@ -1,0 +1,17 @@
+# Omdirigeringar för Cloudflare Pages. En rad, av ett skäl.
+#
+# Appen läser all data från data.cupschema.se (HB.DATA_BASE i js/config.js)
+# och rör aldrig sajtens egna /data/. Men KALENDERPRENUMERATIONER som
+# användare lade till före flytten pekar på det gamla stället:
+#   webcal://cupschema.se/data/ics/<cup>/<lag>.ics
+# De adresserna ligger i folks telefoner och går inte att ändra i efterhand.
+#
+# Så länge data/ committas till git följer ics-filerna med i Pages-deployen
+# och prenumerationerna fungerar av ren slump. Den dagen data/ slutar
+# committas försvinner de ur deployen — och en kalenderprenumeration som
+# börjar svara 404 dör TYST: appen slutar bara uppdatera sig, utan att något
+# syns för den som prenumererar. Den här raden fångar dem i stället.
+#
+# 302, inte 301: en permanent omdirigering cachas av klienter i praktiken
+# för alltid, och det här ska gå att ta tillbaka.
+/data/*  https://data.cupschema.se/data/:splat  302
