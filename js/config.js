@@ -49,7 +49,7 @@ HB.dataUrl = function (path) {
 // Redigera inte för hand: den stod länge kvar på ett datum två veckor
 // bakåt just för att den var det enda stället som krävde ett eget
 // handgrepp.
-HB.VERSION = "20261003b";
+HB.VERSION = "20261003c";
 
 HB.CLUB = {
   name: "Alingsås HK",

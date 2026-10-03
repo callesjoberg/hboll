@@ -13,7 +13,17 @@
 // ett ANNAT namn, så ett nytt namn är det enda som garanterat tömmer en
 // gammal, envis skalcache (nätverk-först räcker inte om ett enskilt
 // anrop råkar falla tillbaka).
-const CACHE_NAME = "hboll-shell-20261003b";
+const CACHE_NAME = "hboll-shell-20261003c";
+// Samma nyckel som index.html sätter på css/js (scripts/bump_assets.py
+// skriver båda). Används för att cacha skalet under PRECIS de URL:er
+// sidan sedan ber om.
+const VERSION = CACHE_NAME.replace("hboll-shell-", "");
+
+// css/ och js/ hämtas av sidan med ?v=<nyckel> (länken i index.html och
+// importmappen); allt annat hämtas utan nyckel.
+function skalURL(fil) {
+  return /^\.\/(css|js)\//.test(fil) ? fil + "?v=" + VERSION : fil;
+}
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -67,10 +77,17 @@ const SHELL_FILES = [
   "./assets/icon-512.png",
 ];
 
+// cache: "reload" är inte en detalj: utan den får addAll svara ur
+// webbläsarens HTTP-cache, där css/style.css ligger kvar i tio minuter
+// (max-age=600) efter en driftsättning. Då hamnar FÖRRA versionens
+// bytes i den NYA skalcachen, och nästa gång ett nätanrop fallerar
+// serveras de till en ny sida — ny HTML, gammal CSS.
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME)
-      .then((c) => c.addAll(SHELL_FILES))
+      .then((c) => c.addAll(
+        SHELL_FILES.map((f) => new Request(skalURL(f), { cache: "reload" }))
+      ))
       .catch(() => {}) // en enskild 404 ska inte stoppa installationen
   );
   self.skipWaiting();
@@ -99,8 +116,23 @@ self.addEventListener("fetch", (e) => {
         }
         return resp;
       })
-      // ignoreSearch: moduler hämtas med ?v=<nyckel> via importmappen i
-      // index.html, medan SHELL_FILES ovan cachas utan nyckel.
-      .catch(() => caches.match(e.request, { ignoreSearch: true }))
+      .catch(() => reservFrånCache(e.request))
   );
 });
+
+
+// Reserven när nätet inte svarar. Exakt URL-match för css/js: ett
+// versionsmärkt anrop får ALDRIG besvaras med en annan versions fil.
+// En sådan blandning syns inte som ett fel utan som en app där något
+// ser fel ut — t.ex. en knapp vars stilregler ännu inte finns.
+// Sidan själv (en navigering) bär användarens egna frågeparametrar
+// (?cup=...&fav=...) och matchas därför utan dem.
+function reservFrånCache(request) {
+  return caches.match(request).then((träff) => {
+    if (träff) return träff;
+    if (request.mode === "navigate") {
+      return caches.match(request, { ignoreSearch: true });
+    }
+    return undefined;
+  });
+}

@@ -25,4 +25,4 @@ jobs:
       # Den enda spärren som faktiskt skyddar datan — förfalskade, utgångna
       # och främmande token ska avvisas, och serverfunktionen ska svara rätt.
       - name: Serverns inloggningskontroll
-        run: node --test tests/server-auth.test.mjs
+        run: node --test tests/server-auth.test.mjs tests/sw-cache.test.mjs
