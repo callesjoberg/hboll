@@ -26,3 +26,7 @@ jobs:
       # och främmande token ska avvisas, och serverfunktionen ska svara rätt.
       - name: Serverns inloggningskontroll
         run: node --test tests/server-auth.test.mjs tests/sw-cache.test.mjs
+      # Varje cup måste gå att återställa ur R2 när data/ inte längre
+      # ligger i git — en missad cup syns annars inte som ett fel.
+      - name: Varje cup går att återställa ur R2
+        run: python3 tests/r2-tillstand-guard.py

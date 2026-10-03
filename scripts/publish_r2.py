@@ -47,9 +47,36 @@ KORT_CACHE = "public, max-age=60"
 # så ändringen kan driftsättas innan hinken finns.
 PRIVAT = re.compile(r"^data/(scorers-[a-z0-9]+|rosters-[a-z0-9]+-\d{4})\.json$")
 PRIVAT_CACHE = "private, no-store"  # serverfunktionen sätter sina egna huvuden
+
+# Filer som CI behöver som INDATA, men som inte längre ligger i git sedan
+# data/ slutade committas. Två skäl, båda tysta om de saknas:
+#   * förra varvets snapshot är både glesningens mätpunkt (should_refresh)
+#     och rimlighetsspärrens jämförelse (check_plausible, _sanity.py) —
+#     utan den skrapas alla cuper varje jobbstart OCH spärren mot tom
+#     källdata är avstängd första varvet.
+#   * skyttestatistiken byggs vidare på förra körningens fil; utan den
+#     hämtas hela cupens matchfeeds på nytt.
+# Cupernas egna dataUrl-filer läggs till i tillståndsfiler() nedan.
+TILLSTAND = re.compile(r"^data/(snapshot-[a-z0-9]+|scorers-[a-z0-9]+)\.json$")
 LANG_CACHE = "public, max-age=86400, immutable"
 
 TYPER = {".json": "application/json", ".ics": "text/calendar; charset=utf-8"}
+
+
+def tillståndsfiler() -> set[str]:
+    """Nycklar som ska hämtas vid jobbstart, utöver TILLSTAND-mönstret.
+
+    Sju cuper har en egen dataUrl (ProCup m.fl.) i stället för en
+    snapshot-<id>.json, och de fyller exakt samma roll som en snapshot.
+    Listan läses ur cups.json, som ligger kvar i git.
+    """
+    try:
+        doc = json.loads(CUPS.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    cuper = doc.get("cups", []) if isinstance(doc, dict) else doc
+    return {c["dataUrl"] for c in cuper
+            if isinstance(c, dict) and str(c.get("dataUrl", "")).startswith("data/")}
 
 
 def frysta_arkivfiler() -> set[str]:
@@ -130,6 +157,10 @@ def main() -> int:
                     help="hämta de privata filerna till data/ och avsluta — "
                          "skyttestatistiken byggs inkrementellt och behöver "
                          "förra körningens fil, som inte längre finns i git")
+    ap.add_argument("--hamta-tillstand", action="store_true",
+                    help="Hämta ned snapshots, dataUrl-filer och skyttestatistik "
+                         "till data/ innan loopen börjar. Ersätter det git tidigare "
+                         "bar med sig i utcheckningen.")
     ap.add_argument("--rensa-publika", action="store_true",
                     help="radera privata filer ur den publika hinken")
     ap.add_argument("--stamp", action="store_true",
@@ -138,8 +169,9 @@ def main() -> int:
 
     privat_bucket = os.environ.get("R2_PRIVAT_BUCKET", "")
     frysta = frysta_arkivfiler()
-    filer = [] if args.hamta_privata else lokala_filer(args.only)
-    if not filer and not (args.hamta_privata or args.rensa_publika):
+    bara_hämta = args.hamta_privata or args.hamta_tillstand
+    filer = [] if bara_hämta else lokala_filer(args.only)
+    if not filer and not (bara_hämta or args.rensa_publika):
         print("Inga filer att publicera.")
         return 0
 
@@ -207,6 +239,27 @@ def main() -> int:
         s3.put_object(Bucket=bucket, Key="data/r2-stamp.json", Body=märke,
                       ContentType="application/json",
                       CacheControl="public, max-age=30")
+
+    if args.hamta_tillstand:
+        # Den privata hinken vinner när samma nyckel finns i båda: det är
+        # den functions/api/privat läser, alltså den som gäller.
+        extra = tillståndsfiler()
+        källa = {}
+        for hink in [bucket] + ([privat_bucket] if privat_bucket else []):
+            for rel in fjärr_etags(s3, hink):
+                if TILLSTAND.match(rel) or rel in extra:
+                    källa[rel] = hink
+        for rel, hink in sorted(källa.items()):
+            mål = ROT / rel
+            mål.parent.mkdir(parents=True, exist_ok=True)
+            s3.download_file(hink, rel, str(mål))
+        saknade = sorted(extra - set(källa))
+        if saknade:
+            # Inte ett fel: en cup kan vara ny och ännu aldrig ha skrapats.
+            print(f"R2: {len(saknade)} dataUrl-filer fanns inte i hinken "
+                  f"({', '.join(saknade[:3])}…).")
+        print(f"R2: {len(källa)} tillståndsfiler hämtade.")
+        return 0
 
     if args.hamta_privata:
         if not privat_bucket:

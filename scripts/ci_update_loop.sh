@@ -139,14 +139,19 @@ publicera() {
   done
 }
 
-# Skyttestatistiken byggs inkrementellt ur förra körningens fil. När den
-# ligger i den privata hinken i stället för i git finns den inte i den
-# nyss utcheckade kopian, och utan den hade fetch_scorers börjat om från
-# noll — hela cupens matchfeeds på nytt, varje jobb. Hämtas en gång per
-# jobb; varven därefter bygger vidare på den lokala filen.
-if [ -n "${R2_PRIVAT_BUCKET:-}" ] && [ -n "${R2_ACCESS_KEY_ID:-}" ]; then
-  python3 scripts/publish_r2.py --hamta-privata \
-    || echo "Kunde inte hämta privata filer — skyttestatistiken byggs om från noll."
+# Tillståndet som CI behöver som INDATA hämtas ur R2 vid jobbstart:
+#   * förra varvets snapshot — glesningens mätpunkt (should_refresh) och
+#     rimlighetsspärrens jämförelse (check_plausible, _sanity.py),
+#   * skyttestatistiken — byggs inkrementellt, utan den hämtas hela
+#     cupens matchfeeds på nytt vid varje jobbstart.
+#
+# SKUGGKÖRNING (2026-10-03): data/ committas fortfarande, så filerna finns
+# redan i utcheckningen och hämtningen skriver bara över dem med samma
+# innehåll. Syftet är att bevisa att den fungerar i drift INNAN git slutar
+# bära dem — går den fel märks det i loggen, inte i datan.
+if [ -n "${R2_ACCESS_KEY_ID:-}" ]; then
+  python3 scripts/publish_r2.py --hamta-tillstand \
+    || echo "::warning::Kunde inte hämta tillståndet ur R2 — utcheckningens filer gäller (ofarligt så länge data/ committas)."
 fi
 
 start="$(date +%s)"
