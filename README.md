@@ -94,10 +94,18 @@ De flesta svenska handbollscuper kör Cup Manager. Så hittar du uppgifterna:
 
 **ProCup-cuper** (t.ex. Järnvägen Cup) saknar öppet API och CORS. De förhämtas
 i stället av `scripts/fetch_procup.py` till `data/`-katalogen — GitHub Actions
-(`.github/workflows/procup.yml`) kör kontrolljobbet på schema och committar
-när datan ändrats; under matchtid håller `scripts/ci_update_loop.sh` en
+(`.github/workflows/procup.yml`) kör kontrolljobbet på schema och laddar upp
+till R2 när datan ändrats; under matchtid håller `scripts/ci_update_loop.sh` en
 körning vid liv i femminuterstakt. Cuper långt från sina speldagar hoppas
 över.
+
+Datan som ändras **committas inte** (se `.gitignore`): den bor i Cloudflare R2
+och läses därifrån av appen via `HB.DATA_BASE`. Git bär bara det som inte går
+att bygga om — frysta arkivupplagor, trupplistor, `cups.json` och de
+handunderhållna listorna — och är därmed återställningsvägen, eftersom R2
+saknar versionshistorik. CI hämtar tillbaka tillståndet det behöver vid
+jobbstart med `python3 scripts/publish_r2.py --hamta-tillstand`. Vill du ha
+datan lokalt kör du samma kommando.
 Lägg till fler ProCup-turneringar i `TOURNAMENTS`-listan i
 skriptet (ev-numret syns i turneringens procup.se-URL) plus en post med
 `dataUrl` i `js/config.js`.
@@ -138,7 +146,7 @@ Tre lager, i den ordning sidan letar:
 
 1. **`localStorage`** i besökarens webbläsare — finns matcher där sedan
    tidigare och är de färska nog (se nedan), används de direkt utan nätverk.
-2. **CI-byggda snapshots** i repot (`data/snapshot-<cupId>.json` för
+2. **CI-byggda snapshots** i R2 (`data/snapshot-<cupId>.json` för
    Cup Manager-cuper, `data/<cupId>.json` för ProCup-cuper). Genereras av
    `scripts/fetch_cupmanager.py` respektive `scripts/fetch_procup.py`, som
    GitHub Actions kontrollerar på schema (`.github/workflows/procup.yml`, kan

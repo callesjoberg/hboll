@@ -2,3 +2,32 @@
 .claude/
 scripts/__pycache__/
 data/unknown-clubs.json
+
+# Datan som ÄNDRAS bor i R2, inte i git. Den stod för ~500 committar i
+# månaden, och varje commit var ett Cloudflare Pages-bygge av en sajt som
+# ändå läser datan från data.cupschema.se. CI hämtar tillbaka det den
+# behöver vid jobbstart (scripts/publish_r2.py --hamta-tillstand).
+#
+# Kvar i git ligger det som INTE går att bygga om, och som därmed är
+# återställningsvägen när R2 saknar versionshistorik: de frysta
+# arkivupplagorna, trupplistorna, cups.json och de handunderhållna
+# listorna. Lägg inget här som bara finns på ett ställe.
+data/ics/
+data/snapshot-*.json
+data/scorers-*.json
+
+# Härledda register — byggs om ur arkivet vid varje varv.
+data/champions.json
+data/club-directory.json
+data/landing-map.json
+data/cup-windows.json
+data/archive/index.json
+data/archive/team-index.json
+data/archive/club-entries.json
+data/archive/age-offsets.json
+
+# Cupernas egna dataUrl-filer (ProCup m.fl.) fyller samma roll som en
+# snapshot. Undantaget är nödvändigt: trupplistorna heter också
+# <något>-<år>.json, men de går inte att hämta igen för gångna år.
+data/*-20??.json
+!data/rosters-*.json
