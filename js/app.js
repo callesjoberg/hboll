@@ -2093,6 +2093,96 @@ HB.shortCat = shortCat;
     requestAnimationFrame(() => input.focus());
   }
 
+  /* Klubbvalet — samma sorts kontroll som cupvalet, och medvetet samma
+     form: ett ark som hänger från sidhuvudet.
+
+     Ordningen är hela poängen. Klubbarna i den cup man tittar på ligger
+     överst, för det är nästan alltid en av dem man vill ha; registret med
+     alla klubbar når man genom att skriva. Att visa 2 689 klubbar direkt
+     hade gjort det vanliga fallet svårare, inte lättare. */
+  function openClubPickerDialog() {
+    const anchor = sheetMode() ? $("#currentClubLabel") : $("#currentClubLabel");
+    const shell = prototypeDialog("Välj klubb", "klubb", anchor);
+    if (!shell) return;
+    const { dlg, body } = shell;
+    const input = h("input", { class: "search global-search-input", type: "search",
+      placeholder: "Sök klubb …", autocomplete: "off", "aria-label": "Sök klubb" });
+    const lista = h("div", { class: "klubb-lista" });
+    const tom = h("p", { class: "muted", hidden: "", role: "status" },
+      "Ingen klubb matchar sökningen.");
+
+    const välj = (namn) => {
+      state.favoriteClub = namn;
+      markClubChosen();
+      saveSettings();
+      updateClubLogo();
+      const fält = $("#favoriteClubInput");
+      if (fält) fält.value = namn;
+      dlg.close();
+      render();
+    };
+
+    const rad = (namn) => {
+      const logga = localClubLogo(namn) ||
+        (namn.toLowerCase() === HB.CLUB.name.toLowerCase() ? HB.CLUB.logo : clubBadgeDataUri(namn));
+      return h("button", {
+        class: "klubb-rad" + (namn === state.favoriteClub ? " on" : ""),
+        type: "button", onclick: () => välj(namn),
+      }, h("img", { src: logga, alt: "", width: 26, height: 26 }), h("span", null, namn));
+    };
+
+    /* Bara riktiga klubbar, inte lagnamn. clubNameCandidates (fältet i
+       Inställningar) tar även med "IK Sävehof 1" och ordprefix, vilket är
+       rimligt för ett fritextfält men brus i en klubblista — och en
+       favoritklubb satt till ett lagnamn gör klubbmatchningen opålitlig.
+       Källorna är klubbregistret och matchernas egna club-fält. */
+    const klubbKandidater = () => {
+      const set = new Set(Object.keys(getClubDirectory() || {}));
+      for (const m of state.matches) {
+        for (const side of [m.home, m.away]) {
+          if (!side || isPlaceholderTeam(side)) continue;
+          if (side.club) set.add(side.club);
+        }
+      }
+      return [...set].sort((a, b) => a.localeCompare(b, "sv"));
+    };
+
+    const rita = () => {
+      const fråga = input.value.trim().toLowerCase();
+      const noder = [];
+      if (fråga) {
+        // Hela registret, men aldrig fler än rimligt många träffar i en
+        // lista man ska kunna överblicka.
+        const träffar = klubbKandidater()
+          .filter((n) => n.toLowerCase().includes(fråga)).slice(0, 40);
+        noder.push(...träffar.map(rad));
+        tom.hidden = träffar.length > 0;
+      } else {
+        tom.hidden = true;
+        const iCupen = [...allClubNamesFromMatches(state.matches, getClubDirectory())]
+          .sort((a, b) => a.localeCompare(b, "sv"));
+        // Den valda klubben först, även om den inte spelar i den här cupen
+        // — annars ser det ut som att valet inte gäller.
+        if (state.favoriteClub && !iCupen.includes(state.favoriteClub)) {
+          noder.push(h("p", { class: "muted klubb-rubrik" }, "Vald"), rad(state.favoriteClub));
+        }
+        if (iCupen.length) {
+          noder.push(h("p", { class: "muted klubb-rubrik" }, "I " + cup().name));
+          noder.push(...iCupen.map(rad));
+        } else {
+          noder.push(h("p", { class: "muted" },
+            "Cupens lag är inte hämtade än — sök på klubbens namn så länge."));
+        }
+      }
+      lista.replaceChildren(...noder);
+    };
+
+    input.addEventListener("input", rita);
+    body.append(withClearButton(input), lista, tom);
+    rita();
+    requestAnimationFrame(() => input.focus());
+  }
+
   function renderTabs() {
     // Slutspelsdata finns för Cup Manager-cuper och de dataUrl-cuper vars
     // skrapa faktiskt bygger en playoffs-struktur (cup.hasPlayoffs, se
@@ -2864,6 +2954,7 @@ HB.shortCat = shortCat;
     $("#refreshBtn").addEventListener("click", () => loadCup(true));
     $("#headerExportBtn").addEventListener("click", openHeaderExportDialog);
     $("#headerAboutBtn").addEventListener("click", () => HB.openWelcome());
+    $("#currentClubLabel").addEventListener("click", openClubPickerDialog);
     setupInloggning();
     setupSettings();
     setupFilterStripScrollMemory();
